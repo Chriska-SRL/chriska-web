@@ -13,76 +13,30 @@ import {
   useDisclosure,
   Box,
   Text,
+  Spinner,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
-
-const dummyUsers: User[] = [
-  {
-    id: 1,
-    username: 'ana@example.com',
-    name: 'Ana García',
-    password: '********',
-    is_enabled: true,
-    role: 'admin',
-  },
-  {
-    id: 2,
-    username: 'carlos@example.com',
-    name: 'Carlos Pérez',
-    password: '********',
-    is_enabled: false,
-    role: 'editor',
-  },
-  {
-    id: 3,
-    username: 'lucia@example.com',
-    name: 'Lucía Fernández',
-    password: '********',
-    is_enabled: true,
-    role: 'viewer',
-  },
-];
-
-const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
-];
+import { useGetUsers } from '@/hooks/requests/user';
 
 export const UserList = () => {
-  //const [users, setUsers] = useState<User[]>(dummyUsers);
-  const [users, setUsers] = useState<User[]>([]);
+  const { users, isLoading, error } = useGetUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const modalDisclosure = useDisclosure();
 
-   useEffect(() => {
-  const token = localStorage.getItem('token');
+  // Estado para asegurar render en cliente (previene errores de hidratación)
+  const [isClient, setIsClient] = useState(false);
 
-  if (!token) {
-    console.error('Token no encontrado en localStorage');
-    return;
-  }
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  fetch('http://192.168.0.197:5291/api/Users', {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  })
-    .then(res => {
-      if (!res.ok) throw new Error('Error de autenticación');
-      return res.json();
-    })
-    .then(data => {
-      console.log('Usuarios cargados:', data);
-      setUsers(data);
-    })
-    .catch(err => console.error('Error al cargar usuarios:', err));
-}, []);
+  if (!isClient) return null; // evita render SSR con datos dinámicos
 
+  if (isLoading) return <Spinner size="lg" label="Cargando usuarios..." />;
+  if (error) return <Text color="red.500">Error: {error}</Text>;
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -90,7 +44,7 @@ export const UserList = () => {
   };
 
   const handleSave = (updatedUser: User) => {
-    setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u)));
+    // Aquí podrías actualizar el usuario en backend y refrescar lista
   };
 
   return (
@@ -108,14 +62,14 @@ export const UserList = () => {
             </Tr>
           </Thead>
           <Tbody>
-           {users.map((user) => (  //{dummyUsers.map((user) => (
+            {users.map((user) => (
               <Tr key={user.id} h="3rem">
                 <Td textAlign="center">{user.id}</Td>
                 <Td textAlign="center">{user.username}</Td>
                 <Td textAlign="center">{user.name}</Td>
-                <Td textAlign="center">{roles.find((role) => role.id === user.role)?.label}</Td>
+                <Td textAlign="center">{user.role}</Td>
                 <Td textAlign="center">
-                  <Checkbox isDisabled defaultChecked={user.is_enabled} bg="#f2f2f2" />
+                  <Checkbox isDisabled isChecked={user.is_enabled} bg="#f2f2f2" />
                 </Td>
                 <Td textAlign="center">
                   <IconButton
