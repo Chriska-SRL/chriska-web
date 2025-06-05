@@ -12,29 +12,18 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
   useToast,
   VStack,
   Progress,
   Box,
   Text,
+  Textarea,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
-
-const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
-];
-
-const estados = [
-  { id: 'activo', label: 'Activo' },
-  { id: 'inactivo', label: 'Inactivo' },
-];
 
 export const RoleAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -74,7 +63,7 @@ export const RoleAdd = () => {
             Crear rol
           </ModalHeader>
           <Formik
-            initialValues={{ username: '', name: '', role: '', estado: '' }}
+            initialValues={{ name: '', description: '' }}
             onSubmit={handleSubmit}
             validateOnChange={true}
             validateOnBlur={false}
@@ -97,24 +86,18 @@ export const RoleAdd = () => {
                       />
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
-                      <FormLabel>Permisos</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                      <FormLabel>Descripción</FormLabel>
                       <Field
-                        as={Select}
-                        name="role"
-                        placeholder="Seleccionar permisos"
+                        as={Textarea}
+                        name="description"
+                        type="text"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
-                      >
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.label}
-                          </option>
-                        ))}
-                      </Field>
+                      />
                     </FormControl>
 
                     {submitCount > 0 && Object.keys(errors).length > 0 && (

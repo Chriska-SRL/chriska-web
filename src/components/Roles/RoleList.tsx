@@ -1,153 +1,139 @@
 'use client';
 
 import {
-  Box,
-  Checkbox,
-  Flex,
+  TableContainer,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
   useDisclosure,
-  VStack,
-  Button,
-  Input,
-  FormControl,
-  FormLabel,
+  Box,
+  Text,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
-
-type Role = {
-  id: number;
-  name: string;
-  permissions: string[];
-};
+import { RoleEdit } from './RoleEdit';
+import { RoleDetail } from './RoleDetail';
+import { Role } from '@/entities/role';
 
 const dummyRoles: Role[] = [
-  { id: 1, name: 'Administrador', permissions: ['crear', 'editar', 'eliminar'] },
-  { id: 2, name: 'Editor', permissions: ['editar'] },
-  { id: 3, name: 'Lector', permissions: ['ver'] },
+  {
+    id: 1,
+    name: 'Administrador',
+    description:
+      'Tiene acceso total a todas las funcionalidades del sistema, incluyendo la gestión de usuarios, asignación de permisos, configuración de la plataforma, y control completo sobre el contenido y los datos. Puede ver, crear, editar y eliminar cualquier recurso disponible.',
+    permissions: [1, 2, 3, 4],
+  },
+  {
+    id: 2,
+    name: 'Editor',
+    description:
+      'Puede crear, modificar y actualizar contenidos dentro de su área asignada. Tiene acceso limitado a funciones administrativas, pero no puede gestionar usuarios ni cambiar configuraciones generales del sistema.',
+    permissions: [3],
+  },
+  {
+    id: 3,
+    name: 'Lector',
+    description:
+      'Cuenta únicamente con permisos de visualización. Puede acceder al contenido disponible públicamente o asignado a su rol, pero no puede realizar modificaciones ni acceder a funciones administrativas.',
+    permissions: [4],
+  },
 ];
-
-type FormProps = {
-  role: Role;
-  onSave: (updatedRole: Role) => void;
-};
-
-const FormikEditRole = ({ role, onSave }: FormProps) => {
-  const [name, setName] = useState(role.name);
-  const [permissions, setPermissions] = useState<string[]>(role.permissions);
-
-  const allPermissions = ['crear', 'editar', 'eliminar', 'ver', 'publicar', 'despublicar'];
-
-  const togglePermission = (perm: string) => {
-    setPermissions((prev) => (prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]));
-  };
-
-  const handleSubmit = () => {
-    onSave({ ...role, name, permissions });
-  };
-
-  return (
-    <VStack spacing="1rem" align="stretch">
-      <FormControl>
-        <FormLabel>Nombre del rol</FormLabel>
-        <Input value={name} onChange={(e) => setName(e.target.value)} />
-      </FormControl>
-
-      <FormControl>
-        <FormLabel>Permisos</FormLabel>
-        <Flex wrap="wrap" gap="0.5rem">
-          {allPermissions.map((perm) => (
-            <Checkbox key={perm} isChecked={permissions.includes(perm)} onChange={() => togglePermission(perm)}>
-              {perm}
-            </Checkbox>
-          ))}
-        </Flex>
-      </FormControl>
-
-      <Button onClick={handleSubmit} colorScheme="blue" w="full">
-        Guardar
-      </Button>
-    </VStack>
-  );
-};
 
 export const RoleList = () => {
   const [roles, setRoles] = useState<Role[]>(dummyRoles);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const modalDisclosure = useDisclosure();
+  const editModalDisclosure = useDisclosure();
+  const detailModalDisclosure = useDisclosure();
 
   const handleEditClick = (role: Role) => {
     setSelectedRole(role);
-    modalDisclosure.onOpen();
+    editModalDisclosure.onOpen();
+  };
+
+  const handleDetailClick = (role: Role) => {
+    setSelectedRole(role);
+    detailModalDisclosure.onOpen();
   };
 
   const handleSave = (updatedRole: Role) => {
     setRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? { ...r, ...updatedRole } : r)));
-    modalDisclosure.onClose();
+    editModalDisclosure.onClose();
   };
 
   return (
     <>
-      <Flex wrap="wrap" gap="1rem" h="100%" alignContent="flex-start">
-        {roles.map((role) => (
-          <Flex
-            key={role.id}
-            w="calc(50% - 0.5rem)"
-            alignSelf="flex-start"
-            border="1px solid #f2f2f2"
-            borderRadius="0.5rem"
-            p="1rem"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Box>
-              <Text fontWeight="bold">ID: {role.id}</Text>
-              <Text>{role.name}</Text>
-            </Box>
-            <Flex gap="0.5rem">
-              <IconButton
-                aria-label="Ver detalle"
-                icon={<IoMdInformationCircleOutline />}
-                onClick={() => handleEditClick(role)}
-                variant="ghost"
-                size="lg"
-                _hover={{ bg: 'blackAlpha.100' }}
-              />
-              <IconButton
-                aria-label="Editar rol"
-                icon={<FiEdit />}
-                onClick={() => handleEditClick(role)}
-                variant="ghost"
-                size="lg"
-                _hover={{ bg: 'blackAlpha.100' }}
-              />
-            </Flex>
-          </Flex>
-        ))}
-      </Flex>
+      <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
+        <Table variant="simple">
+          <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
+            <Tr>
+              <Th textAlign="center" w="6rem">
+                ID
+              </Th>
+              <Th textAlign="center" w="10rem">
+                Nombre
+              </Th>
+              <Th textAlign="center" maxW="20rem">
+                Descripción
+              </Th>
+              <Th w="4rem" px="0"></Th>
+              <Th w="4rem" pl="1rem" pr="2rem"></Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {roles.map((role) => (
+              <Tr key={role.id} h="3rem">
+                <Td textAlign="center" w="6rem">
+                  {role.id}
+                </Td>
+                <Td textAlign="center" w="10rem">
+                  {role.name}
+                </Td>
+                <Td textAlign="left" maxW="20rem">
+                  <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description} w="100%">
+                    {role.description}
+                  </Box>
+                </Td>
 
+                <Td textAlign="center" w="4rem" pl="2rem" pr="0.75rem">
+                  <IconButton
+                    aria-label="Ver detalle"
+                    icon={<IoMdInformationCircleOutline />}
+                    onClick={() => handleDetailClick(role)}
+                    variant="ghost"
+                    size="lg"
+                    _hover={{ bg: 'blackAlpha.100' }}
+                  />
+                </Td>
+                <Td textAlign="center" w="4rem" pl="0.75rem" pr="2rem">
+                  <IconButton
+                    aria-label="Editar rol"
+                    icon={<FiEdit />}
+                    onClick={() => handleEditClick(role)}
+                    variant="ghost"
+                    size="lg"
+                    _hover={{ bg: 'blackAlpha.100' }}
+                  />
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
       <Box mt="0.5rem">
         <Text fontSize="sm">Mostrando {roles.length} roles</Text>
       </Box>
-
-      <Modal isOpen={modalDisclosure.isOpen} onClose={modalDisclosure.onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Editar rol</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb="1.5rem">
-            {selectedRole && <FormikEditRole role={selectedRole} onSave={handleSave} />}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <RoleEdit
+        isOpen={editModalDisclosure.isOpen}
+        onClose={editModalDisclosure.onClose}
+        role={selectedRole}
+        onSave={handleSave}
+      />
+      <RoleDetail isOpen={detailModalDisclosure.isOpen} onClose={detailModalDisclosure.onClose} role={selectedRole} />
     </>
   );
 };
