@@ -1,8 +1,8 @@
-"use client"; // ¡esto es obligatorio!
+'use client'; // ¡esto es obligatorio!
 
-import { Flex, Text, Button, Avatar } from "@chakra-ui/react";
-import { MdLogout } from "react-icons/md";
-import { useRouter } from "next/navigation";
+import { Flex, Text, Button, Avatar } from '@chakra-ui/react';
+import { MdLogout } from 'react-icons/md';
+import { useRouter } from 'next/navigation';
 
 export const UserMenu = () => {
   const router = useRouter();
@@ -10,23 +10,17 @@ export const UserMenu = () => {
 
   // const { username } = user;
 
-  const username = "Martín Pérez";
+  const username = 'Martín Pérez';
 
   const handleSignOut = () => {
-    router.push("/iniciar");
+    localStorage.removeItem('access_token');
+    router.push('/iniciar-sesion');
   };
 
   return (
     <Flex flexDir="column" gap="1rem">
       <Flex alignItems="center" gap="0.75rem">
-        <Avatar
-          w="2rem"
-          h="2rem"
-          size="sm"
-          bg="black"
-          color="white"
-          name={username}
-        />
+        <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={username} />
         <Text fontWeight="bold">{username}</Text>
       </Flex>
       <Button
@@ -39,7 +33,7 @@ export const UserMenu = () => {
         px="0.75rem"
         onClick={handleSignOut}
         leftIcon={<MdLogout />}
-        _hover={{ color: "black", bg: "#e0dede" }}
+        _hover={{ color: 'black', bg: '#e0dede' }}
       >
         Cerrar sesión
       </Button>

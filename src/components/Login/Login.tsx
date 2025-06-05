@@ -1,19 +1,10 @@
 'use client';
 
 import { Formik, Field } from 'formik';
-import {
-  Box,
-  Container,
-  Button,
-  Text,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Input,
-  Progress,
-  Flex,
-} from '@chakra-ui/react';
-import { useState } from 'react';
+import { Box, Container, Button, Text, FormControl, FormLabel, Input, Progress, Flex } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { useLogin } from '@/hooks/login'; // Asegurate de que esté bien la ruta
+import { useRouter } from 'next/navigation';
 
 const _backgroundGradient = `linear(to-b, #f2f2f2 50%, transparent 50%)`;
 const _containerW = { sm: '25rem', base: '20rem' };
@@ -26,17 +17,31 @@ type LoginValues = {
 };
 
 export const Login = () => {
-  const [signInProps, setSignInProps] = useState<LoginValues>();
+  const router = useRouter();
+  const [loginProps, setLoginProps] = useState<LoginValues>();
+  const { data, error, isLoading } = useLogin(loginProps);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      router.push('/');
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      setSubmitError(error);
+    }
+  }, [error]);
 
   const initialValues: LoginValues = {
     username: '',
     password: '',
   };
 
-  const handleSubmit = async (values: LoginValues, { setSubmitting }: any) => {
-    setSignInProps(values);
-    await new Promise((res) => setTimeout(res, 1000)); // simulamos espera
-    setSubmitting(false);
+  const handleSubmit = async (values: LoginValues) => {
+    setSubmitError(null);
+    setLoginProps(values);
   };
 
   return (
@@ -46,8 +51,8 @@ export const Login = () => {
           Chriska S.R.L.
         </Text>
         <Box bg="white" boxShadow="lg" borderRadius="0.5rem" p="2rem">
-          <Formik initialValues={initialValues} onSubmit={handleSubmit} validateOnChange={true} validateOnBlur={false}>
-            {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
+          <Formik initialValues={initialValues} onSubmit={handleSubmit} validateOnChange validateOnBlur={false}>
+            {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
@@ -71,22 +76,30 @@ export const Login = () => {
                     validate={validateEmpty}
                   />
                 </FormControl>
+
                 {submitCount > 0 && Object.keys(errors).length > 0 && (
                   <Text color="red.500" fontSize="0.875rem" textAlign="left" pt="0.375rem">
                     Debe completar todos los campos
                   </Text>
                 )}
+
+                {submitError && (
+                  <Text color="red.500" fontSize="0.875rem" textAlign="left" mt="0.5rem">
+                    {submitError}
+                  </Text>
+                )}
+
                 <Box mt="1.5rem">
                   <Progress
-                    h={isSubmitting ? '4px' : '1px'}
+                    h={isLoading ? '4px' : '1px'}
                     mb="1.5rem"
                     size="xs"
-                    isIndeterminate={isSubmitting}
+                    isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
                   <Button
                     type="submit"
-                    isLoading={isSubmitting}
+                    isLoading={isLoading}
                     bg="#4C88D8"
                     color="white"
                     _hover={{ backgroundColor: '#376bb0' }}
