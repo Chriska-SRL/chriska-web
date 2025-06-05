@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -37,7 +36,7 @@ const estados = [
   { id: 'inactivo', label: 'Inactivo' },
 ];
 
-export const UserAdd = () => {
+export const RoleAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [formData, setFormData] = useState<any>();
@@ -45,7 +44,7 @@ export const UserAdd = () => {
   useEffect(() => {
     if (formData) {
       toast({
-        title: 'Usuario creado',
+        title: 'Rol creado',
         description: `${formData.name} ha sido creado correctamente.`,
         status: 'success',
         duration: 3000,
@@ -59,20 +58,20 @@ export const UserAdd = () => {
 
   const handleSubmit = (values: any, { resetForm }: { resetForm: () => void }) => {
     setFormData({ ...values, resetForm });
-    console.log('Usuario creado:', values);
+    console.log('Rol creado:', values);
   };
 
   return (
     <>
       <Button bg="#f2f2f2" _hover={{ bg: '#e0dede' }} leftIcon={<FaPlus />} onClick={onOpen}>
-        Crear usuario
+        Crear rol
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Crear usuario
+            Crear rol
           </ModalHeader>
           <Formik
             initialValues={{ username: '', name: '', role: '', estado: '' }}
@@ -84,20 +83,6 @@ export const UserAdd = () => {
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="1rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
-                      <FormLabel>Nombre de usuario</FormLabel>
-                      <Field
-                        as={Input}
-                        name="username"
-                        type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validateEmpty}
-                      />
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
                       <Field
@@ -113,11 +98,11 @@ export const UserAdd = () => {
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
-                      <FormLabel>Rol</FormLabel>
+                      <FormLabel>Permisos</FormLabel>
                       <Field
                         as={Select}
                         name="role"
-                        placeholder="Seleccionar rol"
+                        placeholder="Seleccionar permisos"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         fontSize="0.875rem"
@@ -127,26 +112,6 @@ export const UserAdd = () => {
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
                             {r.label}
-                          </option>
-                        ))}
-                      </Field>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
-                      <FormLabel>Estado</FormLabel>
-                      <Field
-                        as={Select}
-                        name="estado"
-                        placeholder="Seleccionar estado"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validateEmpty}
-                      >
-                        {estados.map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.label}
                           </option>
                         ))}
                       </Field>

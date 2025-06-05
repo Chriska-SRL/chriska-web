@@ -69,11 +69,9 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
     <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
           Editar usuario
         </ModalHeader>
-        <ModalCloseButton />
-
         <Formik
           initialValues={{
             username: user.username,
@@ -170,18 +168,24 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                 </VStack>
               </ModalBody>
 
-              <ModalFooter>
-                <Box w="100%">
-                  <Progress h={false ? '4px' : '1px'} size="xs" isIndeterminate={false} colorScheme="blue" mb="1rem" />
+              <ModalFooter pb="1.5rem">
+                <Box mt="0.5rem" w="100%">
+                  <Progress
+                    h={isSubmitting ? '4px' : '1px'}
+                    mb="1.5rem"
+                    size="xs"
+                    isIndeterminate={isSubmitting}
+                    colorScheme="blue"
+                  />
                   <Button
                     type="submit"
+                    isLoading={isSubmitting}
                     bg="#4C88D8"
                     color="white"
-                    w="100%"
-                    py="1.375rem"
-                    _hover={{ bg: '#376bb0' }}
+                    _hover={{ backgroundColor: '#376bb0' }}
+                    width="100%"
                     leftIcon={<FaCheck />}
-                    isLoading={isSubmitting}
+                    py="1.375rem"
                   >
                     Guardar cambios
                   </Button>
