@@ -47,13 +47,7 @@ export const UserList = () => {
 
   return (
     <>
-      <TableContainer
-        overflowY="scroll"
-        border="1px solid"
-        borderRadius="0.5rem"
-        borderColor="#f2f2f2"
-        h="100%"
-      >
+      <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
         <Table variant="simple">
           <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
             <Tr>
@@ -71,9 +65,9 @@ export const UserList = () => {
                 <Td textAlign="center">{user.id}</Td>
                 <Td textAlign="center">{user.username}</Td>
                 <Td textAlign="center">{user.name}</Td>
-                <Td textAlign="center">{user.role}</Td>
+                <Td textAlign="center">{user.role.name}</Td>
                 <Td textAlign="center">
-                  <Checkbox isDisabled isChecked={user.is_enabled} bg="#f2f2f2" />
+                  <Checkbox isDisabled defaultChecked={user.isEnabled} bg="#f2f2f2" />
                 </Td>
                 <Td textAlign="center">
                   <IconButton
