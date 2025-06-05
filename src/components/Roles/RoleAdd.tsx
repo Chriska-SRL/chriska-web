@@ -25,17 +25,6 @@ import { useState, useEffect } from 'react';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
-const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
-];
-
-const estados = [
-  { id: 'activo', label: 'Activo' },
-  { id: 'inactivo', label: 'Inactivo' },
-];
-
 export const RoleAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -73,12 +62,7 @@ export const RoleAdd = () => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear rol
           </ModalHeader>
-          <Formik
-            initialValues={{ username: '', name: '', role: '', estado: '' }}
-            onSubmit={handleSubmit}
-            validateOnChange={true}
-            validateOnBlur={false}
-          >
+          <Formik initialValues={{ name: '' }} onSubmit={handleSubmit} validateOnChange={true} validateOnBlur={false}>
             {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
@@ -95,26 +79,6 @@ export const RoleAdd = () => {
                         h="2.75rem"
                         validate={validateEmpty}
                       />
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
-                      <FormLabel>Permisos</FormLabel>
-                      <Field
-                        as={Select}
-                        name="role"
-                        placeholder="Seleccionar permisos"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validateEmpty}
-                      >
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.label}
-                          </option>
-                        ))}
-                      </Field>
                     </FormControl>
 
                     {submitCount > 0 && Object.keys(errors).length > 0 && (
