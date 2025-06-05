@@ -16,7 +16,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
 import { useGetUsers } from '@/hooks/requests/user';
@@ -26,16 +26,14 @@ export const UserList = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const modalDisclosure = useDisclosure();
 
-  // Estado para asegurar render en cliente (previene errores de hidratación)
-  const [isClient, setIsClient] = useState(false);
+  if (isLoading)
+    return (
+      <Box textAlign="center" py={4}>
+        <Spinner size="lg" />
+        <Text>Cargando usuarios...</Text>
+      </Box>
+    );
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) return null; // evita render SSR con datos dinámicos
-
-  if (isLoading) return <Spinner size="lg" label="Cargando usuarios..." />;
   if (error) return <Text color="red.500">Error: {error}</Text>;
 
   const handleEditClick = (user: User) => {
@@ -44,12 +42,18 @@ export const UserList = () => {
   };
 
   const handleSave = (updatedUser: User) => {
-    // Aquí podrías actualizar el usuario en backend y refrescar lista
+    // Aquí deberías actualizar el usuario en el backend y volver a obtener la lista
   };
 
   return (
     <>
-      <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
+      <TableContainer
+        overflowY="scroll"
+        border="1px solid"
+        borderRadius="0.5rem"
+        borderColor="#f2f2f2"
+        h="100%"
+      >
         <Table variant="simple">
           <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
             <Tr>
