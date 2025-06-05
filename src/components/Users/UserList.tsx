@@ -15,7 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
 
@@ -53,9 +53,36 @@ const roles = [
 ];
 
 export const UserList = () => {
-  const [users, setUsers] = useState<User[]>(dummyUsers);
+  //const [users, setUsers] = useState<User[]>(dummyUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const modalDisclosure = useDisclosure();
+
+   useEffect(() => {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    console.error('Token no encontrado en localStorage');
+    return;
+  }
+
+  fetch('http://192.168.0.197:5291/api/Users', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Error de autenticación');
+      return res.json();
+    })
+    .then(data => {
+      console.log('Usuarios cargados:', data);
+      setUsers(data);
+    })
+    .catch(err => console.error('Error al cargar usuarios:', err));
+}, []);
+
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -81,7 +108,7 @@ export const UserList = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {dummyUsers.map((user) => (
+           {users.map((user) => (  //{dummyUsers.map((user) => (
               <Tr key={user.id} h="3rem">
                 <Td textAlign="center">{user.id}</Td>
                 <Td textAlign="center">{user.username}</Td>
