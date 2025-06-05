@@ -12,12 +12,12 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
   useToast,
   VStack,
   Progress,
   Box,
   Text,
+  Textarea,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -62,7 +62,12 @@ export const RoleAdd = () => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear rol
           </ModalHeader>
-          <Formik initialValues={{ name: '' }} onSubmit={handleSubmit} validateOnChange={true} validateOnBlur={false}>
+          <Formik
+            initialValues={{ name: '', description: '' }}
+            onSubmit={handleSubmit}
+            validateOnChange={true}
+            validateOnBlur={false}
+          >
             {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
@@ -72,6 +77,20 @@ export const RoleAdd = () => {
                       <Field
                         as={Input}
                         name="name"
+                        type="text"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        fontSize="0.875rem"
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                      <FormLabel>Descripción</FormLabel>
+                      <Field
+                        as={Textarea}
+                        name="description"
                         type="text"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"

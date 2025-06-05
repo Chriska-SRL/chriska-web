@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { RoleEdit } from './RoleEdit';
+import { RoleDetail } from './RoleDetail';
 import { Role } from '@/entities/role';
 
 const dummyRoles: Role[] = [
@@ -46,16 +47,22 @@ const dummyRoles: Role[] = [
 export const RoleList = () => {
   const [roles, setRoles] = useState<Role[]>(dummyRoles);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const modalDisclosure = useDisclosure();
+  const editModalDisclosure = useDisclosure();
+  const detailModalDisclosure = useDisclosure();
 
   const handleEditClick = (role: Role) => {
     setSelectedRole(role);
-    modalDisclosure.onOpen();
+    editModalDisclosure.onOpen();
+  };
+
+  const handleDetailClick = (role: Role) => {
+    setSelectedRole(role);
+    detailModalDisclosure.onOpen();
   };
 
   const handleSave = (updatedRole: Role) => {
     setRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? { ...r, ...updatedRole } : r)));
-    modalDisclosure.onClose();
+    editModalDisclosure.onClose();
   };
 
   return (
@@ -64,13 +71,13 @@ export const RoleList = () => {
         <Table variant="simple">
           <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
             <Tr>
-              <Th textAlign="center" w="10rem">
+              <Th textAlign="center" w="6rem">
                 ID
               </Th>
               <Th textAlign="center" w="10rem">
                 Nombre
               </Th>
-              <Th textAlign="center" maxW="30rem">
+              <Th textAlign="center" maxW="20rem">
                 Descripción
               </Th>
               <Th w="4rem" px="0"></Th>
@@ -80,24 +87,23 @@ export const RoleList = () => {
           <Tbody>
             {roles.map((role) => (
               <Tr key={role.id} h="3rem">
-                <Td textAlign="center" w="10rem">
+                <Td textAlign="center" w="6rem">
                   {role.id}
                 </Td>
                 <Td textAlign="center" w="10rem">
                   {role.name}
                 </Td>
-                <Td textAlign="left" maxW="39rem">
+                <Td textAlign="left" maxW="20rem">
                   <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description} w="100%">
                     {role.description}
                   </Box>
                 </Td>
 
                 <Td textAlign="center" w="4rem" pl="2rem" pr="0.75rem">
-                  {' '}
                   <IconButton
                     aria-label="Ver detalle"
                     icon={<IoMdInformationCircleOutline />}
-                    onClick={() => handleEditClick(role)}
+                    onClick={() => handleDetailClick(role)}
                     variant="ghost"
                     size="lg"
                     _hover={{ bg: 'blackAlpha.100' }}
@@ -121,13 +127,13 @@ export const RoleList = () => {
       <Box mt="0.5rem">
         <Text fontSize="sm">Mostrando {roles.length} roles</Text>
       </Box>
-
       <RoleEdit
-        isOpen={modalDisclosure.isOpen}
-        onClose={modalDisclosure.onClose}
+        isOpen={editModalDisclosure.isOpen}
+        onClose={editModalDisclosure.onClose}
         role={selectedRole}
         onSave={handleSave}
       />
+      <RoleDetail isOpen={detailModalDisclosure.isOpen} onClose={detailModalDisclosure.onClose} role={selectedRole} />
     </>
   );
 };

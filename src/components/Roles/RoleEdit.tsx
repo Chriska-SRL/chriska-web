@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter,
   FormControl,
   FormLabel,
   Input,
@@ -24,6 +23,7 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Divider,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -62,10 +62,10 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+      <ModalContent maxH="90vh">
+        <ModalHeader textAlign="center" fontSize="2rem">
           Editar rol
         </ModalHeader>
         {role && (
@@ -77,106 +77,122 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
           >
             {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
-                  <VStack spacing="1rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                      <FormLabel>Nombre</FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validateEmpty}
-                      />
-                    </FormControl>
+                <ModalBody px="2rem" pb="2rem" pt="0">
+                  <Flex gap="2rem" align="start">
+                    {/* Columna izquierda: permisos scrolleables */}
+                    <Box flex="1">
+                      <FormControl>
+                        <FormLabel>Permisos</FormLabel>
+                        <Box maxH="52vh" overflowY="auto" pr="0.5rem">
+                          <Accordion allowMultiple>
+                            {Object.entries(groupedPermissions).map(([group, perms]) => (
+                              <AccordionItem key={group}>
+                                <h2>
+                                  <AccordionButton>
+                                    <Box flex="1" textAlign="left" fontWeight="semibold">
+                                      {group}
+                                    </Box>
+                                    <Text fontSize="sm" color="gray.600" mr="1rem">
+                                      {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
+                                      seleccionados
+                                    </Text>
+                                    <AccordionIcon />
+                                  </AccordionButton>
+                                </h2>
+                                <AccordionPanel pb={4}>
+                                  <Flex wrap="wrap" gap="0.75rem">
+                                    {perms.map((perm) => (
+                                      <Checkbox
+                                        key={perm.id}
+                                        isChecked={values.permissions.includes(perm.id)}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          const updated = checked
+                                            ? [...values.permissions, perm.id]
+                                            : values.permissions.filter((p) => p !== perm.id);
+                                          setFieldValue('permissions', updated);
+                                        }}
+                                      >
+                                        {perm.label}
+                                      </Checkbox>
+                                    ))}
+                                  </Flex>
+                                </AccordionPanel>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                        </Box>
+                      </FormControl>
+                    </Box>
+                    <Divider orientation="vertical" h="27rem" />
+                    {/* Columna derecha: datos y botón */}
+                    <Flex flex="1" flexDir="column" justifyContent="space-between" h="27rem">
+                      <Box>
+                        <VStack spacing="1rem" align="stretch" height="100%">
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                            <FormLabel>Nombre</FormLabel>
+                            <Field
+                              as={Input}
+                              name="name"
+                              type="text"
+                              bg="#f5f5f7"
+                              borderColor="#f5f5f7"
+                              fontSize="0.875rem"
+                              h="2.75rem"
+                              validate={validateEmpty}
+                            />
+                          </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                      <FormLabel>Descripción</FormLabel>
-                      <Field
-                        as={Textarea}
-                        name="description"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        fontSize="0.875rem"
-                        resize="vertical"
-                        minH="6rem"
-                        validate={validateEmpty}
-                      />
-                    </FormControl>
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                            <FormLabel>Descripción</FormLabel>
+                            <Field
+                              as={Textarea}
+                              name="description"
+                              bg="#f5f5f7"
+                              borderColor="#f5f5f7"
+                              fontSize="0.875rem"
+                              resize="vertical"
+                              minH="8rem"
+                              validate={validateEmpty}
+                            />
+                          </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Permisos</FormLabel>
-                      <Accordion allowMultiple defaultIndex={[0]}>
-                        {Object.entries(groupedPermissions).map(([group, perms]) => (
-                          <AccordionItem key={group}>
-                            <h2>
-                              <AccordionButton>
-                                <Box flex="1" textAlign="left" fontWeight="semibold">
-                                  {group}
-                                </Box>
-                                <AccordionIcon />
-                              </AccordionButton>
-                            </h2>
-                            <AccordionPanel pb={4}>
-                              <Flex wrap="wrap" gap="0.75rem">
-                                {perms.map((perm) => (
-                                  <Checkbox
-                                    key={perm.id}
-                                    isChecked={values.permissions.includes(perm.id)}
-                                    onChange={(e) => {
-                                      const checked = e.target.checked;
-                                      const updated = checked
-                                        ? [...values.permissions, perm.id]
-                                        : values.permissions.filter((p) => p !== perm.id);
-                                      setFieldValue('permissions', updated);
-                                    }}
-                                  >
-                                    {perm.label}
-                                  </Checkbox>
-                                ))}
-                              </Flex>
-                            </AccordionPanel>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    </FormControl>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
+                          {submitCount > 0 && Object.keys(errors).length > 0 && (
+                            <Box>
+                              <Text color="red.500" fontSize="0.875rem">
+                                Debe completar todos los campos
+                              </Text>
+                            </Box>
+                          )}
+                        </VStack>
                       </Box>
-                    )}
-                  </VStack>
-                </ModalBody>
 
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
-                    <Progress
-                      h={isSubmitting ? '4px' : '1px'}
-                      mb="1.5rem"
-                      size="xs"
-                      isIndeterminate={isSubmitting}
-                      colorScheme="blue"
-                    />
-                    <Button
-                      type="submit"
-                      isLoading={isSubmitting}
-                      bg="#4C88D8"
-                      color="white"
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      py="1.375rem"
-                    >
-                      Confirmar
-                    </Button>
-                  </Box>
-                </ModalFooter>
+                      <Box>
+                        <Box>
+                          <Progress
+                            h={isSubmitting ? '4px' : '1px'}
+                            mb="1.5rem"
+                            size="xs"
+                            isIndeterminate={isSubmitting}
+                            colorScheme="blue"
+                          />
+                          <Button
+                            type="submit"
+                            isLoading={isSubmitting}
+                            bg="#4C88D8"
+                            color="white"
+                            _hover={{ backgroundColor: '#376bb0' }}
+                            width="100%"
+                            leftIcon={<FaCheck />}
+                            py="1.375rem"
+                          >
+                            Confirmar
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Flex>
+                  </Flex>
+                </ModalBody>
               </form>
             )}
           </Formik>
