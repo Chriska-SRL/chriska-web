@@ -9,33 +9,25 @@ import {
   Tbody,
   Td,
   IconButton,
-  Checkbox,
-  useDisclosure,
   Box,
   Text,
   Spinner,
   Flex,
+  useDisclosure,
+  useBreakpointValue,
+  VStack,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UserEdit } from './UserEdit';
-import { User } from '@/entities/user';
+import { User } from '@/entities/user/user';
 import { useGetUsers } from '@/hooks/user';
-
-const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
-];
 
 export const UserList = () => {
   const { data: users, isLoading, error } = useGetUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const modalDisclosure = useDisclosure();
-
-  useEffect(() => {
-    console.log('Usuarios desde hook:', users);
-  }, [users]);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -43,9 +35,7 @@ export const UserList = () => {
   };
 
   const handleSave = (updatedUser: User) => {
-    // Esta parte es opcional. Si querés mantener los datos frescos desde el backend,
-    // podrías refetchear en lugar de actualizar el estado local.
-    // En este ejemplo, asumimos que vas a mutar localmente por ahora.
+    // lógica de guardado
   };
 
   if (error) {
@@ -56,15 +46,70 @@ export const UserList = () => {
     );
   }
 
+  if (isLoading) {
+    return (
+      <Flex justifyContent="center" alignItems="center" h="100%">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
   return (
     <>
-      {isLoading ? (
-        <Flex justifyContent="center" alignItems="center" h="100%">
-          <Spinner size="xl" />
-        </Flex>
+      {isMobile ? (
+        <VStack spacing="1rem" align="stretch">
+          {users?.map((user) => (
+            <Box
+              key={user.id}
+              px="1rem"
+              py="0.5rem"
+              border="1px solid #f2f2f2"
+              borderRadius="0.5rem"
+              bg="white"
+              boxShadow="sm"
+              position="relative"
+            >
+              <Box
+                position="absolute"
+                top="0.75rem"
+                right="0.75rem"
+                bg={user.isEnabled ? 'green.100' : 'red.100'}
+                color={user.isEnabled ? 'green.800' : 'red.800'}
+                px="0.75rem"
+                py="0.25rem"
+                borderRadius="full"
+                fontSize="0.75rem"
+              >
+                {user.isEnabled ? 'Activo' : 'Inactivo'}
+              </Box>
+
+              <Text fontWeight="bold">{user.name}</Text>
+              <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                Usuario: {user.username}
+              </Text>
+              <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                Rol: {user.role.name}
+              </Text>
+              <IconButton
+                aria-label="Editar usuario"
+                icon={<FiEdit />}
+                onClick={() => handleEditClick(user)}
+                size="md"
+                position="absolute"
+                bottom="0.25rem"
+                right="0.25rem"
+                bg="transparent"
+                _hover={{ bg: 'gray.200' }}
+              />
+            </Box>
+          ))}
+          <Text fontSize="sm" textAlign="center" mt="1rem">
+            Mostrando {users?.length} usuarios
+          </Text>
+        </VStack>
       ) : (
         <>
-          <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
+          <TableContainer overflowY="auto" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
             <Table variant="simple">
               <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
                 <Tr>
@@ -72,48 +117,50 @@ export const UserList = () => {
                   <Th textAlign="center">Usuario</Th>
                   <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Rol</Th>
-                  <Th textAlign="center">Habilitado</Th>
+                  <Th textAlign="center">Estado</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {isLoading ? (
-                  <></>
-                ) : (
-                  <>
-                    {users?.map((user) => (
-                      <Tr key={user.id} h="3rem">
-                        <Td textAlign="center">{user.id}</Td>
-                        <Td textAlign="center">{user.username}</Td>
-                        <Td textAlign="center">{user.name}</Td>
-                        <Td textAlign="center">{roles.find((role) => role.id === user.role)?.label}</Td>
-                        <Td textAlign="center">
-                          <Checkbox isDisabled defaultChecked={user.is_enabled} bg="#f2f2f2" />
-                        </Td>
-                        <Td textAlign="center">
-                          <IconButton
-                            aria-label="Editar usuario"
-                            icon={<FiEdit />}
-                            onClick={() => handleEditClick(user)}
-                            variant="ghost"
-                            size="lg"
-                            _hover={{ bg: 'blackAlpha.100' }}
-                          />
-                        </Td>
-                      </Tr>
-                    ))}
-                  </>
-                )}
+                {users?.map((user) => (
+                  <Tr key={user.id} h="3rem">
+                    <Td textAlign="center">{user.id}</Td>
+                    <Td textAlign="center">{user.username}</Td>
+                    <Td textAlign="center">{user.name}</Td>
+                    <Td textAlign="center">{user.role.name}</Td>
+                    <Td textAlign="center">
+                      <Box
+                        bg={user.isEnabled ? 'green.100' : 'red.100'}
+                        color={user.isEnabled ? 'green.800' : 'red.800'}
+                        px="0.75rem"
+                        py="0.25rem"
+                        borderRadius="full"
+                        fontSize="0.75rem"
+                        display="inline-block"
+                      >
+                        {user.isEnabled ? 'Activo' : 'Inactivo'}
+                      </Box>
+                    </Td>
+                    <Td textAlign="center">
+                      <IconButton
+                        aria-label="Editar usuario"
+                        icon={<FiEdit />}
+                        onClick={() => handleEditClick(user)}
+                        variant="ghost"
+                        size="md"
+                        _hover={{ bg: 'blackAlpha.100' }}
+                      />
+                    </Td>
+                  </Tr>
+                ))}
               </Tbody>
             </Table>
           </TableContainer>
-
           <Box mt="0.5rem">
             <Text fontSize="sm">Mostrando {users?.length} usuarios</Text>
           </Box>
         </>
       )}
-
       <UserEdit
         isOpen={modalDisclosure.isOpen}
         onClose={modalDisclosure.onClose}

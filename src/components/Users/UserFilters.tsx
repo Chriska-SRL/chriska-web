@@ -1,9 +1,7 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
-import { Flex, Select, Input, InputGroup, InputRightElement, IconButton, Icon } from '@chakra-ui/react';
-import { useState } from 'react';
+import { Flex, Select, Input, InputGroup, InputRightElement, Icon, useBreakpointValue } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const mockRoles = [
   { id: 'admin', name: 'Administrador', href: '/usuarios?rol=admin' },
@@ -29,6 +27,7 @@ function getUsersUrl() {
 
 export const UserFilters = () => {
   const router = useRouter();
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const [selectedStateId, setSelectedStateId] = useState<string | undefined>(undefined);
@@ -85,13 +84,13 @@ export const UserFilters = () => {
   };
 
   return (
-    <Flex gap="1.5rem">
+    <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} w="100%" alignItems={{ base: 'stretch', md: 'center' }}>
       <Select
         value={selectedRoleId || '-1'}
         onChange={handleRoleChange}
         bg="#f2f2f2"
         borderColor="#f2f2f2"
-        minW="12rem"
+        w={{ base: '100%', md: '12rem' }}
       >
         <option value="-1">Filtrar por rol</option>
         {mockRoles.map((r) => (
@@ -106,7 +105,7 @@ export const UserFilters = () => {
         onChange={handleStateChange}
         bg="#f2f2f2"
         borderColor="#f2f2f2"
-        minW="12rem"
+        w={{ base: '100%', md: '12rem' }}
       >
         <option value="-1">Filtrar por estado</option>
         {mockStates.map((s) => (
@@ -116,7 +115,7 @@ export const UserFilters = () => {
         ))}
       </Select>
 
-      <InputGroup minW="15rem">
+      <InputGroup w={{ base: '100%', md: '15rem' }}>
         <Input
           placeholder="Buscar por nombre..."
           value={searchName}
@@ -126,7 +125,7 @@ export const UserFilters = () => {
           borderColor="#f2f2f2"
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={'grey'} onClick={handleNameSubmit} cursor="pointer" />
+          <Icon boxSize="5" as={AiOutlineSearch} color="grey" onClick={handleNameSubmit} cursor="pointer" />
         </InputRightElement>
       </InputGroup>
     </Flex>

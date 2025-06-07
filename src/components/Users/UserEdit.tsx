@@ -1,6 +1,5 @@
 'use client';
 
-import { User } from '@/entities/user';
 import {
   Modal,
   ModalOverlay,
@@ -8,7 +7,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   FormControl,
   FormLabel,
   Input,
@@ -20,6 +18,7 @@ import {
   Box,
   Text,
 } from '@chakra-ui/react';
+import { User } from '@/entities/user/user';
 import { Formik, Field } from 'formik';
 import { useEffect, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
@@ -27,15 +26,12 @@ import { FaCheck } from 'react-icons/fa';
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
 const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
+  { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
+  { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
+  { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
 ];
 
-const estados = [
-  { id: 'activo', label: 'Activo' },
-  { id: 'inactivo', label: 'Inactivo' },
-];
+const estados = ['Activo', 'Inactivo'];
 
 type Props = {
   isOpen: boolean;
@@ -66,22 +62,42 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
   if (!user) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+      <ModalContent mx="auto" borderRadius="lg">
+        <ModalHeader textAlign="center" fontSize="1.75rem" pb="0.5rem">
           Editar usuario
         </ModalHeader>
         <Formik
           initialValues={{
             username: user.username,
             name: user.name,
-            role: user.role,
-            is_enabled: user.is_enabled,
+            role: user.role.name,
+            isEnabled: user.isEnabled ? 'Activo' : 'Inactivo',
           }}
           onSubmit={(values, { resetForm }) => {
+            const selectedRole = roles.find((r) => r.name === values.role);
+            if (!selectedRole) {
+              toast({
+                title: 'Error',
+                description: 'Rol seleccionado no válido.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+              });
+              return;
+            }
+
+            const updatedUser: User = {
+              ...user,
+              username: values.username,
+              name: values.name,
+              role: selectedRole,
+              isEnabled: values.isEnabled === 'Activo',
+            };
+
             setFormData({ ...values, resetForm });
-            onSave({ ...user, ...values });
+            onSave(updatedUser);
           }}
           validateOnChange={true}
           validateOnBlur={false}
@@ -91,68 +107,68 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
               <ModalBody pb="0">
                 <VStack spacing="1rem">
                   <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
-                    <FormLabel>Nombre de usuario</FormLabel>
+                    <FormLabel fontSize="0.9rem">Nombre de usuario</FormLabel>
                     <Field
                       as={Input}
                       name="username"
                       type="text"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.875rem"
+                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
                     />
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel fontSize="0.9rem">Nombre</FormLabel>
                     <Field
                       as={Input}
                       name="name"
                       type="text"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.875rem"
+                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
                     />
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
-                    <FormLabel>Rol</FormLabel>
+                    <FormLabel fontSize="0.9rem">Rol</FormLabel>
                     <Field
                       as={Select}
                       name="role"
                       placeholder="Seleccionar rol"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.875rem"
+                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
                     >
                       {roles.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.label}
+                        <option key={r.id} value={r.name}>
+                          {r.name}
                         </option>
                       ))}
                     </Field>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.is_enabled && !!errors.is_enabled}>
-                    <FormLabel>Estado</FormLabel>
+                  <FormControl isInvalid={submitCount > 0 && touched.isEnabled && !!errors.isEnabled}>
+                    <FormLabel fontSize="0.9rem">Estado</FormLabel>
                     <Field
                       as={Select}
-                      name="is_enabled"
+                      name="isEnabled"
                       placeholder="Seleccionar estado"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.875rem"
+                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
                     >
                       {estados.map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.label}
+                        <option key={e} value={e}>
+                          {e}
                         </option>
                       ))}
                     </Field>
@@ -160,8 +176,8 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
 
                   {submitCount > 0 && Object.keys(errors).length > 0 && (
                     <Box w="100%">
-                      <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                        Debe completar todos los campos
+                      <Text color="red.500" fontSize="0.85rem" textAlign="left">
+                        Debe completar todos los campos.
                       </Text>
                     </Box>
                   )}
@@ -172,7 +188,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                 <Box mt="0.5rem" w="100%">
                   <Progress
                     h={isSubmitting ? '4px' : '1px'}
-                    mb="1.5rem"
+                    mb="1.25rem"
                     size="xs"
                     isIndeterminate={isSubmitting}
                     colorScheme="blue"
@@ -186,6 +202,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                     width="100%"
                     leftIcon={<FaCheck />}
                     py="1.375rem"
+                    fontSize="0.95rem"
                   >
                     Guardar cambios
                   </Button>
