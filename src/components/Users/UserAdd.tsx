@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -22,53 +21,79 @@ import {
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useAddUser } from '@/hooks/user'; // Asegurate de que esté bien la ruta
+import { AddUser } from '@/entities/user/add-user';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
 const roles = [
-  { id: 'admin', label: 'Administrador' },
-  { id: 'editor', label: 'Editor' },
-  { id: 'viewer', label: 'Lector' },
+  { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
+  { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
+  { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
 ];
 
-const estados = [
-  { id: 'activo', label: 'Activo' },
-  { id: 'inactivo', label: 'Inactivo' },
-];
+const estados = ['Activo', 'Inactivo'];
 
 export const UserAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const [formData, setFormData] = useState<any>();
+  const [userProps, setUserProps] = useState<AddUser>();
+  const { data, error, isLoading } = useAddUser(userProps);
 
   useEffect(() => {
-    if (formData) {
+    if (data) {
+      console.log(data);
       toast({
         title: 'Usuario creado',
-        description: `${formData.name} ha sido creado correctamente.`,
+        description: `El usuario ha sido creado correctamente.`,
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      formData?.resetForm?.();
-      setFormData(undefined);
+      setUserProps(undefined);
       onClose();
     }
-  }, [formData, toast, onClose]);
+  }, [data]);
 
-  const handleSubmit = (values: any, { resetForm }: { resetForm: () => void }) => {
-    setFormData({ ...values, resetForm });
-    console.log('Usuario creado:', values);
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [error]);
+
+  const handleSubmit = (values: { username: string; name: string; role: string; estado: string }) => {
+    const role = roles.find((r) => r.name === values.role);
+    const user = {
+      userName: values.username,
+      name: values.name,
+      password: crypto.randomUUID(),
+      isEnabled: values.estado === 'Activo',
+      roleId: role?.id ?? 0,
+    };
+    setUserProps(user);
   };
 
   return (
     <>
-      <Button bg="#f2f2f2" _hover={{ bg: '#e0dede' }} leftIcon={<FaPlus />} onClick={onOpen}>
+      <Button
+        bg="#f2f2f2"
+        _hover={{ bg: '#e0dede' }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        w={{ base: '100%', md: 'auto' }}
+        px="1.5rem"
+      >
         Crear usuario
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -77,10 +102,10 @@ export const UserAdd = () => {
           <Formik
             initialValues={{ username: '', name: '', role: '', estado: '' }}
             onSubmit={handleSubmit}
-            validateOnChange={true}
+            validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
+            {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="1rem">
@@ -95,6 +120,7 @@ export const UserAdd = () => {
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
+                        disabled={isLoading}
                       />
                     </FormControl>
 
@@ -109,6 +135,7 @@ export const UserAdd = () => {
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
+                        disabled={isLoading}
                       />
                     </FormControl>
 
@@ -123,10 +150,11 @@ export const UserAdd = () => {
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
+                        disabled={isLoading}
                       >
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.label}
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.name}>
+                            {role.name}
                           </option>
                         ))}
                       </Field>
@@ -143,10 +171,11 @@ export const UserAdd = () => {
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
+                        disabled={isLoading}
                       >
-                        {estados.map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.label}
+                        {estados.map((estado) => (
+                          <option key={estado} value={estado}>
+                            {estado}
                           </option>
                         ))}
                       </Field>
@@ -165,15 +194,15 @@ export const UserAdd = () => {
                 <ModalFooter pb="1.5rem">
                   <Box mt="0.5rem" w="100%">
                     <Progress
-                      h={isSubmitting ? '4px' : '1px'}
+                      h={isLoading ? '4px' : '1px'}
                       mb="1.5rem"
                       size="xs"
-                      isIndeterminate={isSubmitting}
+                      isIndeterminate={isLoading}
                       colorScheme="blue"
                     />
                     <Button
                       type="submit"
-                      isLoading={isSubmitting}
+                      isLoading={isLoading}
                       bg="#4C88D8"
                       color="white"
                       _hover={{ backgroundColor: '#376bb0' }}

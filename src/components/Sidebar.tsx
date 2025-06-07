@@ -1,12 +1,24 @@
 'use client';
 
-import { Flex, Text, Icon, Link } from '@chakra-ui/react';
+import {
+  Flex,
+  Text,
+  Icon,
+  Link,
+  Drawer,
+  DrawerBody,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
+  IconButton,
+  useBreakpointValue,
+  Box,
+} from '@chakra-ui/react';
 import { UserMenu } from './UserMenu';
 import { ElementType } from 'react';
-import { FaUserShield } from 'react-icons/fa6';
+import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
-// import { FiBox } from "react-icons/fi";
-// import { HiOutlineShoppingCart } from "react-icons/hi2";
 
 type SidebarButtonProps = {
   path: string;
@@ -28,7 +40,7 @@ const SidebarButton = ({ path, text, icon, currentPage }: SidebarButtonProps) =>
     w="100%"
     justifyContent="start"
     gap="0.75rem"
-    _hover={currentPage == path ? { color: 'black', bg: '#e0dede' } : { color: 'black', bg: '#e0dede' }}
+    _hover={{ color: 'black', bg: '#e0dede' }}
     py="0.375rem"
     px="0.75rem"
   >
@@ -42,7 +54,10 @@ type SiderBarProps = {
 };
 
 export const SideBar = ({ currentPage }: SiderBarProps) => {
-  return (
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  const SidebarContent = (
     <Flex
       bg="white"
       flexDir="column"
@@ -60,21 +75,52 @@ export const SideBar = ({ currentPage }: SiderBarProps) => {
         <Flex flexDir="column" gap="0.625rem" alignItems="start">
           <SidebarButton path="roles" text="Roles" icon={FaUserShield} currentPage={currentPage} />
           <SidebarButton path="usuarios" text="Usuarios" icon={BsPeopleFill} currentPage={currentPage} />
-          {/* <SidebarButton
-            path="ordenes"
-            text="Ordenes"
-            icon={HiOutlineShoppingCart}
-            currentPage={currentPage}
-          />
-          <SidebarButton
-            path="productos"
-            text="Productos"
-            icon={FiBox}
-            currentPage={currentPage}
-          /> */}
         </Flex>
       </Flex>
       <UserMenu />
     </Flex>
+  );
+
+  return (
+    <>
+      {/* Mobile navbar */}
+      {isMobile && (
+        <Flex
+          as="nav"
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          height="4rem"
+          bg="white"
+          borderBottom="1px solid #e2e8f0"
+          alignItems="center"
+          justifyContent="space-between"
+          px="1rem"
+          zIndex="1000"
+          boxShadow="sm"
+        >
+          <IconButton aria-label="Abrir menú" icon={<FaBars />} onClick={onOpen} variant="ghost" size="lg" />
+          <Text fontWeight="bold" fontSize="1.25rem">
+            Chriska S.R.L.
+          </Text>
+        </Flex>
+      )}
+
+      {/* Espacio compensatorio para contenido en mobile */}
+      {isMobile && <Box height="4rem" />}
+
+      {/* Sidebar en desktop */}
+      {!isMobile && SidebarContent}
+
+      {/* Drawer en mobile */}
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+        <DrawerOverlay />
+        <DrawerContent maxW="15rem">
+          <DrawerCloseButton />
+          <DrawerBody p={0}>{SidebarContent}</DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 };

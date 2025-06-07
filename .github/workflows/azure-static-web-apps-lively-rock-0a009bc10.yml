@@ -38,9 +38,9 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_ROCK_0A009BC10 }}
           action: 'upload'
-          app_location: '/' # App source code path
-          api_location: '' # Api source code path - optional
-          output_location: '' # Built app content directory - optional
+          app_location: '/'
+          api_location: ''
+          output_location: ''
           github_id_token: ${{ steps.idtoken.outputs.result }}
-        env: # 👈 agregado para el frontend
+        env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
