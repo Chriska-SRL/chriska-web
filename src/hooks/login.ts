@@ -34,6 +34,7 @@ export const useLogin = (props?: LoginProps): Result<boolean> => {
   const [data, setData] = useState<boolean>();
 
   useEffect(() => {
+    console.log('API_URL:', API_URL); // <-- Esto imprimirá el valor
     if (props) {
       const fetchData = async () => {
         setIsLoading(true);
