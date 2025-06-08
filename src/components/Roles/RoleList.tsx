@@ -12,6 +12,8 @@ import {
   useDisclosure,
   Box,
   Text,
+  Flex,
+  Spinner,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
@@ -19,33 +21,10 @@ import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { RoleEdit } from './RoleEdit';
 import { RoleDetail } from './RoleDetail';
 import { Role } from '@/entities/role';
-
-const dummyRoles: Role[] = [
-  {
-    id: 1,
-    name: 'Administrador',
-    description:
-      'Tiene acceso total a todas las funcionalidades del sistema, incluyendo la gestión de usuarios, asignación de permisos, configuración de la plataforma, y control completo sobre el contenido y los datos. Puede ver, crear, editar y eliminar cualquier recurso disponible.',
-    permissions: [1, 2, 3, 4],
-  },
-  {
-    id: 2,
-    name: 'Editor',
-    description:
-      'Puede crear, modificar y actualizar contenidos dentro de su área asignada. Tiene acceso limitado a funciones administrativas, pero no puede gestionar usuarios ni cambiar configuraciones generales del sistema.',
-    permissions: [3],
-  },
-  {
-    id: 3,
-    name: 'Lector',
-    description:
-      'Cuenta únicamente con permisos de visualización. Puede acceder al contenido disponible públicamente o asignado a su rol, pero no puede realizar modificaciones ni acceder a funciones administrativas.',
-    permissions: [4],
-  },
-];
+import { useGetRoles } from '@/hooks/roles';
 
 export const RoleList = () => {
-  const [roles, setRoles] = useState<Role[]>(dummyRoles);
+  const { data: roles, isLoading, error } = useGetRoles();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
   const detailModalDisclosure = useDisclosure();
@@ -60,10 +39,23 @@ export const RoleList = () => {
     detailModalDisclosure.onOpen();
   };
 
-  const handleSave = (updatedRole: Role) => {
-    setRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? { ...r, ...updatedRole } : r)));
-    editModalDisclosure.onClose();
-  };
+  const handleSave = (updatedRole: Role) => {};
+
+  if (error) {
+    return (
+      <Box p="2rem" textAlign="center">
+        <Text color="red.500">Error al cargar los usuarios: {error}</Text>
+      </Box>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Flex justifyContent="center" alignItems="center" h="100%">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
 
   return (
     <>
@@ -85,7 +77,7 @@ export const RoleList = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {roles.map((role) => (
+            {roles?.map((role) => (
               <Tr key={role.id} h="3rem">
                 <Td textAlign="center" w="6rem">
                   {role.id}
@@ -125,7 +117,7 @@ export const RoleList = () => {
         </Table>
       </TableContainer>
       <Box mt="0.5rem">
-        <Text fontSize="sm">Mostrando {roles.length} roles</Text>
+        <Text fontSize="sm">Mostrando {roles?.length} roles</Text>
       </Box>
       <RoleEdit
         isOpen={editModalDisclosure.isOpen}

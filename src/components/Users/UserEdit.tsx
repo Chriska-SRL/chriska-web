@@ -17,11 +17,13 @@ import {
   Progress,
   Box,
   Text,
+  IconButton,
 } from '@chakra-ui/react';
-import { User } from '@/entities/user/user';
+import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
 import { useEffect, useState } from 'react';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTrash } from 'react-icons/fa';
+import { useDeleteUser } from '@/hooks/user';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
@@ -43,23 +45,38 @@ type Props = {
 export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
   const toast = useToast();
   const [formData, setFormData] = useState<any>();
+  const [deleteUserProps, setDeleteUserProps] = useState<number>();
+  const { data: userDeleted, error, isLoading: isDeleting } = useDeleteUser(deleteUserProps!!);
 
   useEffect(() => {
-    if (formData) {
+    if (userDeleted) {
       toast({
-        title: 'Usuario actualizado',
-        description: `${formData.name} ha sido modificado correctamente.`,
+        title: 'Usuario eliminado',
+        description: `El usuario ha sido eliminado correctamente.`,
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      formData?.resetForm?.();
-      setFormData(undefined);
+      setDeleteUserProps(undefined);
       onClose();
     }
-  }, [formData, toast, onClose]);
+  }, [userDeleted]);
 
-  if (!user) return null;
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [error]);
+
+  const handleDelete = () => {
+    setDeleteUserProps(user?.id);
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
@@ -70,35 +87,12 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
         </ModalHeader>
         <Formik
           initialValues={{
-            username: user.username,
-            name: user.name,
-            role: user.role.name,
-            isEnabled: user.isEnabled ? 'Activo' : 'Inactivo',
+            username: user?.username,
+            name: user?.name,
+            role: user?.role.name,
+            isEnabled: user?.isEnabled ? 'Activo' : 'Inactivo',
           }}
-          onSubmit={(values, { resetForm }) => {
-            const selectedRole = roles.find((r) => r.name === values.role);
-            if (!selectedRole) {
-              toast({
-                title: 'Error',
-                description: 'Rol seleccionado no válido.',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-              });
-              return;
-            }
-
-            const updatedUser: User = {
-              ...user,
-              username: values.username,
-              name: values.name,
-              role: selectedRole,
-              isEnabled: values.isEnabled === 'Activo',
-            };
-
-            setFormData({ ...values, resetForm });
-            onSave(updatedUser);
-          }}
+          onSubmit={(values, { resetForm }) => {}}
           validateOnChange={true}
           validateOnBlur={false}
         >
@@ -117,6 +111,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
+                      disabled={isSubmitting || isDeleting}
                     />
                   </FormControl>
 
@@ -131,6 +126,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
+                      disabled={isSubmitting || isDeleting}
                     />
                   </FormControl>
 
@@ -145,6 +141,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
+                      disabled={isSubmitting || isDeleting}
                     >
                       {roles.map((r) => (
                         <option key={r.id} value={r.name}>
@@ -165,6 +162,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
+                      disabled={isSubmitting || isDeleting}
                     >
                       {estados.map((e) => (
                         <option key={e} value={e}>
@@ -187,25 +185,37 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
               <ModalFooter pb="1.5rem">
                 <Box mt="0.5rem" w="100%">
                   <Progress
-                    h={isSubmitting ? '4px' : '1px'}
+                    h={isSubmitting || isDeleting ? '4px' : '1px'}
                     mb="1.25rem"
                     size="xs"
-                    isIndeterminate={isSubmitting}
+                    isIndeterminate={isSubmitting || isDeleting}
                     colorScheme="blue"
                   />
-                  <Button
-                    type="submit"
-                    isLoading={isSubmitting}
-                    bg="#4C88D8"
-                    color="white"
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
-                    leftIcon={<FaCheck />}
-                    py="1.375rem"
-                    fontSize="0.95rem"
-                  >
-                    Guardar cambios
-                  </Button>
+                  <Box display="flex" gap="0.75rem">
+                    <IconButton
+                      aria-label="Eliminar usuario"
+                      onClick={handleDelete}
+                      isLoading={isDeleting}
+                      disabled={isSubmitting || isDeleting}
+                      colorScheme="red"
+                      icon={<FaTrash />}
+                      width="15%"
+                    />
+
+                    <Button
+                      type="submit"
+                      isLoading={isSubmitting}
+                      bg="#4C88D8"
+                      color="white"
+                      disabled={isSubmitting || isDeleting}
+                      _hover={{ backgroundColor: '#376bb0' }}
+                      width="85%"
+                      leftIcon={<FaCheck />}
+                      fontSize="0.95rem"
+                    >
+                      Guardar cambios
+                    </Button>
+                  </Box>
                 </Box>
               </ModalFooter>
             </form>
