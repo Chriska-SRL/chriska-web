@@ -22,8 +22,8 @@ import {
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useAddUser } from '@/hooks/user'; // Asegurate de que esté bien la ruta
-import { AddUser } from '@/entities/user/add-user';
+import { useAddUser } from '@/hooks/user';
+import { User } from '@/entities/user';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
@@ -38,7 +38,7 @@ const estados = ['Activo', 'Inactivo'];
 export const UserAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const [userProps, setUserProps] = useState<AddUser>();
+  const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, error, isLoading } = useAddUser(userProps);
 
   useEffect(() => {

@@ -14,24 +14,24 @@ import {
   Spinner,
   Flex,
   useDisclosure,
-  useBreakpointValue,
   VStack,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { UserEdit } from './UserEdit';
-import { User } from '@/entities/user/user';
+import { User } from '@/entities/user';
 import { useGetUsers } from '@/hooks/user';
 
 export const UserList = () => {
   const { data: users, isLoading, error } = useGetUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const modalDisclosure = useDisclosure();
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const { onOpen, isOpen, onClose } = useDisclosure();
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
-    modalDisclosure.onOpen();
+    onOpen();
   };
 
   const handleSave = (updatedUser: User) => {
@@ -113,8 +113,7 @@ export const UserList = () => {
             <Table variant="simple">
               <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
                 <Tr>
-                  <Th textAlign="center">ID</Th>
-                  <Th textAlign="center">Usuario</Th>
+                  <Th textAlign="center">Nombre de usuario</Th>
                   <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Rol</Th>
                   <Th textAlign="center">Estado</Th>
@@ -124,7 +123,6 @@ export const UserList = () => {
               <Tbody>
                 {users?.map((user) => (
                   <Tr key={user.id} h="3rem">
-                    <Td textAlign="center">{user.id}</Td>
                     <Td textAlign="center">{user.username}</Td>
                     <Td textAlign="center">{user.name}</Td>
                     <Td textAlign="center">{user.role.name}</Td>
@@ -161,12 +159,7 @@ export const UserList = () => {
           </Box>
         </>
       )}
-      <UserEdit
-        isOpen={modalDisclosure.isOpen}
-        onClose={modalDisclosure.onClose}
-        user={selectedUser}
-        onSave={handleSave}
-      />
+      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} onSave={handleSave} />
     </>
   );
 };

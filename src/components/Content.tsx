@@ -1,10 +1,10 @@
 'use client';
 
-import { Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Flex, useMediaQuery } from '@chakra-ui/react';
 import { ReactNode } from 'react';
 
 export const Content = ({ children }: { children: ReactNode }) => {
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   return (
     <Flex

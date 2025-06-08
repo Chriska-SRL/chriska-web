@@ -1,4 +1,4 @@
-import { Flex, Select, Input, InputGroup, InputRightElement, Icon, useBreakpointValue } from '@chakra-ui/react';
+import { Flex, Select, Input, InputGroup, InputRightElement, Icon, useMediaQuery } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -27,7 +27,7 @@ function getUsersUrl() {
 
 export const UserFilters = () => {
   const router = useRouter();
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const [selectedStateId, setSelectedStateId] = useState<string | undefined>(undefined);

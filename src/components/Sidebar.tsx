@@ -12,13 +12,14 @@ import {
   DrawerCloseButton,
   useDisclosure,
   IconButton,
-  useBreakpointValue,
   Box,
 } from '@chakra-ui/react';
 import { UserMenu } from './UserMenu';
 import { ElementType } from 'react';
 import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
+
+import { useMediaQuery } from '@chakra-ui/react';
 
 type SidebarButtonProps = {
   path: string;
@@ -55,7 +56,7 @@ type SiderBarProps = {
 
 export const SideBar = ({ currentPage }: SiderBarProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const SidebarContent = (
     <Flex
