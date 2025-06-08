@@ -1,16 +1,19 @@
-"use client";
-import { NextPage } from "next";
-import { SideBar, Content, Roles } from "@/components";
-import { Flex } from "@chakra-ui/react";
+'use client';
+import { NextPage } from 'next';
+import { SideBar, Content, Roles } from '@/components';
+import { Flex } from '@chakra-ui/react';
+import { ClientOnly } from '@/components/ClientOnly';
 
 const RolesPage: NextPage = () => {
   return (
-    <Flex>
-      <SideBar currentPage="roles" />
-      <Content>
-        <Roles />
-      </Content>
-    </Flex>
+    <ClientOnly>
+      <Flex>
+        <SideBar currentPage="roles" />
+        <Content>
+          <Roles />
+        </Content>
+      </Flex>
+    </ClientOnly>
   );
 };
 

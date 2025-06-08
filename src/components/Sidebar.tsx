@@ -15,9 +15,11 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { UserMenu } from './UserMenu';
-import { ElementType } from 'react';
+import { ElementType, useEffect, useState } from 'react';
 import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
+
+// import { isMobile as isMobileDevice } from 'react-device-detect';
 
 import { useMediaQuery } from '@chakra-ui/react';
 

@@ -48,11 +48,14 @@ export const UserAdd = () => {
         title: 'Usuario creado',
         description: `El usuario ha sido creado correctamente.`,
         status: 'success',
-        duration: 3000,
+        duration: 1500,
         isClosable: true,
       });
       setUserProps(undefined);
       onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     }
   }, [data]);
 
@@ -73,7 +76,7 @@ export const UserAdd = () => {
     const user = {
       userName: values.username,
       name: values.name,
-      password: crypto.randomUUID(),
+      password: 'asdasdasdasd',
       isEnabled: values.estado === 'Activo',
       roleId: role?.id ?? 0,
     };
@@ -117,7 +120,6 @@ export const UserAdd = () => {
                         type="text"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
-                        fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -132,7 +134,6 @@ export const UserAdd = () => {
                         type="text"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
-                        fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -202,7 +203,7 @@ export const UserAdd = () => {
                     />
                     <Button
                       type="submit"
-                      isLoading={isLoading}
+                      disabled={isLoading}
                       bg="#4C88D8"
                       color="white"
                       _hover={{ backgroundColor: '#376bb0' }}
