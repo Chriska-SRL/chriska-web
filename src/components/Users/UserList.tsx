@@ -46,7 +46,7 @@ export const UserList = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !users || users.length == 0) {
     return (
       <Flex justifyContent="center" alignItems="center" h="100%">
         <Spinner size="xl" />
@@ -57,56 +57,63 @@ export const UserList = () => {
   return (
     <>
       {isMobile ? (
-        <VStack spacing="1rem" align="stretch">
-          {users?.map((user) => (
-            <Box
-              key={user.id}
-              px="1rem"
-              py="0.5rem"
-              border="1px solid #f2f2f2"
-              borderRadius="0.5rem"
-              bg="white"
-              boxShadow="sm"
-              position="relative"
-            >
-              <Box
-                position="absolute"
-                top="0.75rem"
-                right="0.75rem"
-                bg={user.isEnabled ? 'green.100' : 'red.100'}
-                color={user.isEnabled ? 'green.800' : 'red.800'}
-                px="0.75rem"
-                py="0.25rem"
-                borderRadius="full"
-                fontSize="0.75rem"
-              >
-                {user.isEnabled ? 'Activo' : 'Inactivo'}
-              </Box>
+        <Flex direction="column" maxH="25rem">
+          {/* Scroll solo en la lista */}
+          <Box overflowY="auto" flex="1" pr="0.25rem">
+            <VStack spacing="1rem" align="stretch">
+              {users?.map((user) => (
+                <Box
+                  key={user.id}
+                  px="1rem"
+                  py="0.5rem"
+                  border="1px solid #f2f2f2"
+                  borderRadius="0.5rem"
+                  bg="white"
+                  boxShadow="sm"
+                  position="relative"
+                >
+                  <Box
+                    position="absolute"
+                    top="0.75rem"
+                    right="0.75rem"
+                    bg={user.isEnabled ? 'green.100' : 'red.100'}
+                    color={user.isEnabled ? 'green.800' : 'red.800'}
+                    px="0.75rem"
+                    py="0.25rem"
+                    borderRadius="full"
+                    fontSize="0.75rem"
+                  >
+                    {user.isEnabled ? 'Activo' : 'Inactivo'}
+                  </Box>
 
-              <Text fontWeight="bold">{user.name}</Text>
-              <Text fontSize="sm" color="gray.600" mt="0.25rem">
-                Usuario: {user.username}
-              </Text>
-              <Text fontSize="sm" color="gray.600" mt="0.25rem">
-                Rol: {user.role.name}
-              </Text>
-              <IconButton
-                aria-label="Editar usuario"
-                icon={<FiEdit />}
-                onClick={() => handleEditClick(user)}
-                size="md"
-                position="absolute"
-                bottom="0.25rem"
-                right="0.25rem"
-                bg="transparent"
-                _hover={{ bg: 'gray.200' }}
-              />
-            </Box>
-          ))}
-          <Text fontSize="sm" textAlign="center" mt="1rem">
-            Mostrando {users?.length} usuarios
-          </Text>
-        </VStack>
+                  <Text fontWeight="bold">{user.name}</Text>
+                  <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                    Usuario: {user.username}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                    Rol: {user.role.name}
+                  </Text>
+                  <IconButton
+                    aria-label="Editar usuario"
+                    icon={<FiEdit />}
+                    onClick={() => handleEditClick(user)}
+                    size="md"
+                    position="absolute"
+                    bottom="0.25rem"
+                    right="0.25rem"
+                    bg="transparent"
+                    _hover={{ bg: 'gray.200' }}
+                  />
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+
+          {/* Siempre visible */}
+          <Box py="1rem" textAlign="center" bg="white">
+            <Text fontSize="sm">Mostrando {users?.length} usuarios</Text>
+          </Box>
+        </Flex>
       ) : (
         <>
           <TableContainer overflowY="auto" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">

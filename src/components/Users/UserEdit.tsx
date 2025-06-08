@@ -11,27 +11,25 @@ import {
   FormLabel,
   Input,
   Select,
-  useToast,
   VStack,
   Button,
   Progress,
   Box,
   Text,
-  IconButton,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
-import { useEffect, useState } from 'react';
-import { FaCheck, FaTrash } from 'react-icons/fa';
-import { useDeleteUser } from '@/hooks/user';
+import { FaCheck } from 'react-icons/fa';
+import { UserDelete } from './UserDelete';
+import { useGetRoles } from '@/hooks/roles';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
-const roles = [
-  { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
-  { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
-  { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
-];
+// const roles = [
+//   { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
+//   { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
+//   { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
+// ];
 
 const estados = ['Activo', 'Inactivo'];
 
@@ -43,41 +41,7 @@ type Props = {
 };
 
 export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
-  const toast = useToast();
-  const [formData, setFormData] = useState<any>();
-  const [deleteUserProps, setDeleteUserProps] = useState<number>();
-  const { data: userDeleted, error, isLoading: isDeleting } = useDeleteUser(deleteUserProps!!);
-
-  useEffect(() => {
-    if (userDeleted) {
-      toast({
-        title: 'Usuario eliminado',
-        description: `El usuario ha sido eliminado correctamente.`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      setDeleteUserProps(undefined);
-      onClose();
-    }
-  }, [userDeleted]);
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: 'Error',
-        description: error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  }, [error]);
-
-  const handleDelete = () => {
-    setDeleteUserProps(user?.id);
-  };
-
+  const { data: roles, isLoading, error } = useGetRoles();
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
@@ -101,49 +65,46 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
               <ModalBody pb="0">
                 <VStack spacing="1rem">
                   <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
-                    <FormLabel fontSize="0.9rem">Nombre de usuario</FormLabel>
+                    <FormLabel>Nombre de usuario</FormLabel>
                     <Field
                       as={Input}
                       name="username"
                       type="text"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isDeleting}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel fontSize="0.9rem">Nombre</FormLabel>
+                    <FormLabel>Nombre</FormLabel>
                     <Field
                       as={Input}
                       name="name"
                       type="text"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isDeleting}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
-                    <FormLabel fontSize="0.9rem">Rol</FormLabel>
+                    <FormLabel>Rol</FormLabel>
                     <Field
                       as={Select}
                       name="role"
                       placeholder="Seleccionar rol"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isDeleting}
+                      disabled={isSubmitting || isLoading}
                     >
-                      {roles.map((r) => (
+                      {roles?.map((r) => (
                         <option key={r.id} value={r.name}>
                           {r.name}
                         </option>
@@ -152,17 +113,16 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.isEnabled && !!errors.isEnabled}>
-                    <FormLabel fontSize="0.9rem">Estado</FormLabel>
+                    <FormLabel>Estado</FormLabel>
                     <Field
                       as={Select}
                       name="isEnabled"
                       placeholder="Seleccionar estado"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      fontSize="0.9rem"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isDeleting}
+                      disabled={isSubmitting}
                     >
                       {estados.map((e) => (
                         <option key={e} value={e}>
@@ -185,31 +145,21 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
               <ModalFooter pb="1.5rem">
                 <Box mt="0.5rem" w="100%">
                   <Progress
-                    h={isSubmitting || isDeleting ? '4px' : '1px'}
+                    h={isSubmitting ? '4px' : '1px'}
                     mb="1.25rem"
                     size="xs"
-                    isIndeterminate={isSubmitting || isDeleting}
+                    isIndeterminate={isSubmitting}
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    <IconButton
-                      aria-label="Eliminar usuario"
-                      onClick={handleDelete}
-                      isLoading={isDeleting}
-                      disabled={isSubmitting || isDeleting}
-                      colorScheme="red"
-                      icon={<FaTrash />}
-                      width="15%"
-                    />
-
+                    {user && <UserDelete user={user} onDeleted={onClose} />}
                     <Button
                       type="submit"
-                      isLoading={isSubmitting}
                       bg="#4C88D8"
                       color="white"
-                      disabled={isSubmitting || isDeleting}
+                      disabled={isSubmitting}
                       _hover={{ backgroundColor: '#376bb0' }}
-                      width="85%"
+                      width="100%"
                       leftIcon={<FaCheck />}
                       fontSize="0.95rem"
                     >
