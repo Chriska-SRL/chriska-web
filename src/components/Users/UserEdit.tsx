@@ -16,32 +16,73 @@ import {
   Progress,
   Box,
   Text,
+  useToast,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { UserDelete } from './UserDelete';
 import { useGetRoles } from '@/hooks/roles';
+import { useEffect, useState } from 'react';
+import { useUpdateUser } from '@/hooks/user';
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
-
-// const roles = [
-//   { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
-//   { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
-//   { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
-// ];
-
-const estados = ['Activo', 'Inactivo'];
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
-  onSave: (updatedUser: User) => void;
 };
 
-export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
-  const { data: roles, isLoading, error } = useGetRoles();
+export const UserEdit = ({ isOpen, onClose, user }: Props) => {
+  const toast = useToast();
+  const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
+
+  const [userProps, setUserProps] = useState<UpdateUser>();
+  const { data, error, isLoading } = useUpdateUser(userProps);
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+      toast({
+        title: 'Usuario creado',
+        description: `El usuario ha sido creado correctamente.`,
+        status: 'success',
+        duration: 1500,
+        isClosable: true,
+      });
+      setUserProps(undefined);
+      onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [error]);
+
+  const handleSubmit = (values: { id: number; username: string; name: string; roleId: number; estado: string }) => {
+    const user = {
+      id: values.id,
+      userName: values.username,
+      name: values.name,
+      password: 'asdasdasdasd',
+      isEnabled: values.estado === 'Activo',
+      roleId: values.roleId ?? 0,
+    };
+    setUserProps(user);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
@@ -51,12 +92,13 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
         </ModalHeader>
         <Formik
           initialValues={{
-            username: user?.username,
-            name: user?.name,
-            role: user?.role.name,
-            isEnabled: user?.isEnabled ? 'Activo' : 'Inactivo',
+            id: user?.id ?? 0,
+            username: user?.username ?? '',
+            name: user?.name ?? '',
+            roleId: user?.role.id ?? 0,
+            estado: user?.isEnabled ? 'Activo' : 'Inactivo',
           }}
-          onSubmit={(values, { resetForm }) => {}}
+          onSubmit={handleSubmit}
           validateOnChange={true}
           validateOnBlur={false}
         >
@@ -74,7 +116,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
@@ -88,47 +130,44 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
+                  <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
                     <FormLabel>Rol</FormLabel>
                     <Field
                       as={Select}
-                      name="role"
+                      name="roleId"
                       placeholder="Seleccionar rol"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
+                      disabled={isSubmitting || isLoading || isLoadingRoles}
                     >
                       {roles?.map((r) => (
-                        <option key={r.id} value={r.name}>
+                        <option key={r.id} value={r.id}>
                           {r.name}
                         </option>
                       ))}
                     </Field>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.isEnabled && !!errors.isEnabled}>
+                  <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
                     <FormLabel>Estado</FormLabel>
                     <Field
                       as={Select}
-                      name="isEnabled"
+                      name="estado"
                       placeholder="Seleccionar estado"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isLoading}
                     >
-                      {estados.map((e) => (
-                        <option key={e} value={e}>
-                          {e}
-                        </option>
-                      ))}
+                      <option value="Activo">Activo</option>
+                      <option value="Inactivo">Inactivo</option>
                     </Field>
                   </FormControl>
 
@@ -152,7 +191,7 @@ export const UserEdit = ({ isOpen, onClose, user, onSave }: Props) => {
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    {user && <UserDelete user={user} onDeleted={onClose} />}
+                    {user && <UserDelete user={user} onDeleted={onClose} isUpdating={isLoading} />}
                     <Button
                       type="submit"
                       bg="#4C88D8"

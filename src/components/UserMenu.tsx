@@ -1,27 +1,26 @@
-'use client'; // ¡esto es obligatorio!
+'use client';
 
 import { Flex, Text, Button, Avatar } from '@chakra-ui/react';
 import { MdLogout } from 'react-icons/md';
-import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/stores/useUserStore';
 
 export const UserMenu = () => {
-  const router = useRouter();
-  // const [user, setUser] = useState<User>();
-
-  // const { username } = user;
-
-  const username = 'Martín Pérez';
+  const user = useUserStore((state) => state.user);
+  const isHydrated = useUserStore((state) => state.isHydrated);
+  const logout = useUserStore((state) => state.logout);
 
   const handleSignOut = () => {
-    localStorage.removeItem('access_token');
-    router.push('/iniciar-sesion');
+    logout();
+    window.location.href = '/iniciar-sesion';
   };
+
+  if (!isHydrated || !user) return null;
 
   return (
     <Flex flexDir="column" gap="1rem">
       <Flex alignItems="center" gap="0.75rem">
-        <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={username} />
-        <Text fontWeight="bold">{username}</Text>
+        <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={user.name} />
+        <Text fontWeight="bold">{user.name}</Text>
       </Flex>
       <Button
         bg="#f2f2f2"

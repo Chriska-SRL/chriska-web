@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Flex } from '@chakra-ui/react';
 import { SideBar, Content, WelcomePanel } from '../components';
 import { ClientOnly } from '@/components/ClientOnly';
+import { useUserStore } from '@/stores/useUserStore';
 
 const HomePage = () => {
   const router = useRouter();
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!isLoggedIn) {
       router.push('/iniciar-sesion');
     }
   }, [router]);
