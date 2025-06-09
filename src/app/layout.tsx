@@ -1,3 +1,4 @@
+import { UserHydrator } from '@/components/UserHydrator';
 import { ChakraProvider } from '@chakra-ui/react';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
@@ -22,7 +23,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <ChakraProvider>{children}</ChakraProvider>
+        <ChakraProvider>
+          <UserHydrator />
+          {children}
+        </ChakraProvider>
       </body>
     </html>
   );

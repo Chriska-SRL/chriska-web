@@ -3,28 +3,30 @@
 import { Formik, Field } from 'formik';
 import { Box, Container, Button, Text, FormControl, FormLabel, Input, Progress, Flex } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
-import { useLogin } from '@/hooks/login'; // Asegurate de que esté bien la ruta
+import { useLogin } from '@/hooks/login';
 import { useRouter } from 'next/navigation';
+import { Login as LoginValues } from '@/entities/login';
+import { useUserStore } from '@/stores/useUserStore';
 
 const _backgroundGradient = `linear(to-b, #f2f2f2 50%, transparent 50%)`;
 const _containerW = { sm: '25rem', base: '20rem' };
 
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
-type LoginValues = {
-  username: string;
-  password: string;
-};
-
 export const Login = () => {
   const router = useRouter();
   const [loginProps, setLoginProps] = useState<LoginValues>();
   const { data, error, isLoading } = useLogin(loginProps);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const setUserFromToken = useUserStore((state) => state.setUserFromToken);
 
   useEffect(() => {
-    if (data) {
-      router.push('/');
+    if (data === true) {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        setUserFromToken(token); // ✅ actualiza Zustand
+        router.push('/');
+      }
     }
   }, [data]);
 
@@ -99,7 +101,7 @@ export const Login = () => {
                   />
                   <Button
                     type="submit"
-                    isLoading={isLoading}
+                    disabled={isLoading}
                     bg="#4C88D8"
                     color="white"
                     _hover={{ backgroundColor: '#376bb0' }}

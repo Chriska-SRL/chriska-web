@@ -16,6 +16,7 @@ import {
   useDisclosure,
   VStack,
   useMediaQuery,
+  Divider,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
@@ -34,10 +35,6 @@ export const UserList = () => {
     onOpen();
   };
 
-  const handleSave = (updatedUser: User) => {
-    // lógica de guardado
-  };
-
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
@@ -46,7 +43,7 @@ export const UserList = () => {
     );
   }
 
-  if (isLoading || !users || users.length == 0) {
+  if (isLoading) {
     return (
       <Flex justifyContent="center" alignItems="center" h="100%">
         <Spinner size="xl" />
@@ -54,12 +51,24 @@ export const UserList = () => {
     );
   }
 
+  if (!users || users.length === 0) {
+    return (
+      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+        <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
+          No hay usuarios registrados.
+        </Text>
+        <Text fontSize="sm" color="gray.500">
+          Agregue un usuario para que aparezca en la lista.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" maxH="25rem">
-          {/* Scroll solo en la lista */}
-          <Box overflowY="auto" flex="1" pr="0.25rem">
+        <Flex direction="column" h="25rem" justifyContent="space-between">
+          <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
               {users?.map((user) => (
                 <Box
@@ -108,8 +117,6 @@ export const UserList = () => {
               ))}
             </VStack>
           </Box>
-
-          {/* Siempre visible */}
           <Box py="1rem" textAlign="center" bg="white">
             <Text fontSize="sm">Mostrando {users?.length} usuarios</Text>
           </Box>
@@ -166,7 +173,7 @@ export const UserList = () => {
           </Box>
         </>
       )}
-      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} onSave={handleSave} />
+      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} />
     </>
   );
 };

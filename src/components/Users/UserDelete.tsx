@@ -17,13 +17,13 @@ import { useDeleteUser } from '@/hooks/user';
 import { useEffect, useState } from 'react';
 import { User } from '@/entities/user';
 
-type Props = {
+type UserDeleteProps = {
   user: User;
-  size?: 'icon' | 'full';
+  isUpdating: boolean;
   onDeleted?: () => void;
 };
 
-export const UserDelete = ({ user, size = 'icon', onDeleted }: Props) => {
+export const UserDelete = ({ user, isUpdating, onDeleted }: UserDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteUserProps, setDeleteUserProps] = useState<number>();
@@ -65,19 +65,13 @@ export const UserDelete = ({ user, size = 'icon', onDeleted }: Props) => {
 
   return (
     <>
-      {size === 'icon' ? (
-        <IconButton
-          aria-label="Eliminar usuario"
-          icon={<FaTrash />}
-          colorScheme="red"
-          onClick={() => setConfirmOpen(true)}
-          isLoading={isLoading}
-        />
-      ) : (
-        <Button leftIcon={<FaTrash />} colorScheme="red" onClick={() => setConfirmOpen(true)} isLoading={isLoading}>
-          Eliminar
-        </Button>
-      )}
+      <IconButton
+        aria-label="Eliminar usuario"
+        icon={<FaTrash />}
+        colorScheme="red"
+        onClick={() => setConfirmOpen(true)}
+        disabled={isUpdating || isLoading}
+      />
 
       <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} isCentered size="xs">
         <ModalOverlay />
