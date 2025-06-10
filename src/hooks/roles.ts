@@ -53,7 +53,7 @@ export const useAddRole = (props?: Partial<Role>): Result<boolean> => {
   return { data, isLoading, error };
 };
 
-export const useUpdateRole = (props?: Role): Result<boolean> => {
+export const useUpdateRole = (props?: Partial<Role>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();

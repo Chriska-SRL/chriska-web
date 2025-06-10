@@ -16,7 +16,6 @@ import {
   useDisclosure,
   VStack,
   useMediaQuery,
-  Divider,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
@@ -24,16 +23,29 @@ import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
 import { useGetUsers } from '@/hooks/user';
 
-export const UserList = () => {
+type UserListProps = {
+  filterRoleId?: number;
+  filterStateId?: string;
+  filterName?: string;
+};
+
+export const UserList = ({ filterRoleId, filterStateId, filterName }: UserListProps) => {
   const { data: users, isLoading, error } = useGetUsers();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
     onOpen();
   };
+
+  const filteredUsers = users?.filter((user) => {
+    const matchRole = filterRoleId ? user.role.id === filterRoleId : true;
+    const matchState = filterStateId ? (filterStateId === 'activo' ? user.isEnabled : !user.isEnabled) : true;
+    const matchName = filterName ? user.name.toLowerCase().includes(filterName.toLowerCase()) : true;
+    return matchRole && matchState && matchName;
+  });
 
   if (error) {
     return (
@@ -51,7 +63,7 @@ export const UserList = () => {
     );
   }
 
-  if (!users || users.length === 0) {
+  if (!filteredUsers || filteredUsers.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
@@ -70,7 +82,7 @@ export const UserList = () => {
         <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {users?.map((user) => (
+              {filteredUsers.map((user) => (
                 <Box
                   key={user.id}
                   px="1rem"
@@ -118,24 +130,32 @@ export const UserList = () => {
             </VStack>
           </Box>
           <Box py="1rem" textAlign="center" bg="white">
-            <Text fontSize="sm">Mostrando {users?.length} usuarios</Text>
+            <Text fontSize="sm">Mostrando {filteredUsers.length} usuarios</Text>
           </Box>
         </Flex>
       ) : (
         <>
-          <TableContainer overflowY="auto" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
+          <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
             <Table variant="simple">
               <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Nombre de usuario</Th>
-                  <Th textAlign="center">Nombre</Th>
-                  <Th textAlign="center">Rol</Th>
-                  <Th textAlign="center">Estado</Th>
-                  <Th></Th>
+                  <Th textAlign="center" w="12rem">
+                    Usuario
+                  </Th>
+                  <Th textAlign="center" w="12rem">
+                    Nombre
+                  </Th>
+                  <Th textAlign="center" w="10rem">
+                    Rol
+                  </Th>
+                  <Th textAlign="center" w="8rem">
+                    Estado
+                  </Th>
+                  <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {users?.map((user) => (
+                {filteredUsers.map((user) => (
                   <Tr key={user.id} h="3rem">
                     <Td textAlign="center">{user.username}</Td>
                     <Td textAlign="center">{user.name}</Td>
@@ -153,13 +173,13 @@ export const UserList = () => {
                         {user.isEnabled ? 'Activo' : 'Inactivo'}
                       </Box>
                     </Td>
-                    <Td textAlign="center">
+                    <Td textAlign="center" pr="2rem">
                       <IconButton
                         aria-label="Editar usuario"
                         icon={<FiEdit />}
                         onClick={() => handleEditClick(user)}
                         variant="ghost"
-                        size="md"
+                        size="lg"
                         _hover={{ bg: 'blackAlpha.100' }}
                       />
                     </Td>
@@ -169,7 +189,7 @@ export const UserList = () => {
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {users?.length} usuarios</Text>
+            <Text fontSize="sm">Mostrando {filteredUsers.length} usuarios</Text>
           </Box>
         </>
       )}

@@ -11,7 +11,7 @@ export const addUser = (user: Partial<User>): Promise<boolean> => {
   return post<boolean>(`${API_URL}/Users`, user, true);
 };
 
-export const updateUser = (user: UpdateUser): Promise<boolean> => {
+export const updateUser = (user: Partial<User>): Promise<boolean> => {
   return put<boolean>(`${API_URL}/Users`, user, true);
 };
 

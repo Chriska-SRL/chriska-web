@@ -24,11 +24,17 @@ import {
   AccordionPanel,
   AccordionIcon,
   Divider,
+  HStack,
+  useToast,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { Role } from '@/entities/role';
+import { RoleDelete } from './RoleDelete';
+import { useEffect, useState } from 'react';
+import { useUpdateRole } from '@/hooks/roles';
 
 type Props = {
   isOpen: boolean;
@@ -40,17 +46,39 @@ type Props = {
 const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
 export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
-  const initialValues = role
-    ? {
-        name: role.name,
-        description: role.description,
-        permissions: role.permissions,
-      }
-    : {
-        name: '',
-        description: '',
-        permissions: [] as number[],
-      };
+  const toast = useToast();
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [roleProps, setRoleProps] = useState<Partial<Role>>();
+  const { data, error, isLoading } = useUpdateRole(roleProps);
+
+  useEffect(() => {
+    if (data) {
+      toast({
+        title: 'Rol modificado',
+        description: `El rol ha sido modificado correctamente.`,
+        status: 'success',
+        duration: 1500,
+        isClosable: true,
+      });
+      setRoleProps(undefined);
+      onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [error]);
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -61,29 +89,50 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
     {} as Record<string, typeof PERMISSIONS_METADATA>,
   );
 
+  const handleSubmit = (values: { id: number; name: string; description: string; permissions: number[] }) => {
+    const role = {
+      id: values.id,
+      name: values.name,
+      description: values.description,
+      permissions: values.permissions,
+    };
+    setRoleProps(role);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
       <ModalOverlay />
-      <ModalContent maxH="90vh">
+      <ModalContent>
         <ModalHeader textAlign="center" fontSize="2rem">
           Editar rol
         </ModalHeader>
+        <ModalCloseButton />
         {role && (
           <Formik
-            initialValues={initialValues}
-            onSubmit={(values) => onSave({ ...role, ...values })}
+            initialValues={{
+              id: role.id,
+              name: role.name ?? '',
+              description: role.description ?? '',
+              permissions: role.permissions ?? [],
+            }}
+            onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
           >
             {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
-                  <Flex gap="2rem" align="start">
-                    {/* Columna izquierda: permisos scrolleables */}
+                  <Flex
+                    gap="2rem"
+                    align="start"
+                    direction={{ base: 'column', md: 'row' }}
+                    maxH={{ base: 'none', md: '70vh' }}
+                  >
+                    {/* Columna izquierda: permisos */}
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH="52vh" overflowY="auto" pr="0.5rem">
+                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto" pr="0.5rem">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>
@@ -124,11 +173,20 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                         </Box>
                       </FormControl>
                     </Box>
-                    <Divider orientation="vertical" h="27rem" />
-                    {/* Columna derecha: datos y botón */}
-                    <Flex flex="1" flexDir="column" justifyContent="space-between" h="27rem">
+
+                    {/* Separador visible solo en desktop */}
+                    <Divider orientation="vertical" h="27rem" display={{ base: 'none', md: 'block' }} />
+
+                    {/* Columna derecha: datos */}
+                    <Flex
+                      flex="1"
+                      w="100%"
+                      flexDir="column"
+                      justifyContent="space-between"
+                      minW={0} // evita que el contenido se desborde
+                    >
                       <Box>
-                        <VStack spacing="1rem" align="stretch" height="100%">
+                        <VStack spacing="1rem" align="stretch">
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel>Nombre</FormLabel>
                             <Field
@@ -168,27 +226,30 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                       </Box>
 
                       <Box>
-                        <Box>
-                          <Progress
-                            h={isSubmitting ? '4px' : '1px'}
-                            mb="1.5rem"
-                            size="xs"
-                            isIndeterminate={isSubmitting}
-                            colorScheme="blue"
-                          />
+                        <Progress
+                          h={isSubmitting ? '4px' : '1px'}
+                          my="1.5rem"
+                          size="xs"
+                          isIndeterminate={isSubmitting}
+                          colorScheme="blue"
+                        />
+
+                        <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
+                          <RoleDelete role={role} isUpdating={isSubmitting} onDeleted={onClose} />
+
                           <Button
                             type="submit"
                             isLoading={isSubmitting}
                             bg="#4C88D8"
                             color="white"
                             _hover={{ backgroundColor: '#376bb0' }}
-                            width="100%"
+                            w="100%"
                             leftIcon={<FaCheck />}
                             py="1.375rem"
                           >
                             Confirmar
                           </Button>
-                        </Box>
+                        </Flex>
                       </Box>
                     </Flex>
                   </Flex>

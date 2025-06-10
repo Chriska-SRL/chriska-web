@@ -11,7 +11,7 @@ export const addRole = (role: Partial<Role>): Promise<boolean> => {
   return post<boolean>(`${API_URL}/Roles`, role, true);
 };
 
-export const updateRole = (role: Role): Promise<boolean> => {
+export const updateRole = (role: Partial<Role>): Promise<boolean> => {
   return put<boolean>(`${API_URL}/Roles`, role, true);
 };
 

@@ -25,8 +25,7 @@ import { UserDelete } from './UserDelete';
 import { useGetRoles } from '@/hooks/roles';
 import { useEffect, useState } from 'react';
 import { useUpdateUser } from '@/hooks/user';
-
-const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
+import { validateEmpty } from '@/utils/validate';
 
 type Props = {
   isOpen: boolean;
@@ -38,15 +37,15 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
   const toast = useToast();
   const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
 
-  const [userProps, setUserProps] = useState<UpdateUser>();
+  const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, error, isLoading } = useUpdateUser(userProps);
 
   useEffect(() => {
     if (data) {
       console.log(data);
       toast({
-        title: 'Usuario creado',
-        description: `El usuario ha sido creado correctamente.`,
+        title: 'Usuario modificado',
+        description: `El usuario ha sido modificado correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -74,9 +73,8 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
   const handleSubmit = (values: { id: number; username: string; name: string; roleId: number; estado: string }) => {
     const user = {
       id: values.id,
-      userName: values.username,
+      username: values.username,
       name: values.name,
-      password: 'asdasdasdasd',
       isEnabled: values.estado === 'Activo',
       roleId: values.roleId ?? 0,
     };
