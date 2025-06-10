@@ -53,7 +53,7 @@ export const useAddUser = (props?: Partial<User>): Result<boolean> => {
   return { data, isLoading, error };
 };
 
-export const useUpdateUser = (props?: UpdateUser): Result<boolean> => {
+export const useUpdateUser = (props?: Partial<User>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();

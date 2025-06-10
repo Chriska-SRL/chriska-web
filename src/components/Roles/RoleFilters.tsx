@@ -1,57 +1,55 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Flex, Input, InputGroup, InputRightElement, IconButton, Icon } from '@chakra-ui/react';
-import { useState } from 'react';
+import { Flex, Input, InputGroup, InputRightElement, Icon, IconButton, useMediaQuery } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
+import { VscDebugRestart } from 'react-icons/vsc';
 
-function getUsersUrl() {
-  if (typeof window !== 'undefined') return window.location.href;
-  return '/roles';
-}
+type RoleFiltersProps = {
+  filterName: string;
+  setFilterName: (value: string) => void;
+};
 
-export const RoleFilters = () => {
-  const router = useRouter();
-
-  const [searchName, setSearchName] = useState<string>('');
+export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => {
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchName(e.target.value);
+    setFilterName(e.target.value);
   };
 
-  const handleNameSubmit = () => {
-    const name = searchName.trim();
-    const baseUrl = new URL(getUsersUrl(), 'http://localhost');
-    if (name) {
-      baseUrl.searchParams.set('nombre', name);
-    } else {
-      baseUrl.searchParams.delete('nombre');
-    }
-    router.push(baseUrl.pathname + baseUrl.search);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleNameSubmit();
-    }
+  const handleResetFilters = () => {
+    setFilterName('');
   };
 
   return (
-    <Flex>
-      <InputGroup minW="15rem">
+    <Flex
+      gap="1rem"
+      flexDir={{ base: 'column', md: 'row' }}
+      w="100%"
+      alignItems={{ base: 'stretch', md: 'center' }}
+      flexWrap="wrap"
+    >
+      <InputGroup w={{ base: '100%', md: '15rem' }}>
         <Input
           placeholder="Buscar por nombre..."
-          value={searchName}
+          value={filterName}
           onChange={handleNameChange}
-          onKeyDown={handleKeyPress}
           bg="#f2f2f2"
           borderColor="#f2f2f2"
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={'grey'} onClick={handleNameSubmit} cursor="pointer" />
+          <Icon boxSize="5" as={AiOutlineSearch} color="grey" />
         </InputRightElement>
       </InputGroup>
+
+      {filterName && (
+        <IconButton
+          aria-label="Reiniciar filtros"
+          icon={<VscDebugRestart />}
+          bg="#f2f2f2"
+          _hover={{ bg: '#e0dede' }}
+          onClick={handleResetFilters}
+        />
+      )}
     </Flex>
   );
 };

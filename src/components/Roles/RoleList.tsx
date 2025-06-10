@@ -23,7 +23,11 @@ import { RoleDetail } from './RoleDetail';
 import { Role } from '@/entities/role';
 import { useGetRoles } from '@/hooks/roles';
 
-export const RoleList = () => {
+type RoleListProps = {
+  filterName?: string;
+};
+
+export const RoleList = ({ filterName }: RoleListProps) => {
   const { data: roles, isLoading, error } = useGetRoles();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
@@ -41,10 +45,14 @@ export const RoleList = () => {
 
   const handleSave = (updatedRole: Role) => {};
 
+  const filteredRoles = roles?.filter((role) => {
+    return filterName ? role.name.toLowerCase().includes(filterName.toLowerCase()) : true;
+  });
+
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los usuarios: {error}</Text>
+        <Text color="red.500">Error al cargar los roles: {error}</Text>
       </Box>
     );
   }
@@ -57,16 +65,26 @@ export const RoleList = () => {
     );
   }
 
+  if (!filteredRoles || filteredRoles.length === 0) {
+    return (
+      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+        <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
+          No hay roles registrados.
+        </Text>
+        <Text fontSize="sm" color="gray.500">
+          Agregue un rol para que aparezca en la lista.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <>
       <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
         <Table variant="simple">
           <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
             <Tr>
-              <Th textAlign="center" w="6rem">
-                ID
-              </Th>
-              <Th textAlign="center" w="10rem">
+              <Th textAlign="center" w="20rem">
                 Nombre
               </Th>
               <Th textAlign="center" maxW="20rem">
@@ -77,21 +95,17 @@ export const RoleList = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {roles?.map((role) => (
+            {filteredRoles.map((role) => (
               <Tr key={role.id} h="3rem">
-                <Td textAlign="center" w="6rem">
-                  {role.id}
-                </Td>
-                <Td textAlign="center" w="10rem">
+                <Td textAlign="center" w="20%">
                   {role.name}
                 </Td>
                 <Td textAlign="left" maxW="20rem">
-                  <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description} w="100%">
+                  <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
                     {role.description}
                   </Box>
                 </Td>
-
-                <Td textAlign="center" w="4rem" pl="2rem" pr="0.75rem">
+                <Td textAlign="center">
                   <IconButton
                     aria-label="Ver detalle"
                     icon={<IoMdInformationCircleOutline />}
@@ -101,7 +115,7 @@ export const RoleList = () => {
                     _hover={{ bg: 'blackAlpha.100' }}
                   />
                 </Td>
-                <Td textAlign="center" w="4rem" pl="0.75rem" pr="2rem">
+                <Td textAlign="center">
                   <IconButton
                     aria-label="Editar rol"
                     icon={<FiEdit />}
@@ -117,8 +131,9 @@ export const RoleList = () => {
         </Table>
       </TableContainer>
       <Box mt="0.5rem">
-        <Text fontSize="sm">Mostrando {roles?.length} roles</Text>
+        <Text fontSize="sm">Mostrando {filteredRoles.length} roles</Text>
       </Box>
+
       <RoleEdit
         isOpen={editModalDisclosure.isOpen}
         onClose={editModalDisclosure.onClose}

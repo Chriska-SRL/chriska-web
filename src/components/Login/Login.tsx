@@ -7,11 +7,10 @@ import { useLogin } from '@/hooks/login';
 import { useRouter } from 'next/navigation';
 import { Login as LoginValues } from '@/entities/login';
 import { useUserStore } from '@/stores/useUserStore';
+import { validateEmpty } from '@/utils/validate';
 
 const _backgroundGradient = `linear(to-b, #f2f2f2 50%, transparent 50%)`;
 const _containerW = { sm: '25rem', base: '20rem' };
-
-const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
 export const Login = () => {
   const router = useRouter();

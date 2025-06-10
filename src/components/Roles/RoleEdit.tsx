@@ -24,33 +24,59 @@ import {
   AccordionPanel,
   AccordionIcon,
   Divider,
+  HStack,
+  useToast,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { Role } from '@/entities/role';
+import { RoleDelete } from './RoleDelete';
+import { useEffect, useState } from 'react';
+import { useUpdateRole } from '@/hooks/roles';
+import { validateEmpty } from '@/utils/validate';
 
-type Props = {
+type RoleEditProps = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
   onSave: (updatedRole: Role) => void;
 };
 
-const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
+export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
+  const toast = useToast();
+  const [roleProps, setRoleProps] = useState<Partial<Role>>();
+  const { data, error, isLoading } = useUpdateRole(roleProps);
 
-export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
-  const initialValues = role
-    ? {
-        name: role.name,
-        description: role.description,
-        permissions: role.permissions,
-      }
-    : {
-        name: '',
-        description: '',
-        permissions: [] as number[],
-      };
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+      toast({
+        title: 'Rol modificado',
+        description: `El rol ha sido modificadamente correctamente.`,
+        status: 'success',
+        duration: 1500,
+        isClosable: true,
+      });
+      setRoleProps(undefined);
+      onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [error]);
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -61,6 +87,16 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
     {} as Record<string, typeof PERMISSIONS_METADATA>,
   );
 
+  const handleSubmit = (values: { id: number; name: string; description: string; permissions: number[] }) => {
+    const role = {
+      id: values.id,
+      name: values.name,
+      description: values.description,
+      permissions: values.permissions,
+    };
+    setRoleProps(role);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
       <ModalOverlay />
@@ -70,8 +106,13 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
         </ModalHeader>
         {role && (
           <Formik
-            initialValues={initialValues}
-            onSubmit={(values) => onSave({ ...role, ...values })}
+            initialValues={{
+              id: role.id ?? 0,
+              name: role.name ?? '',
+              description: role.description ?? '',
+              permissions: role.permissions ?? ([] as number[]),
+            }}
+            onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
           >
@@ -79,7 +120,6 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
                   <Flex gap="2rem" align="start">
-                    {/* Columna izquierda: permisos scrolleables */}
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
@@ -125,7 +165,6 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                       </FormControl>
                     </Box>
                     <Divider orientation="vertical" h="27rem" />
-                    {/* Columna derecha: datos y botón */}
                     <Flex flex="1" flexDir="column" justifyContent="space-between" h="27rem">
                       <Box>
                         <VStack spacing="1rem" align="stretch" height="100%">
@@ -168,14 +207,18 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                       </Box>
 
                       <Box>
-                        <Box>
-                          <Progress
-                            h={isSubmitting ? '4px' : '1px'}
-                            mb="1.5rem"
-                            size="xs"
-                            isIndeterminate={isSubmitting}
-                            colorScheme="blue"
-                          />
+                        <Progress
+                          h={isSubmitting ? '4px' : '1px'}
+                          mb="1.5rem"
+                          size="xs"
+                          isIndeterminate={isSubmitting}
+                          colorScheme="blue"
+                        />
+
+                        <HStack spacing="1rem" justify="space-between">
+                          <Box>
+                            <RoleDelete role={role} isUpdating={isSubmitting} onDeleted={onClose} />
+                          </Box>
                           <Button
                             type="submit"
                             isLoading={isSubmitting}
@@ -188,7 +231,7 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                           >
                             Confirmar
                           </Button>
-                        </Box>
+                        </HStack>
                       </Box>
                     </Flex>
                   </Flex>

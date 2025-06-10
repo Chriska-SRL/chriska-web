@@ -1,8 +1,7 @@
 type UpdateUser = {
   id: number;
-  userName: string;
+  username: string;
   name: string;
-  password: string;
   isEnabled: boolean;
   roleId: number;
 };

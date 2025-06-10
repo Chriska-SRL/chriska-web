@@ -54,7 +54,6 @@ export const RoleDetail = ({ isOpen, onClose, role }: Props) => {
         <ModalCloseButton />
         <ModalBody px="2rem" pb="2rem" pt="0">
           <Flex gap="2rem" align="start">
-            {/* Columna izquierda: permisos scrolleables */}
             <Box flex="1">
               <FormControl>
                 <FormLabel>Permisos</FormLabel>
@@ -121,8 +120,6 @@ export const RoleDetail = ({ isOpen, onClose, role }: Props) => {
                   </FormControl>
                 </VStack>
               </Box>
-
-              {/* No hay botón de confirmar en el detalle */}
               <Box />
             </Flex>
           </Flex>

@@ -24,26 +24,18 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useAddUser } from '@/hooks/user';
 import { User } from '@/entities/user';
-
-const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
-
-const roles = [
-  { id: 1, name: 'Administrador', description: 'Acceso total', permissions: [] },
-  { id: 2, name: 'Editor', description: 'Puede editar contenidos', permissions: [] },
-  { id: 3, name: 'Lector', description: 'Solo lectura', permissions: [] },
-];
-
-const estados = ['Activo', 'Inactivo'];
+import { useGetRoles } from '@/hooks/roles';
+import { validateEmpty } from '@/utils/validate';
 
 export const UserAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, error, isLoading } = useAddUser(userProps);
+  const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
 
   useEffect(() => {
     if (data) {
-      console.log(data);
       toast({
         title: 'Usuario creado',
         description: `El usuario ha sido creado correctamente.`,
@@ -71,14 +63,12 @@ export const UserAdd = () => {
     }
   }, [error]);
 
-  const handleSubmit = (values: { username: string; name: string; role: string; estado: string }) => {
-    const role = roles.find((r) => r.name === values.role);
+  const handleSubmit = (values: { username: string; name: string; roleId: number; estado: string }) => {
     const user = {
-      userName: values.username,
+      username: values.username,
       name: values.name,
-      password: 'asdasdasdasd',
       isEnabled: values.estado === 'Activo',
-      roleId: role?.id ?? 0,
+      roleId: values.roleId,
     };
     setUserProps(user);
   };
@@ -103,7 +93,7 @@ export const UserAdd = () => {
             Crear usuario
           </ModalHeader>
           <Formik
-            initialValues={{ username: '', name: '', role: '', estado: '' }}
+            initialValues={{ username: '', name: '', roleId: 0, estado: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -140,7 +130,7 @@ export const UserAdd = () => {
                       />
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.role && !!errors.role}>
+                    <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
                       <FormLabel>Rol</FormLabel>
                       <Field
                         as={Select}
@@ -153,8 +143,8 @@ export const UserAdd = () => {
                         validate={validateEmpty}
                         disabled={isLoading}
                       >
-                        {roles.map((role) => (
-                          <option key={role.id} value={role.name}>
+                        {roles?.map((role) => (
+                          <option key={role.id} value={role.id}>
                             {role.name}
                           </option>
                         ))}
@@ -174,11 +164,8 @@ export const UserAdd = () => {
                         validate={validateEmpty}
                         disabled={isLoading}
                       >
-                        {estados.map((estado) => (
-                          <option key={estado} value={estado}>
-                            {estado}
-                          </option>
-                        ))}
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
                       </Field>
                     </FormControl>
 
