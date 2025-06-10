@@ -26,6 +26,7 @@ import {
   Divider,
   HStack,
   useToast,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -34,26 +35,27 @@ import { Role } from '@/entities/role';
 import { RoleDelete } from './RoleDelete';
 import { useEffect, useState } from 'react';
 import { useUpdateRole } from '@/hooks/roles';
-import { validateEmpty } from '@/utils/validate';
 
-type RoleEditProps = {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
   onSave: (updatedRole: Role) => void;
 };
 
-export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
+const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
+
+export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
   const toast = useToast();
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, error, isLoading } = useUpdateRole(roleProps);
 
   useEffect(() => {
     if (data) {
-      console.log(data);
       toast({
         title: 'Rol modificado',
-        description: `El rol ha sido modificadamente correctamente.`,
+        description: `El rol ha sido modificado correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -98,19 +100,20 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
       <ModalOverlay />
-      <ModalContent maxH="90vh">
+      <ModalContent>
         <ModalHeader textAlign="center" fontSize="2rem">
           Editar rol
         </ModalHeader>
+        <ModalCloseButton />
         {role && (
           <Formik
             initialValues={{
-              id: role.id ?? 0,
+              id: role.id,
               name: role.name ?? '',
               description: role.description ?? '',
-              permissions: role.permissions ?? ([] as number[]),
+              permissions: role.permissions ?? [],
             }}
             onSubmit={handleSubmit}
             validateOnChange
@@ -119,11 +122,17 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
             {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
-                  <Flex gap="2rem" align="start">
+                  <Flex
+                    gap="2rem"
+                    align="start"
+                    direction={{ base: 'column', md: 'row' }}
+                    maxH={{ base: 'none', md: '70vh' }}
+                  >
+                    {/* Columna izquierda: permisos */}
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH="52vh" overflowY="auto" pr="0.5rem">
+                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto" pr="0.5rem">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>
@@ -164,10 +173,20 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
                         </Box>
                       </FormControl>
                     </Box>
-                    <Divider orientation="vertical" h="27rem" />
-                    <Flex flex="1" flexDir="column" justifyContent="space-between" h="27rem">
+
+                    {/* Separador visible solo en desktop */}
+                    <Divider orientation="vertical" h="27rem" display={{ base: 'none', md: 'block' }} />
+
+                    {/* Columna derecha: datos */}
+                    <Flex
+                      flex="1"
+                      w="100%"
+                      flexDir="column"
+                      justifyContent="space-between"
+                      minW={0} // evita que el contenido se desborde
+                    >
                       <Box>
-                        <VStack spacing="1rem" align="stretch" height="100%">
+                        <VStack spacing="1rem" align="stretch">
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel>Nombre</FormLabel>
                             <Field
@@ -209,29 +228,28 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: RoleEditProps) => {
                       <Box>
                         <Progress
                           h={isSubmitting ? '4px' : '1px'}
-                          mb="1.5rem"
+                          my="1.5rem"
                           size="xs"
                           isIndeterminate={isSubmitting}
                           colorScheme="blue"
                         />
 
-                        <HStack spacing="1rem" justify="space-between">
-                          <Box>
-                            <RoleDelete role={role} isUpdating={isSubmitting} onDeleted={onClose} />
-                          </Box>
+                        <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
+                          <RoleDelete role={role} isUpdating={isSubmitting} onDeleted={onClose} />
+
                           <Button
                             type="submit"
                             isLoading={isSubmitting}
                             bg="#4C88D8"
                             color="white"
                             _hover={{ backgroundColor: '#376bb0' }}
-                            width="100%"
+                            w="100%"
                             leftIcon={<FaCheck />}
                             py="1.375rem"
                           >
                             Confirmar
                           </Button>
-                        </HStack>
+                        </Flex>
                       </Box>
                     </Flex>
                   </Flex>

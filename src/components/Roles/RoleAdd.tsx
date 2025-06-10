@@ -7,7 +7,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -40,7 +39,7 @@ export const RoleAdd = () => {
   const toast = useToast();
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, error, isLoading } = useAddRole(roleProps);
-  const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
+  const { data: roles } = useGetRoles();
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -102,7 +101,7 @@ export const RoleAdd = () => {
         Crear rol
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90vh">
           <ModalCloseButton />
@@ -119,12 +118,12 @@ export const RoleAdd = () => {
             {({ handleSubmit, values, setFieldValue, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
-                  <Flex gap="2rem" align="start">
+                  <Flex direction={{ base: 'column', md: 'row' }} gap="2rem" align="stretch">
                     {/* Columna izquierda: permisos */}
-                    <Box flex="1">
+                    <Box flex="1" minW={0}>
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH="52vh" overflowY="auto" pr="0.5rem">
+                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto" pr="0.5rem">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>
@@ -166,10 +165,10 @@ export const RoleAdd = () => {
                       </FormControl>
                     </Box>
 
-                    {/* Columna derecha: nombre y descripción */}
-                    <Flex flex="0.6" flexDir="column" justifyContent="space-between" h="26rem">
+                    {/* Columna derecha: nombre, descripción y botón */}
+                    <Flex flex="1" flexDir="column" minW={0}>
                       <Box>
-                        <VStack spacing="1rem" align="stretch" height="100%">
+                        <VStack spacing="1rem" align="stretch">
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel>Nombre</FormLabel>
                             <Field
@@ -208,21 +207,23 @@ export const RoleAdd = () => {
                         </VStack>
                       </Box>
 
-                      <Box>
+                      <Box mt="1.5rem">
                         <Progress
                           h={isLoading ? '4px' : '1px'}
-                          mb="1.5rem"
+                          mb="1rem"
                           size="xs"
                           isIndeterminate={isLoading}
                           colorScheme="blue"
                         />
+
                         <Button
                           type="submit"
                           disabled={isLoading}
                           bg="#4C88D8"
                           color="white"
                           _hover={{ backgroundColor: '#376bb0' }}
-                          width="100%"
+                          w={{ base: '100%', md: 'auto' }}
+                          maxW="100%"
                           leftIcon={<FaCheck />}
                           py="1.375rem"
                         >
