@@ -207,10 +207,10 @@ export const RoleAdd = () => {
                         </VStack>
                       </Box>
 
-                      <Box mt="1.5rem">
+                      <Box>
                         <Progress
                           h={isLoading ? '4px' : '1px'}
-                          mb="1rem"
+                          my="1.5rem"
                           size="xs"
                           isIndeterminate={isLoading}
                           colorScheme="blue"
@@ -222,8 +222,7 @@ export const RoleAdd = () => {
                           bg="#4C88D8"
                           color="white"
                           _hover={{ backgroundColor: '#376bb0' }}
-                          w={{ base: '100%', md: 'auto' }}
-                          maxW="100%"
+                          w="100%"
                           leftIcon={<FaCheck />}
                           py="1.375rem"
                         >
