@@ -15,11 +15,10 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { UserMenu } from './UserMenu';
-import { ElementType, useEffect, useState } from 'react';
+import { ElementType } from 'react';
 import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
-
-// import { isMobile as isMobileDevice } from 'react-device-detect';
+import { FaCubes } from 'react-icons/fa';
 
 import { useMediaQuery } from '@chakra-ui/react';
 
@@ -78,6 +77,7 @@ export const SideBar = ({ currentPage }: SiderBarProps) => {
         <Flex flexDir="column" gap="0.625rem" alignItems="start">
           <SidebarButton path="roles" text="Roles" icon={FaUserShield} currentPage={currentPage} />
           <SidebarButton path="usuarios" text="Usuarios" icon={BsPeopleFill} currentPage={currentPage} />
+          <SidebarButton path="productos" text="Productos" icon={FaCubes} currentPage={currentPage} />
         </Flex>
       </Flex>
       <UserMenu />
@@ -86,7 +86,6 @@ export const SideBar = ({ currentPage }: SiderBarProps) => {
 
   return (
     <>
-      {/* Mobile navbar */}
       {isMobile && (
         <Flex
           as="nav"
@@ -110,13 +109,10 @@ export const SideBar = ({ currentPage }: SiderBarProps) => {
         </Flex>
       )}
 
-      {/* Espacio compensatorio para contenido en mobile */}
       {isMobile && <Box height="4rem" />}
 
-      {/* Sidebar en desktop */}
       {!isMobile && SidebarContent}
 
-      {/* Drawer en mobile */}
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent maxW="15rem">

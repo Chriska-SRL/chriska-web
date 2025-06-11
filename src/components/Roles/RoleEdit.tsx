@@ -128,7 +128,6 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                     direction={{ base: 'column', md: 'row' }}
                     maxH={{ base: 'none', md: '70vh' }}
                   >
-                    {/* Columna izquierda: permisos */}
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
