@@ -1,6 +1,3 @@
-// Este archivo incluye la versión adaptada para productos
-// Componente principal (Products.tsx)
-
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';

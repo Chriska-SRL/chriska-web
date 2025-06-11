@@ -1,5 +1,3 @@
-// ProductEdit.tsx
-
 'use client';
 
 import {

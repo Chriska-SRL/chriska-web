@@ -19,6 +19,7 @@ import { ElementType } from 'react';
 import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes } from 'react-icons/fa';
+import { BiCategoryAlt } from 'react-icons/bi';
 
 import { useMediaQuery } from '@chakra-ui/react';
 
@@ -78,6 +79,7 @@ export const SideBar = ({ currentPage }: SiderBarProps) => {
           <SidebarButton path="roles" text="Roles" icon={FaUserShield} currentPage={currentPage} />
           <SidebarButton path="usuarios" text="Usuarios" icon={BsPeopleFill} currentPage={currentPage} />
           <SidebarButton path="productos" text="Productos" icon={FaCubes} currentPage={currentPage} />
+          <SidebarButton path="categorias" text="Categorias" icon={BiCategoryAlt} currentPage={currentPage} />
         </Flex>
       </Flex>
       <UserMenu />

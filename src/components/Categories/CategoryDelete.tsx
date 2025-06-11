@@ -14,38 +14,38 @@ import {
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Product } from '@/entities/product';
-import { useDeleteProduct } from '@/hooks/product';
+import { Category } from '@/entities/category';
+import { useDeleteCategory } from '@/hooks/category';
 
-type ProductDeleteProps = {
-  product: Product;
+type CategoryDeleteProps = {
+  category: Category;
   isUpdating: boolean;
   onDeleted?: () => void;
 };
 
-export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteProps) => {
+export const CategoryDelete = ({ category, isUpdating, onDeleted }: CategoryDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteProductProps, setDeleteProductProps] = useState<number>();
-  const { data: deleted, error, isLoading } = useDeleteProduct(deleteProductProps!!);
+  const [deleteCategoryProps, setDeleteCategoryProps] = useState<number>();
+  const { data: categoryDeleted, error, isLoading } = useDeleteCategory(deleteCategoryProps!!);
 
   useEffect(() => {
-    if (deleted) {
+    if (categoryDeleted) {
       toast({
-        title: 'Producto eliminado',
-        description: `El producto ${product.name} fue eliminado correctamente.`,
+        title: 'Categoría eliminada',
+        description: `La categoría ${category.name} fue eliminada correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
       setConfirmOpen(false);
-      setDeleteProductProps(undefined);
+      setDeleteCategoryProps(undefined);
       onDeleted?.();
       setTimeout(() => {
         window.location.reload();
       }, 1500);
     }
-  }, [deleted]);
+  }, [categoryDeleted]);
 
   useEffect(() => {
     if (error) {
@@ -60,13 +60,13 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
   }, [error]);
 
   const handleConfirm = () => {
-    setDeleteProductProps(product.id);
+    setDeleteCategoryProps(category.id);
   };
 
   return (
     <>
       <IconButton
-        aria-label="Eliminar producto"
+        aria-label="Eliminar categoría"
         icon={<FaTrash />}
         colorScheme="red"
         onClick={() => setConfirmOpen(true)}
@@ -78,7 +78,7 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>¿Seguro que querés eliminar “{product.name}”? Esta acción no se puede deshacer.</Text>
+            <Text>¿Seguro que querés eliminar la categoría "{category.name}"? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline">

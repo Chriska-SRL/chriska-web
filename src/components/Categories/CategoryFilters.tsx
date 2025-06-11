@@ -4,13 +4,12 @@ import { Flex, Input, InputGroup, InputRightElement, Icon, IconButton, useMediaQ
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
-export const ProductFilters = ({
-  filterName,
-  setFilterName,
-}: {
+type CategoryFiltersProps = {
   filterName: string;
   setFilterName: (value: string) => void;
-}) => {
+};
+
+export const CategoryFilters = ({ filterName, setFilterName }: CategoryFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,8 +19,6 @@ export const ProductFilters = ({
   const handleResetFilters = () => {
     setFilterName('');
   };
-
-  const hasActiveFilters = filterName !== '';
 
   return (
     <Flex
@@ -44,7 +41,7 @@ export const ProductFilters = ({
         </InputRightElement>
       </InputGroup>
 
-      {hasActiveFilters && (
+      {filterName && (
         <IconButton
           aria-label="Reiniciar filtros"
           icon={<VscDebugRestart />}
