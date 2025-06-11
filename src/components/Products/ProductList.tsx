@@ -62,10 +62,10 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No hay productos registrados.
+          No se encontraron roles con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color="gray.500">
-          Agregue un producto para que aparezca en la lista.
+          Inténtelo con otros parámetros.
         </Text>
       </Flex>
     );

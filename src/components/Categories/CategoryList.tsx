@@ -33,6 +33,19 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
     filterName ? cat.name.toLowerCase().includes(filterName.toLowerCase()) : true,
   );
 
+  if (!filteredCategories || filteredCategories.length === 0) {
+    return (
+      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+        <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
+          No se encontraron categorias con esos parámetros de búsqueda.
+        </Text>
+        <Text fontSize="sm" color="gray.500">
+          Inténtelo con otros parámetros.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
       <Box overflowY="auto">

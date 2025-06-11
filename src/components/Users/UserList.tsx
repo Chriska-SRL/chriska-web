@@ -67,10 +67,10 @@ export const UserList = ({ filterRoleId, filterStateId, filterName }: UserListPr
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No hay usuarios registrados.
+          No se encontraron usuarios con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color="gray.500">
-          Agregue un usuario para que aparezca en la lista.
+          Inténtelo con otros parámetros.
         </Text>
       </Flex>
     );
