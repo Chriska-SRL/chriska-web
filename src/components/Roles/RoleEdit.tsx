@@ -24,7 +24,6 @@ import {
   AccordionPanel,
   AccordionIcon,
   Divider,
-  HStack,
   useToast,
   useMediaQuery,
 } from '@chakra-ui/react';
@@ -35,6 +34,7 @@ import { Role } from '@/entities/role';
 import { RoleDelete } from './RoleDelete';
 import { useEffect, useState } from 'react';
 import { useUpdateRole } from '@/hooks/roles';
+import { validateEmpty } from '@/utils/validate';
 
 type Props = {
   isOpen: boolean;
@@ -42,8 +42,6 @@ type Props = {
   role: Role | null;
   onSave: (updatedRole: Role) => void;
 };
-
-const validateEmpty = (value: string) => (!value ? 'Campo obligatorio' : undefined);
 
 export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
   const toast = useToast();
@@ -173,17 +171,9 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
                       </FormControl>
                     </Box>
 
-                    {/* Separador visible solo en desktop */}
                     <Divider orientation="vertical" h="27rem" display={{ base: 'none', md: 'block' }} />
 
-                    {/* Columna derecha: datos */}
-                    <Flex
-                      flex="1"
-                      w="100%"
-                      flexDir="column"
-                      justifyContent="space-between"
-                      minW={0} // evita que el contenido se desborde
-                    >
+                    <Flex flex="1" w="100%" flexDir="column" justifyContent="space-between" minW={0}>
                       <Box>
                         <VStack spacing="1rem" align="stretch">
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
