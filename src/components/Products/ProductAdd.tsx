@@ -24,15 +24,18 @@ import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { validateEmpty } from '@/utils/validate';
 import { useAddProduct } from '@/hooks/product';
-import { useGetSubCategories } from '@/hooks/subcategory';
+import { useGetCategories } from '@/hooks/category';
 
 export const ProductAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [productProps, setProductProps] = useState<any>();
   const { data, error, isLoading } = useAddProduct(productProps);
-  const { data: subCategories, isLoading: isLoadingSubCats } = useGetSubCategories();
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+  const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
+  const subcategories = selectedCategory?.subCategories ?? [];
 
   useEffect(() => {
     if (data) {
@@ -60,16 +63,6 @@ export const ProductAdd = () => {
       });
     }
   }, [error]);
-
-  const handleSubmit = async (values: any) => {
-    if (!imageFile) return toast({ title: 'Falta la imagen', status: 'error' });
-
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    Object.keys(values).forEach((key) => formData.append(key, values[key]));
-
-    setProductProps(formData);
-  };
 
   return (
     <>
@@ -104,25 +97,24 @@ export const ProductAdd = () => {
               subCategoryId: 0,
               image: '',
             }}
-            onSubmit={handleSubmit}
+            onSubmit={(values) => setProductProps({ ...values, image: '' })}
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, submitCount }) => (
+            {({ handleSubmit, errors, submitCount, values }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody>
                   <VStack spacing="1rem">
-                    <FormControl isRequired>
-                      <FormLabel>Imagen</FormLabel>
-                      <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                       <FormLabel>Código interno</FormLabel>
                       <Field
                         as={Input}
                         name="internalCode"
-                        validate={validateEmpty}
+                        validate={(value: any) => {
+                          const emptyError = validateEmpty(value);
+                          if (emptyError) return emptyError;
+                          return value.length === 5 ? undefined : 'Debe tener exactamente 5 caracteres';
+                        }}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
@@ -134,7 +126,12 @@ export const ProductAdd = () => {
                       <Field
                         as={Input}
                         name="barcode"
-                        validate={validateEmpty}
+                        validate={(value: any) => {
+                          const emptyError = validateEmpty(value);
+                          if (emptyError) return emptyError;
+                          const barcodeRegex = /^\d{13}$/;
+                          return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
+                        }}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
@@ -159,7 +156,11 @@ export const ProductAdd = () => {
                         as={Input}
                         name="price"
                         type="number"
-                        validate={validateEmpty}
+                        validate={(value: any) => {
+                          const emptyError = validateEmpty(value);
+                          if (emptyError) return emptyError;
+                          return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
+                        }}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
@@ -172,7 +173,11 @@ export const ProductAdd = () => {
                         as={Input}
                         name="stock"
                         type="number"
-                        validate={validateEmpty}
+                        validate={(value: any) => {
+                          const emptyError = validateEmpty(value);
+                          if (emptyError) return emptyError;
+                          return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
+                        }}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
@@ -182,13 +187,17 @@ export const ProductAdd = () => {
                     <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
                       <FormLabel>Unidad</FormLabel>
                       <Field
-                        as={Input}
+                        as={Select}
                         name="unitType"
+                        placeholder="Seleccionar unidad"
                         validate={validateEmpty}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
-                      />
+                      >
+                        <option value="K">Kilos</option>
+                        <option value="U">Unidades</option>
+                      </Field>
                     </FormControl>
 
                     <FormControl>
@@ -198,12 +207,44 @@ export const ProductAdd = () => {
 
                     <FormControl>
                       <FormLabel>Condición de temperatura</FormLabel>
-                      <Field as={Input} name="temperatureCondition" bg="#f5f5f7" borderColor="#f5f5f7" />
+                      <Field
+                        as={Select}
+                        name="temperatureCondition"
+                        placeholder="Seleccione una opción"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                      >
+                        <option value="Frio">Frío</option>
+                        <option value="Congelado">Congelado</option>
+                        <option value="Natural">Natural</option>
+                      </Field>
                     </FormControl>
 
                     <FormControl>
                       <FormLabel>Observaciones</FormLabel>
                       <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Categoría</FormLabel>
+                      <Select
+                        placeholder="Seleccionar categoría"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        value={selectedCategoryId ?? ''}
+                        onChange={(e) => {
+                          const selectedId = Number(e.target.value);
+                          setSelectedCategoryId(selectedId);
+                          values.subCategoryId = 0; // Reinicia subcategoría
+                        }}
+                        disabled={isLoading || isLoadingCats}
+                      >
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </Select>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
@@ -215,11 +256,11 @@ export const ProductAdd = () => {
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         validate={validateEmpty}
-                        disabled={isLoading || isLoadingSubCats}
+                        disabled={isLoading || !selectedCategoryId}
                       >
-                        {subCategories?.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
+                        {subcategories.map((sub: any) => (
+                          <option key={sub.id} value={sub.id}>
+                            {sub.name}
                           </option>
                         ))}
                       </Field>

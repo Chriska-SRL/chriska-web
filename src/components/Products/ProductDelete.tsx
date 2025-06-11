@@ -59,10 +59,6 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
     }
   }, [error]);
 
-  const handleConfirm = () => {
-    setDeleteProductProps(product.id);
-  };
-
   return (
     <>
       <IconButton
@@ -84,7 +80,7 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
             <Button onClick={() => setConfirmOpen(false)} variant="outline">
               Cancelar
             </Button>
-            <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>
+            <Button onClick={() => setDeleteProductProps(product.id)} colorScheme="red" isLoading={isLoading}>
               Eliminar
             </Button>
           </ModalFooter>
