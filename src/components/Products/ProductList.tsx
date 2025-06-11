@@ -103,7 +103,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
                 <Td py="0.125rem">
                   <Flex justify="center" align="center" h="5rem" w="100%">
                     <Image
-                      src="https://prod-resize.tiendainglesa.com.uy/images/large/P063443-1.jpg?20200608135722,Leche-Entera-CONAPROLE-Ultrapasteurizada-Sachet-1l-en-Tienda-Inglesa"
+                      src="https://www.svgrepo.com/show/508699/landscape-placeholder.svg"
                       objectFit="cover"
                       maxH="100%"
                       maxW="100%"

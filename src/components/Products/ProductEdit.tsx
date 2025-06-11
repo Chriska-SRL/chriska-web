@@ -119,7 +119,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                         src={
                           product.image !== ''
                             ? product.image
-                            : 'https://prod-resize.tiendainglesa.com.uy/images/large/P063443-1.jpg?20200608135722,Leche-Entera-CONAPROLE-Ultrapasteurizada-Sachet-1l-en-Tienda-Inglesa'
+                            : 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
                         }
                         alt={product.name}
                         maxH="20rem"
