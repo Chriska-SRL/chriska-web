@@ -138,11 +138,10 @@ export const RoleList = ({ filterName }: RoleListProps) => {
                   <Th textAlign="center" w="20rem">
                     Nombre
                   </Th>
-                  <Th textAlign="center" maxW="35rem">
+                  <Th textAlign="center" maxW="45rem">
                     Descripción
                   </Th>
-                  <Th w="4rem" px="0"></Th>
-                  <Th w="4rem" pl="1rem" pr="2rem"></Th>
+                  <Th px="0"></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -155,12 +154,12 @@ export const RoleList = ({ filterName }: RoleListProps) => {
                         overflow="hidden"
                         textOverflow="ellipsis"
                         title={role.description}
-                        maxW="35rem"
+                        maxW="45rem"
                       >
                         {role.description}
                       </Box>
                     </Td>
-                    <Td textAlign="center">
+                    {/* <Td textAlign="center">
                       <IconButton
                         aria-label="Ver detalle"
                         icon={<IoMdInformationCircleOutline />}
@@ -169,7 +168,7 @@ export const RoleList = ({ filterName }: RoleListProps) => {
                         size="lg"
                         _hover={{ bg: 'blackAlpha.100' }}
                       />
-                    </Td>
+                    </Td> */}
                     <Td textAlign="center">
                       <IconButton
                         aria-label="Editar rol"
