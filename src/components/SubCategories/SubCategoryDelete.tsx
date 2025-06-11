@@ -14,38 +14,38 @@ import {
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Product } from '@/entities/product';
-import { useDeleteProduct } from '@/hooks/product';
+import { SubCategory } from '@/entities/subcategory';
+import { useDeleteSubCategory } from '@/hooks/subcategory';
 
-type ProductDeleteProps = {
-  product: Product;
+type SubCategoryDeleteProps = {
+  subcategory: SubCategory;
   isUpdating: boolean;
   onDeleted?: () => void;
 };
 
-export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteProps) => {
+export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted }: SubCategoryDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteProductProps, setDeleteProductProps] = useState<number>();
-  const { data: deleted, error, isLoading } = useDeleteProduct(deleteProductProps!!);
+  const [deleteSubCategoryProps, setDeleteSubCategoryProps] = useState<number>();
+  const { data: subcategoryDeleted, error, isLoading } = useDeleteSubCategory(deleteSubCategoryProps!!);
 
   useEffect(() => {
-    if (deleted) {
+    if (subcategoryDeleted) {
       toast({
-        title: 'Producto eliminado',
-        description: `El producto ${product.name} fue eliminado correctamente.`,
+        title: 'Subcategoría eliminada',
+        description: `La subcategoría ${subcategory.name} fue eliminada correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
       setConfirmOpen(false);
-      setDeleteProductProps(undefined);
+      setDeleteSubCategoryProps(undefined);
       onDeleted?.();
       setTimeout(() => {
         window.location.reload();
       }, 1500);
     }
-  }, [deleted]);
+  }, [subcategoryDeleted]);
 
   useEffect(() => {
     if (error) {
@@ -60,13 +60,13 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
   }, [error]);
 
   const handleConfirm = () => {
-    setDeleteProductProps(product.id);
+    setDeleteSubCategoryProps(subcategory.id);
   };
 
   return (
     <>
       <IconButton
-        aria-label="Eliminar producto"
+        aria-label="Eliminar subcategoría"
         icon={<FaTrash />}
         colorScheme="red"
         onClick={() => setConfirmOpen(true)}
@@ -78,7 +78,9 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>¿Seguro que querés eliminar “{product.name}”? Esta acción no se puede deshacer.</Text>
+            <Text>
+              ¿Seguro que querés eliminar la subcategoría "{subcategory.name}"? Esta acción no se puede deshacer.
+            </Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline">

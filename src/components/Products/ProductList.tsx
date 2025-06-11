@@ -1,5 +1,3 @@
-// ProductList.tsx
-
 'use client';
 
 import {
@@ -25,80 +23,11 @@ import { Product } from '@/entities/product';
 import { useGetProducts } from '@/hooks/product';
 import { ProductEdit } from './ProductEdit';
 
-// const products: Product[] = [
-//   {
-//     id: 1,
-//     internalCode: 'PRD001',
-//     barcode: '7891234567890',
-//     name: 'Aceite de Girasol 1L',
-//     price: 129.99,
-//     image: 'https://via.placeholder.com/100x100.png?text=Aceite',
-//     stock: 34,
-//     unitType: 'unidad',
-//     description: 'Aceite vegetal ideal para cocinar.',
-//     temperatureCondition: 'Ambiente',
-//     observation: '',
-//     subCategoryId: 1,
-//   },
-//   {
-//     id: 2,
-//     internalCode: 'PRD002',
-//     barcode: '7891234567891',
-//     name: 'Leche Entera 1L',
-//     price: 75.5,
-//     image: 'https://via.placeholder.com/100x100.png?text=Leche',
-//     stock: 50,
-//     unitType: 'unidad',
-//     description: 'Leche entera pasteurizada.',
-//     temperatureCondition: 'Refrigerado',
-//     observation: 'Consumir antes de 5 días',
-//     subCategoryId: 2,
-//   },
-//   {
-//     id: 3,
-//     internalCode: 'PRD003',
-//     barcode: '7891234567892',
-//     name: 'Harina de Trigo 1kg',
-//     price: 59.0,
-//     image: 'https://via.placeholder.com/100x100.png?text=Harina',
-//     stock: 22,
-//     unitType: 'unidad',
-//     description: 'Harina tipo 000 para panificación.',
-//     temperatureCondition: 'Ambiente',
-//     observation: '',
-//     subCategoryId: 1,
-//   },
-//   {
-//     id: 4,
-//     internalCode: 'PRD004',
-//     barcode: '7891234567893',
-//     name: 'Queso Colonia 300g',
-//     price: 212.75,
-//     image: 'https://via.placeholder.com/100x100.png?text=Queso',
-//     stock: 15,
-//     unitType: 'peso',
-//     description: 'Queso semiduro tradicional uruguayo.',
-//     temperatureCondition: 'Refrigerado',
-//     observation: 'Mantener entre 2°C y 8°C',
-//     subCategoryId: 3,
-//   },
-//   {
-//     id: 5,
-//     internalCode: 'PRD005',
-//     barcode: '7891234567894',
-//     name: 'Galletitas de Avena',
-//     price: 98.25,
-//     image: 'https://via.placeholder.com/100x100.png?text=Galletitas',
-//     stock: 60,
-//     unitType: 'unidad',
-//     description: 'Galletitas dulces con avena y pasas.',
-//     temperatureCondition: 'Ambiente',
-//     observation: '',
-//     subCategoryId: 4,
-//   },
-// ];
+type ProductListProps = {
+  filterName?: string;
+};
 
-export const ProductList = ({ filterName }: { filterName: string }) => {
+export const ProductList = ({ filterName }: ProductListProps) => {
   const { data: products, isLoading, error } = useGetProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -129,8 +58,6 @@ export const ProductList = ({ filterName }: { filterName: string }) => {
     );
   }
 
-  console.log('aca', filteredProducts);
-
   if (!filteredProducts || filteredProducts.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
@@ -150,9 +77,14 @@ export const ProductList = ({ filterName }: { filterName: string }) => {
         <Table variant="simple">
           <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
             <Tr>
+              <Th textAlign="center" maxW="10rem">
+                Categoría
+              </Th>
               <Th textAlign="center">Cód. Interno</Th>
               <Th textAlign="center">Imagen</Th>
-              <Th textAlign="center">Nombre</Th>
+              <Th textAlign="center" maxW="10rem">
+                Nombre
+              </Th>
               <Th textAlign="center">Precio</Th>
               <Th textAlign="center">Stock</Th>
               <Th textAlign="center">Conserv.</Th>
@@ -163,6 +95,10 @@ export const ProductList = ({ filterName }: { filterName: string }) => {
           <Tbody>
             {filteredProducts.map((product) => (
               <Tr key={product.internalCode}>
+                <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                  {product.subCategory.name}
+                </Td>
+
                 <Td textAlign="center">{product.internalCode}</Td>
                 <Td py="0.125rem">
                   <Flex justify="center" align="center" h="5rem" w="100%">
@@ -176,7 +112,10 @@ export const ProductList = ({ filterName }: { filterName: string }) => {
                   </Flex>
                 </Td>
 
-                <Td textAlign="center">{product.name}</Td>
+                <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                  {product.name}
+                </Td>
+
                 <Td textAlign="center">${product.price.toFixed(2)}</Td>
                 <Td textAlign="center">{product.stock}</Td>
                 <Td textAlign="center">{product.temperatureCondition}</Td>

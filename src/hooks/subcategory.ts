@@ -28,7 +28,7 @@ export const useGetSubCategories = (): Result<SubCategory[]> => {
   return { data, isLoading, error };
 };
 
-export const useAddSubCategory = (props?: SubCategory): Result<boolean> => {
+export const useAddSubCategory = (props?: Partial<SubCategory>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();
@@ -53,7 +53,7 @@ export const useAddSubCategory = (props?: SubCategory): Result<boolean> => {
   return { data, isLoading, error };
 };
 
-export const useUpdateSubCategory = (props?: SubCategory): Result<boolean> => {
+export const useUpdateSubCategory = (props?: Partial<SubCategory>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();

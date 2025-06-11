@@ -25,7 +25,6 @@ import { useEffect, useState } from 'react';
 import { validateEmpty } from '@/utils/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetSubCategories } from '@/hooks/subcategory';
-import { Product } from '@/entities/product';
 
 export const ProductAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();

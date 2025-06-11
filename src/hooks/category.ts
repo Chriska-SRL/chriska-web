@@ -28,7 +28,7 @@ export const useGetCategories = (): Result<Category[]> => {
   return { data, isLoading, error };
 };
 
-export const useAddCategory = (props?: Category): Result<boolean> => {
+export const useAddCategory = (props?: Partial<Category>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();
@@ -53,7 +53,7 @@ export const useAddCategory = (props?: Category): Result<boolean> => {
   return { data, isLoading, error };
 };
 
-export const useUpdateCategory = (props?: Category): Result<boolean> => {
+export const useUpdateCategory = (props?: Partial<Category>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [data, setData] = useState<boolean>();
