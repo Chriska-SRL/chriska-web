@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack } from '@chakra-ui/react';
-import { FiChevronDown, FiChevronRight, FiPlus } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
 import { useGetCategories } from '@/hooks/category';
 import { FiEdit } from 'react-icons/fi';
@@ -13,8 +13,14 @@ type CategoryListProps = {
   filterName?: string;
 };
 
+const normalizeText = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
 export const CategoryList = ({ filterName }: CategoryListProps) => {
-  const { data: categories, isLoading, error } = useGetCategories();
+  const { data: categories, isLoading } = useGetCategories();
   const [expandedCategoryId, setExpandedCategoryId] = useState<number | null>(null);
 
   const toggleExpand = (categoryId: number) => {
@@ -29,15 +35,22 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
     );
   }
 
-  const filteredCategories = categories?.filter((cat) =>
-    filterName ? cat.name.toLowerCase().includes(filterName.toLowerCase()) : true,
-  );
+  const normalizedFilter = normalizeText(filterName ?? '');
+
+  const filteredCategories = categories?.filter((cat) => {
+    const catName = normalizeText(cat.name);
+    const matchesCategory = catName.includes(normalizedFilter);
+
+    const matchesSubcategory = cat.subCategories?.some((sub) => normalizeText(sub.name).includes(normalizedFilter));
+
+    return !filterName || matchesCategory || matchesSubcategory;
+  });
 
   if (!filteredCategories || filteredCategories.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron categorias con esos parámetros de búsqueda.
+          No se encontraron categorías con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color="gray.500">
           Inténtelo con otros parámetros.
@@ -50,7 +63,7 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
     <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
       <Box overflowY="auto">
         <VStack spacing="1rem" align="stretch" pb="1rem">
-          {filteredCategories?.map((cat) => (
+          {filteredCategories.map((cat) => (
             <Box
               key={cat.id}
               px="1rem"
