@@ -18,6 +18,7 @@ import {
   useToast,
   Select,
   useDisclosure,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { Field, Formik } from 'formik';
@@ -83,6 +84,7 @@ export const ProductAdd = () => {
           <ModalHeader textAlign="center" fontSize="2rem">
             Crear producto
           </ModalHeader>
+          <ModalCloseButton />
           <Formik
             initialValues={{
               internalCode: '',

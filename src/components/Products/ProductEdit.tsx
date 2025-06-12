@@ -20,6 +20,7 @@ import {
   useToast,
   Image,
   Flex,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
@@ -90,6 +91,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
         <ModalHeader textAlign="center" fontSize="1.75rem">
           Editar producto
         </ModalHeader>
+        <ModalCloseButton />
         <Formik
           initialValues={{
             internalCode: product?.internalCode ?? '',

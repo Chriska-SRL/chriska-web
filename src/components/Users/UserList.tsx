@@ -140,7 +140,7 @@ export const UserList = ({ filterRoleId, filterStateId, filterName }: UserListPr
               <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
                 <Tr>
                   <Th textAlign="center" w="12rem">
-                    Usuario
+                    Nombre de usuario
                   </Th>
                   <Th textAlign="center" w="12rem">
                     Nombre

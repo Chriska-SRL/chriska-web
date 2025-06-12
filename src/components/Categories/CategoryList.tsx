@@ -21,10 +21,16 @@ const normalizeText = (text: string) =>
 
 export const CategoryList = ({ filterName }: CategoryListProps) => {
   const { data: categories, isLoading } = useGetCategories();
-  const [expandedCategoryId, setExpandedCategoryId] = useState<number | null>(null);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
+  // 2. Cambiar el toggle:
   const toggleExpand = (categoryId: number) => {
-    setExpandedCategoryId((prevId) => (prevId === categoryId ? null : categoryId));
+    setExpandedCategoryIds(
+      (prevIds) =>
+        prevIds.includes(categoryId)
+          ? prevIds.filter((id) => id !== categoryId) // Si ya está, lo saca (colapsa)
+          : [...prevIds, categoryId], // Si no está, lo agrega (expande)
+    );
   };
 
   if (isLoading) {
@@ -82,11 +88,11 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                   </Text>
                 </Box>
                 <Flex alignItems="center" gap="1rem">
-                  <SubCategoryAdd categoryId={cat.id} />
+                  <SubCategoryAdd category={cat} />
                   <CategoryEdit category={cat} />
                   <IconButton
                     aria-label="Expandir categoría"
-                    icon={expandedCategoryId === cat.id ? <FiChevronDown /> : <FiChevronRight />}
+                    icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
                     size="md"
                     bg="transparent"
                     _hover={{ bg: '#e0dede' }}
@@ -95,7 +101,7 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                 </Flex>
               </Flex>
 
-              <Collapse in={expandedCategoryId === cat.id} animateOpacity>
+              <Collapse in={expandedCategoryIds.includes(cat.id)} animateOpacity>
                 <Box pt="0.75rem">
                   <Divider mb="0.5rem" />
                   {cat.subCategories.length === 0 ? (
