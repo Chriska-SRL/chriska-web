@@ -134,7 +134,7 @@ export const UserAdd = () => {
                       <FormLabel>Rol</FormLabel>
                       <Field
                         as={Select}
-                        name="role"
+                        name="roleId"
                         placeholder="Seleccionar rol"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
