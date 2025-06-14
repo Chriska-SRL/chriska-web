@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Result } from './result';
+import { FieldError, Result } from './result';
 import { Role } from '@/entities/role';
 import { getRoles, addRole, updateRole, deleteRole } from '@/services/role';
 
@@ -31,6 +31,7 @@ export const useGetRoles = (): Result<Role[]> => {
 export const useAddRole = (props?: Partial<Role>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [fieldError, setFieldError] = useState<FieldError>();
   const [data, setData] = useState<boolean>();
 
   useEffect(() => {
@@ -40,8 +41,22 @@ export const useAddRole = (props?: Partial<Role>): Result<boolean> => {
         try {
           const result = await addRole(props);
           setData(result);
+          setError(undefined);
+          setFieldError(undefined);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed?.campo && parsed?.error) {
+              setFieldError(parsed);
+              setError(undefined);
+            } else {
+              setError(err.message || 'Error desconocido');
+              setFieldError(undefined);
+            }
+          } catch {
+            setError(err.message || 'Error desconocido');
+            setFieldError(undefined);
+          }
         }
         setIsLoading(false);
       };
@@ -50,12 +65,13 @@ export const useAddRole = (props?: Partial<Role>): Result<boolean> => {
     }
   }, [props]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, fieldError };
 };
 
 export const useUpdateRole = (props?: Partial<Role>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [fieldError, setFieldError] = useState<FieldError>();
   const [data, setData] = useState<boolean>();
 
   useEffect(() => {
@@ -65,8 +81,22 @@ export const useUpdateRole = (props?: Partial<Role>): Result<boolean> => {
         try {
           const result = await updateRole(props);
           setData(result);
+          setError(undefined);
+          setFieldError(undefined);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed?.campo && parsed?.error) {
+              setFieldError(parsed);
+              setError(undefined);
+            } else {
+              setError(err.message || 'Error desconocido');
+              setFieldError(undefined);
+            }
+          } catch {
+            setError(err.message || 'Error desconocido');
+            setFieldError(undefined);
+          }
         }
         setIsLoading(false);
       };
@@ -74,7 +104,7 @@ export const useUpdateRole = (props?: Partial<Role>): Result<boolean> => {
     }
   }, [props]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, fieldError };
 };
 
 export const useDeleteRole = (id?: number): Result<boolean> => {

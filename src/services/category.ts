@@ -16,5 +16,5 @@ export const updateCategory = (category: Partial<Category>): Promise<boolean> =>
 };
 
 export const deleteCategory = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Categories`, { id }, true);
+  return del<boolean>(`${API_URL}/Categories/${id}`, true);
 };

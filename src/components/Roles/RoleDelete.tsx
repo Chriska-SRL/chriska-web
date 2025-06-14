@@ -27,7 +27,7 @@ export const RoleDelete = ({ role, isUpdating, onDeleted }: RoleDeleteProps) => 
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteRoleProps, setDeleteRoleProps] = useState<number>();
-  const { data: roleDeleted, error, isLoading } = useDeleteRole(deleteRoleProps!!);
+  const { data: roleDeleted, error, isLoading } = useDeleteRole(deleteRoleProps);
 
   useEffect(() => {
     if (roleDeleted) {

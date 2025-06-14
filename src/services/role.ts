@@ -16,5 +16,5 @@ export const updateRole = (role: Partial<Role>): Promise<boolean> => {
 };
 
 export const deleteRole = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Roles`, { id }, true);
+  return del<boolean>(`${API_URL}/Roles/${id}`, true);
 };

@@ -39,7 +39,7 @@ export const CategoryEdit = ({ category }: CategoryEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
-  const { data, error, isLoading } = useUpdateCategory(categoryProps);
+  const { data, isLoading, error, fieldError } = useUpdateCategory(categoryProps);
 
   useEffect(() => {
     if (data) {
@@ -59,20 +59,28 @@ export const CategoryEdit = ({ category }: CategoryEditProps) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
-  const handleSubmit = (values: { name: string; description: string }) => {
+  const handleSubmit = (values: { id: number; name: string; description: string }) => {
     const updatedCategory = {
-      id: category.id,
+      id: values.id,
       name: values.name,
       description: values.description,
     };
@@ -98,7 +106,7 @@ export const CategoryEdit = ({ category }: CategoryEditProps) => {
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ name: category.name, description: category.description }}
+            initialValues={{ id: category.id, name: category.name, description: category.description }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}

@@ -26,17 +26,19 @@ import { useEffect, useState } from 'react';
 import { validateEmpty } from '@/utils/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
+import { Product } from '@/entities/product';
 
 export const ProductAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const [productProps, setProductProps] = useState<any>();
-  const { data, error, isLoading } = useAddProduct(productProps);
-  const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
+  const [productProps, setProductProps] = useState<Partial<Product>>();
+  const { data, isLoading, error, fieldError } = useAddProduct(productProps);
+
+  const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
-  const subcategories = selectedCategory?.subCategories ?? [];
 
   useEffect(() => {
     if (data) {
@@ -54,16 +56,24 @@ export const ProductAdd = () => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   return (
     <>
@@ -87,7 +97,7 @@ export const ProductAdd = () => {
           <ModalCloseButton />
           <Formik
             initialValues={{
-              internalCode: '',
+              // internalCode: '',
               barcode: '',
               name: '',
               price: 0,
@@ -99,7 +109,7 @@ export const ProductAdd = () => {
               subCategoryId: 0,
               image: '',
             }}
-            onSubmit={(values) => setProductProps({ ...values, image: '' })}
+            onSubmit={(values) => setProductProps(values)}
             validateOnChange
             validateOnBlur={false}
           >
@@ -107,7 +117,7 @@ export const ProductAdd = () => {
               <form onSubmit={handleSubmit}>
                 <ModalBody>
                   <VStack spacing="1rem">
-                    <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                    {/* <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                       <FormLabel>Código interno</FormLabel>
                       <Field
                         as={Input}
@@ -121,22 +131,22 @@ export const ProductAdd = () => {
                         borderColor="#f5f5f7"
                         disabled={isLoading}
                       />
-                    </FormControl>
+                    </FormControl> */}
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>
                       <Field
                         as={Input}
                         name="barcode"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
                           if (emptyError) return emptyError;
                           const barcodeRegex = /^\d{13}$/;
                           return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
                         }}
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        disabled={isLoading}
                       />
                     </FormControl>
 
@@ -145,10 +155,10 @@ export const ProductAdd = () => {
                       <Field
                         as={Input}
                         name="name"
-                        validate={validateEmpty}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
+                        validate={validateEmpty}
                       />
                     </FormControl>
 
@@ -158,14 +168,14 @@ export const ProductAdd = () => {
                         as={Input}
                         name="price"
                         type="number"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
                           if (emptyError) return emptyError;
                           return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
                         }}
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        disabled={isLoading}
                       />
                     </FormControl>
 
@@ -175,14 +185,14 @@ export const ProductAdd = () => {
                         as={Input}
                         name="stock"
                         type="number"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
                           if (emptyError) return emptyError;
                           return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
                         }}
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        disabled={isLoading}
                       />
                     </FormControl>
 
@@ -192,22 +202,29 @@ export const ProductAdd = () => {
                         as={Select}
                         name="unitType"
                         placeholder="Seleccionar unidad"
-                        validate={validateEmpty}
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
                         disabled={isLoading}
+                        validate={validateEmpty}
                       >
-                        <option value="K">Kilos</option>
-                        <option value="U">Unidades</option>
+                        <option value="Kilo">Kilos</option>
+                        <option value="Unit">Unidades</option>
                       </Field>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl isInvalid={submitCount > 0 && !!errors.description}>
                       <FormLabel>Descripción</FormLabel>
-                      <Field as={Textarea} name="description" bg="#f5f5f7" borderColor="#f5f5f7" />
+                      <Field
+                        as={Textarea}
+                        name="description"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        disabled={isLoading}
+                        validate={validateEmpty}
+                      />
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
                       <FormLabel>Condición de temperatura</FormLabel>
                       <Field
                         as={Select}
@@ -215,16 +232,18 @@ export const ProductAdd = () => {
                         placeholder="Seleccione una opción"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
+                        disabled={isLoading}
+                        validate={validateEmpty}
                       >
-                        <option value="Frio">Frío</option>
-                        <option value="Congelado">Congelado</option>
-                        <option value="Natural">Natural</option>
+                        <option value="Cold">Frío</option>
+                        <option value="Frozen">Congelado</option>
+                        <option value="Ambient">Natural</option>
                       </Field>
                     </FormControl>
 
                     <FormControl>
                       <FormLabel>Observaciones</FormLabel>
-                      <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" />
+                      <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" disabled={isLoading} />
                     </FormControl>
 
                     <FormControl>
@@ -237,7 +256,7 @@ export const ProductAdd = () => {
                         onChange={(e) => {
                           const selectedId = Number(e.target.value);
                           setSelectedCategoryId(selectedId);
-                          values.subCategoryId = 0; // Reinicia subcategoría
+                          values.subCategoryId = 0;
                         }}
                         disabled={isLoading || isLoadingCats}
                       >
@@ -257,10 +276,10 @@ export const ProductAdd = () => {
                         placeholder="Seleccionar subcategoría"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"
-                        validate={validateEmpty}
                         disabled={isLoading || !selectedCategoryId}
+                        validate={validateEmpty}
                       >
-                        {subcategories.map((sub: any) => (
+                        {selectedCategory?.subCategories.map((sub: any) => (
                           <option key={sub.id} value={sub.id}>
                             {sub.name}
                           </option>

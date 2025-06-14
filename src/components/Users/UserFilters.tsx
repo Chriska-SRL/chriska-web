@@ -62,6 +62,7 @@ export const UserFilters = ({
         borderColor="#f2f2f2"
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
+        color="grey"
       >
         <option value="-1">Filtrar por rol</option>
         {roles?.map((r) => (
@@ -78,6 +79,7 @@ export const UserFilters = ({
         borderColor="#f2f2f2"
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
+        color="grey"
       >
         <option value="-1">Filtrar por estado</option>
         <option value="activo">Activo</option>
@@ -89,6 +91,7 @@ export const UserFilters = ({
           placeholder="Buscar por nombre..."
           value={filterName}
           onChange={handleNameChange}
+          disabled={isLoading}
           bg="#f2f2f2"
           borderColor="#f2f2f2"
         />

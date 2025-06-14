@@ -80,7 +80,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
               <Th textAlign="center" maxW="10rem">
                 Categoría
               </Th>
-              <Th textAlign="center">Cód. Interno</Th>
+              <Th textAlign="center">Cód. Barras</Th>
               <Th textAlign="center">Imagen</Th>
               <Th textAlign="center" maxW="10rem">
                 Nombre
@@ -94,12 +94,12 @@ export const ProductList = ({ filterName }: ProductListProps) => {
           </Thead>
           <Tbody>
             {filteredProducts.map((product) => (
-              <Tr key={product.internalCode}>
+              <Tr key={product.id}>
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.subCategory.name}
                 </Td>
 
-                <Td textAlign="center">{product.internalCode}</Td>
+                <Td textAlign="center">{product.barcode}</Td>
                 <Td py="0.125rem">
                   <Flex justify="center" align="center" h="5rem" w="100%">
                     <Image

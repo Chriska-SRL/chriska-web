@@ -32,4 +32,4 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth = fa
 export const get = <T>(url: string, withAuth = false) => request<T>('GET', url, undefined, withAuth);
 export const post = <T>(url: string, data: any, withAuth = false) => request<T>('POST', url, data, withAuth);
 export const put = <T>(url: string, data: any, withAuth = false) => request<T>('PUT', url, data, withAuth);
-export const del = <T>(url: string, data: any, withAuth = false) => request<T>('DELETE', url, data, withAuth);
+export const del = <T>(url: string, withAuth = false) => request<T>('DELETE', url, undefined, withAuth);

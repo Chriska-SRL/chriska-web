@@ -27,7 +27,7 @@ export const UserDelete = ({ user, isUpdating, onDeleted }: UserDeleteProps) => 
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteUserProps, setDeleteUserProps] = useState<number>();
-  const { data: userDeleted, error, isLoading } = useDeleteUser(deleteUserProps!!);
+  const { data: userDeleted, error, isLoading } = useDeleteUser(deleteUserProps);
 
   useEffect(() => {
     if (userDeleted) {

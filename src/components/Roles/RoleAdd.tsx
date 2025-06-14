@@ -38,8 +38,7 @@ export const RoleAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
-  const { data, error, isLoading } = useAddRole(roleProps);
-  const { data: roles } = useGetRoles();
+  const { data, isLoading, error, fieldError } = useAddRole(roleProps);
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -68,16 +67,24 @@ export const RoleAdd = () => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { name: string; description: string; permissions: number[] }) => {
     const role = {
@@ -118,7 +125,6 @@ export const RoleAdd = () => {
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
                   <Flex direction={{ base: 'column', md: 'row' }} gap="2rem" align="stretch">
-                    {/* Columna izquierda: permisos */}
                     <Box flex="1" minW={0}>
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
@@ -164,7 +170,6 @@ export const RoleAdd = () => {
                       </FormControl>
                     </Box>
 
-                    {/* Columna derecha: nombre, descripción y botón */}
                     <Flex flex="1" flexDir="column" minW={0}>
                       <Box>
                         <VStack spacing="1rem" align="stretch">

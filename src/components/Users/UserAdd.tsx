@@ -32,7 +32,7 @@ export const UserAdd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [userProps, setUserProps] = useState<Partial<User>>();
-  const { data, error, isLoading } = useAddUser(userProps);
+  const { data, isLoading, error, fieldError } = useAddUser(userProps);
   const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
 
   useEffect(() => {
@@ -53,16 +53,24 @@ export const UserAdd = () => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { username: string; name: string; roleId: number; estado: string }) => {
     const user = {
@@ -143,7 +151,7 @@ export const UserAdd = () => {
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
-                        disabled={isLoading}
+                        disabled={isLoadingRoles || isLoading}
                       >
                         {roles?.map((role) => (
                           <option key={role.id} value={role.id}>

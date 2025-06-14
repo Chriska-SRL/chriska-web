@@ -39,7 +39,7 @@ export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
-  const { data, error, isLoading } = useUpdateSubCategory(subCategoryProps);
+  const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
 
   useEffect(() => {
     if (data) {
@@ -59,16 +59,24 @@ export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { name: string; description: string }) => {
     const updatedSubCategory = {
