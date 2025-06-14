@@ -19,6 +19,7 @@ import {
   Text,
   Textarea,
   IconButton,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -26,12 +27,13 @@ import { useEffect, useState } from 'react';
 import { validateEmpty } from '@/utils/validate';
 import { SubCategory } from '@/entities/subcategory';
 import { useAddSubCategory } from '@/hooks/subcategory';
+import { Category } from '@/entities/category';
 
 type SubCategoryAddProps = {
-  categoryId: number;
+  category: Category;
 };
 
-export const SubCategoryAdd = ({ categoryId }: SubCategoryAddProps) => {
+export const SubCategoryAdd = ({ category }: SubCategoryAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -70,7 +72,7 @@ export const SubCategoryAdd = ({ categoryId }: SubCategoryAddProps) => {
     const subcategory = {
       name: values.name,
       description: values.description,
-      categoryId,
+      categoryId: category.id,
     };
     setSubCategoryProps(subcategory);
   };
@@ -92,8 +94,9 @@ export const SubCategoryAdd = ({ categoryId }: SubCategoryAddProps) => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear subcategoría
           </ModalHeader>
+          <ModalCloseButton />
           <Formik
-            initialValues={{ name: '', description: '' }}
+            initialValues={{ category: category.name, name: '', description: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -102,6 +105,20 @@ export const SubCategoryAdd = ({ categoryId }: SubCategoryAddProps) => {
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="1rem">
+                    <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
+                      <FormLabel>Categoría</FormLabel>
+                      <Field
+                        as={Input}
+                        name="category"
+                        type="text"
+                        bg="#f5f5f7"
+                        borderColor="#f5f5f7"
+                        h="2.75rem"
+                        validate={validateEmpty}
+                        disabled
+                      />
+                    </FormControl>
+
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
                       <Field

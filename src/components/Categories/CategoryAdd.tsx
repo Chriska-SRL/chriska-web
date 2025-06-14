@@ -18,6 +18,7 @@ import {
   Box,
   Text,
   Textarea,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -88,6 +89,7 @@ export const CategoryAdd = () => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear categoría
           </ModalHeader>
+          <ModalCloseButton />
           <Formik
             initialValues={{ name: '', description: '' }}
             onSubmit={handleSubmit}

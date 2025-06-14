@@ -18,6 +18,7 @@ import {
   Progress,
   Box,
   Text,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -92,6 +93,7 @@ export const UserAdd = () => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear usuario
           </ModalHeader>
+          <ModalCloseButton />
           <Formik
             initialValues={{ username: '', name: '', roleId: 0, estado: '' }}
             onSubmit={handleSubmit}
@@ -134,7 +136,7 @@ export const UserAdd = () => {
                       <FormLabel>Rol</FormLabel>
                       <Field
                         as={Select}
-                        name="role"
+                        name="roleId"
                         placeholder="Seleccionar rol"
                         bg="#f5f5f7"
                         borderColor="#f5f5f7"

@@ -17,6 +17,7 @@ import {
   Box,
   Text,
   useToast,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
@@ -88,6 +89,7 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
         <ModalHeader textAlign="center" fontSize="1.75rem" pb="0.5rem">
           Editar usuario
         </ModalHeader>
+        <ModalCloseButton />
         <Formik
           initialValues={{
             id: user?.id ?? 0,

@@ -20,6 +20,7 @@ import {
   IconButton,
   Textarea,
   Flex,
+  ModalCloseButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -96,6 +97,7 @@ export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Editar subcategoría
           </ModalHeader>
+          <ModalCloseButton />
           <Formik
             initialValues={{ name: subcategory.name, description: subcategory.description }}
             onSubmit={handleSubmit}

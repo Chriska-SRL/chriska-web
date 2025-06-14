@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack } from '@chakra-ui/react';
-import { FiChevronDown, FiChevronRight, FiPlus } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
 import { useGetCategories } from '@/hooks/category';
 import { FiEdit } from 'react-icons/fi';
@@ -13,12 +13,24 @@ type CategoryListProps = {
   filterName?: string;
 };
 
-export const CategoryList = ({ filterName }: CategoryListProps) => {
-  const { data: categories, isLoading, error } = useGetCategories();
-  const [expandedCategoryId, setExpandedCategoryId] = useState<number | null>(null);
+const normalizeText = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 
+export const CategoryList = ({ filterName }: CategoryListProps) => {
+  const { data: categories, isLoading } = useGetCategories();
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
+
+  // 2. Cambiar el toggle:
   const toggleExpand = (categoryId: number) => {
-    setExpandedCategoryId((prevId) => (prevId === categoryId ? null : categoryId));
+    setExpandedCategoryIds(
+      (prevIds) =>
+        prevIds.includes(categoryId)
+          ? prevIds.filter((id) => id !== categoryId) // Si ya está, lo saca (colapsa)
+          : [...prevIds, categoryId], // Si no está, lo agrega (expande)
+    );
   };
 
   if (isLoading) {
@@ -29,15 +41,22 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
     );
   }
 
-  const filteredCategories = categories?.filter((cat) =>
-    filterName ? cat.name.toLowerCase().includes(filterName.toLowerCase()) : true,
-  );
+  const normalizedFilter = normalizeText(filterName ?? '');
+
+  const filteredCategories = categories?.filter((cat) => {
+    const catName = normalizeText(cat.name);
+    const matchesCategory = catName.includes(normalizedFilter);
+
+    const matchesSubcategory = cat.subCategories?.some((sub) => normalizeText(sub.name).includes(normalizedFilter));
+
+    return !filterName || matchesCategory || matchesSubcategory;
+  });
 
   if (!filteredCategories || filteredCategories.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron categorias con esos parámetros de búsqueda.
+          No se encontraron categorías con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color="gray.500">
           Inténtelo con otros parámetros.
@@ -50,7 +69,7 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
     <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
       <Box overflowY="auto">
         <VStack spacing="1rem" align="stretch" pb="1rem">
-          {filteredCategories?.map((cat) => (
+          {filteredCategories.map((cat) => (
             <Box
               key={cat.id}
               px="1rem"
@@ -69,11 +88,11 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                   </Text>
                 </Box>
                 <Flex alignItems="center" gap="1rem">
-                  <SubCategoryAdd categoryId={cat.id} />
+                  <SubCategoryAdd category={cat} />
                   <CategoryEdit category={cat} />
                   <IconButton
                     aria-label="Expandir categoría"
-                    icon={expandedCategoryId === cat.id ? <FiChevronDown /> : <FiChevronRight />}
+                    icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
                     size="md"
                     bg="transparent"
                     _hover={{ bg: '#e0dede' }}
@@ -82,7 +101,7 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                 </Flex>
               </Flex>
 
-              <Collapse in={expandedCategoryId === cat.id} animateOpacity>
+              <Collapse in={expandedCategoryIds.includes(cat.id)} animateOpacity>
                 <Box pt="0.75rem">
                   <Divider mb="0.5rem" />
                   {cat.subCategories.length === 0 ? (

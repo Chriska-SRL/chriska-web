@@ -104,11 +104,10 @@ export const RoleAdd = () => {
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90vh">
-          <ModalCloseButton />
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Crear rol
           </ModalHeader>
-
+          <ModalCloseButton />
           <Formik
             initialValues={{ name: '', description: '', permissions: [] as number[] }}
             onSubmit={handleSubmit}
