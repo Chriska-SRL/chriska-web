@@ -16,5 +16,5 @@ export const updateUser = (user: Partial<User>): Promise<boolean> => {
 };
 
 export const deleteUser = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Users`, { id }, true);
+  return del<boolean>(`${API_URL}/Users/${id}`, true);
 };

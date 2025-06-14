@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Result } from './result';
+import { FieldError, Result } from './result';
 import { Category } from '@/entities/category';
 import { getCategories, addCategory, updateCategory, deleteCategory } from '@/services/category';
 
@@ -31,6 +31,7 @@ export const useGetCategories = (): Result<Category[]> => {
 export const useAddCategory = (props?: Partial<Category>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [fieldError, setFieldError] = useState<FieldError>();
   const [data, setData] = useState<boolean>();
 
   useEffect(() => {
@@ -40,22 +41,36 @@ export const useAddCategory = (props?: Partial<Category>): Result<boolean> => {
         try {
           const result = await addCategory(props);
           setData(result);
+          setError(undefined);
+          setFieldError(undefined);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed?.campo && parsed?.error) {
+              setFieldError(parsed);
+              setError(undefined);
+            } else {
+              setError(err.message || 'Error desconocido');
+              setFieldError(undefined);
+            }
+          } catch {
+            setError(err.message || 'Error desconocido');
+            setFieldError(undefined);
+          }
         }
         setIsLoading(false);
       };
-
       fetchData();
     }
   }, [props]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, fieldError };
 };
 
 export const useUpdateCategory = (props?: Partial<Category>): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [fieldError, setFieldError] = useState<FieldError>();
   const [data, setData] = useState<boolean>();
 
   useEffect(() => {
@@ -65,8 +80,22 @@ export const useUpdateCategory = (props?: Partial<Category>): Result<boolean> =>
         try {
           const result = await updateCategory(props);
           setData(result);
+          setError(undefined);
+          setFieldError(undefined);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            if (parsed?.campo && parsed?.error) {
+              setFieldError(parsed);
+              setError(undefined);
+            } else {
+              setError(err.message || 'Error desconocido');
+              setFieldError(undefined);
+            }
+          } catch {
+            setError(err.message || 'Error desconocido');
+            setFieldError(undefined);
+          }
         }
         setIsLoading(false);
       };
@@ -74,7 +103,7 @@ export const useUpdateCategory = (props?: Partial<Category>): Result<boolean> =>
     }
   }, [props]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, fieldError };
 };
 
 export const useDeleteCategory = (id?: number): Result<boolean> => {

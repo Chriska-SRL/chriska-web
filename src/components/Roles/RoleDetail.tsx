@@ -26,13 +26,13 @@ import {
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { Role } from '@/entities/role';
 
-type Props = {
+type RoleDetailProps = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
 };
 
-export const RoleDetail = ({ isOpen, onClose, role }: Props) => {
+export const RoleDetail = ({ isOpen, onClose, role }: RoleDetailProps) => {
   if (!role) return null;
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(

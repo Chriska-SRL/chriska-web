@@ -37,7 +37,7 @@ export const SubCategoryAdd = ({ category }: SubCategoryAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
-  const { data, error, isLoading } = useAddSubCategory(subCategoryProps);
+  const { data, isLoading, error, fieldError } = useAddSubCategory(subCategoryProps);
 
   useEffect(() => {
     if (data) {
@@ -57,16 +57,24 @@ export const SubCategoryAdd = ({ category }: SubCategoryAddProps) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { name: string; description: string }) => {
     const subcategory = {

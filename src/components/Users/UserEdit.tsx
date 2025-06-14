@@ -28,25 +28,24 @@ import { useEffect, useState } from 'react';
 import { useUpdateUser } from '@/hooks/user';
 import { validateEmpty } from '@/utils/validate';
 
-type Props = {
+type UserEditProps = {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
 };
 
-export const UserEdit = ({ isOpen, onClose, user }: Props) => {
+export const UserEdit = ({ isOpen, onClose, user }: UserEditProps) => {
   const toast = useToast();
-  const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
+  const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const [userProps, setUserProps] = useState<Partial<User>>();
-  const { data, error, isLoading } = useUpdateUser(userProps);
+  const { data, error, isLoading, fieldError } = useUpdateUser(userProps);
 
   useEffect(() => {
     if (data) {
-      console.log(data);
       toast({
         title: 'Usuario modificado',
-        description: `El usuario ha sido modificado correctamente.`,
+        description: 'El usuario ha sido modificado correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -60,16 +59,24 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { id: number; username: string; name: string; roleId: number; estado: string }) => {
     const user = {
@@ -99,14 +106,18 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
             estado: user?.isEnabled ? 'Activo' : 'Inactivo',
           }}
           onSubmit={handleSubmit}
-          validateOnChange={true}
+          validateOnChange
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
+          {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0">
                 <VStack spacing="1rem">
-                  <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
+                  <FormControl
+                    isInvalid={
+                      (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
+                    }
+                  >
                     <FormLabel>Nombre de usuario</FormLabel>
                     <Field
                       as={Input}
@@ -116,11 +127,18 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
+                      disabled={isLoading}
                     />
+                    {fieldError?.campo === 'Username' && (
+                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                        {fieldError.error}
+                      </Text>
+                    )}
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                  <FormControl
+                    isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
+                  >
                     <FormLabel>Nombre</FormLabel>
                     <Field
                       as={Input}
@@ -130,11 +148,18 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
+                      disabled={isLoading}
                     />
+                    {fieldError?.campo === 'Name' && (
+                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                        {fieldError.error}
+                      </Text>
+                    )}
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
+                  <FormControl
+                    isInvalid={(submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'}
+                  >
                     <FormLabel>Rol</FormLabel>
                     <Field
                       as={Select}
@@ -144,7 +169,7 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading || isLoadingRoles}
+                      disabled={isLoading || isLoadingRoles}
                     >
                       {roles?.map((r) => (
                         <option key={r.id} value={r.id}>
@@ -152,9 +177,16 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                         </option>
                       ))}
                     </Field>
+                    {fieldError?.campo === 'RoleId' && (
+                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                        {fieldError.error}
+                      </Text>
+                    )}
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
+                  <FormControl
+                    isInvalid={(submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'}
+                  >
                     <FormLabel>Estado</FormLabel>
                     <Field
                       as={Select}
@@ -164,11 +196,16 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                       borderColor="#f5f5f7"
                       h="2.75rem"
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
+                      disabled={isLoading}
                     >
                       <option value="Activo">Activo</option>
                       <option value="Inactivo">Inactivo</option>
                     </Field>
+                    {fieldError?.campo === 'Estado' && (
+                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                        {fieldError.error}
+                      </Text>
+                    )}
                   </FormControl>
 
                   {submitCount > 0 && Object.keys(errors).length > 0 && (
@@ -184,10 +221,10 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
               <ModalFooter pb="1.5rem">
                 <Box mt="0.5rem" w="100%">
                   <Progress
-                    h={isSubmitting ? '4px' : '1px'}
+                    h={isLoading ? '4px' : '1px'}
                     mb="1.25rem"
                     size="xs"
-                    isIndeterminate={isSubmitting}
+                    isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
@@ -196,11 +233,11 @@ export const UserEdit = ({ isOpen, onClose, user }: Props) => {
                       type="submit"
                       bg="#4C88D8"
                       color="white"
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                       _hover={{ backgroundColor: '#376bb0' }}
                       width="100%"
                       leftIcon={<FaCheck />}
-                      fontSize="0.95rem"
+                      fontSize="1rem"
                     >
                       Guardar cambios
                     </Button>

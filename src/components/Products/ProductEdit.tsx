@@ -31,17 +31,17 @@ import { ProductDelete } from './ProductDelete';
 import { validateEmpty } from '@/utils/validate';
 import { useGetCategories } from '@/hooks/category';
 
-type Props = {
+type ProductEditProps = {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
 };
 
-export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
+export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
   const toast = useToast();
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
-  const { data, error, isLoading } = useUpdateProduct(productProps);
+  const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
   );
@@ -71,16 +71,24 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   if (!product) return null;
 
@@ -94,7 +102,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
         <ModalCloseButton />
         <Formik
           initialValues={{
-            internalCode: product?.internalCode ?? '',
+            // internalCode: product?.internalCode ?? '',
+            id: product?.id ?? 0,
             barcode: product?.barcode ?? '',
             name: product?.name ?? '',
             price: product?.price ?? 0,
@@ -106,11 +115,11 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
             subCategoryId: product?.subCategory.id ?? 0,
             image: product?.image ?? '',
           }}
-          onSubmit={(values) => setProductProps({ ...values, id: product.id })}
+          onSubmit={(values) => setProductProps(values)}
           validateOnChange={true}
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, touched, submitCount, isSubmitting }) => (
+          {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody>
                 <VStack spacing="1rem">
@@ -129,7 +138,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                     </Flex>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                  {/* <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                     <FormLabel>Código interno</FormLabel>
                     <Field
                       as={Input}
@@ -141,9 +150,9 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                         if (emptyError) return emptyError;
                         return value.length === 5 ? undefined : 'Debe tener exactamente 5 caracteres';
                       }}
-                      disabled={isSubmitting || isLoading}
+                      disabled={isLoading}
                     />
-                  </FormControl>
+                  </FormControl> */}
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                     <FormLabel>Código de barras</FormLabel>
@@ -152,6 +161,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       name="barcode"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
+                      disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
                         if (emptyError) return emptyError;
@@ -160,7 +170,6 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                           ? undefined
                           : 'El código de barras debe tener exactamente 13 dígitos numéricos';
                       }}
-                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
@@ -171,8 +180,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       name="name"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
+                      disabled={isLoading}
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
@@ -184,12 +193,12 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       type="number"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
+                      disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
                         if (emptyError) return emptyError;
                         return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
                       }}
-                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
@@ -201,12 +210,12 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       type="number"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
+                      disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
                         if (emptyError) return emptyError;
                         return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
                       }}
-                      disabled={isSubmitting || isLoading}
                     />
                   </FormControl>
 
@@ -217,18 +226,25 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       name="unitType"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      validate={validateEmpty}
-                      disabled={isSubmitting || isLoading}
                       placeholder="Seleccione una opción"
+                      disabled={isLoading}
+                      validate={validateEmpty}
                     >
-                      <option value="K">Kilos</option>
-                      <option value="U">Unidades</option>
+                      <option value="Kilo">Kilos</option>
+                      <option value="Unit">Unidades</option>
                     </Field>
                   </FormControl>
 
                   <FormControl>
                     <FormLabel>Descripción</FormLabel>
-                    <Field as={Textarea} name="description" bg="#f5f5f7" borderColor="#f5f5f7" />
+                    <Field
+                      as={Textarea}
+                      name="description"
+                      bg="#f5f5f7"
+                      borderColor="#f5f5f7"
+                      disabled={isLoading}
+                      validate={validateEmpty}
+                    />
                   </FormControl>
 
                   <FormControl>
@@ -239,16 +255,25 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
                       placeholder="Seleccione una opción"
+                      disabled={isLoading}
+                      validate={validateEmpty}
                     >
-                      <option value="Frio">Frío</option>
-                      <option value="Congelado">Congelado</option>
-                      <option value="Natural">Natural</option>
+                      <option value="Cold">Frío</option>
+                      <option value="Frozen">Congelado</option>
+                      <option value="Ambient">Natural</option>
                     </Field>
                   </FormControl>
 
                   <FormControl>
                     <FormLabel>Observaciones</FormLabel>
-                    <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" />
+                    <Field
+                      as={Textarea}
+                      name="observation"
+                      bg="#f5f5f7"
+                      borderColor="#f5f5f7"
+                      disabled={isLoading}
+                      validate={validateEmpty}
+                    />
                   </FormControl>
 
                   <FormControl>
@@ -258,8 +283,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
                       value={selectedCategoryId ?? ''}
+                      disabled={isLoadingCats}
                       onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
-                      disabled={isSubmitting || isLoadingCats}
                     >
                       {categories?.map((cat) => (
                         <option key={cat.id} value={cat.id}>
@@ -277,8 +302,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
                       placeholder="Seleccionar subcategoría"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
+                      disabled={isLoadingCats || !selectedCategoryId}
                       validate={validateEmpty}
-                      disabled={isSubmitting || isLoadingCats || !selectedCategoryId}
                     >
                       {filteredSubCategories.map((sub) => (
                         <option key={sub.id} value={sub.id}>
@@ -301,19 +326,19 @@ export const ProductEdit = ({ isOpen, onClose, product }: Props) => {
               <ModalFooter pb="1.5rem">
                 <Box mt="0.5rem" w="100%">
                   <Progress
-                    h={isSubmitting ? '4px' : '1px'}
+                    h={isLoading ? '4px' : '1px'}
                     mb="1.25rem"
                     size="xs"
-                    isIndeterminate={isSubmitting}
+                    isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    <ProductDelete product={product} onDeleted={onClose} isUpdating={isSubmitting} />
+                    <ProductDelete product={product} onDeleted={onClose} isUpdating={isLoading} />
                     <Button
                       type="submit"
                       bg="#4C88D8"
                       color="white"
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                       _hover={{ backgroundColor: '#376bb0' }}
                       width="100%"
                       leftIcon={<FaCheck />}

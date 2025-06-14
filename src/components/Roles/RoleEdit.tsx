@@ -36,18 +36,18 @@ import { useEffect, useState } from 'react';
 import { useUpdateRole } from '@/hooks/roles';
 import { validateEmpty } from '@/utils/validate';
 
-type Props = {
+type RoleEditProps = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
   onSave: (updatedRole: Role) => void;
 };
 
-export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
+export const RoleEdit = ({ isOpen, onClose, role }: RoleEditProps) => {
   const toast = useToast();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
-  const { data, error, isLoading } = useUpdateRole(roleProps);
+  const { data, error, isLoading, fieldError } = useUpdateRole(roleProps);
 
   useEffect(() => {
     if (data) {
@@ -67,16 +67,24 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -117,7 +125,7 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, isSubmitting }) => (
+            {({ handleSubmit, values, setFieldValue, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody px="2rem" pb="2rem" pt="0">
                   <Flex
@@ -216,19 +224,19 @@ export const RoleEdit = ({ isOpen, onClose, role, onSave }: Props) => {
 
                       <Box>
                         <Progress
-                          h={isSubmitting ? '4px' : '1px'}
+                          h={isLoading ? '4px' : '1px'}
                           my="1.5rem"
                           size="xs"
-                          isIndeterminate={isSubmitting}
+                          isIndeterminate={isLoading}
                           colorScheme="blue"
                         />
 
                         <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                          <RoleDelete role={role} isUpdating={isSubmitting} onDeleted={onClose} />
+                          <RoleDelete role={role} isUpdating={isLoading} onDeleted={onClose} />
 
                           <Button
                             type="submit"
-                            isLoading={isSubmitting}
+                            isLoading={isLoading}
                             bg="#4C88D8"
                             color="white"
                             _hover={{ backgroundColor: '#376bb0' }}

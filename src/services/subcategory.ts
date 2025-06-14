@@ -16,5 +16,5 @@ export const updateSubCategory = (subcategory: Partial<SubCategory>): Promise<bo
 };
 
 export const deleteSubCategory = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Categories/subcategories`, { id }, true);
+  return del<boolean>(`${API_URL}/Categories/subcategories/${id}`, true);
 };

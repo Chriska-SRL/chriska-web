@@ -16,5 +16,5 @@ export const updateProduct = (product: Partial<Product>): Promise<boolean> => {
 };
 
 export const deleteProduct = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Products`, { id }, true);
+  return del<boolean>(`${API_URL}/Products/${id}`, true);
 };
