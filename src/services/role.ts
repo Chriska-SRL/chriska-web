@@ -7,14 +7,14 @@ export const getRoles = (): Promise<Role[]> => {
   return get<Role[]>(`${API_URL}/Roles`, true);
 };
 
-export const addRole = (role: Partial<Role>): Promise<boolean> => {
-  return post<boolean>(`${API_URL}/Roles`, role, true);
+export const addRole = (role: Partial<Role>): Promise<Role> => {
+  return post<Role>(`${API_URL}/Roles`, role, true);
 };
 
-export const updateRole = (role: Partial<Role>): Promise<boolean> => {
-  return put<boolean>(`${API_URL}/Roles`, role, true);
+export const updateRole = (role: Partial<Role>): Promise<Role> => {
+  return put<Role>(`${API_URL}/Roles`, role, true);
 };
 
-export const deleteRole = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Roles/${id}`, true);
+export const deleteRole = (id: number): Promise<Role> => {
+  return del<Role>(`${API_URL}/Roles/${id}`, true);
 };

@@ -23,14 +23,18 @@ import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { RoleEdit } from './RoleEdit';
 import { RoleDetail } from './RoleDetail';
 import { Role } from '@/entities/role';
-import { useGetRoles } from '@/hooks/roles';
+// import { useGetRoles } from '@/hooks/roles';
 
 type RoleListProps = {
   filterName?: string;
+  roles: Role[];
+  isLoading: boolean;
+  error?: string;
+  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleList = ({ filterName }: RoleListProps) => {
-  const { data: roles, isLoading, error } = useGetRoles();
+export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }: RoleListProps) => {
+  // const { data: roles, isLoading, error } = useGetRoles();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
   const detailModalDisclosure = useDisclosure();
@@ -40,13 +44,6 @@ export const RoleList = ({ filterName }: RoleListProps) => {
     setSelectedRole(role);
     editModalDisclosure.onOpen();
   };
-
-  const handleDetailClick = (role: Role) => {
-    setSelectedRole(role);
-    detailModalDisclosure.onOpen();
-  };
-
-  const handleSave = (updatedRole: Role) => {};
 
   const filteredRoles = roles?.filter((role) =>
     filterName ? role.name.toLowerCase().includes(filterName.toLowerCase()) : true,
@@ -104,14 +101,6 @@ export const RoleList = ({ filterName }: RoleListProps) => {
                   </Text>
 
                   <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.25rem">
-                    <IconButton
-                      aria-label="Ver detalle"
-                      icon={<IoMdInformationCircleOutline />}
-                      onClick={() => handleDetailClick(role)}
-                      size="sm"
-                      bg="transparent"
-                      _hover={{ bg: 'gray.200' }}
-                    />
                     <IconButton
                       aria-label="Editar rol"
                       icon={<FiEdit />}
@@ -194,9 +183,8 @@ export const RoleList = ({ filterName }: RoleListProps) => {
         isOpen={editModalDisclosure.isOpen}
         onClose={editModalDisclosure.onClose}
         role={selectedRole}
-        onSave={handleSave}
+        setLocalRoles={setLocalRoles}
       />
-      <RoleDetail isOpen={detailModalDisclosure.isOpen} onClose={detailModalDisclosure.onClose} role={selectedRole} />
     </>
   );
 };

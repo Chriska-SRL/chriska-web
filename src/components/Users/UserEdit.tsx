@@ -32,9 +32,10 @@ type UserEditProps = {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
+  setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
-export const UserEdit = ({ isOpen, onClose, user }: UserEditProps) => {
+export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps) => {
   const toast = useToast();
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
@@ -44,17 +45,17 @@ export const UserEdit = ({ isOpen, onClose, user }: UserEditProps) => {
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Usuario modificado',
-        description: 'El usuario ha sido modificado correctamente.',
+        title: 'Usuario actualizado',
+        description: 'El usuario ha sido actualizado correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
+
+      setLocalUsers((prevUsers) => prevUsers.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
+
       setUserProps(undefined);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
 
@@ -228,7 +229,14 @@ export const UserEdit = ({ isOpen, onClose, user }: UserEditProps) => {
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    {user && <UserDelete user={user} onDeleted={onClose} isUpdating={isLoading} />}
+                    {user && (
+                      <UserDelete
+                        user={user}
+                        onDeleted={onClose}
+                        isUpdating={isLoading}
+                        setLocalUsers={setLocalUsers}
+                      />
+                    )}
                     <Button
                       type="submit"
                       bg="#4C88D8"

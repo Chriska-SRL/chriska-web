@@ -21,9 +21,10 @@ type RoleDeleteProps = {
   role: Role;
   isUpdating: boolean;
   onDeleted?: () => void;
+  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleDelete = ({ role, isUpdating, onDeleted }: RoleDeleteProps) => {
+export const RoleDelete = ({ role, isUpdating, onDeleted, setLocalRoles }: RoleDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteRoleProps, setDeleteRoleProps] = useState<number>();
@@ -38,12 +39,10 @@ export const RoleDelete = ({ role, isUpdating, onDeleted }: RoleDeleteProps) => 
         duration: 1500,
         isClosable: true,
       });
+      setLocalRoles((prev) => prev.filter((r) => r.id !== role.id));
       setConfirmOpen(false);
       setDeleteRoleProps(undefined);
       onDeleted?.();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [roleDeleted]);
 

@@ -71,6 +71,19 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     );
   }
 
+  const temperatureCondition = (condition: string) => {
+    switch (condition) {
+      case 'Cold':
+        return 'Frío';
+      case 'Frozen':
+        return 'Congelado';
+      case 'Ambient':
+        return 'Natural';
+      default:
+        return 'Desconocido';
+    }
+  };
+
   return (
     <>
       <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
@@ -118,7 +131,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
 
                 <Td textAlign="center">${product.price.toFixed(2)}</Td>
                 <Td textAlign="center">{product.stock}</Td>
-                <Td textAlign="center">{product.temperatureCondition}</Td>
+                <Td textAlign="center">{temperatureCondition(product.temperatureCondition)}</Td>
                 <Td textAlign="center">{product.unitType}</Td>
                 <Td textAlign="center">
                   <IconButton

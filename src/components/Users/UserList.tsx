@@ -21,16 +21,26 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
-import { useGetUsers } from '@/hooks/user';
 
 type UserListProps = {
+  users: User[];
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
   filterRoleId?: number;
   filterStateId?: string;
   filterName?: string;
+  isLoading: boolean;
+  error?: string;
 };
 
-export const UserList = ({ filterRoleId, filterStateId, filterName }: UserListProps) => {
-  const { data: users, isLoading, error } = useGetUsers();
+export const UserList = ({
+  users,
+  setUsers,
+  filterRoleId,
+  filterStateId,
+  filterName,
+  isLoading,
+  error,
+}: UserListProps) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -193,7 +203,7 @@ export const UserList = ({ filterRoleId, filterStateId, filterName }: UserListPr
           </Box>
         </>
       )}
-      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} />
+      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} setLocalUsers={setUsers} />
     </>
   );
 };

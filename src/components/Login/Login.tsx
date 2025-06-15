@@ -1,7 +1,18 @@
 'use client';
 
+import {
+  Box,
+  Container,
+  Button,
+  Text,
+  FormControl,
+  FormLabel,
+  Input,
+  Progress,
+  Flex,
+  useToast,
+} from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { Box, Container, Button, Text, FormControl, FormLabel, Input, Progress, Flex } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
 import { useRouter } from 'next/navigation';
@@ -14,16 +25,23 @@ const _containerW = { sm: '25rem', base: '20rem' };
 
 export const Login = () => {
   const router = useRouter();
+  const toast = useToast();
   const [loginProps, setLoginProps] = useState<LoginValues>();
-  const { data, error, isLoading } = useLogin(loginProps);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { data, isLoading, error, fieldError } = useLogin(loginProps);
   const setUserFromToken = useUserStore((state) => state.setUserFromToken);
 
   useEffect(() => {
-    if (data === true) {
+    if (data) {
       const token = localStorage.getItem('access_token');
       if (token) {
-        setUserFromToken(token); // ✅ actualiza Zustand
+        setUserFromToken(token);
+        // toast({
+        //   title: 'Inicio de sesión exitoso',
+        //   description: 'Redirigiendo...',
+        //   status: 'success',
+        //   duration: 1500,
+        //   isClosable: true,
+        // });
         router.push('/');
       }
     }
@@ -31,17 +49,30 @@ export const Login = () => {
 
   useEffect(() => {
     if (error) {
-      setSubmitError(error);
+      toast({
+        title: 'Error de inicio de sesión',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else if (fieldError) {
+      toast({
+        title: 'Error',
+        description: fieldError.error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const initialValues: LoginValues = {
     username: '',
     password: '',
   };
 
-  const handleSubmit = async (values: LoginValues) => {
-    setSubmitError(null);
+  const handleSubmit = (values: LoginValues) => {
     setLoginProps(values);
   };
 
@@ -66,6 +97,7 @@ export const Login = () => {
                     validate={validateEmpty}
                   />
                 </FormControl>
+
                 <FormControl mb="0.5rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
                   <FormLabel htmlFor="password">Contraseña</FormLabel>
                   <Field
@@ -81,12 +113,6 @@ export const Login = () => {
                 {submitCount > 0 && Object.keys(errors).length > 0 && (
                   <Text color="red.500" fontSize="0.875rem" textAlign="left" pt="0.375rem">
                     Debe completar todos los campos
-                  </Text>
-                )}
-
-                {submitError && (
-                  <Text color="red.500" fontSize="0.875rem" textAlign="left" mt="0.5rem">
-                    {submitError}
                   </Text>
                 )}
 
