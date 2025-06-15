@@ -47,7 +47,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
   const toast = useToast();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
-  const { data, error, isLoading, fieldError } = useUpdateRole(roleProps);
+  const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
 
   useEffect(() => {
     if (data) {
@@ -58,10 +58,9 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
         duration: 1500,
         isClosable: true,
       });
-
+      setLocalRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
       setRoleProps(undefined);
       onClose();
-      setLocalRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
     }
   }, [data]);
 

@@ -21,16 +21,17 @@ type CategoryDeleteProps = {
   category: Category;
   isUpdating: boolean;
   onDeleted?: () => void;
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const CategoryDelete = ({ category, isUpdating, onDeleted }: CategoryDeleteProps) => {
+export const CategoryDelete = ({ category, isUpdating, onDeleted, setLocalCategories }: CategoryDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteCategoryProps, setDeleteCategoryProps] = useState<number>();
-  const { data: categoryDeleted, error, isLoading } = useDeleteCategory(deleteCategoryProps!!);
+  const { data, isLoading, error } = useDeleteCategory(deleteCategoryProps!!);
 
   useEffect(() => {
-    if (categoryDeleted) {
+    if (data) {
       toast({
         title: 'Categoría eliminada',
         description: `La categoría ${category.name} fue eliminada correctamente.`,
@@ -38,14 +39,12 @@ export const CategoryDelete = ({ category, isUpdating, onDeleted }: CategoryDele
         duration: 1500,
         isClosable: true,
       });
+      setLocalCategories((prev) => prev.filter((cat) => cat.id !== category.id));
       setConfirmOpen(false);
       setDeleteCategoryProps(undefined);
       onDeleted?.();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
-  }, [categoryDeleted]);
+  }, [data]);
 
   useEffect(() => {
     if (error) {

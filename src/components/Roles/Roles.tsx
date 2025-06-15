@@ -15,7 +15,7 @@ export const Roles = () => {
   const [localRoles, setLocalRoles] = useState<Role[]>(roles);
 
   useEffect(() => {
-    setLocalRoles(roles); // sincroniza con fetch
+    setLocalRoles(roles);
   }, [roles]);
 
   return (

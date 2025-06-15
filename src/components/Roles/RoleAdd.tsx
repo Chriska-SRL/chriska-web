@@ -30,7 +30,7 @@ import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Role } from '@/entities/role';
-import { useAddRole, useGetRoles } from '@/hooks/roles';
+import { useAddRole } from '@/hooks/roles';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { validateEmpty } from '@/utils/validate';
 
@@ -62,12 +62,7 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
         duration: 1500,
         isClosable: true,
       });
-      // setRoleProps(undefined);
-      // onClose();
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1500);
-      setLocalRoles((prev) => [...prev, data]); // 🎯 Acá actualizamos la UI
+      setLocalRoles((prev) => [...prev, data]);
       setRoleProps(undefined);
       onClose();
     }
