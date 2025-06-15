@@ -14,7 +14,7 @@ export const Content = ({ children }: { children: ReactNode }) => {
       w="100%"
       bg="#f7f7f7"
       px={{ base: '1rem', md: '0' }}
-      pt={isMobile ? '4rem' : '0'} // 👈 compensación por navbar fijo
+      pt={isMobile ? '4rem' : '0'}
     >
       <Flex
         flexDir="column"

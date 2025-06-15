@@ -30,12 +30,14 @@ import { validateEmpty } from '@/utils/validate';
 import { SubCategory } from '@/entities/subcategory';
 import { useUpdateSubCategory } from '@/hooks/subcategory';
 import { SubCategoryDelete } from './SubCategoryDelete';
+import { Category } from '@/entities/category';
 
 type SubCategoryEditProps = {
   subcategory: SubCategory;
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
+export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategoryEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -50,11 +52,18 @@ export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
         duration: 1500,
         isClosable: true,
       });
+      setLocalCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === data.category.id
+            ? {
+                ...cat,
+                subCategories: cat.subCategories.map((sub) => (sub.id === data.id ? data : sub)),
+              }
+            : cat,
+        ),
+      );
       setSubCategoryProps(undefined);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
 
@@ -164,7 +173,12 @@ export const SubCategoryEdit = ({ subcategory }: SubCategoryEditProps) => {
                       colorScheme="blue"
                     />
                     <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <SubCategoryDelete subcategory={subcategory} isUpdating={isLoading} onDeleted={onClose} />
+                      <SubCategoryDelete
+                        subcategory={subcategory}
+                        isUpdating={isLoading}
+                        onDeleted={onClose}
+                        setLocalCategories={setLocalCategories}
+                      />
                       <Button
                         type="submit"
                         disabled={isLoading}

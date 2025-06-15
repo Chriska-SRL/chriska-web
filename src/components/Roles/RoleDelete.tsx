@@ -28,10 +28,10 @@ export const RoleDelete = ({ role, isUpdating, onDeleted, setLocalRoles }: RoleD
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteRoleProps, setDeleteRoleProps] = useState<number>();
-  const { data: roleDeleted, error, isLoading } = useDeleteRole(deleteRoleProps);
+  const { data, error, isLoading } = useDeleteRole(deleteRoleProps);
 
   useEffect(() => {
-    if (roleDeleted) {
+    if (data) {
       toast({
         title: 'Rol eliminado',
         description: `El rol ${role.name} fue eliminado correctamente.`,
@@ -44,7 +44,7 @@ export const RoleDelete = ({ role, isUpdating, onDeleted, setLocalRoles }: RoleD
       setDeleteRoleProps(undefined);
       onDeleted?.();
     }
-  }, [roleDeleted]);
+  }, [data]);
 
   useEffect(() => {
     if (error) {

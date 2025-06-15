@@ -27,11 +27,15 @@ import { validateEmpty } from '@/utils/validate';
 import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
 
-export const CategoryAdd = () => {
+type CategoryAddProps = {
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+};
+
+export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
-  const { data, error, isLoading } = useAddCategory(categoryProps);
+  const { data, isLoading, error, fieldError } = useAddCategory(categoryProps);
 
   useEffect(() => {
     if (data) {
@@ -42,25 +46,30 @@ export const CategoryAdd = () => {
         duration: 1500,
         isClosable: true,
       });
+      setLocalCategories((prev) => [...prev, data]);
       setCategoryProps(undefined);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
-
   useEffect(() => {
-    if (error) {
+    if (fieldError) {
       toast({
-        title: 'Error',
+        title: `Error`,
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+    } else if (error) {
+      toast({
+        title: 'Error inesperado',
         description: error,
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [error]);
+  }, [error, fieldError]);
 
   const handleSubmit = (values: { name: string; description: string }) => {
     const category = {

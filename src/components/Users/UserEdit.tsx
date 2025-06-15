@@ -40,7 +40,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const [userProps, setUserProps] = useState<Partial<User>>();
-  const { data, error, isLoading, fieldError } = useUpdateUser(userProps);
+  const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
 
   useEffect(() => {
     if (data) {

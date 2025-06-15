@@ -28,7 +28,7 @@ type ProductListProps = {
 };
 
 export const ProductList = ({ filterName }: ProductListProps) => {
-  const { data: products, isLoading, error } = useGetProducts();
+  const { data, isLoading, error } = useGetProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -38,7 +38,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     onOpen();
   };
 
-  const filteredProducts = products?.filter((product) =>
+  const filteredProducts = data?.filter((product) =>
     filterName ? product.name.toLowerCase().includes(filterName.toLowerCase()) : true,
   );
 

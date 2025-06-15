@@ -27,10 +27,10 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteProductProps, setDeleteProductProps] = useState<number>();
-  const { data: deleted, error, isLoading } = useDeleteProduct(deleteProductProps!!);
+  const { data, error, isLoading } = useDeleteProduct(deleteProductProps!!);
 
   useEffect(() => {
-    if (deleted) {
+    if (data) {
       toast({
         title: 'Producto eliminado',
         description: `El producto ${product.name} fue eliminado correctamente.`,
@@ -45,7 +45,7 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
         window.location.reload();
       }, 1500);
     }
-  }, [deleted]);
+  }, [data]);
 
   useEffect(() => {
     if (error) {

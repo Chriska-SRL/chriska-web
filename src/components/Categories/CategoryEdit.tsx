@@ -33,9 +33,10 @@ import { CategoryDelete } from './CategoryDelete';
 
 type CategoryEditProps = {
   category: Category;
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const CategoryEdit = ({ category }: CategoryEditProps) => {
+export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
@@ -50,11 +51,9 @@ export const CategoryEdit = ({ category }: CategoryEditProps) => {
         duration: 1500,
         isClosable: true,
       });
+      setLocalCategories((prev) => prev.map((c) => (c.id === data.id ? data : c)));
       setCategoryProps(undefined);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
 
@@ -163,7 +162,12 @@ export const CategoryEdit = ({ category }: CategoryEditProps) => {
                       colorScheme="blue"
                     />
                     <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <CategoryDelete category={category} isUpdating={isLoading} onDeleted={onClose} />
+                      <CategoryDelete
+                        category={category}
+                        isUpdating={isLoading}
+                        onDeleted={onClose}
+                        setLocalCategories={setLocalCategories}
+                      />
                       <Button
                         type="submit"
                         disabled={isLoading}

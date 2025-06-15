@@ -28,10 +28,10 @@ export const UserDelete = ({ user, isUpdating, onDeleted, setLocalUsers }: UserD
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteUserProps, setDeleteUserProps] = useState<number>();
-  const { data: userDeleted, error, isLoading } = useDeleteUser(deleteUserProps);
+  const { data, error, isLoading } = useDeleteUser(deleteUserProps);
 
   useEffect(() => {
-    if (userDeleted) {
+    if (data) {
       toast({
         title: 'Usuario eliminado',
         description: `El usuario ${user.name} fue eliminado correctamente.`,
@@ -44,7 +44,7 @@ export const UserDelete = ({ user, isUpdating, onDeleted, setLocalUsers }: UserD
       setDeleteUserProps(undefined);
       onDeleted?.();
     }
-  }, [userDeleted]);
+  }, [data]);
 
   useEffect(() => {
     if (error) {

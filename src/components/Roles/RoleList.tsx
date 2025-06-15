@@ -19,11 +19,8 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
-import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { RoleEdit } from './RoleEdit';
-import { RoleDetail } from './RoleDetail';
 import { Role } from '@/entities/role';
-// import { useGetRoles } from '@/hooks/roles';
 
 type RoleListProps = {
   filterName?: string;
@@ -34,10 +31,8 @@ type RoleListProps = {
 };
 
 export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }: RoleListProps) => {
-  // const { data: roles, isLoading, error } = useGetRoles();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
-  const detailModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const handleEditClick = (role: Role) => {
@@ -148,16 +143,6 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                         {role.description}
                       </Box>
                     </Td>
-                    {/* <Td textAlign="center">
-                      <IconButton
-                        aria-label="Ver detalle"
-                        icon={<IoMdInformationCircleOutline />}
-                        onClick={() => handleDetailClick(role)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: 'blackAlpha.100' }}
-                      />
-                    </Td> */}
                     <Td textAlign="center">
                       <IconButton
                         aria-label="Editar rol"

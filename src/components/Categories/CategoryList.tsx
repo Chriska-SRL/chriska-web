@@ -4,13 +4,17 @@ import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack } from 
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
 import { useGetCategories } from '@/hooks/category';
-import { FiEdit } from 'react-icons/fi';
 import { CategoryEdit } from './CategoryEdit';
 import { SubCategoryEdit } from '../SubCategories/SubCategoryEdit';
 import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
+import { Category } from '@/entities/category';
 
 type CategoryListProps = {
   filterName?: string;
+  categories: Category[];
+  isLoading: boolean;
+  error?: string;
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
 const normalizeText = (text: string) =>
@@ -19,11 +23,9 @@ const normalizeText = (text: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
-export const CategoryList = ({ filterName }: CategoryListProps) => {
-  const { data: categories, isLoading } = useGetCategories();
+export const CategoryList = ({ filterName, categories, isLoading, error, setLocalCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
-  // 2. Cambiar el toggle:
   const toggleExpand = (categoryId: number) => {
     setExpandedCategoryIds(
       (prevIds) =>
@@ -88,8 +90,8 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                   </Text>
                 </Box>
                 <Flex alignItems="center" gap="1rem">
-                  <SubCategoryAdd category={cat} />
-                  <CategoryEdit category={cat} />
+                  <SubCategoryAdd category={cat} setLocalCategories={setLocalCategories} />
+                  <CategoryEdit category={cat} setLocalCategories={setLocalCategories} />
                   <IconButton
                     aria-label="Expandir categoría"
                     icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
@@ -123,7 +125,7 @@ export const CategoryList = ({ filterName }: CategoryListProps) => {
                                 </Text>
                               )}
                             </Box>
-                            <SubCategoryEdit subcategory={sub} />
+                            <SubCategoryEdit subcategory={sub} setLocalCategories={setLocalCategories} />
                           </Flex>
                           {index < cat.subCategories.length - 1 && <Divider mt="0.5rem" />}
                         </Box>

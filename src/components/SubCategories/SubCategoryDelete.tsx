@@ -16,14 +16,21 @@ import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { SubCategory } from '@/entities/subcategory';
 import { useDeleteSubCategory } from '@/hooks/subcategory';
+import { Category } from '@/entities/category';
 
 type SubCategoryDeleteProps = {
   subcategory: SubCategory;
   isUpdating: boolean;
   onDeleted?: () => void;
+  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted }: SubCategoryDeleteProps) => {
+export const SubCategoryDelete = ({
+  subcategory,
+  isUpdating,
+  onDeleted,
+  setLocalCategories,
+}: SubCategoryDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteSubCategoryProps, setDeleteSubCategoryProps] = useState<number>();
@@ -38,12 +45,19 @@ export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted }: SubCat
         duration: 1500,
         isClosable: true,
       });
+      setLocalCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === subcategory.category.id
+            ? {
+                ...cat,
+                subCategories: cat.subCategories.filter((sub) => sub.id !== subcategory.id),
+              }
+            : cat,
+        ),
+      );
       setConfirmOpen(false);
       setDeleteSubCategoryProps(undefined);
       onDeleted?.();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [subcategoryDeleted]);
 
