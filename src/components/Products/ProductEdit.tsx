@@ -235,7 +235,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     </Field>
                   </FormControl>
 
-                  <FormControl>
+                  <FormControl isInvalid={submitCount > 0 && !!errors.description}>
                     <FormLabel>Descripción</FormLabel>
                     <Field
                       as={Textarea}
@@ -247,7 +247,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     />
                   </FormControl>
 
-                  <FormControl>
+                  <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
                     <FormLabel>Condición de temperatura</FormLabel>
                     <Field
                       as={Select}
@@ -264,16 +264,9 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     </Field>
                   </FormControl>
 
-                  <FormControl>
+                  <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
                     <FormLabel>Observaciones</FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="observation"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
-                      disabled={isLoading}
-                      validate={validateEmpty}
-                    />
+                    <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" disabled={isLoading} />
                   </FormControl>
 
                   <FormControl>
@@ -283,7 +276,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
                       value={selectedCategoryId ?? ''}
-                      disabled={isLoadingCats}
+                      disabled={isLoading || isLoadingCats}
                       onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                     >
                       {categories?.map((cat) => (
@@ -302,7 +295,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       placeholder="Seleccionar subcategoría"
                       bg="#f5f5f7"
                       borderColor="#f5f5f7"
-                      disabled={isLoadingCats || !selectedCategoryId}
+                      disabled={isLoading || isLoadingCats || !selectedCategoryId}
                       validate={validateEmpty}
                     >
                       {filteredSubCategories.map((sub) => (
@@ -314,11 +307,9 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                   </FormControl>
 
                   {submitCount > 0 && Object.keys(errors).length > 0 && (
-                    <Box w="100%">
-                      <Text color="red.500" fontSize="0.85rem">
-                        Debe completar todos los campos obligatorios.
-                      </Text>
-                    </Box>
+                    <Text color="red.500" fontSize="0.85rem" alignSelf="start">
+                      Hay campos obligatorios incompletos o con errores. Verificalos antes de continuar.
+                    </Text>
                   )}
                 </VStack>
               </ModalBody>

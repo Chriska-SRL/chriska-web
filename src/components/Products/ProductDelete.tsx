@@ -27,7 +27,7 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteProductProps, setDeleteProductProps] = useState<number>();
-  const { data, error, isLoading } = useDeleteProduct(deleteProductProps!!);
+  const { data, isLoading, error } = useDeleteProduct(deleteProductProps!!);
 
   useEffect(() => {
     if (data) {
@@ -77,7 +77,7 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
             <Text>¿Seguro que querés eliminar “{product.name}”? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline">
+            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
             <Button onClick={() => setDeleteProductProps(product.id)} colorScheme="red" isLoading={isLoading}>

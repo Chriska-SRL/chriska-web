@@ -80,7 +80,7 @@ export const CategoryDelete = ({ category, isUpdating, onDeleted, setLocalCatego
             <Text>¿Seguro que querés eliminar la categoría "{category.name}"? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline">
+            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
             <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>

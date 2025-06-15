@@ -28,11 +28,11 @@ export const useGetSubCategories = (): Result<SubCategory[]> => {
   return { data, isLoading, error };
 };
 
-export const useAddSubCategory = (props?: Partial<SubCategory>): Result<boolean> => {
+export const useAddSubCategory = (props?: Partial<SubCategory>): Result<SubCategory> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<SubCategory>();
 
   useEffect(() => {
     if (props) {
@@ -67,11 +67,11 @@ export const useAddSubCategory = (props?: Partial<SubCategory>): Result<boolean>
   return { data, isLoading, error, fieldError };
 };
 
-export const useUpdateSubCategory = (props?: Partial<SubCategory>): Result<boolean> => {
+export const useUpdateSubCategory = (props?: Partial<SubCategory>): Result<SubCategory> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<SubCategory>();
 
   useEffect(() => {
     if (props) {
@@ -106,10 +106,10 @@ export const useUpdateSubCategory = (props?: Partial<SubCategory>): Result<boole
   return { data, isLoading, error, fieldError };
 };
 
-export const useDeleteSubCategory = (id?: number): Result<boolean> => {
+export const useDeleteSubCategory = (id?: number): Result<SubCategory> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<SubCategory>();
 
   useEffect(() => {
     if (id) {

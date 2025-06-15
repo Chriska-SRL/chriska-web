@@ -28,11 +28,11 @@ export const useGetProducts = (): Result<Product[]> => {
   return { data, isLoading, error };
 };
 
-export const useAddProduct = (props?: Partial<Product>): Result<boolean> => {
+export const useAddProduct = (props?: Partial<Product>): Result<Product> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<Product>();
 
   useEffect(() => {
     if (props) {
@@ -67,11 +67,11 @@ export const useAddProduct = (props?: Partial<Product>): Result<boolean> => {
   return { data, isLoading, error, fieldError };
 };
 
-export const useUpdateProduct = (props?: Partial<Product>): Result<boolean> => {
+export const useUpdateProduct = (props?: Partial<Product>): Result<Product> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<Product>();
 
   useEffect(() => {
     if (props) {
@@ -106,10 +106,10 @@ export const useUpdateProduct = (props?: Partial<Product>): Result<boolean> => {
   return { data, isLoading, error, fieldError };
 };
 
-export const useDeleteProduct = (id?: number): Result<boolean> => {
+export const useDeleteProduct = (id?: number): Result<Product> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<Product>();
 
   useEffect(() => {
     if (id) {
