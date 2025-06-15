@@ -241,7 +241,7 @@ export const ProductAdd = () => {
                       </Field>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
                       <FormLabel>Observaciones</FormLabel>
                       <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" disabled={isLoading} />
                     </FormControl>

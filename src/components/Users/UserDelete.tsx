@@ -28,7 +28,7 @@ export const UserDelete = ({ user, isUpdating, onDeleted, setLocalUsers }: UserD
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteUserProps, setDeleteUserProps] = useState<number>();
-  const { data, error, isLoading } = useDeleteUser(deleteUserProps);
+  const { data, isLoading, error } = useDeleteUser(deleteUserProps);
 
   useEffect(() => {
     if (data) {
@@ -80,7 +80,7 @@ export const UserDelete = ({ user, isUpdating, onDeleted, setLocalUsers }: UserD
             <Text>¿Seguro que querés eliminar a {user.name}? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline">
+            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
             <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>

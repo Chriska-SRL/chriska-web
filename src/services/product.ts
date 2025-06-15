@@ -7,14 +7,14 @@ export const getProducts = (): Promise<Product[]> => {
   return get<Product[]>(`${API_URL}/Products`, true);
 };
 
-export const addProduct = (product: Partial<Product>): Promise<boolean> => {
-  return post<boolean>(`${API_URL}/Products`, product, true);
+export const addProduct = (product: Partial<Product>): Promise<Product> => {
+  return post<Product>(`${API_URL}/Products`, product, true);
 };
 
-export const updateProduct = (product: Partial<Product>): Promise<boolean> => {
-  return put<boolean>(`${API_URL}/Products`, product, true);
+export const updateProduct = (product: Partial<Product>): Promise<Product> => {
+  return put<Product>(`${API_URL}/Products`, product, true);
 };
 
-export const deleteProduct = (id: number): Promise<boolean> => {
-  return del<boolean>(`${API_URL}/Products/${id}`, true);
+export const deleteProduct = (id: number): Promise<Product> => {
+  return del<Product>(`${API_URL}/Products/${id}`, true);
 };

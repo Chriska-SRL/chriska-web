@@ -28,7 +28,7 @@ export const RoleDelete = ({ role, isUpdating, onDeleted, setLocalRoles }: RoleD
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteRoleProps, setDeleteRoleProps] = useState<number>();
-  const { data, error, isLoading } = useDeleteRole(deleteRoleProps);
+  const { data, isLoading, error } = useDeleteRole(deleteRoleProps);
 
   useEffect(() => {
     if (data) {
@@ -80,7 +80,7 @@ export const RoleDelete = ({ role, isUpdating, onDeleted, setLocalRoles }: RoleD
             <Text>¿Seguro que querés eliminar el rol {role.name}? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline">
+            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
             <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>

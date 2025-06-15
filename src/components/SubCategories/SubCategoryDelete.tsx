@@ -97,7 +97,7 @@ export const SubCategoryDelete = ({
             </Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline">
+            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
             <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>
