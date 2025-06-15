@@ -21,9 +21,10 @@ type UserDeleteProps = {
   user: User;
   isUpdating: boolean;
   onDeleted?: () => void;
+  setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
-export const UserDelete = ({ user, isUpdating, onDeleted }: UserDeleteProps) => {
+export const UserDelete = ({ user, isUpdating, onDeleted, setLocalUsers }: UserDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteUserProps, setDeleteUserProps] = useState<number>();
@@ -38,12 +39,10 @@ export const UserDelete = ({ user, isUpdating, onDeleted }: UserDeleteProps) => 
         duration: 1500,
         isClosable: true,
       });
+      setLocalUsers((prev) => prev.filter((r) => r.id !== user.id));
       setConfirmOpen(false);
       setDeleteUserProps(undefined);
       onDeleted?.();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [userDeleted]);
 

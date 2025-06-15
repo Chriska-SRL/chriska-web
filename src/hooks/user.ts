@@ -28,11 +28,11 @@ export const useGetUsers = (): Result<User[]> => {
   return { data, isLoading, error };
 };
 
-export const useAddUser = (props?: Partial<User>): Result<boolean> => {
+export const useAddUser = (props?: Partial<User>): Result<User> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<User>();
 
   useEffect(() => {
     if (props) {
@@ -67,11 +67,11 @@ export const useAddUser = (props?: Partial<User>): Result<boolean> => {
   return { data, isLoading, error, fieldError };
 };
 
-export const useUpdateUser = (props?: Partial<User>): Result<boolean> => {
+export const useUpdateUser = (props?: Partial<User>): Result<User> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<User>();
 
   useEffect(() => {
     if (props) {
@@ -106,10 +106,10 @@ export const useUpdateUser = (props?: Partial<User>): Result<boolean> => {
   return { data, isLoading, error, fieldError };
 };
 
-export const useDeleteUser = (id?: number): Result<boolean> => {
+export const useDeleteUser = (id?: number): Result<User> => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [data, setData] = useState<boolean>();
+  const [data, setData] = useState<User>();
 
   useEffect(() => {
     if (id) {

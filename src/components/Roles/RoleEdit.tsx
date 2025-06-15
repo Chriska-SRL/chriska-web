@@ -40,10 +40,10 @@ type RoleEditProps = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
-  onSave: (updatedRole: Role) => void;
+  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleEdit = ({ isOpen, onClose, role }: RoleEditProps) => {
+export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps) => {
   const toast = useToast();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
@@ -58,11 +58,10 @@ export const RoleEdit = ({ isOpen, onClose, role }: RoleEditProps) => {
         duration: 1500,
         isClosable: true,
       });
+
       setRoleProps(undefined);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      setLocalRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
     }
   }, [data]);
 
@@ -232,7 +231,12 @@ export const RoleEdit = ({ isOpen, onClose, role }: RoleEditProps) => {
                         />
 
                         <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                          <RoleDelete role={role} isUpdating={isLoading} onDeleted={onClose} />
+                          <RoleDelete
+                            role={role}
+                            isUpdating={isLoading}
+                            onDeleted={onClose}
+                            setLocalRoles={setLocalRoles}
+                          />
 
                           <Button
                             type="submit"

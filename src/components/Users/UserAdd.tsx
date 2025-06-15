@@ -28,7 +28,11 @@ import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/roles';
 import { validateEmpty } from '@/utils/validate';
 
-export const UserAdd = () => {
+type UserAddProps = {
+  setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
+};
+
+export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [userProps, setUserProps] = useState<Partial<User>>();
@@ -45,10 +49,8 @@ export const UserAdd = () => {
         isClosable: true,
       });
       setUserProps(undefined);
+      setLocalUsers((prev) => [...prev, data]);
       onClose();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
 
