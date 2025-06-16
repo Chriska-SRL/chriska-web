@@ -175,7 +175,6 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent maxW="15rem">
-          <DrawerCloseButton />
           <DrawerBody p={0}>{renderSidebarContent()}</DrawerBody>
         </DrawerContent>
       </Drawer>

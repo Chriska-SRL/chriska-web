@@ -36,8 +36,8 @@ export const UserFilters = ({
   const { data: roles, isLoading } = useGetRoles();
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
-  const borderInput = useColorModeValue('#f2f2f2', 'gray.600');
-  const iconColor = useColorModeValue('gray.600', 'gray.400');
+  const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -77,7 +77,7 @@ export const UserFilters = ({
         borderColor={borderInput}
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
-        color={iconColor}
+        color={textColor}
       >
         <option value="-1">Filtrar por rol</option>
         {roles?.map((r) => (
@@ -94,7 +94,7 @@ export const UserFilters = ({
         borderColor={borderInput}
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
-        color={iconColor}
+        color={textColor}
       >
         <option value="-1">Filtrar por estado</option>
         <option value="activo">Activo</option>
@@ -109,9 +109,11 @@ export const UserFilters = ({
           disabled={isLoading}
           bg={bgInput}
           borderColor={borderInput}
+          _placeholder={{ color: textColor }}
+          color={textColor}
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />
+          <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
         </InputRightElement>
       </InputGroup>
 

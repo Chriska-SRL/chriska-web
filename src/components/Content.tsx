@@ -7,8 +7,8 @@ export const Content = ({ children }: { children: ReactNode }) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const outerBg = useColorModeValue('gray.100', 'gray.800');
-  const innerBg = useColorModeValue('white', 'gray.700');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const innerBg = useColorModeValue('white', 'gray.900');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   return (
     <Flex
@@ -30,7 +30,7 @@ export const Content = ({ children }: { children: ReactNode }) => {
         m={{ base: '0.5rem', md: '1rem' }}
         bg={innerBg}
         borderRadius="0.5rem"
-        border="2px solid"
+        border="1px solid"
         borderColor={borderColor}
         gap="1.25rem"
         overflowY="auto"
