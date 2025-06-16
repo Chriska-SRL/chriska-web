@@ -16,6 +16,7 @@ import {
   Spinner,
   VStack,
   useMediaQuery,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
@@ -34,6 +35,13 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const mutedText = useColorModeValue('gray.600', 'gray.400');
+  const hoverBgIcon = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
 
   const handleEditClick = (role: Role) => {
     setSelectedRole(role);
@@ -66,7 +74,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
           No se encontraron roles con esos parámetros de búsqueda.
         </Text>
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color={mutedText}>
           Inténtelo con otros parámetros.
         </Text>
       </Flex>
@@ -84,14 +92,15 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                   key={role.id}
                   px="1rem"
                   py="0.75rem"
-                  border="1px solid #f2f2f2"
+                  border="1px solid"
+                  borderColor={borderColor}
                   borderRadius="0.5rem"
-                  bg="white"
+                  bg={cardBg}
                   boxShadow="sm"
                   position="relative"
                 >
                   <Text fontWeight="bold">{role.name}</Text>
-                  <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                  <Text fontSize="sm" color={mutedText} mt="0.25rem">
                     {role.description}
                   </Text>
 
@@ -102,27 +111,33 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                       onClick={() => handleEditClick(role)}
                       size="sm"
                       bg="transparent"
-                      _hover={{ bg: 'gray.200' }}
+                      _hover={{ bg: hoverBgIcon }}
                     />
                   </Flex>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center" bg="white">
+          <Box py="1rem" textAlign="center" bg={cardBg}>
             <Text fontSize="sm">Mostrando {filteredRoles.length} roles</Text>
           </Box>
         </Flex>
       ) : (
         <>
-          <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
-            <Table variant="simple">
-              <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
+          <TableContainer
+            overflowY="scroll"
+            border="1px solid"
+            borderRadius="0.5rem"
+            borderColor={borderColor}
+            h="100%"
+          >
+            <Table variant="unstyled">
+              <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
                   <Th textAlign="center" w="20rem">
                     Nombre
                   </Th>
-                  <Th textAlign="center" maxW="45rem">
+                  <Th textAlign="center" maxW="30rem">
                     Descripción
                   </Th>
                   <Th px="0"></Th>
@@ -130,16 +145,11 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
               </Thead>
               <Tbody>
                 {filteredRoles.map((role) => (
-                  <Tr key={role.id} h="3rem">
+                  <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
-                    <Td textAlign="left">
-                      <Box
-                        whiteSpace="nowrap"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        title={role.description}
-                        maxW="45rem"
-                      >
+
+                    <Td textAlign="left" maxW="30rem">
+                      <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
                         {role.description}
                       </Box>
                     </Td>
@@ -150,7 +160,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                         onClick={() => handleEditClick(role)}
                         variant="ghost"
                         size="lg"
-                        _hover={{ bg: 'blackAlpha.100' }}
+                        _hover={{ bg: hoverBgIcon }}
                       />
                     </Td>
                   </Tr>

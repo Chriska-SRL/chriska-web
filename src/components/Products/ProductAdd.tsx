@@ -19,6 +19,7 @@ import {
   Select,
   useDisclosure,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { Field, Formik } from 'formik';
@@ -39,6 +40,11 @@ export const ProductAdd = () => {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
+
+  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
 
   useEffect(() => {
     if (data) {
@@ -78,8 +84,8 @@ export const ProductAdd = () => {
   return (
     <>
       <Button
-        bg="#f2f2f2"
-        _hover={{ bg: '#e0dede' }}
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -88,7 +94,7 @@ export const ProductAdd = () => {
         Crear producto
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem">
@@ -97,7 +103,6 @@ export const ProductAdd = () => {
           <ModalCloseButton />
           <Formik
             initialValues={{
-              // internalCode: '',
               barcode: '',
               name: '',
               price: 0,
@@ -117,29 +122,13 @@ export const ProductAdd = () => {
               <form onSubmit={handleSubmit}>
                 <ModalBody>
                   <VStack spacing="1rem">
-                    {/* <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
-                      <FormLabel>Código interno</FormLabel>
-                      <Field
-                        as={Input}
-                        name="internalCode"
-                        validate={(value: any) => {
-                          const emptyError = validateEmpty(value);
-                          if (emptyError) return emptyError;
-                          return value.length === 5 ? undefined : 'Debe tener exactamente 5 caracteres';
-                        }}
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        disabled={isLoading}
-                      />
-                    </FormControl> */}
-
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>
                       <Field
                         as={Input}
                         name="barcode"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
@@ -155,8 +144,8 @@ export const ProductAdd = () => {
                       <Field
                         as={Input}
                         name="name"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={validateEmpty}
                       />
@@ -168,8 +157,8 @@ export const ProductAdd = () => {
                         as={Input}
                         name="price"
                         type="number"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
@@ -185,8 +174,8 @@ export const ProductAdd = () => {
                         as={Input}
                         name="stock"
                         type="number"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
                           const emptyError = validateEmpty(value);
@@ -202,8 +191,8 @@ export const ProductAdd = () => {
                         as={Select}
                         name="unitType"
                         placeholder="Seleccionar unidad"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={validateEmpty}
                       >
@@ -217,8 +206,8 @@ export const ProductAdd = () => {
                       <Field
                         as={Textarea}
                         name="description"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={validateEmpty}
                       />
@@ -230,8 +219,8 @@ export const ProductAdd = () => {
                         as={Select}
                         name="temperatureCondition"
                         placeholder="Seleccione una opción"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading}
                         validate={validateEmpty}
                       >
@@ -243,15 +232,21 @@ export const ProductAdd = () => {
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
                       <FormLabel>Observaciones</FormLabel>
-                      <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" disabled={isLoading} />
+                      <Field
+                        as={Textarea}
+                        name="observation"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        disabled={isLoading}
+                      />
                     </FormControl>
 
                     <FormControl>
                       <FormLabel>Categoría</FormLabel>
                       <Select
                         placeholder="Seleccionar categoría"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         value={selectedCategoryId ?? ''}
                         onChange={(e) => {
                           const selectedId = Number(e.target.value);
@@ -274,8 +269,8 @@ export const ProductAdd = () => {
                         as={Select}
                         name="subCategoryId"
                         placeholder="Seleccionar subcategoría"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         disabled={isLoading || !selectedCategoryId}
                         validate={validateEmpty}
                       >

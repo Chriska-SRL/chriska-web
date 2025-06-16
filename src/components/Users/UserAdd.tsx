@@ -19,6 +19,7 @@ import {
   Box,
   Text,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -38,6 +39,13 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
   const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
+
+  const inputBg = useColorModeValue('#f5f5f7', 'gray.700');
+  const inputBorder = useColorModeValue('#f5f5f7', 'gray.600');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
+  const submitHover = useColorModeValue('#376bb0', 'blue.600');
 
   useEffect(() => {
     if (data) {
@@ -74,12 +82,12 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { username: string; name: string; roleId: number; estado: string }) => {
+  const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
       username: values.username,
       name: values.name,
       isEnabled: values.estado === 'Activo',
-      roleId: values.roleId,
+      roleId: Number(values.roleId),
     };
     setUserProps(user);
   };
@@ -87,8 +95,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   return (
     <>
       <Button
-        bg="#f2f2f2"
-        _hover={{ bg: '#e0dede' }}
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -105,7 +113,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ username: '', name: '', roleId: 0, estado: '' }}
+            initialValues={{ username: '', name: '', roleId: '', estado: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -120,8 +128,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         as={Input}
                         name="username"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -134,8 +142,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         as={Input}
                         name="name"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -148,8 +156,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         as={Select}
                         name="roleId"
                         placeholder="Seleccionar rol"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
@@ -169,8 +177,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         as={Select}
                         name="estado"
                         placeholder="Seleccionar estado"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         fontSize="0.875rem"
                         h="2.75rem"
                         validate={validateEmpty}
@@ -203,9 +211,9 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      bg="#4C88D8"
+                      bg={submitBg}
                       color="white"
-                      _hover={{ backgroundColor: '#376bb0' }}
+                      _hover={{ backgroundColor: submitHover }}
                       width="100%"
                       leftIcon={<FaCheck />}
                       py="1.375rem"

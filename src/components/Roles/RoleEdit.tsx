@@ -26,6 +26,7 @@ import {
   Divider,
   useToast,
   useMediaQuery,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -48,6 +49,10 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
+
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const selectedCountColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (data) {
@@ -144,7 +149,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                                     <Box flex="1" textAlign="left" fontWeight="semibold">
                                       {group}
                                     </Box>
-                                    <Text fontSize="sm" color="gray.600" mr="1rem">
+                                    <Text fontSize="sm" color={selectedCountColor} mr="1rem">
                                       {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
                                       seleccionados
                                     </Text>
@@ -188,8 +193,8 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                               as={Input}
                               name="name"
                               type="text"
-                              bg="#f5f5f7"
-                              borderColor="#f5f5f7"
+                              bg={inputBg}
+                              borderColor={borderColor}
                               fontSize="0.875rem"
                               h="2.75rem"
                               validate={validateEmpty}
@@ -201,8 +206,8 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                             <Field
                               as={Textarea}
                               name="description"
-                              bg="#f5f5f7"
-                              borderColor="#f5f5f7"
+                              bg={inputBg}
+                              borderColor={borderColor}
                               fontSize="0.875rem"
                               resize="vertical"
                               minH="8rem"
@@ -247,7 +252,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                             leftIcon={<FaCheck />}
                             py="1.375rem"
                           >
-                            Confirmar
+                            Guardar cambios
                           </Button>
                         </Flex>
                       </Box>

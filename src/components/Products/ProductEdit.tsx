@@ -21,6 +21,7 @@ import {
   Image,
   Flex,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
@@ -39,6 +40,12 @@ type ProductEditProps = {
 
 export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
   const toast = useToast();
+
+  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const buttonBg = useColorModeValue('#4C88D8', 'blue.500');
+  const buttonHover = useColorModeValue('#376bb0', 'blue.600');
+
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
   const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
@@ -93,7 +100,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
   if (!product) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="1.75rem">
@@ -102,7 +109,6 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
         <ModalCloseButton />
         <Formik
           initialValues={{
-            // internalCode: product?.internalCode ?? '',
             id: product?.id ?? 0,
             barcode: product?.barcode ?? '',
             name: product?.name ?? '',
@@ -119,7 +125,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
           validateOnChange={true}
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, touched, submitCount }) => (
+          {({ handleSubmit, errors, submitCount }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody>
                 <VStack spacing="1rem">
@@ -138,29 +144,13 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     </Flex>
                   </FormControl>
 
-                  {/* <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
-                    <FormLabel>Código interno</FormLabel>
-                    <Field
-                      as={Input}
-                      name="internalCode"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
-                      validate={(value: any) => {
-                        const emptyError = validateEmpty(value);
-                        if (emptyError) return emptyError;
-                        return value.length === 5 ? undefined : 'Debe tener exactamente 5 caracteres';
-                      }}
-                      disabled={isLoading}
-                    />
-                  </FormControl> */}
-
                   <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                     <FormLabel>Código de barras</FormLabel>
                     <Field
                       as={Input}
                       name="barcode"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
@@ -178,8 +168,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     <Field
                       as={Input}
                       name="name"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading}
                       validate={validateEmpty}
                     />
@@ -191,8 +181,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       as={Input}
                       name="price"
                       type="number"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
@@ -208,8 +198,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       as={Input}
                       name="stock"
                       type="number"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
                         const emptyError = validateEmpty(value);
@@ -224,8 +214,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     <Field
                       as={Select}
                       name="unitType"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
                       validate={validateEmpty}
@@ -240,8 +230,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     <Field
                       as={Textarea}
                       name="description"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading}
                       validate={validateEmpty}
                     />
@@ -252,8 +242,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     <Field
                       as={Select}
                       name="temperatureCondition"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
                       validate={validateEmpty}
@@ -266,15 +256,21 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
                     <FormLabel>Observaciones</FormLabel>
-                    <Field as={Textarea} name="observation" bg="#f5f5f7" borderColor="#f5f5f7" disabled={isLoading} />
+                    <Field
+                      as={Textarea}
+                      name="observation"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      disabled={isLoading}
+                    />
                   </FormControl>
 
                   <FormControl>
                     <FormLabel>Categoría</FormLabel>
                     <Select
                       placeholder="Seleccionar categoría"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       value={selectedCategoryId ?? ''}
                       disabled={isLoading || isLoadingCats}
                       onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
@@ -293,8 +289,8 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       as={Select}
                       name="subCategoryId"
                       placeholder="Seleccionar subcategoría"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={inputBorder}
                       disabled={isLoading || isLoadingCats || !selectedCategoryId}
                       validate={validateEmpty}
                     >
@@ -327,10 +323,10 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     <ProductDelete product={product} onDeleted={onClose} isUpdating={isLoading} />
                     <Button
                       type="submit"
-                      bg="#4C88D8"
+                      bg={buttonBg}
                       color="white"
                       disabled={isLoading}
-                      _hover={{ backgroundColor: '#376bb0' }}
+                      _hover={{ backgroundColor: buttonHover }}
                       width="100%"
                       leftIcon={<FaCheck />}
                       fontSize="0.95rem"

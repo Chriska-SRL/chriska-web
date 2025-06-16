@@ -16,6 +16,7 @@ import {
   useDisclosure,
   useMediaQuery,
   Image,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
@@ -32,6 +33,12 @@ export const ProductList = ({ filterName }: ProductListProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const hoverColor = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
 
   const handleEditClick = (product: Product) => {
     setSelectedProduct(product);
@@ -64,7 +71,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
           No se encontraron roles con esos parámetros de búsqueda.
         </Text>
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color={emptyTextColor}>
           Inténtelo con otros parámetros.
         </Text>
       </Flex>
@@ -86,9 +93,9 @@ export const ProductList = ({ filterName }: ProductListProps) => {
 
   return (
     <>
-      <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
-        <Table variant="simple">
-          <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
+      <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor={borderColor} h="100%">
+        <Table variant="unstyled">
+          <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
             <Tr>
               <Th textAlign="center" maxW="10rem">
                 Categoría
@@ -107,7 +114,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
           </Thead>
           <Tbody>
             {filteredProducts.map((product) => (
-              <Tr key={product.id}>
+              <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.subCategory.name}
                 </Td>
@@ -140,7 +147,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
                     onClick={() => handleEditClick(product)}
                     variant="ghost"
                     size="lg"
-                    _hover={{ bg: 'blackAlpha.100' }}
+                    _hover={{ bg: hoverColor }}
                   />
                 </Td>
               </Tr>

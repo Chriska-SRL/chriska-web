@@ -1,12 +1,11 @@
 'use client';
 
-import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack, useColorModeValue } from '@chakra-ui/react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
-import { useGetCategories } from '@/hooks/category';
-import { CategoryEdit } from './CategoryEdit';
-import { SubCategoryEdit } from '../SubCategories/SubCategoryEdit';
 import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
+import { SubCategoryEdit } from '../SubCategories/SubCategoryEdit';
+import { CategoryEdit } from './CategoryEdit';
 import { Category } from '@/entities/category';
 
 type CategoryListProps = {
@@ -26,12 +25,16 @@ const normalizeText = (text: string) =>
 export const CategoryList = ({ filterName, categories, isLoading, error, setLocalCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
+  const bgBox = useColorModeValue('white', 'gray.700');
+  const borderBox = useColorModeValue('#f2f2f2', 'gray.600');
+  const subDescColor = useColorModeValue('gray.600', 'gray.400');
+  const subEmptyColor = useColorModeValue('gray.500', 'gray.500');
+  const noResultsColor = useColorModeValue('gray.500', 'gray.400');
+  const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
+
   const toggleExpand = (categoryId: number) => {
-    setExpandedCategoryIds(
-      (prevIds) =>
-        prevIds.includes(categoryId)
-          ? prevIds.filter((id) => id !== categoryId) // Si ya está, lo saca (colapsa)
-          : [...prevIds, categoryId], // Si no está, lo agrega (expande)
+    setExpandedCategoryIds((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
     );
   };
 
@@ -48,9 +51,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
   const filteredCategories = categories?.filter((cat) => {
     const catName = normalizeText(cat.name);
     const matchesCategory = catName.includes(normalizedFilter);
-
     const matchesSubcategory = cat.subCategories?.some((sub) => normalizeText(sub.name).includes(normalizedFilter));
-
     return !filterName || matchesCategory || matchesSubcategory;
   });
 
@@ -60,7 +61,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
           No se encontraron categorías con esos parámetros de búsqueda.
         </Text>
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color={noResultsColor}>
           Inténtelo con otros parámetros.
         </Text>
       </Flex>
@@ -76,16 +77,17 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
               key={cat.id}
               px="1rem"
               py="0.75rem"
-              border="1px solid #f2f2f2"
+              border="1px solid"
+              borderColor={borderBox}
               borderRadius="0.5rem"
-              bg="white"
+              bg={bgBox}
               boxShadow="sm"
               position="relative"
             >
               <Flex alignItems="center" justifyContent="space-between">
                 <Box>
                   <Text fontWeight="bold">{cat.name}</Text>
-                  <Text fontSize="sm" color="gray.600" mt="0.125rem">
+                  <Text fontSize="sm" color={subDescColor} mt="0.125rem">
                     {cat.description}
                   </Text>
                 </Box>
@@ -97,7 +99,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                     icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
                     size="md"
                     bg="transparent"
-                    _hover={{ bg: '#e0dede' }}
+                    _hover={{ bg: iconHoverBg }}
                     onClick={() => toggleExpand(cat.id)}
                   />
                 </Flex>
@@ -107,7 +109,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                 <Box pt="0.75rem">
                   <Divider mb="0.5rem" />
                   {cat.subCategories.length === 0 ? (
-                    <Text color="gray.500" fontSize="sm">
+                    <Text color={subEmptyColor} fontSize="sm">
                       No hay subcategorías.
                     </Text>
                   ) : (
@@ -120,7 +122,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                                 {sub.name}
                               </Text>
                               {sub.description && (
-                                <Text fontSize="xs" color="gray.600">
+                                <Text fontSize="xs" color={subDescColor}>
                                   {sub.description}
                                 </Text>
                               )}

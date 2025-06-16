@@ -11,6 +11,7 @@ import {
   Progress,
   Flex,
   useToast,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { useState, useEffect } from 'react';
@@ -20,7 +21,6 @@ import { Login as LoginValues } from '@/entities/login';
 import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validate';
 
-const _backgroundGradient = `linear(to-b, #f2f2f2 50%, transparent 50%)`;
 const _containerW = { sm: '25rem', base: '20rem' };
 
 export const Login = () => {
@@ -30,18 +30,17 @@ export const Login = () => {
   const { data, isLoading, error, fieldError } = useLogin(loginProps);
   const setUserFromToken = useUserStore((state) => state.setUserFromToken);
 
+  const bg = useColorModeValue('gray.100', 'gray.900');
+  const boxBg = useColorModeValue('white', 'gray.800');
+  const titleColor = useColorModeValue('black', 'white');
+  const btnBg = useColorModeValue('brand.500', 'brand.500');
+  const btnHover = useColorModeValue('brand.700', 'brand.700');
+
   useEffect(() => {
     if (data) {
       const token = localStorage.getItem('access_token');
       if (token) {
         setUserFromToken(token);
-        // toast({
-        //   title: 'Inicio de sesión exitoso',
-        //   description: 'Redirigiendo...',
-        //   status: 'success',
-        //   duration: 1500,
-        //   isClosable: true,
-        // });
         router.push('/');
       }
     }
@@ -77,12 +76,12 @@ export const Login = () => {
   };
 
   return (
-    <Flex height="100vh" bg="white" bgGradient={_backgroundGradient} justifyContent="center" alignItems="center">
+    <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
       <Container maxW={_containerW}>
-        <Text fontSize="1.875rem" fontWeight="bold" color="black" textAlign="center" pb="1rem">
+        <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
           Chriska S.R.L.
         </Text>
-        <Box bg="white" boxShadow="lg" borderRadius="0.5rem" p="2rem">
+        <Box bg={boxBg} boxShadow="lg" borderRadius="0.5rem" p="2rem">
           <Formik initialValues={initialValues} onSubmit={handleSubmit} validateOnChange validateOnBlur={false}>
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
@@ -127,9 +126,9 @@ export const Login = () => {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    bg="#4C88D8"
+                    bg={btnBg}
                     color="white"
-                    _hover={{ backgroundColor: '#376bb0' }}
+                    _hover={{ backgroundColor: btnHover }}
                     width="100%"
                   >
                     Iniciar sesión

@@ -18,6 +18,7 @@ import {
   Text,
   useToast,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
@@ -41,6 +42,9 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
 
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
+
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -124,8 +128,8 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       as={Input}
                       name="username"
                       type="text"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={borderColor}
                       h="2.75rem"
                       validate={validateEmpty}
                       disabled={isLoading}
@@ -145,8 +149,8 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       as={Input}
                       name="name"
                       type="text"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={borderColor}
                       h="2.75rem"
                       validate={validateEmpty}
                       disabled={isLoading}
@@ -166,8 +170,8 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       as={Select}
                       name="roleId"
                       placeholder="Seleccionar rol"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={borderColor}
                       h="2.75rem"
                       validate={validateEmpty}
                       disabled={isLoading || isLoadingRoles}
@@ -193,8 +197,8 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       as={Select}
                       name="estado"
                       placeholder="Seleccionar estado"
-                      bg="#f5f5f7"
-                      borderColor="#f5f5f7"
+                      bg={inputBg}
+                      borderColor={borderColor}
                       h="2.75rem"
                       validate={validateEmpty}
                       disabled={isLoading}

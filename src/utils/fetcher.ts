@@ -1,4 +1,3 @@
-// utils/fetcher.ts
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 const getHeaders = (withAuth = false) => {
