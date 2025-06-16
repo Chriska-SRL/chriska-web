@@ -43,8 +43,8 @@ export const ProductAdd = () => {
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.600');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.600');
 
   useEffect(() => {
     if (data) {
@@ -81,6 +81,31 @@ export const ProductAdd = () => {
     }
   }, [error, fieldError]);
 
+  const handleSubmit = (values: {
+    barcode: string;
+    name: string;
+    price: number;
+    unitType: string;
+    description: string;
+    temperatureCondition: string;
+    observation: string;
+    subCategoryId: string;
+    image: string;
+  }) => {
+    const product = {
+      barcode: values.barcode,
+      name: values.name,
+      price: values.price,
+      unitType: values.unitType,
+      description: values.description,
+      temperatureCondition: values.temperatureCondition,
+      observation: values.observation,
+      subCategoryId: Number(values.subCategoryId),
+      image: values.image,
+    };
+    setProductProps(product);
+  };
+
   return (
     <>
       <Button
@@ -106,15 +131,14 @@ export const ProductAdd = () => {
               barcode: '',
               name: '',
               price: 0,
-              stock: 0,
               unitType: '',
               description: '',
               temperatureCondition: '',
               observation: '',
-              subCategoryId: 0,
+              subCategoryId: '',
               image: '',
             }}
-            onSubmit={(values) => setProductProps(values)}
+            onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
           >
@@ -168,7 +192,7 @@ export const ProductAdd = () => {
                       />
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && !!errors.stock}>
+                    {/* <FormControl isInvalid={submitCount > 0 && !!errors.stock}>
                       <FormLabel>Stock</FormLabel>
                       <Field
                         as={Input}
@@ -183,7 +207,7 @@ export const ProductAdd = () => {
                           return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
                         }}
                       />
-                    </FormControl>
+                    </FormControl> */}
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
                       <FormLabel>Unidad</FormLabel>
@@ -248,12 +272,12 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         value={selectedCategoryId ?? ''}
+                        disabled={isLoading || isLoadingCats}
                         onChange={(e) => {
                           const selectedId = Number(e.target.value);
                           setSelectedCategoryId(selectedId);
-                          values.subCategoryId = 0;
+                          values.subCategoryId = '';
                         }}
-                        disabled={isLoading || isLoadingCats}
                       >
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.id}>
