@@ -22,9 +22,10 @@ export const CategoryFilters = ({ filterName, setFilterName }: CategoryFiltersPr
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const inputBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const inputBorder = useColorModeValue('#f2f2f2', 'gray.600');
+  const inputBorder = useColorModeValue('#f2f2f2', 'gray.700');
   const iconColor = useColorModeValue('gray.600', 'gray.300');
   const hoverReset = useColorModeValue('#e0dede', 'gray.600');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
@@ -49,6 +50,8 @@ export const CategoryFilters = ({ filterName, setFilterName }: CategoryFiltersPr
           onChange={handleNameChange}
           bg={inputBg}
           borderColor={inputBorder}
+          color={textColor}
+          _placeholder={{ color: textColor }}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />

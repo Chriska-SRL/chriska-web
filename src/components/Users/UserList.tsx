@@ -46,9 +46,9 @@ export const UserList = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
-  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
-  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
@@ -187,8 +187,8 @@ export const UserList = ({
                     <Td textAlign="center">{user.role.name}</Td>
                     <Td textAlign="center">
                       <Box
-                        bg={user.isEnabled ? 'green.100' : 'red.100'}
-                        color={user.isEnabled ? 'green.800' : 'red.800'}
+                        bg={user.isEnabled ? 'green.300' : 'red.300'}
+                        color={user.isEnabled ? 'green.900' : 'red.900'}
                         px="0.75rem"
                         py="0.25rem"
                         borderRadius="full"

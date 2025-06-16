@@ -25,7 +25,7 @@ const normalizeText = (text: string) =>
 export const CategoryList = ({ filterName, categories, isLoading, error, setLocalCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
-  const bgBox = useColorModeValue('white', 'gray.700');
+  const bgBox = useColorModeValue('white', 'gray.800');
   const borderBox = useColorModeValue('#f2f2f2', 'gray.600');
   const subDescColor = useColorModeValue('gray.600', 'gray.400');
   const subEmptyColor = useColorModeValue('gray.500', 'gray.500');
@@ -86,12 +86,30 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
             >
               <Flex alignItems="center" justifyContent="space-between">
                 <Box>
-                  <Text fontWeight="bold">{cat.name}</Text>
-                  <Text fontSize="sm" color={subDescColor} mt="0.125rem">
+                  <Text
+                    fontWeight="bold"
+                    whiteSpace="nowrap"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    maxW="6rem"
+                    mt={{ base: '0.125rem', md: '0' }}
+                  >
+                    {cat.name}
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color={subDescColor}
+                    mt={{ base: '0.625rem', md: '0.25rem' }}
+                    maxW={{ base: '13rem', md: '40rem' }}
+                    whiteSpace="nowrap"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                  >
                     {cat.description}
                   </Text>
                 </Box>
-                <Flex alignItems="center" gap="1rem">
+
+                <Flex alignItems="center" gap="1rem" display={{ base: 'none', md: 'flex' }}>
                   <SubCategoryAdd category={cat} setLocalCategories={setLocalCategories} />
                   <CategoryEdit category={cat} setLocalCategories={setLocalCategories} />
                   <IconButton
@@ -103,6 +121,19 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                     onClick={() => toggleExpand(cat.id)}
                   />
                 </Flex>
+              </Flex>
+
+              <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.5rem" display={{ base: 'flex', md: 'none' }}>
+                <SubCategoryAdd category={cat} setLocalCategories={setLocalCategories} />
+                <CategoryEdit category={cat} setLocalCategories={setLocalCategories} />
+                <IconButton
+                  aria-label="Expandir categoría"
+                  icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
+                  size="md"
+                  bg="transparent"
+                  _hover={{ bg: iconHoverBg }}
+                  onClick={() => toggleExpand(cat.id)}
+                />
               </Flex>
 
               <Collapse in={expandedCategoryIds.includes(cat.id)} animateOpacity>

@@ -40,9 +40,9 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
   const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
 
-  const inputBg = useColorModeValue('#f5f5f7', 'gray.700');
-  const inputBorder = useColorModeValue('#f5f5f7', 'gray.600');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const buttonHover = useColorModeValue('#e0dede', 'gray.500');
   const submitBg = useColorModeValue('#4C88D8', 'blue.400');
   const submitHover = useColorModeValue('#376bb0', 'blue.600');

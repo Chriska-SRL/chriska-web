@@ -21,10 +21,11 @@ type RoleFiltersProps = {
 export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const inputBg = useColorModeValue('gray.100', 'gray.700');
-  const inputBorder = useColorModeValue('gray.200', 'gray.600');
-  const iconColor = useColorModeValue('gray.600', 'gray.300');
-  const buttonHover = useColorModeValue('gray.200', 'gray.600');
+  // Colores unificados con UserFilters
+  const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
@@ -47,12 +48,13 @@ export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => 
           placeholder="Buscar por nombre..."
           value={filterName}
           onChange={handleNameChange}
-          bg={inputBg}
-          borderColor={inputBorder}
-          _placeholder={{ color: iconColor }}
+          bg={bgInput}
+          borderColor={borderInput}
+          _placeholder={{ color: textColor }}
+          color={textColor}
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />
+          <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
         </InputRightElement>
       </InputGroup>
 
@@ -60,8 +62,8 @@ export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => 
         <IconButton
           aria-label="Reiniciar filtros"
           icon={<VscDebugRestart />}
-          bg={inputBg}
-          _hover={{ bg: buttonHover }}
+          bg={bgInput}
+          _hover={{ bg: hoverResetBg }}
           onClick={handleResetFilters}
         />
       )}

@@ -40,7 +40,10 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
+  const submitHover = useColorModeValue('#376bb0', 'blue.600');
 
   useEffect(() => {
     if (data) {
@@ -88,8 +91,8 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
   return (
     <>
       <Button
-        bg={inputBg}
-        _hover={{ bg: hoverBg }}
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -168,9 +171,9 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
                       <Button
                         type="submit"
                         disabled={isLoading}
-                        bg="#4C88D8"
+                        bg={submitBg}
                         color="white"
-                        _hover={{ backgroundColor: '#376bb0' }}
+                        _hover={{ backgroundColor: submitHover }}
                         width="100%"
                         leftIcon={<FaCheck />}
                         py="1.375rem"

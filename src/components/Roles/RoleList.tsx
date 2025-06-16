@@ -36,12 +36,13 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
   const editModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
-  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
-  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  // === COLORES UNIFICADOS CON UserList ===
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
-  const mutedText = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
+  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
   const handleEditClick = (role: Role) => {
     setSelectedRole(role);
@@ -74,7 +75,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
           No se encontraron roles con esos parámetros de búsqueda.
         </Text>
-        <Text fontSize="sm" color={mutedText}>
+        <Text fontSize="sm" color={textColor}>
           Inténtelo con otros parámetros.
         </Text>
       </Flex>
@@ -100,7 +101,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                   position="relative"
                 >
                   <Text fontWeight="bold">{role.name}</Text>
-                  <Text fontSize="sm" color={mutedText} mt="0.25rem">
+                  <Text fontSize="sm" color={textColor} mt="0.25rem">
                     {role.description}
                   </Text>
 
@@ -147,7 +148,6 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                 {filteredRoles.map((role) => (
                   <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
-
                     <Td textAlign="left" maxW="30rem">
                       <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
                         {role.description}

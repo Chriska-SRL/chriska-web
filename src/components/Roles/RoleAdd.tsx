@@ -45,13 +45,13 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, isLoading, error, fieldError } = useAddRole(roleProps);
 
-  const buttonBg = useColorModeValue('gray.100', 'gray.600');
-  const buttonHoverBg = useColorModeValue('gray.200', 'gray.500');
-  const inputBg = useColorModeValue('gray.100', 'gray.700');
-  const inputBorder = useColorModeValue('gray.100', 'gray.600');
-  const confirmBg = useColorModeValue('#4C88D8', '#4C88D8');
-  const confirmHover = useColorModeValue('#376bb0', '#376bb0');
-  const textMuted = useColorModeValue('gray.600', 'gray.400');
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
+  const submitHover = useColorModeValue('#376bb0', 'blue.600');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -110,7 +110,7 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
     <>
       <Button
         bg={buttonBg}
-        _hover={{ bg: buttonHoverBg }}
+        _hover={{ bg: buttonHover }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -148,7 +148,7 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                                     <Box flex="1" textAlign="left" fontWeight="semibold">
                                       {group}
                                     </Box>
-                                    <Text fontSize="sm" color={textMuted} mr="1rem">
+                                    <Text fontSize="sm" color={textColor} mr="1rem">
                                       {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
                                       seleccionados
                                     </Text>
@@ -234,9 +234,9 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                         <Button
                           type="submit"
                           disabled={isLoading}
-                          bg={confirmBg}
+                          bg={submitBg}
                           color="white"
-                          _hover={{ backgroundColor: confirmHover }}
+                          _hover={{ backgroundColor: submitHover }}
                           w="100%"
                           leftIcon={<FaCheck />}
                           py="1.375rem"
