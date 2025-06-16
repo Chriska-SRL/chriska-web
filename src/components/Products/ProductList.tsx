@@ -34,9 +34,9 @@ export const ProductList = ({ filterName }: ProductListProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
-  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
-  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const hoverColor = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
   const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
 

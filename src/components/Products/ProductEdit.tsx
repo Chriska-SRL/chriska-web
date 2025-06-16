@@ -113,7 +113,6 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
             barcode: product?.barcode ?? '',
             name: product?.name ?? '',
             price: product?.price ?? 0,
-            stock: product?.stock ?? 0,
             unitType: product?.unitType ?? '',
             description: product?.description ?? '',
             temperatureCondition: product?.temperatureCondition ?? '',
@@ -188,23 +187,6 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                         const emptyError = validateEmpty(value);
                         if (emptyError) return emptyError;
                         return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
-                      }}
-                    />
-                  </FormControl>
-
-                  <FormControl isInvalid={submitCount > 0 && !!errors.stock}>
-                    <FormLabel>Stock</FormLabel>
-                    <Field
-                      as={Input}
-                      name="stock"
-                      type="number"
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled={isLoading}
-                      validate={(value: any) => {
-                        const emptyError = validateEmpty(value);
-                        if (emptyError) return emptyError;
-                        return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
                       }}
                     />
                   </FormControl>

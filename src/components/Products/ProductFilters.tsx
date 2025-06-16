@@ -23,9 +23,10 @@ export const ProductFilters = ({
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const inputBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const iconColor = useColorModeValue('gray.500', 'gray.300');
   const hoverBg = useColorModeValue('#e0dede', 'gray.600');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterName(e.target.value);
@@ -52,6 +53,8 @@ export const ProductFilters = ({
           onChange={handleNameChange}
           bg={inputBg}
           borderColor={borderColor}
+          _placeholder={{ color: textColor }}
+          color={textColor}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />
