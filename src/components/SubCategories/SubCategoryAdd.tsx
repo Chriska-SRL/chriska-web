@@ -20,6 +20,7 @@ import {
   Textarea,
   IconButton,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -39,6 +40,12 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
   const { data, isLoading, error, fieldError } = useAddSubCategory(subCategoryProps);
+
+  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
+  const buttonBg = useColorModeValue('blue.500', 'blue.400');
+  const buttonHoverBg = useColorModeValue('blue.600', 'blue.500');
 
   useEffect(() => {
     if (data) {
@@ -94,7 +101,7 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
         onClick={onOpen}
         size="md"
         bg="transparent"
-        _hover={{ bg: '#e0dede' }}
+        _hover={{ bg: iconHoverBg }}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
@@ -120,8 +127,8 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         as={Input}
                         name="category"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled
@@ -134,8 +141,8 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         as={Input}
                         name="name"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -148,8 +155,8 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         as={Textarea}
                         name="description"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -178,9 +185,9 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      bg="#4C88D8"
+                      bg={buttonBg}
                       color="white"
-                      _hover={{ backgroundColor: '#376bb0' }}
+                      _hover={{ bg: buttonHoverBg }}
                       width="100%"
                       leftIcon={<FaCheck />}
                       py="1.375rem"

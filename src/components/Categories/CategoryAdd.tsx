@@ -19,6 +19,7 @@ import {
   Text,
   Textarea,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -37,11 +38,15 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
   const { data, isLoading, error, fieldError } = useAddCategory(categoryProps);
 
+  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
+
   useEffect(() => {
     if (data) {
       toast({
         title: 'Categoría creada',
-        description: `La categoría ha sido creado correctamente.`,
+        description: `La categoría ha sido creada correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -51,6 +56,7 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
       onClose();
     }
   }, [data]);
+
   useEffect(() => {
     if (fieldError) {
       toast({
@@ -82,8 +88,8 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
   return (
     <>
       <Button
-        bg="#f2f2f2"
-        _hover={{ bg: '#e0dede' }}
+        bg={inputBg}
+        _hover={{ bg: hoverBg }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -105,73 +111,77 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount }) => (
-              <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
-                  <VStack spacing="1rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                      <FormLabel>Nombre</FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        h="2.75rem"
-                        validate={validateEmpty}
-                        disabled={isLoading}
+            {({ handleSubmit, errors, touched, submitCount }) => {
+              const showError = (field: keyof typeof errors) => submitCount > 0 && touched[field] && !!errors[field];
+
+              return (
+                <form onSubmit={handleSubmit}>
+                  <ModalBody pb="0">
+                    <VStack spacing="1rem">
+                      <FormControl isInvalid={showError('name')}>
+                        <FormLabel>Nombre</FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          type="text"
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validateEmpty}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+
+                      <FormControl isInvalid={showError('description')}>
+                        <FormLabel>Descripción</FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="description"
+                          type="text"
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validateEmpty}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+
+                      {submitCount > 0 && Object.keys(errors).length > 0 && (
+                        <Box w="100%">
+                          <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
+                            Debe completar todos los campos
+                          </Text>
+                        </Box>
+                      )}
+                    </VStack>
+                  </ModalBody>
+
+                  <ModalFooter pb="1.5rem">
+                    <Box mt="0.5rem" w="100%">
+                      <Progress
+                        h={isLoading ? '4px' : '1px'}
+                        mb="1.5rem"
+                        size="xs"
+                        isIndeterminate={isLoading}
+                        colorScheme="blue"
                       />
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                      <FormLabel>Descripción</FormLabel>
-                      <Field
-                        as={Textarea}
-                        name="description"
-                        type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
-                        h="2.75rem"
-                        validate={validateEmpty}
+                      <Button
+                        type="submit"
                         disabled={isLoading}
-                      />
-                    </FormControl>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
-                      </Box>
-                    )}
-                  </VStack>
-                </ModalBody>
-
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
-                    <Progress
-                      h={isLoading ? '4px' : '1px'}
-                      mb="1.5rem"
-                      size="xs"
-                      isIndeterminate={isLoading}
-                      colorScheme="blue"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      bg="#4C88D8"
-                      color="white"
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      py="1.375rem"
-                    >
-                      Confirmar
-                    </Button>
-                  </Box>
-                </ModalFooter>
-              </form>
-            )}
+                        bg="#4C88D8"
+                        color="white"
+                        _hover={{ backgroundColor: '#376bb0' }}
+                        width="100%"
+                        leftIcon={<FaCheck />}
+                        py="1.375rem"
+                      >
+                        Confirmar
+                      </Button>
+                    </Box>
+                  </ModalFooter>
+                </form>
+              );
+            }}
           </Formik>
         </ModalContent>
       </Modal>

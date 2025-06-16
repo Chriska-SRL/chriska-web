@@ -1,6 +1,16 @@
 'use client';
 
-import { Flex, Select, Input, InputGroup, InputRightElement, Icon, useMediaQuery, IconButton } from '@chakra-ui/react';
+import {
+  Flex,
+  Select,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Icon,
+  useMediaQuery,
+  IconButton,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 import { useGetRoles } from '@/hooks/roles';
@@ -24,6 +34,11 @@ export const UserFilters = ({
 }: UserFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const { data: roles, isLoading } = useGetRoles();
+
+  const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderInput = useColorModeValue('#f2f2f2', 'gray.600');
+  const iconColor = useColorModeValue('gray.600', 'gray.400');
+  const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
@@ -58,11 +73,11 @@ export const UserFilters = ({
       <Select
         value={filterRoleId !== undefined ? String(filterRoleId) : '-1'}
         onChange={handleRoleChange}
-        bg="#f2f2f2"
-        borderColor="#f2f2f2"
+        bg={bgInput}
+        borderColor={borderInput}
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
-        color="grey"
+        color={iconColor}
       >
         <option value="-1">Filtrar por rol</option>
         {roles?.map((r) => (
@@ -75,11 +90,11 @@ export const UserFilters = ({
       <Select
         value={filterStateId || '-1'}
         onChange={handleStateChange}
-        bg="#f2f2f2"
-        borderColor="#f2f2f2"
+        bg={bgInput}
+        borderColor={borderInput}
         disabled={isLoading}
         w={{ base: '100%', md: '12rem' }}
-        color="grey"
+        color={iconColor}
       >
         <option value="-1">Filtrar por estado</option>
         <option value="activo">Activo</option>
@@ -92,11 +107,11 @@ export const UserFilters = ({
           value={filterName}
           onChange={handleNameChange}
           disabled={isLoading}
-          bg="#f2f2f2"
-          borderColor="#f2f2f2"
+          bg={bgInput}
+          borderColor={borderInput}
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color="grey" />
+          <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />
         </InputRightElement>
       </InputGroup>
 
@@ -104,8 +119,8 @@ export const UserFilters = ({
         <IconButton
           aria-label="Reiniciar filtros"
           icon={<VscDebugRestart />}
-          bg="#f2f2f2"
-          _hover={{ bg: '#e0dede' }}
+          bg={bgInput}
+          _hover={{ bg: hoverResetBg }}
           onClick={handleResetFilters}
         />
       )}

@@ -25,6 +25,7 @@ import {
   AccordionPanel,
   AccordionIcon,
   Flex,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -43,6 +44,14 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
   const toast = useToast();
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, isLoading, error, fieldError } = useAddRole(roleProps);
+
+  const buttonBg = useColorModeValue('gray.100', 'gray.600');
+  const buttonHoverBg = useColorModeValue('gray.200', 'gray.500');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const inputBorder = useColorModeValue('gray.100', 'gray.600');
+  const confirmBg = useColorModeValue('#4C88D8', '#4C88D8');
+  const confirmHover = useColorModeValue('#376bb0', '#376bb0');
+  const textMuted = useColorModeValue('gray.600', 'gray.400');
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -100,8 +109,8 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
   return (
     <>
       <Button
-        bg="#f2f2f2"
-        _hover={{ bg: '#e0dede' }}
+        bg={buttonBg}
+        _hover={{ bg: buttonHoverBg }}
         leftIcon={<FaPlus />}
         onClick={onOpen}
         w={{ base: '100%', md: 'auto' }}
@@ -139,7 +148,7 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                                     <Box flex="1" textAlign="left" fontWeight="semibold">
                                       {group}
                                     </Box>
-                                    <Text fontSize="sm" color="gray.600" mr="1rem">
+                                    <Text fontSize="sm" color={textMuted} mr="1rem">
                                       {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
                                       seleccionados
                                     </Text>
@@ -181,8 +190,8 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                               as={Input}
                               name="name"
                               type="text"
-                              bg="#f5f5f7"
-                              borderColor="#f5f5f7"
+                              bg={inputBg}
+                              borderColor={inputBorder}
                               h="2.75rem"
                               validate={validateEmpty}
                               disabled={isLoading}
@@ -194,8 +203,8 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                             <Field
                               as={Textarea}
                               name="description"
-                              bg="#f5f5f7"
-                              borderColor="#f5f5f7"
+                              bg={inputBg}
+                              borderColor={inputBorder}
                               resize="vertical"
                               minH="8rem"
                               validate={validateEmpty}
@@ -225,9 +234,9 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                         <Button
                           type="submit"
                           disabled={isLoading}
-                          bg="#4C88D8"
+                          bg={confirmBg}
                           color="white"
-                          _hover={{ backgroundColor: '#376bb0' }}
+                          _hover={{ backgroundColor: confirmHover }}
                           w="100%"
                           leftIcon={<FaCheck />}
                           py="1.375rem"

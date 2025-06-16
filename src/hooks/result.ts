@@ -6,6 +6,6 @@ export type FieldError = {
 export type Result<T> = {
   data?: T;
   isLoading: boolean;
-  error?: string; // error general
-  fieldError?: FieldError; // error de campo
+  error?: string;
+  fieldError?: FieldError;
 };

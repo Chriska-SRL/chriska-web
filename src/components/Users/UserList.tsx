@@ -16,6 +16,7 @@ import {
   useDisclosure,
   VStack,
   useMediaQuery,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
@@ -44,6 +45,13 @@ export const UserList = ({
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+
+  const borderColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.600');
+  const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.600');
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
+  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
   const handleEditClick = (user: User) => {
     setSelectedUser(user);
@@ -79,7 +87,7 @@ export const UserList = ({
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
           No se encontraron usuarios con esos parámetros de búsqueda.
         </Text>
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color={textColor}>
           Inténtelo con otros parámetros.
         </Text>
       </Flex>
@@ -97,9 +105,10 @@ export const UserList = ({
                   key={user.id}
                   px="1rem"
                   py="0.5rem"
-                  border="1px solid #f2f2f2"
+                  border="1px solid"
+                  borderColor={borderColor}
                   borderRadius="0.5rem"
-                  bg="white"
+                  bg={cardBg}
                   boxShadow="sm"
                   position="relative"
                 >
@@ -118,10 +127,10 @@ export const UserList = ({
                   </Box>
 
                   <Text fontWeight="bold">{user.name}</Text>
-                  <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                  <Text fontSize="sm" color={textColor} mt="0.25rem">
                     Usuario: {user.username}
                   </Text>
-                  <Text fontSize="sm" color="gray.600" mt="0.25rem">
+                  <Text fontSize="sm" color={textColor} mt="0.25rem">
                     Rol: {user.role.name}
                   </Text>
                   <IconButton
@@ -133,21 +142,27 @@ export const UserList = ({
                     bottom="0.25rem"
                     right="0.25rem"
                     bg="transparent"
-                    _hover={{ bg: 'gray.200' }}
+                    _hover={{ bg: hoverBgIcon }}
                   />
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center" bg="white">
+          <Box py="1rem" textAlign="center" bg={cardBg}>
             <Text fontSize="sm">Mostrando {filteredUsers.length} usuarios</Text>
           </Box>
         </Flex>
       ) : (
         <>
-          <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor="#f2f2f2" h="100%">
-            <Table variant="simple">
-              <Thead position="sticky" top="0" bg="#f2f2f2" zIndex="1">
+          <TableContainer
+            overflowY="scroll"
+            border="1px solid"
+            borderRadius="0.5rem"
+            borderColor={borderColor}
+            h="100%"
+          >
+            <Table variant="unstyled">
+              <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
                   <Th textAlign="center" w="12rem">
                     Nombre de usuario
@@ -166,7 +181,7 @@ export const UserList = ({
               </Thead>
               <Tbody>
                 {filteredUsers.map((user) => (
-                  <Tr key={user.id} h="3rem">
+                  <Tr key={user.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{user.username}</Td>
                     <Td textAlign="center">{user.name}</Td>
                     <Td textAlign="center">{user.role.name}</Td>
@@ -190,7 +205,7 @@ export const UserList = ({
                         onClick={() => handleEditClick(user)}
                         variant="ghost"
                         size="lg"
-                        _hover={{ bg: 'blackAlpha.100' }}
+                        _hover={{ bg: hoverBgIcon }}
                       />
                     </Td>
                   </Tr>

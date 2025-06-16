@@ -21,6 +21,7 @@ import {
   Textarea,
   Flex,
   ModalCloseButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -42,6 +43,12 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
   const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
+
+  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const iconHoverBg = useColorModeValue('gray.100', 'gray.700');
+  const buttonBg = useColorModeValue('blue.500', 'blue.400');
+  const buttonHoverBg = useColorModeValue('blue.600', 'blue.500');
 
   useEffect(() => {
     if (data) {
@@ -105,7 +112,7 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
         onClick={onOpen}
         size="md"
         bg="transparent"
-        _hover={{ bg: '#e0dede' }}
+        _hover={{ bg: iconHoverBg }}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
@@ -116,7 +123,11 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ name: subcategory.name, description: subcategory.description }}
+            initialValues={{
+              category: subcategory.category.name,
+              name: subcategory.name,
+              description: subcategory.description,
+            }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -125,14 +136,28 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="1rem">
+                    <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
+                      <FormLabel>Categoría</FormLabel>
+                      <Field
+                        as={Input}
+                        name="category"
+                        type="text"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                        disabled
+                      />
+                    </FormControl>
+
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
                       <Field
                         as={Input}
                         name="name"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -145,8 +170,8 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                         as={Textarea}
                         name="description"
                         type="text"
-                        bg="#f5f5f7"
-                        borderColor="#f5f5f7"
+                        bg={inputBg}
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validateEmpty}
                         disabled={isLoading}
@@ -182,9 +207,9 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                       <Button
                         type="submit"
                         disabled={isLoading}
-                        bg="#4C88D8"
+                        bg={buttonBg}
                         color="white"
-                        _hover={{ backgroundColor: '#376bb0' }}
+                        _hover={{ bg: buttonHoverBg }}
                         width="100%"
                         leftIcon={<FaCheck />}
                         py="1.375rem"

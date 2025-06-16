@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { login } from '@/services/login';
 import { Login } from '@/entities/login';
-import { Result, FieldError } from './result'; // asegurate de tener este tipo
+import { Result, FieldError } from './result';
 
 export const useLogin = (props?: Login): Result<boolean> => {
   const [isLoading, setIsLoading] = useState(false);

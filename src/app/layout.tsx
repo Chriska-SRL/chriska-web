@@ -1,18 +1,8 @@
-import { UserHydrator } from '@/components/UserHydrator';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProviders } from '@/components';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-// import { Geist, Geist_Mono } from "next/font/google";
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
+import { ColorModeScript } from '@chakra-ui/react';
+import { chakraConfig } from '@/theme/chakraConfig';
 
 export const metadata: Metadata = {
   title: 'Chriska SRL',
@@ -22,11 +12,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <ColorModeScript initialColorMode={chakraConfig.initialColorMode} />
+      </head>
       <body>
-        <ChakraProvider>
-          <UserHydrator />
-          {children}
-        </ChakraProvider>
+        <ChakraProviders>{children}</ChakraProviders>
       </body>
     </html>
   );
