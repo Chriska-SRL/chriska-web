@@ -120,7 +120,12 @@ export const useDeleteRole = (id?: number): Result<Role> => {
           const result = await deleteRole(id);
           setData(result);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            setError(parsed.error || 'Error desconocido');
+          } catch {
+            setError(err.message || 'Error desconocido');
+          }
         }
         setIsLoading(false);
       };

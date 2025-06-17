@@ -19,7 +19,7 @@ import { useLogin } from '@/hooks/login';
 import { useRouter } from 'next/navigation';
 import { Login as LoginValues } from '@/entities/login';
 import { useUserStore } from '@/stores/useUserStore';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 
 const _containerW = { sm: '25rem', base: '20rem' };
 
@@ -87,14 +87,7 @@ export const Login = () => {
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
-                  <Field
-                    as={Input}
-                    id="username"
-                    name="username"
-                    type="text"
-                    variant="filled"
-                    validate={validateEmpty}
-                  />
+                  <Field as={Input} id="username" name="username" type="text" variant="filled" validate={validate} />
                 </FormControl>
 
                 <FormControl mb="0.5rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
@@ -105,7 +98,7 @@ export const Login = () => {
                     name="password"
                     type="password"
                     variant="filled"
-                    validate={validateEmpty}
+                    validate={validate}
                   />
                 </FormControl>
 

@@ -19,6 +19,7 @@ import {
   useToast,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
@@ -27,7 +28,7 @@ import { UserDelete } from './UserDelete';
 import { useGetRoles } from '@/hooks/roles';
 import { useEffect, useState } from 'react';
 import { useUpdateUser } from '@/hooks/user';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 
 type UserEditProps = {
   isOpen: boolean;
@@ -131,14 +132,10 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validateEmpty}
+                      validate={validate}
                       disabled={isLoading}
                     />
-                    {fieldError?.campo === 'Username' && (
-                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                        {fieldError.error}
-                      </Text>
-                    )}
+                    <FormErrorMessage>{errors.username}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl
@@ -152,14 +149,10 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validateEmpty}
+                      validate={validate}
                       disabled={isLoading}
                     />
-                    {fieldError?.campo === 'Name' && (
-                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                        {fieldError.error}
-                      </Text>
-                    )}
+                    <FormErrorMessage>{errors.name}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl
@@ -173,7 +166,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validateEmpty}
+                      validate={validate}
                       disabled={isLoading || isLoadingRoles}
                     >
                       {roles?.map((r) => (
@@ -200,7 +193,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validateEmpty}
+                      validate={validate}
                       disabled={isLoading}
                     >
                       <option value="Activo">Activo</option>

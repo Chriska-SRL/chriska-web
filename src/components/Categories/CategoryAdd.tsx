@@ -20,11 +20,12 @@ import {
   Textarea,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
 
@@ -130,9 +131,10 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="2.75rem"
-                          validate={validateEmpty}
+                          validate={validate}
                           disabled={isLoading}
                         />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
 
                       <FormControl isInvalid={showError('description')}>
@@ -144,7 +146,7 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="2.75rem"
-                          validate={validateEmpty}
+                          validate={validate}
                           disabled={isLoading}
                         />
                       </FormControl>

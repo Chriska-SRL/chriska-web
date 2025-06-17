@@ -1,4 +1,5 @@
 'use client';
+
 import { NextPage } from 'next';
 import { SideBar, Content, Roles } from '@/components';
 import { Flex } from '@chakra-ui/react';

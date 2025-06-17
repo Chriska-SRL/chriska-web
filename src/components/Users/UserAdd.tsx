@@ -20,6 +20,7 @@ import {
   Text,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -27,7 +28,7 @@ import { useEffect, useState } from 'react';
 import { useAddUser } from '@/hooks/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/roles';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 
 type UserAddProps = {
   setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
@@ -131,9 +132,15 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateEmpty}
                         disabled={isLoading}
+                        validate={(value: string) => {
+                          const emptyError = validate(value);
+                          if (emptyError) return emptyError;
+                          if (!/^[a-z]+$/.test(value)) return 'Debe ser una sola palabra en minúsculas';
+                          return undefined;
+                        }}
                       />
+                      <FormErrorMessage>{errors.username}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
@@ -145,9 +152,10 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateEmpty}
                         disabled={isLoading}
+                        validate={validate}
                       />
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
@@ -160,7 +168,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         borderColor={inputBorder}
                         fontSize="0.875rem"
                         h="2.75rem"
-                        validate={validateEmpty}
+                        validate={validate}
                         disabled={isLoadingRoles || isLoading}
                       >
                         {roles?.map((role) => (
@@ -181,7 +189,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         borderColor={inputBorder}
                         fontSize="0.875rem"
                         h="2.75rem"
-                        validate={validateEmpty}
+                        validate={validate}
                         disabled={isLoading}
                       >
                         <option value="Activo">Activo</option>

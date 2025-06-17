@@ -27,6 +27,7 @@ import {
   useToast,
   useMediaQuery,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
@@ -35,7 +36,7 @@ import { Role } from '@/entities/role';
 import { RoleDelete } from './RoleDelete';
 import { useEffect, useState } from 'react';
 import { useUpdateRole } from '@/hooks/roles';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 
 type RoleEditProps = {
   isOpen: boolean;
@@ -197,8 +198,9 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                               borderColor={borderColor}
                               fontSize="0.875rem"
                               h="2.75rem"
-                              validate={validateEmpty}
+                              validate={validate}
                             />
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
 
                           <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
@@ -211,8 +213,9 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                               fontSize="0.875rem"
                               resize="vertical"
                               minH="8rem"
-                              validate={validateEmpty}
+                              validate={validate}
                             />
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
 
                           {submitCount > 0 && Object.keys(errors).length > 0 && (
