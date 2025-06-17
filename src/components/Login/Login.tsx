@@ -29,6 +29,7 @@ export const Login = () => {
   const [loginProps, setLoginProps] = useState<LoginValues>();
   const { data, isLoading, error, fieldError } = useLogin(loginProps);
   const setUserFromToken = useUserStore((state) => state.setUserFromToken);
+  const user = useUserStore((state) => state.user);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -41,28 +42,41 @@ export const Login = () => {
       const token = localStorage.getItem('access_token');
       if (token) {
         setUserFromToken(token);
-        router.push('/');
       }
     }
   }, [data]);
 
   useEffect(() => {
-    if (error) {
-      toast({
-        title: 'Error de inicio de sesión',
-        description: error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    } else if (fieldError) {
-      toast({
-        title: 'Error',
-        description: fieldError.error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
+    if (user) {
+      if (user.needsPasswordChange) {
+        router.push('/cambiar-contrasena');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (error || fieldError) {
+      toast.closeAll();
+
+      if (error) {
+        toast({
+          title: 'Error de inicio de sesión',
+          description: error,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else if (fieldError) {
+        toast({
+          title: 'Error',
+          description: fieldError.error,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
   }, [error, fieldError]);
 

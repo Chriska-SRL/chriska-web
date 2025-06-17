@@ -7,6 +7,7 @@ type TokenPayload = {
   name: string;
   role: string;
   permissions: string[];
+  needsPasswordChange?: boolean;
   exp: number;
 };
 

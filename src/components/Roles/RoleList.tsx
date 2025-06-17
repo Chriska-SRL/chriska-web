@@ -36,7 +36,6 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
   const editModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  // === COLORES UNIFICADOS CON UserList ===
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -148,7 +147,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                 {filteredRoles.map((role) => (
                   <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
-                    <Td textAlign="left" maxW="30rem">
+                    <Td textAlign="center" maxW="30rem">
                       <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
                         {role.description}
                       </Box>
