@@ -9,13 +9,14 @@ import { useUserStore } from '@/stores/useUserStore';
 
 const HomePage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
+  const isHydrated = useUserStore((s) => s.isHydrated);
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isHydrated && !isLoggedIn) {
       router.push('/iniciar-sesion');
     }
-  }, [router]);
+  }, [isLoggedIn, isHydrated, router]);
 
   return (
     <ClientOnly>

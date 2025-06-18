@@ -39,7 +39,7 @@ export const useLogin = (props?: Login): Result<boolean> => {
     };
 
     fetchData();
-  }, [props?.username, props?.password]);
+  }, [props]);
 
   return { data, isLoading, error, fieldError };
 };
