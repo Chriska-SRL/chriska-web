@@ -21,11 +21,12 @@ import {
   IconButton,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 import { SubCategory } from '@/entities/subcategory';
 import { useAddSubCategory } from '@/hooks/subcategory';
 import { Category } from '@/entities/category';
@@ -130,7 +131,6 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateEmpty}
                         disabled
                       />
                     </FormControl>
@@ -144,9 +144,10 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateEmpty}
+                        validate={validate}
                         disabled={isLoading}
                       />
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
@@ -158,9 +159,10 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateEmpty}
+                        validate={validate}
                         disabled={isLoading}
                       />
+                      <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
 
                     {submitCount > 0 && Object.keys(errors).length > 0 && (

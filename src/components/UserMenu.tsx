@@ -3,15 +3,17 @@
 import { Flex, Text, Button, Avatar, useColorModeValue } from '@chakra-ui/react';
 import { MdLogout } from 'react-icons/md';
 import { useUserStore } from '@/stores/useUserStore';
+import { useRouter } from 'next/navigation';
 
 export const UserMenu = () => {
   const user = useUserStore((state) => state.user);
   const isHydrated = useUserStore((state) => state.isHydrated);
   const logout = useUserStore((state) => state.logout);
+  const router = useRouter();
 
   const handleSignOut = () => {
     logout();
-    window.location.href = '/iniciar-sesion';
+    router.push('/iniciar-sesion');
   };
 
   if (!isHydrated || !user) return null;

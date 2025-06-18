@@ -69,8 +69,8 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
   }
 
   return (
-    <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
-      <Box overflowY="auto">
+    <Flex direction="column" h="100%" maxH="80%" justifyContent="space-between">
+      <Box overflowY="scroll">
         <VStack spacing="1rem" align="stretch" pb="1rem">
           {filteredCategories.map((cat) => (
             <Box

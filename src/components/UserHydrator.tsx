@@ -10,6 +10,8 @@ export const UserHydrator = () => {
     const token = localStorage.getItem('access_token');
     if (token) {
       setUserFromToken(token);
+    } else {
+      useUserStore.setState({ isHydrated: true });
     }
   }, []);
 

@@ -91,6 +91,17 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     }
   };
 
+  const unitType = (unitType: string) => {
+    switch (unitType) {
+      case 'Unit':
+        return 'Unidades';
+      case 'Kilo':
+        return 'Kilos';
+      default:
+        return 'Desconocido';
+    }
+  };
+
   return (
     <>
       <TableContainer overflowY="scroll" border="1px solid" borderRadius="0.5rem" borderColor={borderColor} h="100%">
@@ -139,7 +150,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
                 <Td textAlign="center">${product.price.toFixed(2)}</Td>
                 <Td textAlign="center">{product.stock}</Td>
                 <Td textAlign="center">{temperatureCondition(product.temperatureCondition)}</Td>
-                <Td textAlign="center">{product.unitType}</Td>
+                <Td textAlign="center">{unitType(product.unitType)}</Td>
                 <Td textAlign="center">
                   <IconButton
                     aria-label="Editar producto"

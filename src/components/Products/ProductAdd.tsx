@@ -20,11 +20,13 @@ import {
   useDisclosure,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
+  Text,
 } from '@chakra-ui/react';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
@@ -155,12 +157,13 @@ export const ProductAdd = () => {
                         borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
-                          const emptyError = validateEmpty(value);
+                          const emptyError = validate(value);
                           if (emptyError) return emptyError;
                           const barcodeRegex = /^\d{13}$/;
                           return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
                         }}
                       />
+                      <FormErrorMessage>{errors.barcode}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.name}>
@@ -171,8 +174,9 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         disabled={isLoading}
-                        validate={validateEmpty}
+                        validate={validate}
                       />
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.price}>
@@ -185,29 +189,14 @@ export const ProductAdd = () => {
                         borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
-                          const emptyError = validateEmpty(value);
+                          const emptyError = validate(value);
                           if (emptyError) return emptyError;
+                          if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
+                          if (value.length > 21) return 'Máximo 21 dígitos permitidos';
                           return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
                         }}
                       />
                     </FormControl>
-
-                    {/* <FormControl isInvalid={submitCount > 0 && !!errors.stock}>
-                      <FormLabel>Stock</FormLabel>
-                      <Field
-                        as={Input}
-                        name="stock"
-                        type="number"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        disabled={isLoading}
-                        validate={(value: any) => {
-                          const emptyError = validateEmpty(value);
-                          if (emptyError) return emptyError;
-                          return Number(value) >= 0 ? undefined : 'El stock debe ser mayor o igual a 0';
-                        }}
-                      />
-                    </FormControl> */}
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
                       <FormLabel>Unidad</FormLabel>
@@ -218,7 +207,7 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         disabled={isLoading}
-                        validate={validateEmpty}
+                        validate={validate}
                       >
                         <option value="Kilo">Kilos</option>
                         <option value="Unit">Unidades</option>
@@ -233,8 +222,9 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         disabled={isLoading}
-                        validate={validateEmpty}
+                        validate={validate}
                       />
+                      <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
@@ -246,7 +236,7 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         disabled={isLoading}
-                        validate={validateEmpty}
+                        validate={validate}
                       >
                         <option value="Cold">Frío</option>
                         <option value="Frozen">Congelado</option>
@@ -263,6 +253,7 @@ export const ProductAdd = () => {
                         borderColor={inputBorder}
                         disabled={isLoading}
                       />
+                      <FormErrorMessage>{errors.observation}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl>
@@ -296,7 +287,7 @@ export const ProductAdd = () => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         disabled={isLoading || !selectedCategoryId}
-                        validate={validateEmpty}
+                        validate={validate}
                       >
                         {selectedCategory?.subCategories.map((sub: any) => (
                           <option key={sub.id} value={sub.id}>
@@ -305,6 +296,13 @@ export const ProductAdd = () => {
                         ))}
                       </Field>
                     </FormControl>
+                    {submitCount > 0 && Object.keys(errors).length > 0 && (
+                      <Box w="100%">
+                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
+                          Debe completar todos los campos
+                        </Text>
+                      </Box>
+                    )}
                   </VStack>
                 </ModalBody>
 

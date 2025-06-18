@@ -14,35 +14,32 @@ export const useLogin = (props?: Login): Result<boolean> => {
 
     const fetchData = async () => {
       setIsLoading(true);
+      setError(undefined);
+      setFieldError(undefined);
+
       try {
         const result = await login(props.username, props.password);
         localStorage.setItem('access_token', result.token);
         setData(true);
-        setError(undefined);
-        setFieldError(undefined);
       } catch (err: any) {
         try {
           const parsed = JSON.parse(err.message);
           if (parsed?.campo && parsed?.error) {
             setFieldError(parsed);
-            setError(undefined);
           } else if (parsed?.error) {
             setError(parsed.error);
-            setFieldError(undefined);
           } else {
             setError(err.message || 'Error desconocido');
-            setFieldError(undefined);
           }
         } catch {
           setError(err.message || 'Error desconocido');
-          setFieldError(undefined);
         }
       }
       setIsLoading(false);
     };
 
     fetchData();
-  }, [props?.username, props?.password]);
+  }, [props]);
 
   return { data, isLoading, error, fieldError };
 };

@@ -22,6 +22,7 @@ import {
   Flex,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,7 @@ import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
 import { ProductDelete } from './ProductDelete';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 import { useGetCategories } from '@/hooks/category';
 
 type ProductEditProps = {
@@ -152,7 +153,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
-                        const emptyError = validateEmpty(value);
+                        const emptyError = validate(value);
                         if (emptyError) return emptyError;
                         const barcodeRegex = /^\d{13}$/;
                         return barcodeRegex.test(value)
@@ -170,7 +171,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       bg={inputBg}
                       borderColor={inputBorder}
                       disabled={isLoading}
-                      validate={validateEmpty}
+                      validate={validate}
                     />
                   </FormControl>
 
@@ -184,11 +185,14 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
-                        const emptyError = validateEmpty(value);
+                        const emptyError = validate(value);
                         if (emptyError) return emptyError;
+                        if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
+                        if (value.length > 21) return 'Máximo 21 dígitos permitidos';
                         return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
                       }}
                     />
+                    <FormErrorMessage>{errors.price}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
@@ -200,7 +204,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
-                      validate={validateEmpty}
+                      validate={validate}
                     >
                       <option value="Kilo">Kilos</option>
                       <option value="Unit">Unidades</option>
@@ -215,7 +219,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       bg={inputBg}
                       borderColor={inputBorder}
                       disabled={isLoading}
-                      validate={validateEmpty}
+                      validate={validate}
                     />
                   </FormControl>
 
@@ -228,7 +232,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
-                      validate={validateEmpty}
+                      validate={validate}
                     >
                       <option value="Cold">Frío</option>
                       <option value="Frozen">Congelado</option>
@@ -274,7 +278,7 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                       bg={inputBg}
                       borderColor={inputBorder}
                       disabled={isLoading || isLoadingCats || !selectedCategoryId}
-                      validate={validateEmpty}
+                      validate={validate}
                     >
                       {filteredSubCategories.map((sub) => (
                         <option key={sub.id} value={sub.id}>

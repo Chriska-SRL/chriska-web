@@ -7,6 +7,7 @@ type TokenPayload = {
   name: string;
   role: string;
   permissions: string[];
+  needsPasswordChange: boolean;
   exp: number;
 };
 
@@ -27,6 +28,7 @@ const decodeToken = (token: string): TokenPayload | null => {
       name: decoded.name,
       role: decoded.role,
       permissions: decoded.permissions ?? [],
+      needsPasswordChange: decoded.needsPasswordChange === 'True' ? true : false,
       exp: decoded.exp,
     };
   } catch {

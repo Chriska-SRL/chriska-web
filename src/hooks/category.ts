@@ -120,7 +120,12 @@ export const useDeleteCategory = (id?: number): Result<Category> => {
           const result = await deleteCategory(id);
           setData(result);
         } catch (err: any) {
-          setError(err.message || 'Error desconocido');
+          try {
+            const parsed = JSON.parse(err.message);
+            setError(parsed.error || 'Error desconocido');
+          } catch {
+            setError(err.message || 'Error desconocido');
+          }
         }
         setIsLoading(false);
       };

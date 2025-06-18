@@ -1,3 +1,5 @@
+'use client';
+
 import { Flex, Text } from '@chakra-ui/react';
 
 export const WelcomePanel = () => {

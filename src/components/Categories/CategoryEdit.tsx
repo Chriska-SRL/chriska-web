@@ -22,12 +22,13 @@ import {
   Flex,
   ModalCloseButton,
   useColorModeValue,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { validateEmpty } from '@/utils/validate';
+import { validate } from '@/utils/validate';
 import { Category } from '@/entities/category';
 import { useUpdateCategory } from '@/hooks/category';
 import { CategoryDelete } from './CategoryDelete';
@@ -129,9 +130,10 @@ export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="2.75rem"
-                          validate={validateEmpty}
+                          validate={validate}
                           disabled={isLoading}
                         />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
 
                       <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
@@ -143,9 +145,10 @@ export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="2.75rem"
-                          validate={validateEmpty}
+                          validate={validate}
                           disabled={isLoading}
                         />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
 
                       {submitCount > 0 && Object.keys(errors).length > 0 && (
