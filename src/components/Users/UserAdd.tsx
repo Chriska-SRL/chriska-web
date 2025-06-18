@@ -26,12 +26,13 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { FaPlus, FaCheck, FaCopy } from 'react-icons/fa';
+import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useAddUser, useTemporalPassword } from '@/hooks/user';
+import { useAddUser, useTemporaryPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/roles';
 import { validate } from '@/utils/validate';
+import { TemporaryPasswordModal } from './TemporaryPasswordModal';
 
 type UserAddProps = {
   setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
@@ -45,7 +46,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
 
   const [newUserId, setNewUserId] = useState<number>();
-  const { data: temporalPassword, error: resetError } = useTemporalPassword(newUserId);
+  const { data: temporalPassword, error: resetError } = useTemporaryPassword(newUserId);
 
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -256,59 +257,11 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="1.75rem">
-            Contraseña temporal
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pt="0" pb="1.5rem">
-            <VStack spacing="1rem">
-              <Text fontSize="1rem" textAlign="center">
-                Esta es la contraseña que deberá usar el usuario para iniciar sesión por primera vez.
-                <br />
-                Asegúrese de guardarla en un lugar seguro.
-              </Text>
-              <Flex justifyContent="space-between" alignItems="center" w="100%" gap="1rem">
-                <Flex
-                  justifyContent="center"
-                  alignItems="center"
-                  bg="gray.100"
-                  h="2.5rem"
-                  borderRadius="md"
-                  w="100%"
-                  textAlign="center"
-                  fontWeight="bold"
-                  fontSize="1.2rem"
-                  wordBreak="break-all"
-                  color="black"
-                >
-                  {tempPassword}
-                </Flex>
-                <IconButton
-                  colorScheme="blue"
-                  aria-label="Copiar contraseña"
-                  icon={<FaCopy />}
-                  w="2.5rem"
-                  h="2.5rem"
-                  bg="blue.500"
-                  _hover={{ bg: 'blue.600' }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(tempPassword || '');
-                    toast({
-                      title: 'Contraseña copiada',
-                      status: 'success',
-                      duration: 2000,
-                      isClosable: true,
-                    });
-                  }}
-                />
-              </Flex>
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <TemporaryPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        password={tempPassword}
+      />
     </>
   );
 };

@@ -1,4 +1,4 @@
-export type TemporalPasswordResponse = {
+export type TemporaryPasswordResponse = {
   message: string;
   password: string;
 };

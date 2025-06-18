@@ -1,6 +1,6 @@
 import { PasswordReset } from '@/entities/password-reset/password-reset';
 import { PasswordResetResponse } from '@/entities/password-reset/password-reset-response';
-import { TemporalPasswordResponse } from '@/entities/password-reset/temporal-password-response';
+import { TemporaryPasswordResponse } from '@/entities/password-reset/temporary-password-response';
 import { User } from '@/entities/user';
 import { get, put, post, del } from '@/utils/fetcher';
 
@@ -22,8 +22,8 @@ export const deleteUser = (id: number): Promise<User> => {
   return del<User>(`${API_URL}/Users/${id}`, true);
 };
 
-export const temporalPassword = (userId: number): Promise<TemporalPasswordResponse> => {
-  return post<TemporalPasswordResponse>(`${API_URL}/Users/resetpassword`, { userId }, true);
+export const temporaryPassword = (userId: number): Promise<TemporaryPasswordResponse> => {
+  return post<TemporaryPasswordResponse>(`${API_URL}/Users/resetpassword`, { userId }, true);
 };
 
 export const passwordReset = (passwordReset: PasswordReset): Promise<PasswordResetResponse> => {

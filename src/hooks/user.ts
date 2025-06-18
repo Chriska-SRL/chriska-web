@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FieldError, Result } from './result';
 import { User } from '@/entities/user';
-import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporalPassword } from '@/services/user';
+import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporaryPassword } from '@/services/user';
 import { PasswordReset } from '@/entities/password-reset/password-reset';
-import { TemporalPasswordResponse } from '@/entities/password-reset/temporal-password-response';
+import { TemporaryPasswordResponse } from '@/entities/password-reset/temporary-password-response';
 
 export const useGetUsers = (): Result<User[]> => {
   const [data, setData] = useState<User[]>([]);
@@ -132,9 +132,9 @@ export const useDeleteUser = (id?: number): Result<User> => {
   return { data, isLoading, error };
 };
 
-export const useTemporalPassword = (userId?: number): Result<TemporalPasswordResponse> => {
+export const useTemporaryPassword = (userId?: number): Result<TemporaryPasswordResponse> => {
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<TemporalPasswordResponse>();
+  const [data, setData] = useState<TemporaryPasswordResponse>();
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export const useTemporalPassword = (userId?: number): Result<TemporalPasswordRes
       setIsLoading(true);
       setError(undefined);
       try {
-        const result = await temporalPassword(userId);
+        const result = await temporaryPassword(userId);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error al generar contraseña');

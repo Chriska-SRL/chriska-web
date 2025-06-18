@@ -1,3 +1,4 @@
+// UserEdit.tsx
 'use client';
 
 import {
@@ -27,8 +28,9 @@ import { FaCheck } from 'react-icons/fa';
 import { UserDelete } from './UserDelete';
 import { useGetRoles } from '@/hooks/roles';
 import { useEffect, useState } from 'react';
-import { useUpdateUser } from '@/hooks/user';
+import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validate';
+import { TemporaryPasswordModal } from './TemporaryPasswordModal';
 
 type UserEditProps = {
   isOpen: boolean;
@@ -44,6 +46,10 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
 
+  const [resetUserId, setResetUserId] = useState<number | undefined>();
+  const { data: resetData, error: resetError } = useTemporaryPassword(resetUserId);
+  const showPasswordModal = !!resetData;
+
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
 
@@ -56,9 +62,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
         duration: 1500,
         isClosable: true,
       });
-
       setLocalUsers((prevUsers) => prevUsers.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
-
       setUserProps(undefined);
       onClose();
     }
@@ -84,6 +88,18 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
     }
   }, [error, fieldError]);
 
+  useEffect(() => {
+    if (resetError) {
+      toast({
+        title: 'Error al resetear contraseña',
+        description: resetError,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [resetError]);
+
   const handleSubmit = (values: { id: number; username: string; name: string; roleId: number; estado: string }) => {
     const user = {
       id: values.id,
@@ -95,164 +111,184 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
     setUserProps(user);
   };
 
+  const handleResetPassword = () => {
+    if (user) setResetUserId(user.id);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
-      <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="1.75rem" pb="0.5rem">
-          Editar usuario
-        </ModalHeader>
-        <ModalCloseButton />
-        <Formik
-          initialValues={{
-            id: user?.id ?? 0,
-            username: user?.username ?? '',
-            name: user?.name ?? '',
-            roleId: user?.role.id ?? 0,
-            estado: user?.isEnabled ? 'Activo' : 'Inactivo',
-          }}
-          onSubmit={handleSubmit}
-          validateOnChange
-          validateOnBlur={false}
-        >
-          {({ handleSubmit, errors, touched, submitCount }) => (
-            <form onSubmit={handleSubmit}>
-              <ModalBody pb="0">
-                <VStack spacing="1rem">
-                  <FormControl
-                    isInvalid={
-                      (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
-                    }
-                  >
-                    <FormLabel>Nombre de usuario</FormLabel>
-                    <Field
-                      as={Input}
-                      name="username"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.username}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
-                  >
-                    <FormLabel>Nombre</FormLabel>
-                    <Field
-                      as={Input}
-                      name="name"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'}
-                  >
-                    <FormLabel>Rol</FormLabel>
-                    <Field
-                      as={Select}
-                      name="roleId"
-                      placeholder="Seleccionar rol"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading || isLoadingRoles}
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+        <ModalOverlay />
+        <ModalContent mx="auto" borderRadius="lg">
+          <ModalHeader textAlign="center" fontSize="1.75rem" pb="0.5rem">
+            Editar usuario
+          </ModalHeader>
+          <ModalCloseButton />
+          <Formik
+            initialValues={{
+              id: user?.id ?? 0,
+              username: user?.username ?? '',
+              name: user?.name ?? '',
+              roleId: user?.role.id ?? 0,
+              estado: user?.isEnabled ? 'Activo' : 'Inactivo',
+            }}
+            onSubmit={handleSubmit}
+            validateOnChange
+            validateOnBlur={false}
+          >
+            {({ handleSubmit, errors, touched, submitCount }) => (
+              <form onSubmit={handleSubmit}>
+                <ModalBody pb="0">
+                  <VStack spacing="1rem">
+                    <FormControl
+                      isInvalid={
+                        (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
+                      }
                     >
-                      {roles?.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
-                      ))}
-                    </Field>
-                    {fieldError?.campo === 'RoleId' && (
-                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                        {fieldError.error}
-                      </Text>
-                    )}
-                  </FormControl>
-
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'}
-                  >
-                    <FormLabel>Estado</FormLabel>
-                    <Field
-                      as={Select}
-                      name="estado"
-                      placeholder="Seleccionar estado"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    >
-                      <option value="Activo">Activo</option>
-                      <option value="Inactivo">Inactivo</option>
-                    </Field>
-                    {fieldError?.campo === 'Estado' && (
-                      <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                        {fieldError.error}
-                      </Text>
-                    )}
-                  </FormControl>
-
-                  {submitCount > 0 && Object.keys(errors).length > 0 && (
-                    <Box w="100%">
-                      <Text color="red.500" fontSize="0.85rem" textAlign="left">
-                        Debe completar todos los campos.
-                      </Text>
-                    </Box>
-                  )}
-                </VStack>
-              </ModalBody>
-
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.5rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
-                  <Box display="flex" gap="0.75rem">
-                    {user && (
-                      <UserDelete
-                        user={user}
-                        onDeleted={onClose}
-                        isUpdating={isLoading}
-                        setLocalUsers={setLocalUsers}
+                      <FormLabel>Nombre de usuario</FormLabel>
+                      <Field
+                        as={Input}
+                        name="username"
+                        type="text"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validate}
+                        disabled={isLoading}
                       />
-                    )}
-                    <Button
-                      type="submit"
-                      bg="#4C88D8"
-                      color="white"
-                      disabled={isLoading}
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      fontSize="1rem"
+                      <FormErrorMessage>{errors.username}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl
+                      isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
                     >
-                      Guardar cambios
+                      <FormLabel>Nombre</FormLabel>
+                      <Field
+                        as={Input}
+                        name="name"
+                        type="text"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validate}
+                        disabled={isLoading}
+                      />
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl
+                      isInvalid={
+                        (submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'
+                      }
+                    >
+                      <FormLabel>Rol</FormLabel>
+                      <Field
+                        as={Select}
+                        name="roleId"
+                        placeholder="Seleccionar rol"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validate}
+                        disabled={isLoading || isLoadingRoles}
+                      >
+                        {roles?.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </Field>
+                      {fieldError?.campo === 'RoleId' && (
+                        <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                          {fieldError.error}
+                        </Text>
+                      )}
+                    </FormControl>
+
+                    <FormControl
+                      isInvalid={
+                        (submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'
+                      }
+                    >
+                      <FormLabel>Estado</FormLabel>
+                      <Field
+                        as={Select}
+                        name="estado"
+                        placeholder="Seleccionar estado"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validate}
+                        disabled={isLoading}
+                      >
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                      </Field>
+                      {fieldError?.campo === 'Estado' && (
+                        <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
+                          {fieldError.error}
+                        </Text>
+                      )}
+                    </FormControl>
+
+                    <Button onClick={handleResetPassword} variant="outline" colorScheme="blue" w="100%">
+                      Resetear contraseña
                     </Button>
+
+                    {submitCount > 0 && Object.keys(errors).length > 0 && (
+                      <Box w="100%">
+                        <Text color="red.500" fontSize="0.85rem" textAlign="left">
+                          Debe completar todos los campos.
+                        </Text>
+                      </Box>
+                    )}
+                  </VStack>
+                </ModalBody>
+
+                <ModalFooter pb="1.5rem">
+                  <Box mt="0.5rem" w="100%">
+                    <Progress
+                      h={isLoading ? '4px' : '1px'}
+                      mb="1.25rem"
+                      size="xs"
+                      isIndeterminate={isLoading}
+                      colorScheme="blue"
+                    />
+                    <Box display="flex" gap="0.75rem">
+                      {user && (
+                        <UserDelete
+                          user={user}
+                          onDeleted={onClose}
+                          isUpdating={isLoading}
+                          setLocalUsers={setLocalUsers}
+                        />
+                      )}
+                      <Button
+                        type="submit"
+                        bg="#4C88D8"
+                        color="white"
+                        disabled={isLoading}
+                        _hover={{ backgroundColor: '#376bb0' }}
+                        width="100%"
+                        leftIcon={<FaCheck />}
+                        fontSize="1rem"
+                      >
+                        Guardar cambios
+                      </Button>
+                    </Box>
                   </Box>
-                </Box>
-              </ModalFooter>
-            </form>
-          )}
-        </Formik>
-      </ModalContent>
-    </Modal>
+                </ModalFooter>
+              </form>
+            )}
+          </Formik>
+        </ModalContent>
+      </Modal>
+
+      <TemporaryPasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setResetUserId(undefined)}
+        password={resetData?.password ?? ''}
+      />
+    </>
   );
 };
