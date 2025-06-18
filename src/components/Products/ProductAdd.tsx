@@ -31,7 +31,11 @@ import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 
-export const ProductAdd = () => {
+type ProductAddProps = {
+  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+};
+
+export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -57,9 +61,9 @@ export const ProductAdd = () => {
         duration: 1500,
         isClosable: true,
       });
+      setLocalProducts((prev) => [...prev, data]);
       setProductProps(undefined);
       onClose();
-      setTimeout(() => window.location.reload(), 1500);
     }
   }, [data]);
 

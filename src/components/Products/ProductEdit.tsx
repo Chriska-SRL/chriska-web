@@ -37,9 +37,10 @@ type ProductEditProps = {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
+  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
+export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: ProductEditProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
@@ -72,9 +73,9 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
         duration: 1500,
         isClosable: true,
       });
+      setLocalProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
       setProductProps(undefined);
       onClose();
-      setTimeout(() => window.location.reload(), 1500);
     }
   }, [data]);
 
@@ -306,7 +307,12 @@ export const ProductEdit = ({ isOpen, onClose, product }: ProductEditProps) => {
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    <ProductDelete product={product} onDeleted={onClose} isUpdating={isLoading} />
+                    <ProductDelete
+                      product={product}
+                      onDeleted={onClose}
+                      isUpdating={isLoading}
+                      setLocalProducts={setLocalProducts}
+                    />
                     <Button
                       type="submit"
                       bg={buttonBg}
