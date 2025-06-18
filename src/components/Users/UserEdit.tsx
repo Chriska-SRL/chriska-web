@@ -21,6 +21,7 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
@@ -46,9 +47,20 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
 
+  const {
+    isOpen: isTempPasswordModalOpen,
+    onOpen: openTempPasswordModal,
+    onClose: closeTempPasswordModal,
+  } = useDisclosure();
   const [resetUserId, setResetUserId] = useState<number | undefined>();
-  const { data: resetData, error: resetError } = useTemporaryPassword(resetUserId);
-  const showPasswordModal = !!resetData;
+  const { data: resetData, isLoading: isLoadingReset, error: resetError } = useTemporaryPassword(resetUserId);
+
+  useEffect(() => {
+    if (resetData) {
+      onClose();
+      openTempPasswordModal();
+    }
+  }, [resetData]);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -113,6 +125,11 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
 
   const handleResetPassword = () => {
     if (user) setResetUserId(user.id);
+  };
+
+  const handleCloseTempPasswordModal = () => {
+    closeTempPasswordModal();
+    setResetUserId(undefined);
   };
 
   return (
@@ -231,7 +248,13 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       )}
                     </FormControl>
 
-                    <Button onClick={handleResetPassword} variant="outline" colorScheme="blue" w="100%">
+                    <Button
+                      onClick={handleResetPassword}
+                      isLoading={isLoadingReset}
+                      variant="outline"
+                      colorScheme="blue"
+                      w="100%"
+                    >
                       Resetear contraseña
                     </Button>
 
@@ -285,8 +308,8 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
       </Modal>
 
       <TemporaryPasswordModal
-        isOpen={showPasswordModal}
-        onClose={() => setResetUserId(undefined)}
+        isOpen={isTempPasswordModalOpen}
+        onClose={handleCloseTempPasswordModal}
         password={resetData?.password ?? ''}
       />
     </>

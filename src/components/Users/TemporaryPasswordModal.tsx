@@ -24,6 +24,16 @@ type TemporaryPasswordModalProps = {
 export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryPasswordModalProps) => {
   const toast = useToast();
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(password || '');
+    toast({
+      title: 'Contraseña copiada',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
@@ -63,15 +73,7 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
                 h="2.5rem"
                 bg="blue.500"
                 _hover={{ bg: 'blue.600' }}
-                onClick={() => {
-                  navigator.clipboard.writeText(password || '');
-                  toast({
-                    title: 'Contraseña copiada',
-                    status: 'success',
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
+                onClick={handleCopy}
               />
             </Flex>
           </VStack>
