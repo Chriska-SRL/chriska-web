@@ -1,3 +1,4 @@
+// UserAdd.tsx
 'use client';
 
 import {
@@ -21,11 +22,13 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Flex,
+  IconButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FaPlus, FaCheck, FaCopy } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useAddUser } from '@/hooks/user';
+import { useAddUser, useTemporalPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/roles';
 import { validate } from '@/utils/validate';
@@ -37,9 +40,17 @@ type UserAddProps = {
 export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+
   const [userProps, setUserProps] = useState<Partial<User>>();
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
-  const { data: roles, isLoading: isLoadingRoles, error: errorRoles } = useGetRoles();
+
+  const [newUserId, setNewUserId] = useState<number>();
+  const { data: temporalPassword, error: resetError } = useTemporalPassword(newUserId);
+
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -59,34 +70,44 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
       });
       setUserProps(undefined);
       setLocalUsers((prev) => [...prev, data]);
+      setNewUserId(data.id);
       onClose();
     }
   }, [data]);
 
   useEffect(() => {
     if (fieldError) {
+      toast({ title: `Error`, description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
+    } else if (error) {
+      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
+    }
+  }, [error, fieldError]);
+
+  useEffect(() => {
+    if (temporalPassword) {
+      setTempPassword(temporalPassword.password);
+      console.log('Contraseña temporal generada:', temporalPassword.password);
+      setIsPasswordModalOpen(true);
+    }
+  }, [temporalPassword]);
+
+  useEffect(() => {
+    if (resetError) {
       toast({
-        title: `Error`,
-        description: fieldError.error,
+        title: 'Error al generar contraseña temporal',
+        description: resetError,
         status: 'error',
         duration: 4000,
         isClosable: true,
       });
-    } else if (error) {
-      toast({
-        title: 'Error inesperado',
-        description: error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
     }
-  }, [error, fieldError]);
+  }, [resetError]);
 
   const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
       username: values.username,
       name: values.name,
+      password: 'Temporal.123',
       isEnabled: values.estado === 'Activo',
       roleId: Number(values.roleId),
     };
@@ -233,6 +254,60 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
               </form>
             )}
           </Formik>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader textAlign="center" fontSize="1.75rem">
+            Contraseña temporal
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pt="0" pb="1.5rem">
+            <VStack spacing="1rem">
+              <Text fontSize="1rem" textAlign="center">
+                Esta es la contraseña que deberá usar el usuario para iniciar sesión por primera vez.
+                <br />
+                Asegúrese de guardarla en un lugar seguro.
+              </Text>
+              <Flex justifyContent="space-between" alignItems="center" w="100%" gap="1rem">
+                <Flex
+                  justifyContent="center"
+                  alignItems="center"
+                  bg="gray.100"
+                  h="2.5rem"
+                  borderRadius="md"
+                  w="100%"
+                  textAlign="center"
+                  fontWeight="bold"
+                  fontSize="1.2rem"
+                  wordBreak="break-all"
+                  color="black"
+                >
+                  {tempPassword}
+                </Flex>
+                <IconButton
+                  colorScheme="blue"
+                  aria-label="Copiar contraseña"
+                  icon={<FaCopy />}
+                  w="2.5rem"
+                  h="2.5rem"
+                  bg="blue.500"
+                  _hover={{ bg: 'blue.600' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(tempPassword || '');
+                    toast({
+                      title: 'Contraseña copiada',
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    });
+                  }}
+                />
+              </Flex>
+            </VStack>
+          </ModalBody>
         </ModalContent>
       </Modal>
     </>

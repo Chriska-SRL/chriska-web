@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FieldError, Result } from './result';
 import { User } from '@/entities/user';
-import { getUsers, addUser, updateUser, deleteUser, passwordReset } from '@/services/user';
+import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporalPassword } from '@/services/user';
 import { PasswordReset } from '@/entities/password-reset/password-reset';
+import { TemporalPasswordResponse } from '@/entities/password-reset/temporal-password-response';
 
 export const useGetUsers = (): Result<User[]> => {
   const [data, setData] = useState<User[]>([]);
@@ -127,6 +128,32 @@ export const useDeleteUser = (id?: number): Result<User> => {
       fetchData();
     }
   }, [id]);
+
+  return { data, isLoading, error };
+};
+
+export const useTemporalPassword = (userId?: number): Result<TemporalPasswordResponse> => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<TemporalPasswordResponse>();
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const run = async () => {
+      setIsLoading(true);
+      setError(undefined);
+      try {
+        const result = await temporalPassword(userId);
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error al generar contraseña');
+      }
+      setIsLoading(false);
+    };
+
+    run();
+  }, [userId]);
 
   return { data, isLoading, error };
 };
