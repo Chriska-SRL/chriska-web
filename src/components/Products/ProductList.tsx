@@ -1,3 +1,4 @@
+// ProductList.tsx
 'use client';
 
 import {
@@ -21,15 +22,17 @@ import {
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Product } from '@/entities/product';
-import { useGetProducts } from '@/hooks/product';
 import { ProductEdit } from './ProductEdit';
 
 type ProductListProps = {
   filterName?: string;
+  products: Product[];
+  isLoading: boolean;
+  error?: string;
+  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductList = ({ filterName }: ProductListProps) => {
-  const { data, isLoading, error } = useGetProducts();
+export const ProductList = ({ filterName, products, isLoading, error, setLocalProducts }: ProductListProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -45,7 +48,15 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     onOpen();
   };
 
-  const filteredProducts = data?.filter((product) =>
+  const handleProductUpdated = (updated: Product) => {
+    setLocalProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  };
+
+  const handleProductDeleted = (id: number) => {
+    setLocalProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const filteredProducts = products.filter((product) =>
     filterName ? product.name.toLowerCase().includes(filterName.toLowerCase()) : true,
   );
 
@@ -69,7 +80,7 @@ export const ProductList = ({ filterName }: ProductListProps) => {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron roles con esos parámetros de búsqueda.
+          No se encontraron productos con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color={emptyTextColor}>
           Inténtelo con otros parámetros.
@@ -129,12 +140,11 @@ export const ProductList = ({ filterName }: ProductListProps) => {
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.subCategory.name}
                 </Td>
-
                 <Td textAlign="center">{product.barcode}</Td>
                 <Td py="0.125rem">
                   <Flex justify="center" align="center" h="5rem" w="100%">
                     <Image
-                      src="https://www.svgrepo.com/show/508699/landscape-placeholder.svg"
+                      src={product.image || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                       objectFit="cover"
                       maxH="100%"
                       maxW="100%"
@@ -142,11 +152,9 @@ export const ProductList = ({ filterName }: ProductListProps) => {
                     />
                   </Flex>
                 </Td>
-
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.name}
                 </Td>
-
                 <Td textAlign="center">${product.price.toFixed(2)}</Td>
                 <Td textAlign="center">{product.stock}</Td>
                 <Td textAlign="center">{temperatureCondition(product.temperatureCondition)}</Td>
@@ -169,7 +177,14 @@ export const ProductList = ({ filterName }: ProductListProps) => {
       <Box mt="0.5rem">
         <Text fontSize="sm">Mostrando {filteredProducts.length} productos</Text>
       </Box>
-      <ProductEdit isOpen={isOpen} onClose={onClose} product={selectedProduct} />
+      <ProductEdit
+        isOpen={isOpen}
+        onClose={onClose}
+        product={selectedProduct}
+        setLocalProducts={setLocalProducts}
+        // onProductUpdated={handleProductUpdated}
+        // onProductDeleted={handleProductDeleted}
+      />
     </>
   );
 };

@@ -21,9 +21,10 @@ type ProductDeleteProps = {
   product: Product;
   isUpdating: boolean;
   onDeleted?: () => void;
+  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteProps) => {
+export const ProductDelete = ({ product, isUpdating, onDeleted, setLocalProducts }: ProductDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteProductProps, setDeleteProductProps] = useState<number>();
@@ -38,12 +39,10 @@ export const ProductDelete = ({ product, isUpdating, onDeleted }: ProductDeleteP
         duration: 1500,
         isClosable: true,
       });
+      setLocalProducts((prev) => prev.filter((p) => p.id !== product.id));
       setConfirmOpen(false);
       setDeleteProductProps(undefined);
       onDeleted?.();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     }
   }, [data]);
 
