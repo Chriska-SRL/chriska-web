@@ -28,7 +28,7 @@ const decodeToken = (token: string): TokenPayload | null => {
       name: decoded.name,
       role: decoded.role,
       permissions: decoded.permissions ?? [],
-      needsPasswordChange: decoded.needsPasswordChange === 'True' ? true : false,
+      needsPasswordChange: decoded.needsPasswordChange === true || decoded.needsPasswordChange === 'True',
       exp: decoded.exp,
     };
   } catch {

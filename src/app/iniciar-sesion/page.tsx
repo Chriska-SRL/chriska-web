@@ -13,7 +13,13 @@ const LoginPage: NextPage = () => {
   const isHydrated = useUserStore((s) => s.isHydrated);
 
   useEffect(() => {
-    if (isHydrated && isLoggedIn) {
+    if (!isHydrated) return;
+
+    const user = useUserStore.getState().user;
+
+    if (isLoggedIn && user?.needsPasswordChange) {
+      router.push('/cambiar-contrasena');
+    } else if (isLoggedIn) {
       router.push('/');
     }
   }, [isLoggedIn, isHydrated, router]);

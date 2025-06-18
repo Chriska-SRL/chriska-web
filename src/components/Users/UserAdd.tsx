@@ -86,7 +86,6 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
   useEffect(() => {
     if (temporalPassword) {
       setTempPassword(temporalPassword.password);
-      console.log('Contraseña temporal generada:', temporalPassword.password);
       setIsPasswordModalOpen(true);
     }
   }, [temporalPassword]);
