@@ -14,6 +14,7 @@ import {
   VStack,
   FormErrorMessage,
   Progress,
+  Select,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
@@ -22,6 +23,8 @@ export type FieldConfig<T> = {
   name: keyof T;
   label: string;
   validate?: (value: any) => string | undefined;
+  type?: 'text' | 'date' | 'select';
+  options?: { label: string; value: string }[]; // solo para select
 };
 
 type GenericEditProps<T> = {
@@ -83,13 +86,33 @@ export const GenericEdit = <T extends Record<string, any>>({
                       }
                     >
                       <FormLabel>{field.label}</FormLabel>
-                      <Field
-                        as={Input}
-                        name={String(field.name)}
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        validate={field.validate}
-                      />
+
+                      {field.type === 'select' ? (
+                        <Field
+                          as={Select}
+                          name={String(field.name)}
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          validate={field.validate}
+                        >
+                          <option value="">Seleccione una opción</option>
+                          {field.options?.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </Field>
+                      ) : (
+                        <Field
+                          as={Input}
+                          type={field.type === 'date' ? 'date' : 'text'}
+                          name={String(field.name)}
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          validate={field.validate}
+                        />
+                      )}
+
                       <FormErrorMessage>
                         {errors[field.name as string] as string}
                       </FormErrorMessage>
@@ -111,7 +134,6 @@ export const GenericEdit = <T extends Record<string, any>>({
                     color="white"
                     _hover={{ backgroundColor: submitHover }}
                     w="100%"
-                    leftIcon={<span style={{ display: 'inline-block', transform: 'scale(0.9)' }}>✔</span>}
                     py="1.375rem"
                   >
                     Confirmar

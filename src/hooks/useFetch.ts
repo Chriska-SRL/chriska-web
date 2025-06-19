@@ -1,10 +1,13 @@
-// hooks/useFetch.ts
 import { useEffect, useState } from 'react';
+import { useAppToast } from '@/hooks/useAppToast';
+
+type FetchError = { error: string };
 
 export function useFetch<T>(fetchFn: () => Promise<T>, deps: any[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<{ error: string }>();
+  const [error, setError] = useState<FetchError>();
+  const toast = useAppToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,14 +17,16 @@ export function useFetch<T>(fetchFn: () => Promise<T>, deps: any[] = []) {
         setData(result);
         setError(undefined);
       } catch (err: any) {
-        setError({ error: err?.message || 'Error desconocido' });
+        const parsedError = err?.message || 'Error desconocido';
+        setError({ error: parsedError });
         setData(null);
+        toast.showError({ error: parsedError });
       }
       setIsLoading(false);
     };
 
     fetchData();
-  }, deps); // ← permite dependencias externas
+  }, deps);
 
   return { data, isLoading, error };
 }

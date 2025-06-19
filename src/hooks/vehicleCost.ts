@@ -7,7 +7,7 @@ import {
   getCostsInRange,
   addVehicleCost,
   updateVehicleCost,
-  deleteVehicleCost
+  deleteVehicleCost,
 } from '@/services/vehicleCost';
 
 export const useGetVehicleCosts = (vehicleId?: number) =>
@@ -26,11 +26,11 @@ export const useGetVehicleCostsInRange = (
     [vehicleId, from, to]
   );
 
-export const useAddVehicleCost = (data?: Partial<VehicleCost>) =>
-  useMutation<VehicleCost>(data ? () => addVehicleCost(data) : undefined);
+export const useAddVehicleCost = () =>
+  useMutation<VehicleCost, Partial<VehicleCost>>(addVehicleCost);
 
-export const useUpdateVehicleCost = (data?: Partial<VehicleCost>) =>
-  useMutation<VehicleCost>(data ? () => updateVehicleCost(data) : undefined);
+export const useUpdateVehicleCost = () =>
+  useMutation<VehicleCost, Partial<VehicleCost>>(updateVehicleCost);
 
-export const useDeleteVehicleCost = (id?: number) =>
-  useMutation<VehicleCost>(id ? () => deleteVehicleCost(id) : undefined);
+export const useDeleteVehicleCost = () =>
+  useMutation<VehicleCost, number>(deleteVehicleCost);

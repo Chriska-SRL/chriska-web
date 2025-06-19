@@ -1,8 +1,8 @@
 export type VehicleCost = {
   id: number;
   VehicleId: number;
-  Date: Date;
+  date: Date;
   type: string;
-  amout: string;
+  amount: string;
   description: string;
 };

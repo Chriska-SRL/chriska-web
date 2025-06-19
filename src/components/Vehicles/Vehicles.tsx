@@ -8,6 +8,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GenericSearchFilter, filterByFields } from '@/components/shared/GenericSearchFilter';
 import { GenericList } from '@/components/shared/GenericList';
 import { GenericAdd } from '@/components/shared/GenericAdd';
@@ -24,6 +25,7 @@ import { validate } from '@/utils/validate';
 import type { FieldConfig } from '@/components/shared/GenericAdd';
 
 export const Vehicles = () => {
+  const router = useRouter();
   const [filterName, setFilterName] = useState('');
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -109,7 +111,7 @@ export const Vehicles = () => {
         data={filtered}
         columns={columns}
         isLoading={isLoading}
-        actions={{ view: false, edit: true, delete: true }}
+        actions={{ view: true, edit: true, delete: true }}
         onEdit={(vehicle) => {
           setSelectedVehicle(vehicle);
           setIsEditOpen(true);
@@ -117,6 +119,9 @@ export const Vehicles = () => {
         onDelete={(vehicle) => {
           setVehicleToDelete(vehicle);
           openDeleteDialog();
+        }}
+        onView={(vehicle) => {
+          router.push(`/vehicles/${vehicle.id}`);
         }}
       />
 
