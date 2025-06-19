@@ -43,7 +43,7 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody pt="0" pb="1.5rem">
-          <VStack spacing="1rem">
+          <VStack spacing="0.75rem">
             <Text fontSize="1rem" textAlign="center">
               Esta es la contraseña que deberá usar el usuario para iniciar sesión por primera vez.
               <br />

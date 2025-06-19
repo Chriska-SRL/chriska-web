@@ -121,7 +121,7 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
               return (
                 <form onSubmit={handleSubmit}>
                   <ModalBody pb="0">
-                    <VStack spacing="1rem">
+                    <VStack spacing="0.75rem">
                       <FormControl isInvalid={showError('name')}>
                         <FormLabel>Nombre</FormLabel>
                         <Field
@@ -149,15 +149,8 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
                           validate={validate}
                           disabled={isLoading}
                         />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
-
-                      {submitCount > 0 && Object.keys(errors).length > 0 && (
-                        <Box w="100%">
-                          <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                            Debe completar todos los campos
-                          </Text>
-                        </Box>
-                      )}
                     </VStack>
                   </ModalBody>
 

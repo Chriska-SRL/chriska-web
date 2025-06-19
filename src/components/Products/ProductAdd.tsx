@@ -141,6 +141,7 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
               description: '',
               temperatureCondition: '',
               observation: '',
+              categoryId: '',
               subCategoryId: '',
               image: '',
             }}
@@ -151,7 +152,7 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
             {({ handleSubmit, errors, submitCount, values }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <VStack spacing="1rem">
+                  <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>
                       <Field
@@ -193,13 +194,12 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
                         borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
-                          const emptyError = validate(value);
-                          if (emptyError) return emptyError;
                           if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
                           if (value.length > 21) return 'Máximo 21 dígitos permitidos';
                           return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
                         }}
                       />
+                      <FormErrorMessage>{errors.price}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
@@ -216,6 +216,7 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
                         <option value="Kilo">Kilos</option>
                         <option value="Unit">Unidades</option>
                       </Field>
+                      <FormErrorMessage>{errors.unitType}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.description}>
@@ -246,6 +247,7 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
                         <option value="Frozen">Congelado</option>
                         <option value="Ambient">Natural</option>
                       </Field>
+                      <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
@@ -260,26 +262,29 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
                       <FormErrorMessage>{errors.observation}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl isInvalid={submitCount > 0 && !!errors.categoryId}>
                       <FormLabel>Categoría</FormLabel>
-                      <Select
+                      <Field
+                        as={Select}
                         placeholder="Seleccionar categoría"
                         bg={inputBg}
                         borderColor={inputBorder}
                         value={selectedCategoryId ?? ''}
                         disabled={isLoading || isLoadingCats}
-                        onChange={(e) => {
+                        onChange={(e: any) => {
                           const selectedId = Number(e.target.value);
                           setSelectedCategoryId(selectedId);
                           values.subCategoryId = '';
                         }}
+                        validate={validate}
                       >
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.id}>
                             {cat.name}
                           </option>
                         ))}
-                      </Select>
+                      </Field>
+                      <FormErrorMessage>{errors.categoryId}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
@@ -299,19 +304,13 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
                           </option>
                         ))}
                       </Field>
+                      <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                     </FormControl>
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
-                      </Box>
-                    )}
                   </VStack>
                 </ModalBody>
 
                 <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
+                  <Box w="100%">
                     <Progress
                       h={isLoading ? '4px' : '1px'}
                       mb="1rem"
