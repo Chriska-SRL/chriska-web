@@ -15,7 +15,7 @@ export default function VehicleCostsPage() {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="vehicle" />
+        <SideBar currentPage="vehiculo" />
         <Content>
           <VehicleCosts vehicleId={id} />
         </Content>

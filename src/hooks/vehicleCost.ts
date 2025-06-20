@@ -13,24 +13,13 @@ import {
 export const useGetVehicleCosts = (vehicleId?: number) =>
   useFetch<VehicleCost[]>(() => getVehicleCosts(vehicleId!), [vehicleId]);
 
-export const useGetVehicleCostById = (id?: number) =>
-  useFetch<VehicleCost>(() => getVehicleCostById(id!), [id]);
+export const useGetVehicleCostById = (id?: number) => useFetch<VehicleCost>(() => getVehicleCostById(id!), [id]);
 
-export const useGetVehicleCostsInRange = (
-  vehicleId?: number,
-  from?: Date,
-  to?: Date
-) =>
-  useFetch<VehicleCost[]>(
-    () => getCostsInRange(vehicleId!, from!, to!),
-    [vehicleId, from, to]
-  );
+export const useGetVehicleCostsInRange = (vehicleId?: number, from?: Date, to?: Date) =>
+  useFetch<VehicleCost[]>(() => getCostsInRange(vehicleId!, from!, to!), [vehicleId, from, to]);
 
-export const useAddVehicleCost = () =>
-  useMutation<VehicleCost, Partial<VehicleCost>>(addVehicleCost);
+export const useAddVehicleCost = () => useMutation<VehicleCost, Partial<VehicleCost>>(addVehicleCost);
 
-export const useUpdateVehicleCost = () =>
-  useMutation<VehicleCost, Partial<VehicleCost>>(updateVehicleCost);
+export const useUpdateVehicleCost = () => useMutation<VehicleCost, Partial<VehicleCost>>(updateVehicleCost);
 
-export const useDeleteVehicleCost = () =>
-  useMutation<VehicleCost, number>(deleteVehicleCost);
+export const useDeleteVehicleCost = () => useMutation<VehicleCost, number>(deleteVehicleCost);

@@ -7,22 +7,17 @@ import {
   getVehicleByPlate,
   addVehicle,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
 } from '@/services/vehicle';
 
 export const useGetVehicles = () => useFetch<Vehicle[]>(getAllVehicles);
 
-export const useGetVehicleById = (id?: number) =>
-  useFetch<Vehicle>(() => getVehicleById(id!), [id]);
+export const useGetVehicleById = (id?: number) => useFetch<Vehicle>(() => getVehicleById(id!), [id]);
 
-export const useGetVehicleByPlate = (plate?: string) =>
-  useFetch<Vehicle>(() => getVehicleByPlate(plate!), [plate]);
+export const useGetVehicleByPlate = (plate?: string) => useFetch<Vehicle>(() => getVehicleByPlate(plate!), [plate]);
 
-export const useAddVehicle = () =>
-  useMutation<Vehicle, Partial<Vehicle>>(addVehicle);
+export const useAddVehicle = () => useMutation<Vehicle, Partial<Vehicle>>(addVehicle);
 
-export const useUpdateVehicle = () =>
-  useMutation<Vehicle, Partial<Vehicle>>(updateVehicle);
+export const useUpdateVehicle = () => useMutation<Vehicle, Partial<Vehicle>>(updateVehicle);
 
-export const useDeleteVehicle = () =>
-  useMutation<Vehicle, number>(deleteVehicle);
+export const useDeleteVehicle = () => useMutation<Vehicle, number>(deleteVehicle);

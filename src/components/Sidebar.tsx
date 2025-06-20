@@ -135,6 +135,13 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />
+          <SidebarButton
+            path="vehiculos"
+            text="Vehiculos"
+            icon={BiCategoryAlt}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
         </Flex>
       </Flex>
 

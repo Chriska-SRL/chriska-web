@@ -9,21 +9,17 @@ export const getVehicleCosts = (vehicleId: number): Promise<VehicleCost[]> =>
 export const getVehicleCostById = (id: number): Promise<VehicleCost> =>
   get<VehicleCost>(`${API_URL}/VehicleCosts/${id}`, true);
 
-export const getCostsInRange = (
-  vehicleId: number,
-  from: Date,
-  to: Date
-): Promise<VehicleCost[]> =>
+export const getCostsInRange = (vehicleId: number, from: Date, to: Date): Promise<VehicleCost[]> =>
   get<VehicleCost[]>(
     `${API_URL}/VehicleCosts/vehicle/${vehicleId}/rango?from=${from.toISOString()}&to=${to.toISOString()}`,
-    true
+    true,
   );
 
-export const addVehicleCost = (data: Partial<VehicleCost>): Promise<VehicleCost> =>
-  post<VehicleCost>(`${API_URL}/VehicleCosts`, data, true);
+export const addVehicleCost = (vehicleCost: Partial<VehicleCost>): Promise<VehicleCost> =>
+  post<VehicleCost>(`${API_URL}/VehicleCosts`, vehicleCost, true);
 
-export const updateVehicleCost = (data: Partial<VehicleCost>): Promise<VehicleCost> =>
-  put<VehicleCost>(`${API_URL}/VehicleCosts`, data, true);
+export const updateVehicleCost = (vehicleCost: Partial<VehicleCost>): Promise<VehicleCost> =>
+  put<VehicleCost>(`${API_URL}/VehicleCosts`, vehicleCost, true);
 
 export const deleteVehicleCost = (id: number): Promise<VehicleCost> =>
   del<VehicleCost>(`${API_URL}/VehicleCosts/${id}`, true);
