@@ -121,7 +121,7 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
-                  <VStack spacing="1rem">
+                  <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
                       <FormLabel>Categoría</FormLabel>
                       <Field
@@ -164,14 +164,6 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
-                      </Box>
-                    )}
                   </VStack>
                 </ModalBody>
 

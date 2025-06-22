@@ -14,34 +14,37 @@ import {
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Product } from '@/entities/product';
-import { useDeleteProduct } from '@/hooks/product';
 
-type ProductDeleteProps = {
-  product: Product;
+type GenericDeleteProps = {
+  item: { id: number; name: string };
   isUpdating: boolean;
   onDeleted?: () => void;
-  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setLocalItems: React.Dispatch<React.SetStateAction<any[]>>;
+  useDeleteHook: (id?: number) => {
+    data?: any;
+    isLoading: boolean;
+    error?: string;
+  };
 };
 
-export const ProductDelete = ({ product, isUpdating, onDeleted, setLocalProducts }: ProductDeleteProps) => {
+export const GenericDelete = ({ item, isUpdating, onDeleted, setLocalItems, useDeleteHook }: GenericDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteProductProps, setDeleteProductProps] = useState<number>();
-  const { data, isLoading, error } = useDeleteProduct(deleteProductProps!!);
+  const [deleteId, setDeleteId] = useState<number>();
+  const { data, isLoading, error } = useDeleteHook(deleteId);
 
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Producto eliminado',
-        description: `El producto ${product.name} fue eliminado correctamente.`,
+        title: 'Elemento eliminado',
+        description: `Se eliminó correctamente ${item.name}.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setLocalProducts((prev) => prev.filter((p) => p.id !== product.id));
+      setLocalItems((prev) => prev.filter((r) => r.id !== item.id));
       setConfirmOpen(false);
-      setDeleteProductProps(undefined);
+      setDeleteId(undefined);
       onDeleted?.();
     }
   }, [data]);
@@ -58,10 +61,14 @@ export const ProductDelete = ({ product, isUpdating, onDeleted, setLocalProducts
     }
   }, [error]);
 
+  const handleConfirm = () => {
+    setDeleteId(item.id);
+  };
+
   return (
     <>
       <IconButton
-        aria-label="Eliminar producto"
+        aria-label="Eliminar"
         icon={<FaTrash />}
         colorScheme="red"
         onClick={() => setConfirmOpen(true)}
@@ -73,13 +80,13 @@ export const ProductDelete = ({ product, isUpdating, onDeleted, setLocalProducts
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>¿Seguro que querés eliminar “{product.name}”? Esta acción no se puede deshacer.</Text>
+            <Text>¿Seguro que querés eliminar {item.name}? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
               Cancelar
             </Button>
-            <Button onClick={() => setDeleteProductProps(product.id)} colorScheme="red" isLoading={isLoading}>
+            <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>
               Eliminar
             </Button>
           </ModalFooter>

@@ -33,10 +33,10 @@ import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { Role } from '@/entities/role';
-import { RoleDelete } from './RoleDelete';
 import { useEffect, useState } from 'react';
-import { useUpdateRole } from '@/hooks/roles';
+import { useDeleteRole, useUpdateRole } from '@/hooks/roles';
 import { validate } from '@/utils/validate';
+import { GenericDelete } from '../shared/GenericDelete';
 
 type RoleEditProps = {
   isOpen: boolean;
@@ -217,17 +217,8 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                             />
                             <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
-
-                          {submitCount > 0 && Object.keys(errors).length > 0 && (
-                            <Box>
-                              <Text color="red.500" fontSize="0.875rem">
-                                Debe completar todos los campos
-                              </Text>
-                            </Box>
-                          )}
                         </VStack>
                       </Box>
-
                       <Box>
                         <Progress
                           h={isLoading ? '4px' : '1px'}
@@ -236,15 +227,14 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                           isIndeterminate={isLoading}
                           colorScheme="blue"
                         />
-
                         <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                          <RoleDelete
-                            role={role}
+                          <GenericDelete
+                            item={{ id: role.id, name: role.name }}
                             isUpdating={isLoading}
+                            setLocalItems={setLocalRoles}
+                            useDeleteHook={useDeleteRole}
                             onDeleted={onClose}
-                            setLocalRoles={setLocalRoles}
                           />
-
                           <Button
                             type="submit"
                             isLoading={isLoading}
