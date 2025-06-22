@@ -1,4 +1,3 @@
-// Products.tsx
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';

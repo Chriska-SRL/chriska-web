@@ -1,4 +1,3 @@
-// ProductList.tsx
 'use client';
 
 import {

@@ -102,7 +102,7 @@ export const Login = () => {
             initialValues={{ username: '', password: '' }}
             onSubmit={handleSubmit}
             validate={validateFields}
-            validateOnChange={true}
+            validateOnChange
             validateOnBlur={false}
           >
             {({ handleSubmit, errors, touched, submitCount }) => (

@@ -15,7 +15,6 @@ import {
   Button,
   Progress,
   Box,
-  Text,
   Select,
   useToast,
   Image,

@@ -1,4 +1,3 @@
-// UserEdit.tsx
 'use client';
 
 import {
@@ -16,7 +15,6 @@ import {
   Button,
   Progress,
   Box,
-  Text,
   useToast,
   ModalCloseButton,
   useColorModeValue,
@@ -248,7 +246,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       colorScheme="blue"
                       w="100%"
                       leftIcon={<IoReload />}
-                      mt="0.25rem"
+                      mt="0.625rem"
                     >
                       Restablecer contraseña
                     </Button>
@@ -256,7 +254,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                 </ModalBody>
 
                 <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
+                  <Box mt="0.25rem" w="100%">
                     <Progress
                       h={isLoading ? '4px' : '1px'}
                       mb="1.25rem"

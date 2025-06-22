@@ -1,10 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { SideBar, Content } from '@/components';
-import { VehicleCosts } from '@/components/Vehicles/VehicleCosts';
+import { SideBar, Content, ClientOnly } from '@/components';
 import { Flex } from '@chakra-ui/react';
-import { ClientOnly } from '@/components/ClientOnly';
 
 export default function VehicleCostsPage() {
   const params = useParams();
@@ -17,7 +15,8 @@ export default function VehicleCostsPage() {
       <Flex>
         <SideBar currentPage="vehiculo" />
         <Content>
-          <VehicleCosts vehicleId={id} />
+          {/* <VehicleCosts vehicleId={id} /> */}
+          <div></div>
         </Content>
       </Flex>
     </ClientOnly>
