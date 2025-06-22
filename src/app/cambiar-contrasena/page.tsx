@@ -1,8 +1,7 @@
 'use client';
 
 import { NextPage } from 'next';
-import { ClientOnly } from '@/components/ClientOnly';
-import { PasswordReset } from '@/components/PasswordReset';
+import { ClientOnly, PasswordReset } from '@/components';
 // import { useUserStore } from '@/stores/useUserStore';
 // import { useRouter } from 'next/navigation';
 // import { useEffect } from 'react';

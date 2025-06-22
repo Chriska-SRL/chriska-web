@@ -3,8 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Flex } from '@chakra-ui/react';
-import { SideBar, Content, WelcomePanel } from '../components';
-import { ClientOnly } from '@/components/ClientOnly';
+import { SideBar, Content, WelcomePanel, ClientOnly } from '../components';
 import { useUserStore } from '@/stores/useUserStore';
 
 const HomePage = () => {

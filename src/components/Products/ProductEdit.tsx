@@ -15,7 +15,6 @@ import {
   Button,
   Progress,
   Box,
-  Text,
   Select,
   useToast,
   Image,
@@ -28,10 +27,10 @@ import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
-import { useUpdateProduct } from '@/hooks/product';
-import { ProductDelete } from './ProductDelete';
+import { useDeleteProduct, useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validate';
 import { useGetCategories } from '@/hooks/category';
+import { GenericDelete } from '../shared/GenericDelete';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -129,7 +128,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
           {({ handleSubmit, errors, submitCount }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody>
-                <VStack spacing="1rem">
+                <VStack spacing="0.75rem">
                   <FormControl>
                     <FormLabel>Imagen</FormLabel>
                     <Flex w="full" justifyContent="center">
@@ -162,6 +161,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                           : 'El código de barras debe tener exactamente 13 dígitos numéricos';
                       }}
                     />
+                    <FormErrorMessage>{errors.barcode}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.name}>
@@ -174,6 +174,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                       disabled={isLoading}
                       validate={validate}
                     />
+                    <FormErrorMessage>{errors.name}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.price}>
@@ -210,6 +211,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                       <option value="Kilo">Kilos</option>
                       <option value="Unit">Unidades</option>
                     </Field>
+                    <FormErrorMessage>{errors.unitType}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.description}>
@@ -222,6 +224,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                       disabled={isLoading}
                       validate={validate}
                     />
+                    <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
@@ -239,6 +242,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                       <option value="Frozen">Congelado</option>
                       <option value="Ambient">Natural</option>
                     </Field>
+                    <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
@@ -287,13 +291,8 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                         </option>
                       ))}
                     </Field>
+                    <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                   </FormControl>
-
-                  {submitCount > 0 && Object.keys(errors).length > 0 && (
-                    <Text color="red.500" fontSize="0.85rem" alignSelf="start">
-                      Hay campos obligatorios incompletos o con errores. Verificalos antes de continuar.
-                    </Text>
-                  )}
                 </VStack>
               </ModalBody>
 
@@ -307,11 +306,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    <ProductDelete
-                      product={product}
-                      onDeleted={onClose}
+                    <GenericDelete
+                      item={{ id: product.id, name: product.name }}
                       isUpdating={isLoading}
-                      setLocalProducts={setLocalProducts}
+                      setLocalItems={setLocalProducts}
+                      useDeleteHook={useDeleteProduct}
+                      onDeleted={onClose}
                     />
                     <Button
                       type="submit"

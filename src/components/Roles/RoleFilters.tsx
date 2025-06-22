@@ -21,7 +21,6 @@ type RoleFiltersProps = {
 export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  // Colores unificados con UserFilters
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');

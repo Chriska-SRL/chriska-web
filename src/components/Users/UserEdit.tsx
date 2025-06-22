@@ -1,4 +1,3 @@
-// UserEdit.tsx
 'use client';
 
 import {
@@ -16,7 +15,6 @@ import {
   Button,
   Progress,
   Box,
-  Text,
   useToast,
   ModalCloseButton,
   useColorModeValue,
@@ -26,12 +24,13 @@ import {
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
-import { UserDelete } from './UserDelete';
 import { useGetRoles } from '@/hooks/roles';
 import { useEffect, useState } from 'react';
-import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
+import { useDeleteUser, useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validate';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { IoReload } from 'react-icons/io5';
+import { GenericDelete } from '../shared/GenericDelete';
 
 type UserEditProps = {
   isOpen: boolean;
@@ -137,7 +136,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="1.75rem" pb="0.5rem">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Editar usuario
           </ModalHeader>
           <ModalCloseButton />
@@ -156,7 +155,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
-                  <VStack spacing="1rem">
+                  <VStack spacing="0.75rem">
                     <FormControl
                       isInvalid={
                         (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
@@ -215,11 +214,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                           </option>
                         ))}
                       </Field>
-                      {fieldError?.campo === 'RoleId' && (
-                        <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                          {fieldError.error}
-                        </Text>
-                      )}
+                      <FormErrorMessage>{errors.roleId}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl
@@ -241,11 +236,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                         <option value="Activo">Activo</option>
                         <option value="Inactivo">Inactivo</option>
                       </Field>
-                      {fieldError?.campo === 'Estado' && (
-                        <Text color="red.500" fontSize="0.85rem" mt="0.25rem">
-                          {fieldError.error}
-                        </Text>
-                      )}
+                      <FormErrorMessage>{errors.estado}</FormErrorMessage>
                     </FormControl>
 
                     <Button
@@ -254,22 +245,16 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                       variant="outline"
                       colorScheme="blue"
                       w="100%"
+                      leftIcon={<IoReload />}
+                      mt="0.625rem"
                     >
-                      Resetear contraseña
+                      Restablecer contraseña
                     </Button>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.85rem" textAlign="left">
-                          Debe completar todos los campos.
-                        </Text>
-                      </Box>
-                    )}
                   </VStack>
                 </ModalBody>
 
                 <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
+                  <Box mt="0.25rem" w="100%">
                     <Progress
                       h={isLoading ? '4px' : '1px'}
                       mb="1.25rem"
@@ -279,11 +264,12 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                     />
                     <Box display="flex" gap="0.75rem">
                       {user && (
-                        <UserDelete
-                          user={user}
-                          onDeleted={onClose}
+                        <GenericDelete
+                          item={{ id: user.id, name: user.name }}
                           isUpdating={isLoading}
-                          setLocalUsers={setLocalUsers}
+                          setLocalItems={setLocalUsers}
+                          useDeleteHook={useDeleteUser}
+                          onDeleted={onClose}
                         />
                       )}
                       <Button

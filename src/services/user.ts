@@ -7,25 +7,25 @@ import { get, put, post, del } from '@/utils/fetcher';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getUsers = (): Promise<User[]> => {
-  return get<User[]>(`${API_URL}/Users`, true);
+  return get<User[]>(`${API_URL}/Users`);
 };
 
 export const addUser = (user: Partial<User>): Promise<User> => {
-  return post<User>(`${API_URL}/Users`, user, true);
+  return post<User>(`${API_URL}/Users`, user);
 };
 
 export const updateUser = (user: Partial<User>): Promise<User> => {
-  return put<User>(`${API_URL}/Users`, user, true);
+  return put<User>(`${API_URL}/Users`, user);
 };
 
 export const deleteUser = (id: number): Promise<User> => {
-  return del<User>(`${API_URL}/Users/${id}`, true);
+  return del<User>(`${API_URL}/Users/${id}`);
 };
 
 export const temporaryPassword = (userId: number): Promise<TemporaryPasswordResponse> => {
-  return post<TemporaryPasswordResponse>(`${API_URL}/Users/resetpassword`, { userId }, true);
+  return post<TemporaryPasswordResponse>(`${API_URL}/Users/resetpassword`, { userId });
 };
 
 export const passwordReset = (passwordReset: PasswordReset): Promise<PasswordResetResponse> => {
-  return post<PasswordResetResponse>(`${API_URL}/Users/resetpassword`, passwordReset, true);
+  return post<PasswordResetResponse>(`${API_URL}/Users/resetpassword`, passwordReset);
 };

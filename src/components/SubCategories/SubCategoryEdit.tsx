@@ -30,9 +30,10 @@ import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validate';
 import { SubCategory } from '@/entities/subcategory';
-import { useUpdateSubCategory } from '@/hooks/subcategory';
+import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory';
 import { SubCategoryDelete } from './SubCategoryDelete';
 import { Category } from '@/entities/category';
+import { GenericDelete } from '../shared/GenericDelete';
 
 type SubCategoryEditProps = {
   subcategory: SubCategory;
@@ -136,7 +137,7 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
-                  <VStack spacing="1rem">
+                  <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
                       <FormLabel>Categoría</FormLabel>
                       <Field
@@ -146,7 +147,6 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validate}
                         disabled
                       />
                     </FormControl>
@@ -180,14 +180,6 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
-                      </Box>
-                    )}
                   </VStack>
                 </ModalBody>
 
@@ -201,11 +193,12 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                       colorScheme="blue"
                     />
                     <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <SubCategoryDelete
-                        subcategory={subcategory}
+                      <GenericDelete
+                        item={{ id: subcategory.id, name: subcategory.name }}
                         isUpdating={isLoading}
+                        setLocalItems={setLocalCategories}
+                        useDeleteHook={useDeleteSubCategory}
                         onDeleted={onClose}
-                        setLocalCategories={setLocalCategories}
                       />
                       <Button
                         type="submit"

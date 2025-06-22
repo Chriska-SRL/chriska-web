@@ -1,4 +1,3 @@
-// ProductList.tsx
 'use client';
 
 import {
@@ -177,14 +176,7 @@ export const ProductList = ({ filterName, products, isLoading, error, setLocalPr
       <Box mt="0.5rem">
         <Text fontSize="sm">Mostrando {filteredProducts.length} productos</Text>
       </Box>
-      <ProductEdit
-        isOpen={isOpen}
-        onClose={onClose}
-        product={selectedProduct}
-        setLocalProducts={setLocalProducts}
-        // onProductUpdated={handleProductUpdated}
-        // onProductDeleted={handleProductDeleted}
-      />
+      <ProductEdit isOpen={isOpen} onClose={onClose} product={selectedProduct} setLocalProducts={setLocalProducts} />
     </>
   );
 };

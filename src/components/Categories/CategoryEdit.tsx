@@ -30,8 +30,8 @@ import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validate';
 import { Category } from '@/entities/category';
-import { useUpdateCategory } from '@/hooks/category';
-import { CategoryDelete } from './CategoryDelete';
+import { useDeleteCategory, useUpdateCategory } from '@/hooks/category';
+import { GenericDelete } from '../shared/GenericDelete';
 
 type CategoryEditProps = {
   category: Category;
@@ -120,7 +120,7 @@ export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps
               return (
                 <form onSubmit={handleSubmit}>
                   <ModalBody pb="0">
-                    <VStack spacing="1rem">
+                    <VStack spacing="0.75rem">
                       <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                         <FormLabel>Nombre</FormLabel>
                         <Field
@@ -150,14 +150,6 @@ export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps
                         />
                         <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
-
-                      {submitCount > 0 && Object.keys(errors).length > 0 && (
-                        <Box w="100%">
-                          <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                            Debe completar todos los campos
-                          </Text>
-                        </Box>
-                      )}
                     </VStack>
                   </ModalBody>
 
@@ -171,11 +163,12 @@ export const CategoryEdit = ({ category, setLocalCategories }: CategoryEditProps
                         colorScheme="blue"
                       />
                       <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                        <CategoryDelete
-                          category={category}
+                        <GenericDelete
+                          item={{ id: category.id, name: category.name }}
                           isUpdating={isLoading}
+                          setLocalItems={setLocalCategories}
+                          useDeleteHook={useDeleteCategory}
                           onDeleted={onClose}
-                          setLocalCategories={setLocalCategories}
                         />
                         <Button
                           type="submit"

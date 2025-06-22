@@ -214,14 +214,6 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
                             />
                             <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
-
-                          {submitCount > 0 && Object.keys(errors).length > 0 && (
-                            <Box>
-                              <Text color="red.500" fontSize="0.875rem">
-                                Debe completar todos los campos
-                              </Text>
-                            </Box>
-                          )}
                         </VStack>
                       </Box>
 

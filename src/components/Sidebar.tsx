@@ -9,7 +9,6 @@ import {
   DrawerBody,
   DrawerOverlay,
   DrawerContent,
-  DrawerCloseButton,
   useDisclosure,
   IconButton,
   Box,
@@ -20,6 +19,7 @@ import { FaUserShield, FaBars } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
+import { FaCar } from 'react-icons/fa6';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
@@ -132,6 +132,13 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             path="categorias"
             text="Categorias"
             icon={BiCategoryAlt}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="vehiculos"
+            text="Vehiculos"
+            icon={FaCar}
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />

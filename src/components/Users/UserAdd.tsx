@@ -1,4 +1,3 @@
-// UserAdd.tsx
 'use client';
 
 import {
@@ -22,8 +21,6 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
-  Flex,
-  IconButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -143,7 +140,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
-                  <VStack spacing="1rem">
+                  <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                       <FormLabel>Nombre de usuario</FormLabel>
                       <Field
@@ -198,6 +195,7 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                           </option>
                         ))}
                       </Field>
+                      <FormErrorMessage>{errors.roleId}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
@@ -216,15 +214,8 @@ export const UserAdd = ({ setLocalUsers }: UserAddProps) => {
                         <option value="Activo">Activo</option>
                         <option value="Inactivo">Inactivo</option>
                       </Field>
+                      <FormErrorMessage>{errors.estado}</FormErrorMessage>
                     </FormControl>
-
-                    {submitCount > 0 && Object.keys(errors).length > 0 && (
-                      <Box w="100%">
-                        <Text color="red.500" fontSize="0.875rem" textAlign="left" pl="0.25rem">
-                          Debe completar todos los campos
-                        </Text>
-                      </Box>
-                    )}
                   </VStack>
                 </ModalBody>
 

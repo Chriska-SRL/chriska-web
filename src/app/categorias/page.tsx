@@ -1,10 +1,8 @@
 'use client';
 
 import { NextPage } from 'next';
-import { SideBar, Content } from '@/components';
+import { SideBar, Content, ClientOnly, Categories } from '@/components';
 import { Flex } from '@chakra-ui/react';
-import { ClientOnly } from '@/components/ClientOnly';
-import { Categories } from '@/components/Categories/Categories';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';

@@ -14,6 +14,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { FaCopy } from 'react-icons/fa';
+import { useEffect, useState } from 'react';
 
 type TemporaryPasswordModalProps = {
   isOpen: boolean;
@@ -23,9 +24,12 @@ type TemporaryPasswordModalProps = {
 
 export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryPasswordModalProps) => {
   const toast = useToast();
+  const [hasCopied, setHasCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(password || '');
+    if (!password) return;
+    navigator.clipboard.writeText(password);
+    setHasCopied(true);
     toast({
       title: 'Contraseña copiada',
       status: 'success',
@@ -34,16 +38,26 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
     });
   };
 
+  const handleClose = () => {
+    if (hasCopied) onClose();
+  };
+
+  useEffect(() => {
+    if (isOpen) setHasCopied(false);
+  }, [isOpen]);
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal isOpen={isOpen} onClose={handleClose} isCentered closeOnOverlayClick={hasCopied} closeOnEsc={hasCopied}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textAlign="center" fontSize="1.75rem">
           Contraseña temporal
         </ModalHeader>
-        <ModalCloseButton />
+
+        <ModalCloseButton isDisabled={!hasCopied} />
+
         <ModalBody pt="0" pb="1.5rem">
-          <VStack spacing="1rem">
+          <VStack spacing="0.75rem">
             <Text fontSize="1rem" textAlign="center">
               Esta es la contraseña que deberá usar el usuario para iniciar sesión por primera vez.
               <br />
@@ -76,6 +90,11 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
                 onClick={handleCopy}
               />
             </Flex>
+            {!hasCopied && (
+              <Text fontSize="0.9rem" color="red.500">
+                Debe copiar la contraseña antes de cerrar.
+              </Text>
+            )}
           </VStack>
         </ModalBody>
       </ModalContent>
