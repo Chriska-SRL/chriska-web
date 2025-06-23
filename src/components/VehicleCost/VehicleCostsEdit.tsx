@@ -135,7 +135,6 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                           {label}
                         </option>
                       ))}
-                      S
                     </Field>
                     <FormErrorMessage>{errors.type}</FormErrorMessage>
                   </FormControl>

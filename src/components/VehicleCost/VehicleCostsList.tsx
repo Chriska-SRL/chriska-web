@@ -69,10 +69,10 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron costos registrados.
+          No se encontraron costos con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color={textColor}>
-          Intente agregar un nuevo costo.
+          Inténtelo con otros parámetros.
         </Text>
       </Flex>
     );

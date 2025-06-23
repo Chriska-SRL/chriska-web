@@ -1,6 +1,7 @@
 // VehicleCostFilters.tsx
 'use client';
 
+import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';
 import {
   Flex,
   Select,
@@ -80,9 +81,9 @@ export const VehicleCostFilters = ({
         color={textColor}
       >
         <option value="-1">Filtrar por tipo</option>
-        {availableTypes.map((type) => (
-          <option key={type} value={type}>
-            {type}
+        {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
+          <option key={key} value={key}>
+            {label}
           </option>
         ))}
       </Select>

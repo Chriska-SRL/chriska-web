@@ -10,6 +10,8 @@ import { VehicleCostList } from './VehicleCostsList';
 import { VehicleCostAdd } from './VehicleCostsAdd';
 import { VehicleCostFilters } from './VehicleCostsFilters';
 import { MdArrowBackIosNew } from 'react-icons/md';
+import { useGetVehicleById } from '@/hooks/vehicle';
+import { Vehicle } from '@/entities/vehicle';
 
 export const VehicleCosts = () => {
   const router = useRouter();
@@ -20,9 +22,16 @@ export const VehicleCosts = () => {
   const { data, isLoading, error } = useGetVehicleCosts(vehicleId);
   const [costs, setCosts] = useState<VehicleCost[]>([]);
 
+  const { data: vehicleData } = useGetVehicleById(vehicleId);
+  const [vehicle, setVehice] = useState<Vehicle>();
+
   useEffect(() => {
     if (data) setCosts(data);
   }, [data]);
+
+  useEffect(() => {
+    if (vehicleData) setVehice(vehicleData);
+  }, [vehicleData]);
 
   const [filterType, setFilterType] = useState<string | undefined>();
   const [filterDescription, setFilterDescription] = useState<string>('');
@@ -57,7 +66,7 @@ export const VehicleCosts = () => {
           size="sm"
         />
         <Text fontSize="1.5rem" fontWeight="bold">
-          Costos del Vehículo #{vehicleId}
+          Costos del vehículo: {vehicle?.plate}
         </Text>
       </Flex>
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">

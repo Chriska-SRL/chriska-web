@@ -117,14 +117,14 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
         w={{ base: '100%', md: 'auto' }}
         px="1.5rem"
       >
-        Crear rol
+        Agregar rol
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90vh">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Crear rol
+            Nuevo rol
           </ModalHeader>
           <ModalCloseButton />
           <Formik

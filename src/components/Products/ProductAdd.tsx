@@ -122,14 +122,14 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
         w={{ base: '100%', md: 'auto' }}
         px="1.5rem"
       >
-        Crear producto
+        Agregar producto
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem">
-            Crear producto
+            Nuevo producto
           </ModalHeader>
           <ModalCloseButton />
           <Formik

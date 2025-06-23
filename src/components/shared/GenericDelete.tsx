@@ -37,7 +37,7 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
     if (data) {
       toast({
         title: 'Elemento eliminado',
-        description: `Se eliminó correctamente ${item.name}.`,
+        description: `Se ha eliminado correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -80,7 +80,7 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>¿Seguro que querés eliminar {item.name}? Esta acción no se puede deshacer.</Text>
+            <Text>¿Seguro que querés eliminar este elemento? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
