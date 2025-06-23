@@ -67,12 +67,12 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { date: string; costType: string; amount: string; description: string }) => {
+  const handleSubmit = (values: { date: string; type: string; amount: string; description: string }) => {
     const updatedCost: Partial<VehicleCost> = {
       id: cost?.id,
       vehicleId: cost?.vehicleId,
       date: new Date(values.date).toISOString(),
-      type: values.costType as VehicleCostType,
+      type: values.type as VehicleCostType,
       amount: values.amount,
       description: values.description,
     };
@@ -93,7 +93,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
             id: cost?.id ?? 0,
             vehicleId: cost?.vehicleId ?? 0,
             date: cost?.date ? new Date(cost.date).toISOString().substring(0, 10) : '',
-            costType: cost?.costType ?? '',
+            type: cost?.type ?? '',
             amount: cost?.amount ?? '',
             description: cost?.description ?? '',
           }}
@@ -119,11 +119,11 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                     <FormErrorMessage>{errors.date}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.costType && !!errors.costType}>
+                  <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                     <FormLabel>Tipo</FormLabel>
                     <Field
                       as={Select}
-                      name="costType"
+                      name="type"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
@@ -137,7 +137,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                       ))}
                       S
                     </Field>
-                    <FormErrorMessage>{errors.costType}</FormErrorMessage>
+                    <FormErrorMessage>{errors.type}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
@@ -180,7 +180,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                   <Box display="flex" gap="0.75rem">
                     {cost && (
                       <GenericDelete
-                        item={{ id: cost.id, name: cost.costType }}
+                        item={{ id: cost.id, name: cost.type }}
                         isUpdating={isLoading}
                         setItems={setCosts}
                         useDeleteHook={useDeleteVehicleCost}

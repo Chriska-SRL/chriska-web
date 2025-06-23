@@ -70,11 +70,11 @@ export const VehicleCostAdd = ({
     }
   }, [error]);
 
-  const handleSubmit = (values: { date: string; costType: string; amount: string; description: string }) => {
+  const handleSubmit = (values: { date: string; type: string; amount: string; description: string }) => {
     const newCost: Partial<VehicleCost> = {
       date: new Date(values.date).toISOString(),
       vehicleId,
-      type: values.costType as VehicleCostType,
+      type: values.type as VehicleCostType,
       amount: values.amount,
       description: values.description,
     };
@@ -103,7 +103,7 @@ export const VehicleCostAdd = ({
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ date: '', costType: '', amount: '', description: '' }}
+            initialValues={{ date: '', type: '', amount: '', description: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -126,11 +126,11 @@ export const VehicleCostAdd = ({
                       <FormErrorMessage>{errors.date}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.costType && !!errors.costType}>
+                    <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                       <FormLabel>Tipo</FormLabel>
                       <Field
                         as={Select}
-                        name="costType"
+                        name="type"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
@@ -144,7 +144,7 @@ export const VehicleCostAdd = ({
                         ))}
                         S
                       </Field>
-                      <FormErrorMessage>{errors.costType}</FormErrorMessage>
+                      <FormErrorMessage>{errors.type}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>

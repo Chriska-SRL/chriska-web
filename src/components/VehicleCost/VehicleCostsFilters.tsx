@@ -1,3 +1,4 @@
+// VehicleCostFilters.tsx
 'use client';
 
 import {
@@ -19,6 +20,10 @@ type VehicleCostFiltersProps = {
   setFilterType: (value?: string) => void;
   filterDescription: string;
   setFilterDescription: (value: string) => void;
+  from: string;
+  to: string;
+  setFrom: (value: string) => void;
+  setTo: (value: string) => void;
   availableTypes: string[];
 };
 
@@ -27,6 +32,10 @@ export const VehicleCostFilters = ({
   setFilterType,
   filterDescription,
   setFilterDescription,
+  from,
+  to,
+  setFrom,
+  setTo,
   availableTypes,
 }: VehicleCostFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -48,9 +57,11 @@ export const VehicleCostFilters = ({
   const handleResetFilters = () => {
     setFilterType(undefined);
     setFilterDescription('');
+    setFrom('');
+    setTo('');
   };
 
-  const hasActiveFilters = !!filterType || filterDescription !== '';
+  const hasActiveFilters = !!filterType || filterDescription !== '' || from !== '' || to !== '';
 
   return (
     <Flex
@@ -90,6 +101,27 @@ export const VehicleCostFilters = ({
           <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
         </InputRightElement>
       </InputGroup>
+
+      <Input
+        type="date"
+        value={from}
+        onChange={(e) => setFrom(e.target.value)}
+        max={to || undefined}
+        bg={bgInput}
+        borderColor={borderInput}
+        color={textColor}
+        w={{ base: '100%', md: '11rem' }}
+      />
+      <Input
+        type="date"
+        value={to}
+        onChange={(e) => setTo(e.target.value)}
+        min={from || undefined}
+        bg={bgInput}
+        borderColor={borderInput}
+        color={textColor}
+        w={{ base: '100%', md: '11rem' }}
+      />
 
       {hasActiveFilters && (
         <IconButton
