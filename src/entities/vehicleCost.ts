@@ -4,8 +4,7 @@ export type VehicleCost = {
   id: number;
   vehicleId: number;
   date: string;
-  costType: VehicleCostType | '';
+  type: VehicleCostType | '';
   amount: string;
   description: string;
-  type?: string;
 };

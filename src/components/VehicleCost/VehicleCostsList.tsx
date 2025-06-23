@@ -98,8 +98,7 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                 >
                   <Text fontWeight="bold">Fecha: {new Date(c.date).toLocaleDateString()}</Text>
                   <Text fontSize="sm" color={textColor}>
-                    Tipo:{' '}
-                    {c.costType && VehicleCostTypeLabels[c.costType] ? VehicleCostTypeLabels[c.costType] : 'Sin tipo'}
+                    Tipo: {c.type && VehicleCostTypeLabels[c.type] ? VehicleCostTypeLabels[c.type] : 'Sin tipo'}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
                     Monto: ${c.amount}
@@ -150,7 +149,7 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                   <Tr key={c.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{new Date(c.date).toLocaleDateString()}</Td>
                     <Td textAlign="center">
-                      {c.costType && VehicleCostTypeLabels[c.costType] ? VehicleCostTypeLabels[c.costType] : 'Sin tipo'}
+                      {c.type && VehicleCostTypeLabels[c.type] ? VehicleCostTypeLabels[c.type] : 'Sin tipo'}
                     </Td>
                     <Td textAlign="center">${c.amount}</Td>
                     <Td textAlign="center">{c.description || '—'}</Td>

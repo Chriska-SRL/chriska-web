@@ -26,20 +26,25 @@ export const VehicleCosts = () => {
 
   const [filterType, setFilterType] = useState<string | undefined>();
   const [filterDescription, setFilterDescription] = useState<string>('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
 
-  const availableTypes = useMemo(() => [...new Set(costs.map((c) => c.costType))], [costs]);
+  const availableTypes = useMemo(() => [...new Set(costs.map((c) => c.type))], [costs]);
 
   const filteredCosts = useMemo(() => {
     const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
     return costs.filter((c) => {
-      const matchType = filterType ? normalize(c.costType) === normalize(filterType) : true;
+      const matchType = filterType ? normalize(c.type) === normalize(filterType) : true;
       const matchDesc = filterDescription
         ? normalize(c.description ?? '').includes(normalize(filterDescription))
         : true;
-      return matchType && matchDesc;
+      const matchFrom = from ? new Date(c.date) >= new Date(from) : true;
+      const matchTo = to ? new Date(c.date) <= new Date(to) : true;
+
+      return matchType && matchDesc && matchFrom && matchTo;
     });
-  }, [costs, filterType, filterDescription]);
+  }, [costs, filterType, filterDescription, from, to]);
 
   return (
     <>
@@ -61,6 +66,10 @@ export const VehicleCosts = () => {
           setFilterType={setFilterType}
           filterDescription={filterDescription}
           setFilterDescription={setFilterDescription}
+          from={from}
+          to={to}
+          setFrom={setFrom}
+          setTo={setTo}
           availableTypes={availableTypes}
         />
         {isMobile && <Divider />}
