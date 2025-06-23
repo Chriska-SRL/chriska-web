@@ -19,24 +19,21 @@ import {
   useColorModeValue,
   Tooltip,
 } from '@chakra-ui/react';
-import { FiEdit, FiEye } from 'react-icons/fi';
-import { useRouter } from 'next/navigation';
-
+import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
-import { Vehicle } from '@/entities/vehicle';
-import { VehicleEdit } from './VehicleEdit';
+import { VehicleCost } from '@/entities/vehicleCost';
+import { VehicleCostEdit } from './VehicleCostsEdit';
+import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';
 
-type VehicleListProps = {
-  vehicles: Vehicle[];
-  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
+type VehicleCostListProps = {
+  costs: VehicleCost[];
+  setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
   isLoading: boolean;
   error?: string;
 };
 
-export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: VehicleListProps) => {
-  const router = useRouter();
-
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCostListProps) => {
+  const [selectedCost, setSelectedCost] = useState<VehicleCost | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -47,19 +44,15 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const handleEditClick = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
+  const handleEditClick = (cost: VehicleCost) => {
+    setSelectedCost(cost);
     onOpen();
-  };
-
-  const handleViewClick = (vehicleId: number) => {
-    router.push(`/vehiculos/${vehicleId}`);
   };
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los vehículos: {error}</Text>
+        <Text color="red.500">Error al cargar los costos: {error}</Text>
       </Box>
     );
   }
@@ -72,14 +65,14 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
     );
   }
 
-  if (!vehicles || vehicles.length === 0) {
+  if (!costs || costs.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron vehículos con esos parámetros de búsqueda.
+          No se encontraron costos registrados.
         </Text>
         <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+          Intente agregar un nuevo costo.
         </Text>
       </Flex>
     );
@@ -91,9 +84,9 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
         <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {vehicles.map((v) => (
+              {costs.map((c) => (
                 <Box
-                  key={v.id}
+                  key={c.id}
                   px="1rem"
                   py="0.5rem"
                   border="1px solid"
@@ -103,34 +96,24 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">Matrícula: {v.plate}</Text>
+                  <Text fontWeight="bold">Fecha: {new Date(c.date).toLocaleDateString()}</Text>
                   <Text fontSize="sm" color={textColor}>
-                    Marca: {v.brand}
+                    Tipo:{' '}
+                    {c.costType && VehicleCostTypeLabels[c.costType] ? VehicleCostTypeLabels[c.costType] : 'Sin tipo'}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Modelo: {v.model}
+                    Monto: ${c.amount}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Capacidad de cajones: {v.crateCapacity}
+                    Descripción: {c.description || '—'}
                   </Text>
                   <IconButton
-                    aria-label="Ver vehículo"
-                    icon={<FiEye />}
-                    onClick={() => handleViewClick(v.id)}
-                    size="md"
-                    position="absolute"
-                    top="0"
-                    right="3rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
-                  <IconButton
-                    aria-label="Editar vehículo"
+                    aria-label="Editar costo"
                     icon={<FiEdit />}
-                    onClick={() => handleEditClick(v)}
+                    onClick={() => handleEditClick(c)}
                     size="md"
                     position="absolute"
-                    top="0rem"
+                    top="0.25rem"
                     right="0.25rem"
                     bg="transparent"
                     _hover={{ bg: hoverBgIcon }}
@@ -140,7 +123,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
             </VStack>
           </Box>
           <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
+            <Text fontSize="sm">Mostrando {costs.length} costos</Text>
           </Box>
         </Flex>
       ) : (
@@ -155,42 +138,33 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Matrícula</Th>
-                  <Th textAlign="center">Marca</Th>
-                  <Th textAlign="center">Modelo</Th>
-                  <Th textAlign="center">Cap. de cajones</Th>
-                  <Th w="4rem"></Th>
+                  <Th textAlign="center">Fecha</Th>
+                  <Th textAlign="center">Tipo</Th>
+                  <Th textAlign="center">Monto</Th>
+                  <Th textAlign="center">Descripción</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {vehicles.map((v) => (
-                  <Tr key={v.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{v.plate}</Td>
-                    <Td textAlign="center">{v.brand}</Td>
-                    <Td textAlign="center">{v.model}</Td>
-                    <Td textAlign="center">{v.crateCapacity}</Td>
+                {costs.map((c) => (
+                  <Tr key={c.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{new Date(c.date).toLocaleDateString()}</Td>
                     <Td textAlign="center">
-                      <Tooltip label="Ver costo del vehículo">
+                      {c.costType && VehicleCostTypeLabels[c.costType] ? VehicleCostTypeLabels[c.costType] : 'Sin tipo'}
+                    </Td>
+                    <Td textAlign="center">${c.amount}</Td>
+                    <Td textAlign="center">{c.description || '—'}</Td>
+                    <Td textAlign="center" pr="3rem">
+                      <Tooltip label="Editar costo">
                         <IconButton
-                          aria-label="Ver vehículo"
-                          icon={<FiEye />}
-                          onClick={() => handleViewClick(v.id)}
+                          aria-label="Editar"
+                          icon={<FiEdit />}
+                          onClick={() => handleEditClick(c)}
                           variant="ghost"
                           size="lg"
                           _hover={{ bg: hoverBgIcon }}
                         />
                       </Tooltip>
-                    </Td>
-                    <Td textAlign="center" pr="3rem">
-                      <IconButton
-                        aria-label="Editar vehículo"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(v)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
                     </Td>
                   </Tr>
                 ))}
@@ -198,11 +172,11 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
+            <Text fontSize="sm">Mostrando {costs.length} costos</Text>
           </Box>
         </>
       )}
-      <VehicleEdit isOpen={isOpen} onClose={onClose} vehicle={selectedVehicle} setVehicles={setVehicles} />
+      <VehicleCostEdit isOpen={isOpen} onClose={onClose} cost={selectedCost} setCosts={setCosts} />
     </>
   );
 };

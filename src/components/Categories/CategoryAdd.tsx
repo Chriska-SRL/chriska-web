@@ -25,7 +25,7 @@ import {
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
 

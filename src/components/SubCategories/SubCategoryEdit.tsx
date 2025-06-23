@@ -28,7 +28,7 @@ import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { SubCategory } from '@/entities/subcategory';
 import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory';
 import { SubCategoryDelete } from './SubCategoryDelete';

@@ -1,10 +1,10 @@
 'use client';
 
 import { NextPage } from 'next';
-import { SideBar, Content, ClientOnly, Vehicles } from '@/components';
+import { ClientOnly, Content, SideBar, Vehicles } from '@/components';
 import { Flex } from '@chakra-ui/react';
 
-const VehiclesPage: NextPage = () => {
+const VehicleCostPage: NextPage = () => {
   return (
     <ClientOnly>
       <Flex>
@@ -17,4 +17,4 @@ const VehiclesPage: NextPage = () => {
   );
 };
 
-export default VehiclesPage;
+export default VehicleCostPage;

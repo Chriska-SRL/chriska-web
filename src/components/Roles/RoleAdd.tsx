@@ -34,7 +34,7 @@ import { useEffect, useState } from 'react';
 import { Role } from '@/entities/role';
 import { useAddRole } from '@/hooks/roles';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 
 type RoleAddProps = {
   setRoles: React.Dispatch<React.SetStateAction<Role[]>>;

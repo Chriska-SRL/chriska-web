@@ -10,6 +10,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   VStack,
   Button,
   Progress,
@@ -18,27 +19,27 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Select,
 } from '@chakra-ui/react';
-import { Vehicle } from '@/entities/vehicle';
+import { VehicleCost } from '@/entities/vehicleCost';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { validate } from '@/utils/validations/validate';
-import { validateVehicle } from '@/utils/validations/validate-vehicle';
-import { useUpdateVehicle, useDeleteVehicle } from '@/hooks/vehicle';
+import { useUpdateVehicleCost, useDeleteVehicleCost } from '@/hooks/vehicleCost';
 import { GenericDelete } from '../shared/GenericDelete';
+import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
 
-type VehicleEditProps = {
+type VehicleCostEditProps = {
   isOpen: boolean;
   onClose: () => void;
-  vehicle: Vehicle | null;
-  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
+  cost: VehicleCost | null;
+  setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
 };
 
-export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEditProps) => {
+export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCostEditProps) => {
   const toast = useToast();
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
-  const { data, isLoading, error, fieldError } = useUpdateVehicle(vehicleProps);
+  const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
+  const { data, isLoading, error, fieldError } = useUpdateVehicleCost(costProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -46,40 +47,37 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Vehículo actualizado',
-        description: 'El vehículo ha sido actualizado correctamente.',
+        title: 'Costo actualizado',
+        description: 'El costo fue actualizado correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setVehicles((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
-      setVehicleProps(undefined);
+      setCosts((prev) => prev.map((c) => (c.id === data.id ? { ...c, ...data } : c)));
+      setCostProps(undefined);
       onClose();
     }
   }, [data]);
 
   useEffect(() => {
     if (fieldError) {
-      toast({
-        title: `Error`,
-        description: fieldError.error,
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
+      toast({ title: 'Error', description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
     } else if (error) {
-      toast({
-        title: 'Error inesperado',
-        description: error,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
+      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Vehicle) => {
-    setVehicleProps(values);
+  const handleSubmit = (values: { date: string; costType: string; amount: string; description: string }) => {
+    const updatedCost: Partial<VehicleCost> = {
+      id: cost?.id,
+      vehicleId: cost?.vehicleId,
+      date: new Date(values.date).toISOString(),
+      type: values.costType as VehicleCostType,
+      amount: values.amount,
+      description: values.description,
+    };
+
+    setCostProps(updatedCost);
   };
 
   return (
@@ -87,17 +85,17 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-          Editar vehículo
+          Editar costo
         </ModalHeader>
         <ModalCloseButton />
-        <Formik
+        <Formik<VehicleCost>
           initialValues={{
-            id: vehicle?.id ?? 0,
-            plate: vehicle?.plate ?? '',
-            brand: vehicle?.brand ?? '',
-            model: vehicle?.model ?? '',
-            crateCapacity: vehicle?.crateCapacity ?? 0,
-            costs: vehicle?.costs ?? [],
+            id: cost?.id ?? 0,
+            vehicleId: cost?.vehicleId ?? 0,
+            date: cost?.date ? new Date(cost.date).toISOString().substring(0, 10) : '',
+            costType: cost?.costType ?? '',
+            amount: cost?.amount ?? '',
+            description: cost?.description ?? '',
           }}
           onSubmit={handleSubmit}
           validateOnChange
@@ -107,75 +105,65 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0">
                 <VStack spacing="0.75rem">
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.plate && !!errors.plate) || fieldError?.campo === 'plate'}
-                  >
-                    <FormLabel>Matrícula</FormLabel>
+                  <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
+                    <FormLabel>Fecha</FormLabel>
                     <Field
                       as={Input}
-                      name="plate"
-                      type="text"
+                      name="date"
+                      type="date"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
                       disabled={isLoading}
                     />
-                    <FormErrorMessage>{errors.plate}</FormErrorMessage>
+                    <FormErrorMessage>{errors.date}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.brand && !!errors.brand) || fieldError?.campo === 'brand'}
-                  >
-                    <FormLabel>Marca</FormLabel>
+                  <FormControl isInvalid={submitCount > 0 && touched.costType && !!errors.costType}>
+                    <FormLabel>Tipo</FormLabel>
                     <Field
-                      as={Input}
-                      name="brand"
-                      type="text"
+                      as={Select}
+                      name="costType"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validateVehicle}
                       disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.brand}</FormErrorMessage>
+                    >
+                      <option value="">Seleccionar tipo</option>
+                      {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                      S
+                    </Field>
+                    <FormErrorMessage>{errors.costType}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.model && !!errors.model) || fieldError?.campo === 'model'}
-                  >
-                    <FormLabel>Modelo</FormLabel>
+                  <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
+                    <FormLabel>Monto</FormLabel>
                     <Field
                       as={Input}
-                      name="model"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validateVehicle}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.model}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl
-                    isInvalid={
-                      (submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity) ||
-                      fieldError?.campo === 'crateCapacity'
-                    }
-                  >
-                    <FormLabel>Capacidad de cajón</FormLabel>
-                    <Field
-                      as={Input}
-                      name="crateCapacity"
+                      name="amount"
                       type="number"
+                      step="0.01"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
                       disabled={isLoading}
                     />
-                    <FormErrorMessage>{errors.crateCapacity}</FormErrorMessage>
+                    <FormErrorMessage>{errors.amount}</FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Descripción</FormLabel>
+                    <Field
+                      as={Textarea}
+                      name="description"
+                      bg={inputBg}
+                      borderColor={borderColor}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                 </VStack>
               </ModalBody>
@@ -190,12 +178,12 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                     colorScheme="blue"
                   />
                   <Box display="flex" gap="0.75rem">
-                    {vehicle && (
+                    {cost && (
                       <GenericDelete
-                        item={{ id: vehicle.id, name: vehicle.plate }}
+                        item={{ id: cost.id, name: cost.costType }}
                         isUpdating={isLoading}
-                        setItems={setVehicles}
-                        useDeleteHook={useDeleteVehicle}
+                        setItems={setCosts}
+                        useDeleteHook={useDeleteVehicleCost}
                         onDeleted={onClose}
                       />
                     )}

@@ -113,7 +113,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center" bg={cardBg}>
+          <Box py="1rem" textAlign="center">
             <Text fontSize="sm">Mostrando {roles.length} roles</Text>
           </Box>
         </Flex>

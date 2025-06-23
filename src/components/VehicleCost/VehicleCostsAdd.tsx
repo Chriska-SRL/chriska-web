@@ -12,33 +12,35 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   useToast,
   VStack,
   Progress,
   Box,
-  Text,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Select,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Vehicle } from '@/entities/vehicle';
-import { useAddVehicle } from '@/hooks/vehicle';
-import { validate } from '@/utils/validations/validate';
-import { validateVehicle } from '@/utils/validations/validate-vehicle';
+import { VehicleCost } from '@/entities/vehicleCost';
+import { useAddVehicleCost } from '@/hooks/vehicleCost';
+import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
 
-type VehicleAddProps = {
-  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
-};
-
-export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
+export const VehicleCostAdd = ({
+  vehicleId,
+  setCosts,
+}: {
+  vehicleId: number;
+  setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
-  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
+  const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
+  const { data, isLoading, error } = useAddVehicleCost(costProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -50,32 +52,34 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Vehículo creado',
-        description: `El vehículo ha sido agregado correctamente.`,
+        title: 'Costo agregado',
+        description: 'El nuevo costo fue registrado correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setVehicleProps(undefined);
-      setVehicles((prev) => [...prev, data]);
+      setCostProps(undefined);
+      setCosts((prev) => [...prev, data]);
       onClose();
     }
   }, [data]);
 
   useEffect(() => {
-    if (fieldError) {
-      toast({ title: `Error`, description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
-    } else if (error) {
-      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
+    if (error) {
+      toast({ title: 'Error', description: error, status: 'error', duration: 3000, isClosable: true });
     }
-  }, [error, fieldError]);
+  }, [error]);
 
-  const handleSubmit = (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
-    const vehicle = {
-      ...values,
-      crateCapacity: Number(values.crateCapacity),
+  const handleSubmit = (values: { date: string; costType: string; amount: string; description: string }) => {
+    const newCost: Partial<VehicleCost> = {
+      date: new Date(values.date).toISOString(),
+      vehicleId,
+      type: values.costType as VehicleCostType,
+      amount: values.amount,
+      description: values.description,
     };
-    setVehicleProps(vehicle);
+
+    setCostProps(newCost);
   };
 
   return (
@@ -88,18 +92,18 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
         w={{ base: '100%', md: 'auto' }}
         px="1.5rem"
       >
-        Crear vehículo
+        Agregar costo
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Crear vehículo
+            Nuevo costo
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ plate: '', brand: '', model: '', crateCapacity: 0 }}
+            initialValues={{ date: '', costType: '', amount: '', description: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -108,67 +112,65 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
-                      <FormLabel>Matrícula</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
+                      <FormLabel>Fecha</FormLabel>
                       <Field
                         as={Input}
-                        name="plate"
-                        type="text"
+                        name="date"
+                        type="date"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validate}
                         disabled={isLoading}
                       />
-                      <FormErrorMessage>{errors.plate}</FormErrorMessage>
+                      <FormErrorMessage>{errors.date}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
-                      <FormLabel>Marca</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.costType && !!errors.costType}>
+                      <FormLabel>Tipo</FormLabel>
                       <Field
-                        as={Input}
-                        name="brand"
-                        type="text"
+                        as={Select}
+                        name="costType"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validateVehicle}
                         disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.brand}</FormErrorMessage>
+                      >
+                        <option value="">Seleccionar tipo</option>
+                        {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
+                          <option key={key} value={key}>
+                            {label}
+                          </option>
+                        ))}
+                        S
+                      </Field>
+                      <FormErrorMessage>{errors.costType}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
-                      <FormLabel>Modelo</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
+                      <FormLabel>Monto</FormLabel>
                       <Field
                         as={Input}
-                        name="model"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validateVehicle}
-                        disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.model}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
-                      <FormLabel>Capacidad de cajón</FormLabel>
-                      <Field
-                        as={Input}
-                        name="crateCapacity"
+                        name="amount"
                         type="number"
+                        step="0.01"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={(value: any) => {
-                          if (Number(value) <= 0) return 'Debe ser mayor o igual a 0';
-                          return undefined;
-                        }}
                         disabled={isLoading}
                       />
-                      <FormErrorMessage>{errors.crateCapacity}</FormErrorMessage>
+                      <FormErrorMessage>{errors.amount}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Descripción</FormLabel>
+                      <Field
+                        as={Textarea}
+                        name="description"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        disabled={isLoading}
+                      />
                     </FormControl>
                   </VStack>
                 </ModalBody>
