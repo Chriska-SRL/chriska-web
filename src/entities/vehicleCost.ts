@@ -1,10 +1,11 @@
-import { Vehicle } from './vehicle';
+import { VehicleCostType } from './vehicleCostType';
 
 export type VehicleCost = {
   id: number;
-  vehicleId: Vehicle;
-  date: Date;
-  type: string;
+  vehicleId: number;
+  date: string;
+  costType: VehicleCostType | '';
   amount: string;
   description: string;
+  type?: string;
 };

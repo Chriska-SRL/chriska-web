@@ -1,101 +1,72 @@
+// VehicleCosts.tsx
 'use client';
 
-import { Box, Text, Spinner, Flex, Heading, Button, useDisclosure, useToast } from '@chakra-ui/react';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Divider, Flex, IconButton, Text, useMediaQuery } from '@chakra-ui/react';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useGetVehicleCosts } from '@/hooks/vehicleCost';
 import { VehicleCost } from '@/entities/vehicleCost';
-import { Vehicle } from '@/entities/vehicle';
-import { useGetVehicleCostById } from '@/hooks/vehicleCost';
-import { useGetVehicleById } from '@/hooks/vehicle';
-// import { VehicleCostForm } from './VehicleCostForm'; // a crear
+import { VehicleCostList } from './VehicleCostsList';
+import { VehicleCostAdd } from './VehicleCostsAdd';
+import { VehicleCostFilters } from './VehicleCostsFilters';
+import { MdArrowBackIosNew } from 'react-icons/md';
 
 export const VehicleCosts = () => {
+  const router = useRouter();
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const { id } = useParams<{ id: string }>();
   const vehicleId = Number(id);
 
-  const { data: cost, isLoading: isLoadingCost, error: errorCost } = useGetVehicleCostById(vehicleId);
-  const { data: vehicle, isLoading: isLoadingVehicle, error: errorVehicle } = useGetVehicleById(vehicleId);
-
-  const [localCost, setLocalCost] = useState<VehicleCost | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const toast = useToast();
+  const { data, isLoading, error } = useGetVehicleCosts(vehicleId);
+  const [costs, setCosts] = useState<VehicleCost[]>([]);
 
   useEffect(() => {
-    if (cost) setLocalCost(cost);
-  }, [cost]);
+    if (data) setCosts(data);
+  }, [data]);
 
-  if (isLoadingCost || isLoadingVehicle || !vehicle) {
-    return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
-        <Spinner size="xl" />
-      </Flex>
-    );
-  }
+  const [filterType, setFilterType] = useState<string | undefined>();
+  const [filterDescription, setFilterDescription] = useState<string>('');
 
-  if (errorCost || errorVehicle) {
-    return (
-      <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los datos: {errorCost || errorVehicle}</Text>
-      </Box>
-    );
-  }
+  const availableTypes = useMemo(() => [...new Set(costs.map((c) => c.costType))], [costs]);
 
-  if (!localCost) {
-    return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" p="2rem">
-        <Text fontSize="lg" mb="1rem">
-          Este vehículo no tiene un costo cargado.
-        </Text>
-        <Button onClick={onOpen}>Agregar costo</Button>
-        {/* <VehicleCostForm
-          isOpen={isOpen}
-          onClose={onClose}
-          vehicleId={vehicleId}
-          initialData={null}
-          setCost={setLocalCost}
-        /> */}
-      </Flex>
-    );
-  }
+  const filteredCosts = useMemo(() => {
+    const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-  const { amount, type, description, date } = localCost;
+    return costs.filter((c) => {
+      const matchType = filterType ? normalize(c.costType) === normalize(filterType) : true;
+      const matchDesc = filterDescription
+        ? normalize(c.description ?? '').includes(normalize(filterDescription))
+        : true;
+      return matchType && matchDesc;
+    });
+  }, [costs, filterType, filterDescription]);
 
   return (
-    <Box p="2rem">
-      <Heading size="lg" mb="1rem">
-        Vehículo: {vehicle.plate}
-      </Heading>
-      <Text>Marca: {vehicle.brand}</Text>
-      <Text>Modelo: {vehicle.model}</Text>
-      <Text mb="1rem">Capacidad de cajones: {vehicle.crateCapacity}</Text>
-
-      <Flex justifyContent="space-between" alignItems="center" mb="1rem">
-        <Heading size="md">Costo asociado</Heading>
-        <Button onClick={onOpen}>Editar costo</Button>
+    <>
+      <Flex alignItems="center" gap="1rem">
+        <IconButton
+          aria-label="Volver"
+          icon={<MdArrowBackIosNew />}
+          onClick={() => router.replace('/vehiculos')}
+          variant="ghost"
+          size="sm"
+        />
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Costos del Vehículo #{vehicleId}
+        </Text>
       </Flex>
-
-      <Box border="1px solid #ccc" borderRadius="md" p="1rem" mb="2rem">
-        <Text>
-          <strong>Tipo:</strong> {type}
-        </Text>
-        <Text>
-          <strong>Monto:</strong> ${amount}
-        </Text>
-        <Text>
-          <strong>Fecha:</strong> {new Date(date).toLocaleDateString()}
-        </Text>
-        <Text>
-          <strong>Descripción:</strong> {description}
-        </Text>
-      </Box>
-
-      {/* <VehicleCostForm
-        isOpen={isOpen}
-        onClose={onClose}
-        vehicleId={vehicleId}
-        initialData={localCost}
-        setCost={setLocalCost}
-      /> */}
-    </Box>
+      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+        <VehicleCostFilters
+          filterType={filterType}
+          setFilterType={setFilterType}
+          filterDescription={filterDescription}
+          setFilterDescription={setFilterDescription}
+          availableTypes={availableTypes}
+        />
+        {isMobile && <Divider />}
+        <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} />
+      </Flex>
+      <VehicleCostList costs={filteredCosts} setCosts={setCosts} isLoading={isLoading} error={error} />
+    </>
   );
 };
