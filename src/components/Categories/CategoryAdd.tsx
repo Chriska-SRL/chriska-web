@@ -99,14 +99,14 @@ export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
         w={{ base: '100%', md: 'auto' }}
         px="1.5rem"
       >
-        Crear categoría
+        Agregar categoría
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Crear categoría
+            Nueva categoría
           </ModalHeader>
           <ModalCloseButton />
           <Formik

@@ -109,7 +109,7 @@ export const SubCategoryAdd = ({ category, setCategories }: SubCategoryAddProps)
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Crear subcategoría
+            Nueva subcategoría
           </ModalHeader>
           <ModalCloseButton />
           <Formik

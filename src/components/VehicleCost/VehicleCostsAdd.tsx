@@ -142,7 +142,6 @@ export const VehicleCostAdd = ({
                             {label}
                           </option>
                         ))}
-                        S
                       </Field>
                       <FormErrorMessage>{errors.type}</FormErrorMessage>
                     </FormControl>
