@@ -3,7 +3,7 @@ import { Vehicle } from '@/entities/vehicle';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const getAllVehicles = (): Promise<Vehicle[]> => get<Vehicle[]>(`${API_URL}/Vehicles`);
+export const getVehicles = (): Promise<Vehicle[]> => get<Vehicle[]>(`${API_URL}/Vehicles`);
 
 export const getVehicleById = (id: number): Promise<Vehicle> => get<Vehicle>(`${API_URL}/Vehicles/${id}`);
 

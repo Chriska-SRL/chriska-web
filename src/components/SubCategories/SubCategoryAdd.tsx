@@ -33,10 +33,10 @@ import { Category } from '@/entities/category';
 
 type SubCategoryAddProps = {
   category: Category;
-  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddProps) => {
+export const SubCategoryAdd = ({ category, setCategories }: SubCategoryAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -57,7 +57,7 @@ export const SubCategoryAdd = ({ category, setLocalCategories }: SubCategoryAddP
         duration: 1500,
         isClosable: true,
       });
-      setLocalCategories((prev) =>
+      setCategories((prev) =>
         prev.map((cat) => (cat.id === category.id ? { ...cat, subCategories: [...cat.subCategories, data] } : cat)),
       );
       setSubCategoryProps(undefined);

@@ -32,10 +32,10 @@ import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 
 type ProductAddProps = {
-  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
+export const ProductAdd = ({ setProducts }: ProductAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -61,7 +61,7 @@ export const ProductAdd = ({ setLocalProducts }: ProductAddProps) => {
         duration: 1500,
         isClosable: true,
       });
-      setLocalProducts((prev) => [...prev, data]);
+      setProducts((prev) => [...prev, data]);
       setProductProps(undefined);
       onClose();
     }

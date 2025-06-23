@@ -38,3 +38,9 @@ export * from './Categories/CategoryFilters';
 export * from './SubCategories/SubCategoryAdd';
 export * from './SubCategories/SubCategoryEdit';
 export * from './SubCategories/SubCategoryDelete';
+
+export * from './Vehicles/Vehicles';
+// export * from './Vehicles/VehicleAdd';
+export * from './Vehicles/VehicleEdit';
+export * from './Vehicles/VehicleList';
+// export * from './Vehicles/VehicleFilters';

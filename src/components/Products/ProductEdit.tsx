@@ -36,10 +36,10 @@ type ProductEditProps = {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
-  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: ProductEditProps) => {
+export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEditProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
@@ -72,7 +72,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
         duration: 1500,
         isClosable: true,
       });
-      setLocalProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
+      setProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
       setProductProps(undefined);
       onClose();
     }
@@ -309,7 +309,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setLocalProducts }: Prod
                     <GenericDelete
                       item={{ id: product.id, name: product.name }}
                       isUpdating={isLoading}
-                      setLocalItems={setLocalProducts}
+                      setItems={setProducts}
                       useDeleteHook={useDeleteProduct}
                       onDeleted={onClose}
                     />

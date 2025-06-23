@@ -24,14 +24,13 @@ import { RoleEdit } from './RoleEdit';
 import { Role } from '@/entities/role';
 
 type RoleListProps = {
-  filterName?: string;
   roles: Role[];
   isLoading: boolean;
   error?: string;
-  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+  setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }: RoleListProps) => {
+export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) => {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const editModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -47,10 +46,6 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
     setSelectedRole(role);
     editModalDisclosure.onOpen();
   };
-
-  const filteredRoles = roles?.filter((role) =>
-    filterName ? role.name.toLowerCase().includes(filterName.toLowerCase()) : true,
-  );
 
   if (error) {
     return (
@@ -68,7 +63,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
     );
   }
 
-  if (!filteredRoles || filteredRoles.length === 0) {
+  if (!roles || roles.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
@@ -87,7 +82,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
         <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {filteredRoles.map((role) => (
+              {roles.map((role) => (
                 <Box
                   key={role.id}
                   px="1rem"
@@ -119,7 +114,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
             </VStack>
           </Box>
           <Box py="1rem" textAlign="center" bg={cardBg}>
-            <Text fontSize="sm">Mostrando {filteredRoles.length} roles</Text>
+            <Text fontSize="sm">Mostrando {roles.length} roles</Text>
           </Box>
         </Flex>
       ) : (
@@ -144,7 +139,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredRoles.map((role) => (
+                {roles.map((role) => (
                   <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
                     <Td textAlign="center" maxW="30rem">
@@ -168,7 +163,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {filteredRoles.length} roles</Text>
+            <Text fontSize="sm">Mostrando {roles.length} roles</Text>
           </Box>
         </>
       )}
@@ -177,7 +172,7 @@ export const RoleList = ({ filterName, roles, isLoading, error, setLocalRoles }:
         isOpen={editModalDisclosure.isOpen}
         onClose={editModalDisclosure.onClose}
         role={selectedRole}
-        setLocalRoles={setLocalRoles}
+        setRoles={setRoles}
       />
     </>
   );

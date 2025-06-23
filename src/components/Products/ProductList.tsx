@@ -24,14 +24,13 @@ import { Product } from '@/entities/product';
 import { ProductEdit } from './ProductEdit';
 
 type ProductListProps = {
-  filterName?: string;
   products: Product[];
   isLoading: boolean;
   error?: string;
-  setLocalProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductList = ({ filterName, products, isLoading, error, setLocalProducts }: ProductListProps) => {
+export const ProductList = ({ products, isLoading, error, setProducts }: ProductListProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -46,18 +45,6 @@ export const ProductList = ({ filterName, products, isLoading, error, setLocalPr
     setSelectedProduct(product);
     onOpen();
   };
-
-  const handleProductUpdated = (updated: Product) => {
-    setLocalProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-  };
-
-  const handleProductDeleted = (id: number) => {
-    setLocalProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const filteredProducts = products.filter((product) =>
-    filterName ? product.name.toLowerCase().includes(filterName.toLowerCase()) : true,
-  );
 
   if (error) {
     return (
@@ -75,7 +62,7 @@ export const ProductList = ({ filterName, products, isLoading, error, setLocalPr
     );
   }
 
-  if (!filteredProducts || filteredProducts.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
@@ -134,7 +121,7 @@ export const ProductList = ({ filterName, products, isLoading, error, setLocalPr
             </Tr>
           </Thead>
           <Tbody>
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.subCategory.name}
@@ -174,9 +161,9 @@ export const ProductList = ({ filterName, products, isLoading, error, setLocalPr
         </Table>
       </TableContainer>
       <Box mt="0.5rem">
-        <Text fontSize="sm">Mostrando {filteredProducts.length} productos</Text>
+        <Text fontSize="sm">Mostrando {products.length} productos</Text>
       </Box>
-      <ProductEdit isOpen={isOpen} onClose={onClose} product={selectedProduct} setLocalProducts={setLocalProducts} />
+      <ProductEdit isOpen={isOpen} onClose={onClose} product={selectedProduct} setProducts={setProducts} />
     </>
   );
 };

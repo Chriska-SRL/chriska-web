@@ -20,18 +20,18 @@ import {
 } from '@chakra-ui/react';
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
-import { UserEdit } from './UserEdit';
-import { User } from '@/entities/user';
+import { Vehicle } from '@/entities/vehicle';
+import { VehicleEdit } from './VehicleEdit';
 
-type UserListProps = {
-  users: User[];
-  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+type VehicleListProps = {
+  vehicles: Vehicle[];
+  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   isLoading: boolean;
   error?: string;
 };
 
-export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: VehicleListProps) => {
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -42,15 +42,15 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const handleEditClick = (user: User) => {
-    setSelectedUser(user);
+  const handleEditClick = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
     onOpen();
   };
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los usuarios: {error}</Text>
+        <Text color="red.500">Error al cargar los vehículos: {error}</Text>
       </Box>
     );
   }
@@ -63,11 +63,11 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
     );
   }
 
-  if (!users || users.length === 0) {
+  if (!vehicles || vehicles.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron usuarios con esos parámetros de búsqueda.
+          No se encontraron vehículos con esos parámetros de búsqueda.
         </Text>
         <Text fontSize="sm" color={textColor}>
           Inténtelo con otros parámetros.
@@ -82,9 +82,9 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
         <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {users.map((user) => (
+              {vehicles.map((v) => (
                 <Box
-                  key={user.id}
+                  key={v.id}
                   px="1rem"
                   py="0.5rem"
                   border="1px solid"
@@ -94,31 +94,20 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Box
-                    position="absolute"
-                    top="0.75rem"
-                    right="0.75rem"
-                    bg={user.isEnabled ? 'green.100' : 'red.100'}
-                    color={user.isEnabled ? 'green.800' : 'red.800'}
-                    px="0.75rem"
-                    py="0.25rem"
-                    borderRadius="full"
-                    fontSize="0.75rem"
-                  >
-                    {user.isEnabled ? 'Activo' : 'Inactivo'}
-                  </Box>
-
-                  <Text fontWeight="bold">{user.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Usuario: {user.username}
+                  <Text fontWeight="bold">Matrícula: {v.plate}</Text>
+                  <Text fontSize="sm" color={textColor}>
+                    Marca: {v.brand}
                   </Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Rol: {user.role.name}
+                  <Text fontSize="sm" color={textColor}>
+                    Modelo: {v.model}
+                  </Text>
+                  <Text fontSize="sm" color={textColor}>
+                    Capacidad de cajones: {v.crateCapacity}
                   </Text>
                   <IconButton
-                    aria-label="Editar usuario"
+                    aria-label="Editar vehículo"
                     icon={<FiEdit />}
-                    onClick={() => handleEditClick(user)}
+                    onClick={() => handleEditClick(v)}
                     size="md"
                     position="absolute"
                     bottom="0.25rem"
@@ -131,7 +120,7 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
             </VStack>
           </Box>
           <Box py="1rem" textAlign="center" bg={cardBg}>
-            <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
+            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
           </Box>
         </Flex>
       ) : (
@@ -146,45 +135,25 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="12rem">
-                    Nombre de usuario
-                  </Th>
-                  <Th textAlign="center" w="12rem">
-                    Nombre
-                  </Th>
-                  <Th textAlign="center" w="10rem">
-                    Rol
-                  </Th>
-                  <Th textAlign="center" w="8rem">
-                    Estado
-                  </Th>
+                  <Th textAlign="center">Matrícula</Th>
+                  <Th textAlign="center">Marca</Th>
+                  <Th textAlign="center">Modelo</Th>
+                  <Th textAlign="center">Cap. de cajones</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {users.map((user) => (
-                  <Tr key={user.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{user.username}</Td>
-                    <Td textAlign="center">{user.name}</Td>
-                    <Td textAlign="center">{user.role.name}</Td>
-                    <Td textAlign="center">
-                      <Box
-                        bg={user.isEnabled ? 'green.300' : 'red.300'}
-                        color={user.isEnabled ? 'green.900' : 'red.900'}
-                        px="0.75rem"
-                        py="0.25rem"
-                        borderRadius="full"
-                        fontSize="0.75rem"
-                        display="inline-block"
-                      >
-                        {user.isEnabled ? 'Activo' : 'Inactivo'}
-                      </Box>
-                    </Td>
+                {vehicles.map((v) => (
+                  <Tr key={v.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{v.plate}</Td>
+                    <Td textAlign="center">{v.brand}</Td>
+                    <Td textAlign="center">{v.model}</Td>
+                    <Td textAlign="center">{v.crateCapacity}</Td>
                     <Td textAlign="center" pr="2rem">
                       <IconButton
-                        aria-label="Editar usuario"
+                        aria-label="Editar vehículo"
                         icon={<FiEdit />}
-                        onClick={() => handleEditClick(user)}
+                        onClick={() => handleEditClick(v)}
                         variant="ghost"
                         size="lg"
                         _hover={{ bg: hoverBgIcon }}
@@ -196,11 +165,11 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
+            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
           </Box>
         </>
       )}
-      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} setUsers={setUsers} />
+      <VehicleEdit isOpen={isOpen} onClose={onClose} vehicle={selectedVehicle} setVehicles={setVehicles} />
     </>
   );
 };

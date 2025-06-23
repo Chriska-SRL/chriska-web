@@ -36,10 +36,10 @@ type UserEditProps = {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
-  setLocalUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
-export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps) => {
+export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => {
   const toast = useToast();
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
@@ -73,7 +73,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
         duration: 1500,
         isClosable: true,
       });
-      setLocalUsers((prevUsers) => prevUsers.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
+      setUsers((prevUsers) => prevUsers.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
       setUserProps(undefined);
       onClose();
     }
@@ -267,7 +267,7 @@ export const UserEdit = ({ isOpen, onClose, user, setLocalUsers }: UserEditProps
                         <GenericDelete
                           item={{ id: user.id, name: user.name }}
                           isUpdating={isLoading}
-                          setLocalItems={setLocalUsers}
+                          setItems={setUsers}
                           useDeleteHook={useDeleteUser}
                           onDeleted={onClose}
                         />

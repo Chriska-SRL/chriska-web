@@ -37,10 +37,10 @@ import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata'
 import { validate } from '@/utils/validate';
 
 type RoleAddProps = {
-  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+  setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
+export const RoleAdd = ({ setRoles }: RoleAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
@@ -72,7 +72,7 @@ export const RoleAdd = ({ setLocalRoles }: RoleAddProps) => {
         duration: 1500,
         isClosable: true,
       });
-      setLocalRoles((prev) => [...prev, data]);
+      setRoles((prev) => [...prev, data]);
       setRoleProps(undefined);
       onClose();
     }
