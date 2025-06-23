@@ -28,7 +28,7 @@ import { useEffect, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
 import { useDeleteProduct, useUpdateProduct } from '@/hooks/product';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { useGetCategories } from '@/hooks/category';
 import { GenericDelete } from '../shared/GenericDelete';
 

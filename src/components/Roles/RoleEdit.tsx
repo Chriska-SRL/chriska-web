@@ -35,7 +35,7 @@ import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata'
 import { Role } from '@/entities/role';
 import { useEffect, useState } from 'react';
 import { useDeleteRole, useUpdateRole } from '@/hooks/roles';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { GenericDelete } from '../shared/GenericDelete';
 
 type RoleEditProps = {

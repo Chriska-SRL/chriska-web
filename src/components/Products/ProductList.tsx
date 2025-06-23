@@ -108,12 +108,13 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
               <Th textAlign="center" maxW="10rem">
                 Categoría
               </Th>
-              <Th textAlign="center">Cód. Barras</Th>
               <Th textAlign="center">Imagen</Th>
-              <Th textAlign="center" maxW="10rem">
+              <Th textAlign="center" maxW="15rem">
                 Nombre
               </Th>
-              <Th textAlign="center">Precio</Th>
+              <Th textAlign="center" maxW="10rem">
+                Precio
+              </Th>
               <Th textAlign="center">Stock</Th>
               <Th textAlign="center">Conserv.</Th>
               <Th textAlign="center">Unidad</Th>
@@ -126,11 +127,10 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                 <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.subCategory.name}
                 </Td>
-                <Td textAlign="center">{product.barcode}</Td>
                 <Td py="0.125rem">
                   <Flex justify="center" align="center" h="5rem" w="100%">
                     <Image
-                      src={product.image || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                      src={/* product.image || */ 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                       objectFit="cover"
                       maxH="100%"
                       maxW="100%"
@@ -138,7 +138,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                     />
                   </Flex>
                 </Td>
-                <Td textAlign="center" maxW="10rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
+                <Td textAlign="center" maxW="15rem" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis">
                   {product.name}
                 </Td>
                 <Td textAlign="center">${product.price.toFixed(2)}</Td>

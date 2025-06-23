@@ -28,7 +28,7 @@ import { useEffect, useState } from 'react';
 import { useAddUser, useTemporaryPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/roles';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
 
 type UserAddProps = {

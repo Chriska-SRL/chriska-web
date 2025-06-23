@@ -23,7 +23,8 @@ import { Vehicle } from '@/entities/vehicle';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
+import { validateVehicle } from '@/utils/validations/validate-vehicle';
 import { useUpdateVehicle, useDeleteVehicle } from '@/hooks/vehicle';
 import { GenericDelete } from '../shared/GenericDelete';
 
@@ -134,7 +135,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
+                      validate={validateVehicle}
                       disabled={isLoading}
                     />
                     <FormErrorMessage>{errors.brand}</FormErrorMessage>
@@ -151,7 +152,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
+                      validate={validateVehicle}
                       disabled={isLoading}
                     />
                     <FormErrorMessage>{errors.model}</FormErrorMessage>

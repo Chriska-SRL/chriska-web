@@ -17,8 +17,11 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  Tooltip,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
+import { FiEdit, FiEye } from 'react-icons/fi';
+import { useRouter } from 'next/navigation'; // para redireccionar
+
 import { useState } from 'react';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleEdit } from './VehicleEdit';
@@ -31,6 +34,8 @@ type VehicleListProps = {
 };
 
 export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: VehicleListProps) => {
+  const router = useRouter();
+
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -45,6 +50,10 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   const handleEditClick = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
     onOpen();
+  };
+
+  const handleViewClick = (vehicleId: number) => {
+    router.push(`/vehiculos/${vehicleId}`);
   };
 
   if (error) {
@@ -105,12 +114,23 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                     Capacidad de cajones: {v.crateCapacity}
                   </Text>
                   <IconButton
+                    aria-label="Ver vehículo"
+                    icon={<FiEye />}
+                    onClick={() => handleViewClick(v.id)}
+                    size="md"
+                    position="absolute"
+                    top="0"
+                    right="3rem"
+                    bg="transparent"
+                    _hover={{ bg: hoverBgIcon }}
+                  />
+                  <IconButton
                     aria-label="Editar vehículo"
                     icon={<FiEdit />}
                     onClick={() => handleEditClick(v)}
                     size="md"
                     position="absolute"
-                    bottom="0.25rem"
+                    top="0rem"
                     right="0.25rem"
                     bg="transparent"
                     _hover={{ bg: hoverBgIcon }}
@@ -119,7 +139,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center" bg={cardBg}>
+          <Box py="1rem" textAlign="center">
             <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
           </Box>
         </Flex>
@@ -139,6 +159,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                   <Th textAlign="center">Marca</Th>
                   <Th textAlign="center">Modelo</Th>
                   <Th textAlign="center">Cap. de cajones</Th>
+                  <Th w="4rem"></Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -149,7 +170,19 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                     <Td textAlign="center">{v.brand}</Td>
                     <Td textAlign="center">{v.model}</Td>
                     <Td textAlign="center">{v.crateCapacity}</Td>
-                    <Td textAlign="center" pr="2rem">
+                    <Td textAlign="center">
+                      <Tooltip label="Ver costo del vehículo">
+                        <IconButton
+                          aria-label="Ver vehículo"
+                          icon={<FiEye />}
+                          onClick={() => handleViewClick(v.id)}
+                          variant="ghost"
+                          size="lg"
+                          _hover={{ bg: hoverBgIcon }}
+                        />
+                      </Tooltip>
+                    </Td>
+                    <Td textAlign="center" pr="3rem">
                       <IconButton
                         aria-label="Editar vehículo"
                         icon={<FiEdit />}

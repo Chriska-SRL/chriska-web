@@ -25,8 +25,9 @@ import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Vehicle } from '@/entities/vehicle';
-import { useAddVehicle } from '@/hooks/vehicle'; // hook que deberías crear
-import { validate } from '@/utils/validate';
+import { useAddVehicle } from '@/hooks/vehicle';
+import { validate } from '@/utils/validations/validate';
+import { validateVehicle } from '@/utils/validations/validate-vehicle';
 
 type VehicleAddProps = {
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
@@ -37,7 +38,7 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
   const toast = useToast();
 
   const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
-  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps); // hook ficticio
+  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -131,7 +132,7 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validate}
+                        validate={validateVehicle}
                         disabled={isLoading}
                       />
                       <FormErrorMessage>{errors.brand}</FormErrorMessage>
@@ -146,7 +147,7 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validate}
+                        validate={validateVehicle}
                         disabled={isLoading}
                       />
                       <FormErrorMessage>{errors.model}</FormErrorMessage>
@@ -162,8 +163,7 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
                         borderColor={inputBorder}
                         h="2.75rem"
                         validate={(value: any) => {
-                          if (!value || isNaN(value)) return 'Debe ser un número';
-                          if (Number(value) < 0) return 'Debe ser mayor o igual a 0';
+                          if (Number(value) <= 0) return 'Debe ser mayor o igual a 0';
                           return undefined;
                         }}
                         disabled={isLoading}

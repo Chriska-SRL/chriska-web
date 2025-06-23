@@ -130,7 +130,7 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center" bg={cardBg}>
+          <Box py="1rem" textAlign="center">
             <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
           </Box>
         </Flex>

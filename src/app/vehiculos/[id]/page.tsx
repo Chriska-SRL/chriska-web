@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { SideBar, Content, ClientOnly } from '@/components';
 import { Flex } from '@chakra-ui/react';
+import { VehicleCosts } from '@/components/VehicleCost/VehicleCosts';
 
 export default function VehicleCostsPage() {
   const params = useParams();
@@ -13,10 +14,9 @@ export default function VehicleCostsPage() {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="vehiculo" />
+        <SideBar currentPage="vehiculos" />
         <Content>
-          {/* <VehicleCosts vehicleId={id} /> */}
-          <div></div>
+          <VehicleCosts />
         </Content>
       </Flex>
     </ClientOnly>

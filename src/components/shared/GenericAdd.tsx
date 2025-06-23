@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
-import { validate } from '@/utils/validate';
+import { validate } from '@/utils/validations/validate';
 import { ReactNode } from 'react';
 
 type FieldConfig<T> = {
