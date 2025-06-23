@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ProductFilters } from './ProductFilters';
 import { ProductAdd } from './ProductAdd';
 import { ProductList } from './ProductList';
@@ -9,14 +9,26 @@ import { Product } from '@/entities/product';
 import { useGetProducts } from '@/hooks/product';
 
 export const Products = () => {
-  const [filterName, setFilterName] = useState<string>('');
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const { data: products = [], isLoading, error } = useGetProducts();
-  const [localProducts, setLocalProducts] = useState<Product[]>(products);
+
+  const { data, isLoading, error } = useGetProducts();
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    setLocalProducts(products);
-  }, [products]);
+    if (data) setProducts(data);
+  }, [data]);
+
+  const [filterName, setFilterName] = useState<string>('');
+
+  const filteredProducts = useMemo(() => {
+    const normalize = (text: string) =>
+      text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    return products.filter((product) => (filterName ? normalize(product.name).includes(normalize(filterName)) : true));
+  }, [products, filterName]);
 
   return (
     <>
@@ -26,15 +38,9 @@ export const Products = () => {
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ProductFilters filterName={filterName} setFilterName={setFilterName} />
         {isMobile && <Divider />}
-        <ProductAdd setLocalProducts={setLocalProducts} />
+        <ProductAdd setProducts={setProducts} />
       </Flex>
-      <ProductList
-        filterName={filterName}
-        products={localProducts}
-        isLoading={isLoading}
-        error={error}
-        setLocalProducts={setLocalProducts}
-      />
+      <ProductList products={filteredProducts} isLoading={isLoading} error={error} setProducts={setProducts} />
     </>
   );
 };

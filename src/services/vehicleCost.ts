@@ -3,15 +3,21 @@ import { VehicleCost } from '@/entities/vehicleCost';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type VehicleCostsInRangeProps = {
+  vehicleId: number;
+  from: Date;
+  to: Date;
+};
+
 export const getVehicleCosts = (vehicleId: number): Promise<VehicleCost[]> =>
   get<VehicleCost[]>(`${API_URL}/VehicleCosts/vehicle/${vehicleId}`);
 
 export const getVehicleCostById = (id: number): Promise<VehicleCost> =>
   get<VehicleCost>(`${API_URL}/VehicleCosts/${id}`);
 
-export const getCostsInRange = (vehicleId: number, from: Date, to: Date): Promise<VehicleCost[]> =>
+export const getVehicleCostsInRange = (props: VehicleCostsInRangeProps): Promise<VehicleCost[]> =>
   get<VehicleCost[]>(
-    `${API_URL}/VehicleCosts/vehicle/${vehicleId}/rango?from=${from.toISOString()}&to=${to.toISOString()}`,
+    `${API_URL}/VehicleCosts/vehicle/${props.vehicleId}/rango?from=${props.from.toISOString()}&to=${props.to.toISOString()}`,
     true,
   );
 

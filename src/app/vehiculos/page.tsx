@@ -1,7 +1,7 @@
 'use client';
 
 import { NextPage } from 'next';
-import { SideBar, Content, ClientOnly } from '@/components';
+import { SideBar, Content, ClientOnly, Vehicles } from '@/components';
 import { Flex } from '@chakra-ui/react';
 
 const VehiclesPage: NextPage = () => {
@@ -10,8 +10,7 @@ const VehiclesPage: NextPage = () => {
       <Flex>
         <SideBar currentPage="vehiculos" />
         <Content>
-          {/* <Vehicles /> */}
-          <div></div>
+          <Vehicles />
         </Content>
       </Flex>
     </ClientOnly>

@@ -30,10 +30,10 @@ import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
 
 type CategoryAddProps = {
-  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
+export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
@@ -55,7 +55,7 @@ export const CategoryAdd = ({ setLocalCategories }: CategoryAddProps) => {
         duration: 1500,
         isClosable: true,
       });
-      setLocalCategories((prev) => [...prev, data]);
+      setCategories((prev) => [...prev, data]);
       setCategoryProps(undefined);
       onClose();
     }

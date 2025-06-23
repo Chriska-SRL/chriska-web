@@ -42,10 +42,10 @@ type RoleEditProps = {
   isOpen: boolean;
   onClose: () => void;
   role: Role | null;
-  setLocalRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+  setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps) => {
+export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => {
   const toast = useToast();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
@@ -64,7 +64,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
         duration: 1500,
         isClosable: true,
       });
-      setLocalRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
+      setRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
       setRoleProps(undefined);
       onClose();
     }
@@ -231,7 +231,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setLocalRoles }: RoleEditProps
                           <GenericDelete
                             item={{ id: role.id, name: role.name }}
                             isUpdating={isLoading}
-                            setLocalItems={setLocalRoles}
+                            setItems={setRoles}
                             useDeleteHook={useDeleteRole}
                             onDeleted={onClose}
                           />

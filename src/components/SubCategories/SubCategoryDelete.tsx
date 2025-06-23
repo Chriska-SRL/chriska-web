@@ -22,15 +22,10 @@ type SubCategoryDeleteProps = {
   subcategory: SubCategory;
   isUpdating: boolean;
   onDeleted?: () => void;
-  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const SubCategoryDelete = ({
-  subcategory,
-  isUpdating,
-  onDeleted,
-  setLocalCategories,
-}: SubCategoryDeleteProps) => {
+export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted, setCategories }: SubCategoryDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteSubCategoryProps, setDeleteSubCategoryProps] = useState<number>();
@@ -45,7 +40,7 @@ export const SubCategoryDelete = ({
         duration: 1500,
         isClosable: true,
       });
-      setLocalCategories((prev) =>
+      setCategories((prev) =>
         prev.map((cat) =>
           cat.id === subcategory.category.id
             ? {

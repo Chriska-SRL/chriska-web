@@ -9,11 +9,10 @@ import { CategoryEdit } from './CategoryEdit';
 import { Category } from '@/entities/category';
 
 type CategoryListProps = {
-  filterName?: string;
   categories: Category[];
   isLoading: boolean;
   error?: string;
-  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
 const normalizeText = (text: string) =>
@@ -22,7 +21,7 @@ const normalizeText = (text: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
-export const CategoryList = ({ filterName, categories, isLoading, error, setLocalCategories }: CategoryListProps) => {
+export const CategoryList = ({ categories, isLoading, error, setCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
   const bgBox = useColorModeValue('white', 'gray.800');
@@ -46,16 +45,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
     );
   }
 
-  const normalizedFilter = normalizeText(filterName ?? '');
-
-  const filteredCategories = categories?.filter((cat) => {
-    const catName = normalizeText(cat.name);
-    const matchesCategory = catName.includes(normalizedFilter);
-    const matchesSubcategory = cat.subCategories?.some((sub) => normalizeText(sub.name).includes(normalizedFilter));
-    return !filterName || matchesCategory || matchesSubcategory;
-  });
-
-  if (!filteredCategories || filteredCategories.length === 0) {
+  if (!categories || categories.length === 0) {
     return (
       <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
@@ -72,7 +62,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
     <Flex direction="column" h="100%" maxH="80%" justifyContent="space-between">
       <Box overflowY="scroll">
         <VStack spacing="1rem" align="stretch" pb="1rem">
-          {filteredCategories.map((cat) => (
+          {categories.map((cat) => (
             <Box
               key={cat.id}
               px="1rem"
@@ -110,8 +100,8 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                 </Box>
 
                 <Flex alignItems="center" gap="1rem" display={{ base: 'none', md: 'flex' }}>
-                  <SubCategoryAdd category={cat} setLocalCategories={setLocalCategories} />
-                  <CategoryEdit category={cat} setLocalCategories={setLocalCategories} />
+                  <SubCategoryAdd category={cat} setCategories={setCategories} />
+                  <CategoryEdit category={cat} setCategories={setCategories} />
                   <IconButton
                     aria-label="Expandir categoría"
                     icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
@@ -124,8 +114,8 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
               </Flex>
 
               <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.5rem" display={{ base: 'flex', md: 'none' }}>
-                <SubCategoryAdd category={cat} setLocalCategories={setLocalCategories} />
-                <CategoryEdit category={cat} setLocalCategories={setLocalCategories} />
+                <SubCategoryAdd category={cat} setCategories={setCategories} />
+                <CategoryEdit category={cat} setCategories={setCategories} />
                 <IconButton
                   aria-label="Expandir categoría"
                   icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
@@ -158,7 +148,7 @@ export const CategoryList = ({ filterName, categories, isLoading, error, setLoca
                                 </Text>
                               )}
                             </Box>
-                            <SubCategoryEdit subcategory={sub} setLocalCategories={setLocalCategories} />
+                            <SubCategoryEdit subcategory={sub} setCategories={setCategories} />
                           </Flex>
                           {index < cat.subCategories.length - 1 && <Divider mt="0.5rem" />}
                         </Box>

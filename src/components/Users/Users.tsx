@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { UserFilters } from './UserFilters';
 import { UserAdd } from './UserAdd';
 import { UserList } from './UserList';
@@ -10,9 +10,6 @@ import { User } from '@/entities/user';
 
 export const Users = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const [filterRoleId, setFilterRoleId] = useState<number | undefined>();
-  const [filterStateId, setFilterStateId] = useState<string | undefined>();
-  const [filterName, setFilterName] = useState<string>('');
 
   const { data, isLoading, error } = useGetUsers();
   const [users, setUsers] = useState<User[]>([]);
@@ -20,6 +17,25 @@ export const Users = () => {
   useEffect(() => {
     if (data) setUsers(data);
   }, [data]);
+
+  const [filterRoleId, setFilterRoleId] = useState<number | undefined>();
+  const [filterStateId, setFilterStateId] = useState<string | undefined>();
+  const [filterName, setFilterName] = useState<string>('');
+
+  const filteredUsers = useMemo(() => {
+    const normalize = (text: string) =>
+      text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    return users.filter((user) => {
+      const matchRole = filterRoleId ? user.role.id === filterRoleId : true;
+      const matchState = filterStateId ? (filterStateId === 'activo' ? user.isEnabled : !user.isEnabled) : true;
+      const matchName = filterName ? normalize(user.name).includes(normalize(filterName)) : true;
+      return matchRole && matchState && matchName;
+    });
+  }, [users, filterRoleId, filterStateId, filterName]);
 
   return (
     <>
@@ -36,17 +52,9 @@ export const Users = () => {
           setFilterName={setFilterName}
         />
         {isMobile && <Divider />}
-        <UserAdd setLocalUsers={setUsers} />
+        <UserAdd setUsers={setUsers} />
       </Flex>
-      <UserList
-        users={users}
-        setUsers={setUsers}
-        filterRoleId={filterRoleId}
-        filterStateId={filterStateId}
-        filterName={filterName}
-        isLoading={isLoading}
-        error={error}
-      />
+      <UserList users={filteredUsers} isLoading={isLoading} error={error} setUsers={setUsers} />
     </>
   );
 };

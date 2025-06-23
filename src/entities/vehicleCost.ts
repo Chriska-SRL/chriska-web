@@ -1,6 +1,8 @@
+import { Vehicle } from './vehicle';
+
 export type VehicleCost = {
   id: number;
-  VehicleId: number;
+  vehicle: Vehicle;
   date: Date;
   type: string;
   amount: string;

@@ -19,7 +19,7 @@ type GenericDeleteProps = {
   item: { id: number; name: string };
   isUpdating: boolean;
   onDeleted?: () => void;
-  setLocalItems: React.Dispatch<React.SetStateAction<any[]>>;
+  setItems: React.Dispatch<React.SetStateAction<any[]>>;
   useDeleteHook: (id?: number) => {
     data?: any;
     isLoading: boolean;
@@ -27,7 +27,7 @@ type GenericDeleteProps = {
   };
 };
 
-export const GenericDelete = ({ item, isUpdating, onDeleted, setLocalItems, useDeleteHook }: GenericDeleteProps) => {
+export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDeleteHook }: GenericDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number>();
@@ -42,7 +42,7 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setLocalItems, useD
         duration: 1500,
         isClosable: true,
       });
-      setLocalItems((prev) => prev.filter((r) => r.id !== item.id));
+      setItems((prev) => prev.filter((r) => r.id !== item.id));
       setConfirmOpen(false);
       setDeleteId(undefined);
       onDeleted?.();

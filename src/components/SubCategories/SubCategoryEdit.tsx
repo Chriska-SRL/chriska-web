@@ -37,10 +37,10 @@ import { GenericDelete } from '../shared/GenericDelete';
 
 type SubCategoryEditProps = {
   subcategory: SubCategory;
-  setLocalCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategoryEditProps) => {
+export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -61,7 +61,7 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
         duration: 1500,
         isClosable: true,
       });
-      setLocalCategories((prev) =>
+      setCategories((prev) =>
         prev.map((cat) =>
           cat.id === data.category.id
             ? {
@@ -196,7 +196,7 @@ export const SubCategoryEdit = ({ subcategory, setLocalCategories }: SubCategory
                       <GenericDelete
                         item={{ id: subcategory.id, name: subcategory.name }}
                         isUpdating={isLoading}
-                        setLocalItems={setLocalCategories}
+                        setItems={setCategories}
                         useDeleteHook={useDeleteSubCategory}
                         onDeleted={onClose}
                       />
