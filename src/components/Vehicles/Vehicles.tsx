@@ -18,8 +18,6 @@ export const Vehicles = () => {
     if (data) setVehicles(data);
   }, [data]);
 
-  const [filterBrand, setFilterBrand] = useState<string | undefined>();
-  const [filterModel, setFilterModel] = useState<string | undefined>();
   const [filterPlate, setFilterPlate] = useState<string>('');
 
   const availableBrands = useMemo(() => [...new Set(vehicles.map((v) => v.brand))], [vehicles]);
@@ -33,12 +31,10 @@ export const Vehicles = () => {
         .toLowerCase();
 
     return vehicles.filter((v) => {
-      const matchBrand = filterBrand ? normalize(v.brand) === normalize(filterBrand) : true;
-      const matchModel = filterModel ? normalize(v.model) === normalize(filterModel) : true;
       const matchPlate = filterPlate ? normalize(v.plate).includes(normalize(filterPlate)) : true;
-      return matchBrand && matchModel && matchPlate;
+      return matchPlate;
     });
-  }, [vehicles, filterBrand, filterModel, filterPlate]);
+  }, [vehicles, filterPlate]);
 
   return (
     <>
@@ -47,10 +43,6 @@ export const Vehicles = () => {
       </Text>
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <VehicleFilters
-          filterBrand={filterBrand}
-          setFilterBrand={setFilterBrand}
-          filterModel={filterModel}
-          setFilterModel={setFilterModel}
           filterPlate={filterPlate}
           setFilterPlate={setFilterPlate}
           availableBrands={availableBrands}

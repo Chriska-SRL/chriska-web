@@ -37,6 +37,7 @@ import { useEffect, useState } from 'react';
 import { useDeleteRole, useUpdateRole } from '@/hooks/roles';
 import { validate } from '@/utils/validations/validate';
 import { GenericDelete } from '../shared/GenericDelete';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type RoleEditProps = {
   isOpen: boolean;
@@ -213,7 +214,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                               fontSize="0.875rem"
                               resize="vertical"
                               minH="8rem"
-                              validate={validate}
+                              validate={validateEmpty}
                             />
                             <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>

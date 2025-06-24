@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { Vehicle } from '@/entities/vehicle';
 import { useAddVehicle } from '@/hooks/vehicle';
 import { validate } from '@/utils/validations/validate';
-import { validateVehicle } from '@/utils/validations/validate-vehicle';
+import { validateVehicle } from '@/utils/validations/validateVehicle';
 
 type VehicleAddProps = {
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;

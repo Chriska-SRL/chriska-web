@@ -1,7 +1,7 @@
 // VehicleCosts.tsx
 'use client';
 
-import { Divider, Flex, IconButton, Text, useMediaQuery } from '@chakra-ui/react';
+import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetVehicleCosts } from '@/hooks/vehicleCost';
@@ -22,7 +22,7 @@ export const VehicleCosts = () => {
   const { data, isLoading, error } = useGetVehicleCosts(vehicleId);
   const [costs, setCosts] = useState<VehicleCost[]>([]);
 
-  const { data: vehicleData } = useGetVehicleById(vehicleId);
+  const { data: vehicleData, isLoading: isLoadingVehicle } = useGetVehicleById(vehicleId);
   const [vehicle, setVehice] = useState<Vehicle>();
 
   useEffect(() => {
@@ -65,9 +65,18 @@ export const VehicleCosts = () => {
           variant="ghost"
           size="sm"
         />
-        <Text fontSize="1.5rem" fontWeight="bold">
-          Costos del vehículo: {vehicle?.plate}
-        </Text>
+        <Flex gap="0.5rem" alignItems="baseline">
+          <Text fontSize="1.5rem" fontWeight="bold">
+            Costos del vehículo:
+          </Text>
+          {isLoadingVehicle ? (
+            <Spinner size="sm" ml="2rem" />
+          ) : (
+            <Text fontSize="1.5rem" fontWeight="bold">
+              {vehicle?.plate}
+            </Text>
+          )}
+        </Flex>
       </Flex>
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <VehicleCostFilters

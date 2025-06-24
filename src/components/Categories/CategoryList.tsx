@@ -15,12 +15,6 @@ type CategoryListProps = {
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-const normalizeText = (text: string) =>
-  text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
 export const CategoryList = ({ categories, isLoading, error, setCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
