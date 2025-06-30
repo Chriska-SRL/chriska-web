@@ -20,6 +20,8 @@ import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
 import { FaCar } from 'react-icons/fa6';
+import { MdPlace } from 'react-icons/md';
+import { FiBriefcase } from 'react-icons/fi';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
@@ -139,6 +141,27 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             path="vehiculos"
             text="Vehiculos"
             icon={FaCar}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="clientes"
+            text="Clientes"
+            icon={BsPeopleFill}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="zonas"
+            text="Zonas"
+            icon={MdPlace}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="proveedores"
+            text="Proveedores"
+            icon={FiBriefcase}
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />

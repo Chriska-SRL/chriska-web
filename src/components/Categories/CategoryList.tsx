@@ -31,6 +31,14 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
     );
   };
 
+  if (error) {
+    return (
+      <Box p="2rem" textAlign="center">
+        <Text color="red.500">Error al cargar las categorias: {error}</Text>
+      </Box>
+    );
+  }
+
   if (isLoading) {
     return (
       <Flex justifyContent="center" alignItems="center" h="100%">
