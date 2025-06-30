@@ -35,6 +35,7 @@ import { Role } from '@/entities/role';
 import { useAddRole } from '@/hooks/roles';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { validate } from '@/utils/validations/validate';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type RoleAddProps = {
   setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
@@ -209,7 +210,7 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
                               borderColor={inputBorder}
                               resize="vertical"
                               minH="8rem"
-                              validate={validate}
+                              validate={validateEmpty}
                               disabled={isLoading}
                             />
                             <FormErrorMessage>{errors.description}</FormErrorMessage>

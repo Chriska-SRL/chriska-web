@@ -15,12 +15,6 @@ type CategoryListProps = {
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-const normalizeText = (text: string) =>
-  text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
 export const CategoryList = ({ categories, isLoading, error, setCategories }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
@@ -36,6 +30,14 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
     );
   };
+
+  if (error) {
+    return (
+      <Box p="2rem" textAlign="center">
+        <Text color="red.500">Error al cargar las categorias: {error}</Text>
+      </Box>
+    );
+  }
 
   if (isLoading) {
     return (

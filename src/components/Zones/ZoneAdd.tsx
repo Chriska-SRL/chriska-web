@@ -12,11 +12,11 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   useToast,
   VStack,
   Progress,
   Box,
-  Text,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
@@ -24,21 +24,20 @@ import {
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Vehicle } from '@/entities/vehicle';
-import { useAddVehicle } from '@/hooks/vehicle';
+import { Zone } from '@/entities/zone';
+import { useAddZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { validateVehicle } from '@/utils/validations/validateVehicle';
 
-type VehicleAddProps = {
-  setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
+type ZoneAddProps = {
+  setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
+export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
-  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
+  const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
+  const { data, isLoading, error, fieldError } = useAddZone(zoneProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -50,14 +49,14 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Vehículo creado',
-        description: `El vehículo ha sido agregado correctamente.`,
+        title: 'Zona creada',
+        description: `La zona ha sido creada correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setVehicleProps(undefined);
-      setVehicles((prev) => [...prev, data]);
+      setZoneProps(undefined);
+      setZones((prev) => [...prev, data]);
       onClose();
     }
   }, [data]);
@@ -70,12 +69,8 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
-    const vehicle = {
-      ...values,
-      crateCapacity: Number(values.crateCapacity),
-    };
-    setVehicleProps(vehicle);
+  const handleSubmit = (values: Partial<Zone>) => {
+    setZoneProps(values);
   };
 
   return (
@@ -88,18 +83,21 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
         w={{ base: '100%', md: 'auto' }}
         px="1.5rem"
       >
-        Agregar vehículo
+        Agregar zona
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Nuevo vehículo
+            Nueva zona
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ plate: '', brand: '', model: '', crateCapacity: 0 }}
+            initialValues={{
+              name: '',
+              description: '',
+            }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -108,67 +106,29 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
-                      <FormLabel>Matrícula</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                      <FormLabel>Nombre</FormLabel>
                       <Field
                         as={Input}
-                        name="plate"
-                        type="text"
+                        name="name"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
-                        disabled={isLoading}
                       />
-                      <FormErrorMessage>{errors.plate}</FormErrorMessage>
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
-                      <FormLabel>Marca</FormLabel>
+                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                      <FormLabel>Descripción</FormLabel>
                       <Field
-                        as={Input}
-                        name="brand"
-                        type="text"
+                        as={Textarea}
+                        name="description"
                         bg={inputBg}
                         borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validateVehicle}
-                        disabled={isLoading}
+                        validate={validate}
                       />
-                      <FormErrorMessage>{errors.brand}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
-                      <FormLabel>Modelo</FormLabel>
-                      <Field
-                        as={Input}
-                        name="model"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validateVehicle}
-                        disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.model}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
-                      <FormLabel>Capacidad de cajón</FormLabel>
-                      <Field
-                        as={Input}
-                        name="crateCapacity"
-                        type="number"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={(value: any) => {
-                          if (Number(value) <= 0) return 'Debe ser mayor o igual a 0';
-                          return undefined;
-                        }}
-                        disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.crateCapacity}</FormErrorMessage>
+                      <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
                   </VStack>
                 </ModalBody>

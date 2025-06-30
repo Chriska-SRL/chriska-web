@@ -1,42 +1,29 @@
 'use client';
 
-import {
-  Flex,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Icon,
-  IconButton,
-  useMediaQuery,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { Flex, Input, InputGroup, InputRightElement, Icon, useColorModeValue, IconButton } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
-type VehicleFiltersProps = {
-  filterPlate: string;
-  setFilterPlate: (value: string) => void;
-  availableBrands: string[];
-  availableModels: string[];
+type SupplierFiltersProps = {
+  filterName: string;
+  setFilterName: (value: string) => void;
 };
 
-export const VehicleFilters = ({ filterPlate, setFilterPlate }: VehicleFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
+export const SupplierFilters = ({ filterName, setFilterName }: SupplierFiltersProps) => {
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
 
-  const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterPlate(e.target.value);
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterName(e.target.value);
   };
 
   const handleResetFilters = () => {
-    setFilterPlate('');
+    setFilterName('');
   };
 
-  const hasActiveFilters = filterPlate !== '';
+  const hasActiveFilters = filterName !== '';
 
   return (
     <Flex
@@ -48,9 +35,9 @@ export const VehicleFilters = ({ filterPlate, setFilterPlate }: VehicleFiltersPr
     >
       <InputGroup w={{ base: '100%', md: '15rem' }}>
         <Input
-          placeholder="Buscar por matrícula..."
-          value={filterPlate}
-          onChange={handlePlateChange}
+          placeholder="Buscar por nombre..."
+          value={filterName}
+          onChange={handleNameChange}
           bg={bgInput}
           borderColor={borderInput}
           _placeholder={{ color: textColor }}

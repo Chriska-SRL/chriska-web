@@ -27,9 +27,15 @@ export const Categories = () => {
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase();
 
-    return categories.filter((category) =>
-      filterName ? normalize(category.name).includes(normalize(filterName)) : true,
-    );
+    return categories.filter((category) => {
+      const categoryMatch = filterName ? normalize(category.name).includes(normalize(filterName)) : true;
+
+      const subcategoryMatch = category.subCategories?.some((subcategory) =>
+        normalize(subcategory.name).includes(normalize(filterName)),
+      );
+
+      return categoryMatch || subcategoryMatch;
+    });
   }, [categories, filterName]);
 
   return (
