@@ -1,4 +1,5 @@
 import { SubCategory } from './subcategory';
+import { Supplier } from './supplier';
 
 export type Product = {
   id: number;
@@ -13,4 +14,5 @@ export type Product = {
   temperatureCondition: string;
   observation: string;
   subCategory: SubCategory;
+  suppliers: Supplier[];
 };

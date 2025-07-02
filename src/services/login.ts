@@ -1,5 +1,5 @@
 import { post } from '@/utils/fetcher';
-import { AccessToken } from '@/entities/access-token';
+import { AccessToken } from '@/entities/accessToken';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 

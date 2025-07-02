@@ -16,62 +16,61 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
   IconButton,
-  Textarea,
-  Flex,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Textarea,
+  Flex,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
+import { Shelve } from '@/entities/shelve';
 import { validate } from '@/utils/validations/validate';
-import { SubCategory } from '@/entities/subcategory';
-import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory';
-import { Category } from '@/entities/category';
+import { useUpdateShelve, useDeleteShelve } from '@/hooks/shelve';
 import { GenericDelete } from '../shared/GenericDelete';
-import { SubCategoryDelete } from './SubCategoryDelete';
+import { Warehouse } from '@/entities/warehouse';
+import { ShelveDelete } from './ShelveDelete';
 
-type SubCategoryEditProps = {
-  subcategory: SubCategory;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+type ShelveEditProps = {
+  shelve: Shelve;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditProps) => {
+export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
-  const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
+  const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
+  const { data, isLoading, error, fieldError } = useUpdateShelve(shelveProps);
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const iconHoverBg = useColorModeValue('gray.100', 'gray.700');
-  const buttonBg = useColorModeValue('blue.500', 'blue.400');
-  const buttonHoverBg = useColorModeValue('blue.600', 'blue.500');
+  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
 
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Subcategoría actualizada',
-        description: `La subcategoría ha sido modificada correctamente.`,
+        title: 'Estantería actualizada',
+        description: 'La estantería se modificó correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === data.category.id
-            ? {
-                ...cat,
-                subCategories: cat.subCategories.map((sub) => (sub.id === data.id ? data : sub)),
-              }
-            : cat,
-        ),
+
+      setWarehouses((prev) =>
+        prev.map((w) => {
+          if (w.id === shelve.warehouse.id) {
+            return {
+              ...w,
+              shelves: w.shelves.map((s) => (s.id === data.id ? data : s)),
+            };
+          }
+          return w;
+        }),
       );
-      setSubCategoryProps(undefined);
+      setShelveProps(undefined);
       onClose();
     }
   }, [data]);
@@ -96,39 +95,39 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { name: string; description: string }) => {
-    const updatedSubCategory = {
-      id: subcategory.id,
+  const handleSubmit = (values: { id: number; name: string; description: string }) => {
+    const newShelve = {
+      id: values.id,
       name: values.name,
       description: values.description,
-      categoryId: subcategory.category.id,
+      warehouseId: shelve.warehouse.id,
     };
-    setSubCategoryProps(updatedSubCategory);
+    setShelveProps(newShelve);
   };
 
   return (
     <>
       <IconButton
-        aria-label="Editar subcategoría"
+        aria-label="Editar estantería"
         icon={<FiEdit />}
         onClick={onOpen}
         size="md"
         bg="transparent"
-        _hover={{ bg: iconHoverBg }}
+        _hover={{ bg: hoverBg }}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Editar subcategoría
+            Editar estantería
           </ModalHeader>
           <ModalCloseButton />
           <Formik
             initialValues={{
-              category: subcategory.category.name,
-              name: subcategory.name,
-              description: subcategory.description,
+              id: shelve.id,
+              name: shelve.name,
+              description: shelve.description,
             }}
             onSubmit={handleSubmit}
             validateOnChange
@@ -138,19 +137,6 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
-                      <FormLabel>Categoría</FormLabel>
-                      <Field
-                        as={Input}
-                        name="category"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        disabled
-                      />
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
                       <Field
@@ -174,7 +160,7 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
                         type="text"
                         bg={inputBg}
                         borderColor={inputBorder}
-                        h="2.75rem"
+                        h="5rem"
                         validate={validate}
                         disabled={isLoading}
                       />
@@ -193,18 +179,18 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
                       colorScheme="blue"
                     />
                     <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <SubCategoryDelete
-                        subcategory={subcategory}
+                      <ShelveDelete
+                        shelve={shelve}
                         isUpdating={isLoading}
                         onDeleted={onClose}
-                        setCategories={setCategories}
+                        setWarehouses={setWarehouses}
                       />
                       <Button
                         type="submit"
                         disabled={isLoading}
-                        bg={buttonBg}
+                        bg="#4C88D8"
                         color="white"
-                        _hover={{ bg: buttonHoverBg }}
+                        _hover={{ backgroundColor: '#376bb0' }}
                         width="100%"
                         leftIcon={<FaCheck />}
                         py="1.375rem"

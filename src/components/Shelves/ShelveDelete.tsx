@@ -14,47 +14,47 @@ import {
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { SubCategory } from '@/entities/subcategory';
-import { useDeleteSubCategory } from '@/hooks/subcategory';
-import { Category } from '@/entities/category';
+import { Shelve } from '@/entities/shelve';
+import { useDeleteShelve } from '@/hooks/shelve';
+import { Warehouse } from '@/entities/warehouse';
 
-type SubCategoryDeleteProps = {
-  subcategory: SubCategory;
+type ShelveDeleteProps = {
+  shelve: Shelve;
   isUpdating: boolean;
   onDeleted?: () => void;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted, setCategories }: SubCategoryDeleteProps) => {
+export const ShelveDelete = ({ shelve, isUpdating, onDeleted, setWarehouses }: ShelveDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteSubCategoryProps, setDeleteSubCategoryProps] = useState<number>();
-  const { data: subcategoryDeleted, error, isLoading } = useDeleteSubCategory(deleteSubCategoryProps!!);
+  const [deleteShelveProps, setDeleteShelveProps] = useState<number>();
+  const { data: shelveDeleted, error, isLoading } = useDeleteShelve(deleteShelveProps!!);
 
   useEffect(() => {
-    if (subcategoryDeleted) {
+    if (shelveDeleted) {
       toast({
-        title: 'Subcategoría eliminada',
-        description: `La subcategoría fue eliminada correctamente.`,
+        title: 'Estantería eliminada',
+        description: `La estantería fue eliminada correctamente.`,
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === subcategory.category.id
+      setWarehouses((prev) =>
+        prev.map((warehouse) =>
+          warehouse.id === shelve.warehouse.id
             ? {
-                ...cat,
-                subCategories: cat.subCategories.filter((sub) => sub.id !== subcategory.id),
+                ...warehouse,
+                shelves: warehouse.shelves.filter((shel) => shel.id !== shelve.id),
               }
-            : cat,
+            : warehouse,
         ),
       );
       setConfirmOpen(false);
-      setDeleteSubCategoryProps(undefined);
+      setDeleteShelveProps(undefined);
       onDeleted?.();
     }
-  }, [subcategoryDeleted]);
+  }, [shelveDeleted]);
 
   useEffect(() => {
     if (error) {
@@ -69,7 +69,7 @@ export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted, setCateg
   }, [error]);
 
   const handleConfirm = () => {
-    setDeleteSubCategoryProps(subcategory.id);
+    setDeleteShelveProps(shelve.id);
   };
 
   return (
@@ -87,9 +87,7 @@ export const SubCategoryDelete = ({ subcategory, isUpdating, onDeleted, setCateg
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>
-              ¿Seguro que querés eliminar la subcategoría "{subcategory.name}"? Esta acción no se puede deshacer.
-            </Text>
+            <Text>¿Seguro que querés eliminar la subcategoría "{shelve.name}"? Esta acción no se puede deshacer.</Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
