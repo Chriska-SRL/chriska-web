@@ -16,62 +16,48 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
-  IconButton,
-  Textarea,
   Flex,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  IconButton,
+  Textarea,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
+import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
-import { SubCategory } from '@/entities/subcategory';
-import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory';
-import { Category } from '@/entities/category';
+import { useUpdateWarehouse, useDeleteWarehouse } from '@/hooks/warehouse';
 import { GenericDelete } from '../shared/GenericDelete';
-import { SubCategoryDelete } from './SubCategoryDelete';
 
-type SubCategoryEditProps = {
-  subcategory: SubCategory;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+type WarehouseEditProps = {
+  warehouse: Warehouse;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditProps) => {
+export const WarehouseEdit = ({ warehouse, setWarehouses }: WarehouseEditProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
-  const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
+  const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
+  const { data, isLoading, error, fieldError } = useUpdateWarehouse(warehouseProps);
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const iconHoverBg = useColorModeValue('gray.100', 'gray.700');
-  const buttonBg = useColorModeValue('blue.500', 'blue.400');
-  const buttonHoverBg = useColorModeValue('blue.600', 'blue.500');
+  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
 
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Subcategoría actualizada',
-        description: `La subcategoría ha sido modificada correctamente.`,
+        title: 'Depósito actualizado',
+        description: 'El depósito se modificó correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
       });
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === data.category.id
-            ? {
-                ...cat,
-                subCategories: cat.subCategories.map((sub) => (sub.id === data.id ? data : sub)),
-              }
-            : cat,
-        ),
-      );
-      setSubCategoryProps(undefined);
+      setWarehouses((prev) => prev.map((w) => (w.id === data.id ? data : w)));
+      setWarehouseProps(undefined);
       onClose();
     }
   }, [data]);
@@ -96,39 +82,39 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { name: string; description: string }) => {
-    const updatedSubCategory = {
-      id: subcategory.id,
+  const handleSubmit = (values: { id: number; name: string; description: string; address: string }) => {
+    setWarehouseProps({
+      id: values.id,
       name: values.name,
       description: values.description,
-      categoryId: subcategory.category.id,
-    };
-    setSubCategoryProps(updatedSubCategory);
+      address: values.address,
+    });
   };
 
   return (
     <>
       <IconButton
-        aria-label="Editar subcategoría"
+        aria-label="Editar depósito"
         icon={<FiEdit />}
         onClick={onOpen}
         size="md"
         bg="transparent"
-        _hover={{ bg: iconHoverBg }}
+        _hover={{ bg: hoverBg }}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Editar subcategoría
+            Editar depósito
           </ModalHeader>
           <ModalCloseButton />
           <Formik
             initialValues={{
-              category: subcategory.category.name,
-              name: subcategory.name,
-              description: subcategory.description,
+              id: warehouse.id,
+              name: warehouse.name,
+              description: warehouse.description,
+              address: warehouse.address,
             }}
             onSubmit={handleSubmit}
             validateOnChange
@@ -138,19 +124,6 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0">
                   <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.category && !!errors.category}>
-                      <FormLabel>Categoría</FormLabel>
-                      <Field
-                        as={Input}
-                        name="category"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        disabled
-                      />
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
                       <Field
@@ -174,11 +147,26 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
                         type="text"
                         bg={inputBg}
                         borderColor={inputBorder}
-                        h="2.75rem"
+                        h="5rem"
                         validate={validate}
                         disabled={isLoading}
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
+                      <FormLabel>Dirección</FormLabel>
+                      <Field
+                        as={Input}
+                        name="address"
+                        type="text"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validate}
+                        disabled={isLoading}
+                      />
+                      <FormErrorMessage>{errors.address}</FormErrorMessage>
                     </FormControl>
                   </VStack>
                 </ModalBody>
@@ -193,18 +181,19 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
                       colorScheme="blue"
                     />
                     <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <SubCategoryDelete
-                        subcategory={subcategory}
+                      <GenericDelete
+                        item={{ id: warehouse.id, name: warehouse.name }}
                         isUpdating={isLoading}
+                        setItems={setWarehouses}
+                        useDeleteHook={useDeleteWarehouse}
                         onDeleted={onClose}
-                        setCategories={setCategories}
                       />
                       <Button
                         type="submit"
                         disabled={isLoading}
-                        bg={buttonBg}
+                        bg="#4C88D8"
                         color="white"
-                        _hover={{ bg: buttonHoverBg }}
+                        _hover={{ backgroundColor: '#376bb0' }}
                         width="100%"
                         leftIcon={<FaCheck />}
                         py="1.375rem"

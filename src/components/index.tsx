@@ -37,13 +37,12 @@ export * from './Categories/CategoryFilters';
 
 export * from './SubCategories/SubCategoryAdd';
 export * from './SubCategories/SubCategoryEdit';
-export * from './SubCategories/SubCategoryDelete';
 
 export * from './Vehicles/Vehicles';
-// export * from './Vehicles/VehicleAdd';
+export * from './Vehicles/VehicleAdd';
 export * from './Vehicles/VehicleEdit';
 export * from './Vehicles/VehicleList';
-// export * from './Vehicles/VehicleFilters';
+export * from './Vehicles/VehicleFilters';
 
 export * from './Clients/Clients';
 export * from './Clients/ClientAdd';
@@ -62,3 +61,12 @@ export * from './Suppliers/SupplierAdd';
 export * from './Suppliers/SupplierEdit';
 export * from './Suppliers/SupplierList';
 export * from './Suppliers/SupplierFilters';
+
+export * from './Warehouses/Warehouses';
+export * from './Warehouses/WarehouseAdd';
+export * from './Warehouses/WarehouseEdit';
+export * from './Warehouses/WarehouseList';
+export * from './Warehouses/WarehouseFilters';
+
+export * from './Shelves/ShelveAdd';
+export * from './Shelves/ShelveEdit';

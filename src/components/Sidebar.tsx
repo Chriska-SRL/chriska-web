@@ -22,6 +22,8 @@ import { BiCategoryAlt } from 'react-icons/bi';
 import { FaCar } from 'react-icons/fa6';
 import { MdPlace } from 'react-icons/md';
 import { FiBriefcase } from 'react-icons/fi';
+import { LuArrowDownUp } from 'react-icons/lu';
+import { FaWarehouse } from 'react-icons/fa';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
@@ -99,7 +101,7 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
       minH="100vh"
       borderRight="1px solid"
       borderColor={borderColor}
-      p="1.25rem"
+      p="1rem"
     >
       <Flex flexDir="column">
         <Flex justifyContent="space-between">
@@ -162,6 +164,20 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             path="proveedores"
             text="Proveedores"
             icon={FiBriefcase}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="movimientos-de-stock"
+            text="Movimientos de stock"
+            icon={LuArrowDownUp}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="depositos"
+            text="Depósitos"
+            icon={FaWarehouse}
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />
