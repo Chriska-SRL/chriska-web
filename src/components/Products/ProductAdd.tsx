@@ -30,6 +30,7 @@ import { validate } from '@/utils/validations/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type ProductAddProps = {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
@@ -44,8 +45,8 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
 
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
+  const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
@@ -87,6 +88,12 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
     }
   }, [error, fieldError]);
 
+  const handleClose = () => {
+    setSelectedCategoryId('');
+    setProductProps(undefined);
+    onClose();
+  };
+
   const handleSubmit = (values: {
     barcode: string;
     name: string;
@@ -125,7 +132,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
         Agregar producto
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size="sm" isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem">
@@ -149,7 +156,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, submitCount, values }) => (
+            {({ handleSubmit, errors, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0" maxH="70vh" overflowY="auto">
                   <VStack spacing="0.75rem">
@@ -162,8 +169,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
                         borderColor={inputBorder}
                         disabled={isLoading}
                         validate={(value: any) => {
-                          const emptyError = validate(value);
-                          if (emptyError) return emptyError;
+                          if (!value) return undefined;
                           const barcodeRegex = /^\d{13}$/;
                           return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
                         }}
@@ -266,17 +272,19 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
                       <FormLabel>Categoría</FormLabel>
                       <Field
                         as={Select}
+                        name="categoryId"
                         placeholder="Seleccionar categoría"
                         bg={inputBg}
                         borderColor={inputBorder}
-                        value={selectedCategoryId ?? ''}
+                        value={selectedCategoryId}
                         disabled={isLoading || isLoadingCats}
                         onChange={(e: any) => {
-                          const selectedId = Number(e.target.value);
+                          const selectedId = e.target.value;
+                          setFieldValue('categoryId', selectedId);
+                          setFieldValue('subCategoryId', '');
                           setSelectedCategoryId(selectedId);
-                          values.subCategoryId = '';
                         }}
-                        validate={validate}
+                        validate={validateEmpty}
                       >
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.id}>

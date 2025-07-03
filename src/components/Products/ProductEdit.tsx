@@ -111,6 +111,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         <Formik
           initialValues={{
             id: product?.id ?? 0,
+            internalCode: product?.internalCode ?? '',
             barcode: product?.barcode ?? '',
             name: product?.name ?? '',
             price: product?.price ?? 0,
@@ -144,6 +145,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     </Flex>
                   </FormControl>
 
+                  <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                    <FormLabel>Código interno</FormLabel>
+                    <Field as={Input} name="internalCode" bg={inputBg} borderColor={inputBorder} disabled />
+                    <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
+                  </FormControl>
+
                   <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                     <FormLabel>Código de barras</FormLabel>
                     <Field
@@ -153,12 +160,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
-                        const emptyError = validate(value);
-                        if (emptyError) return emptyError;
+                        if (!value) return undefined;
                         const barcodeRegex = /^\d{13}$/;
-                        return barcodeRegex.test(value)
-                          ? undefined
-                          : 'El código de barras debe tener exactamente 13 dígitos numéricos';
+                        return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
                       }}
                     />
                     <FormErrorMessage>{errors.barcode}</FormErrorMessage>

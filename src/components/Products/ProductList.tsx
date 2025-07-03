@@ -171,19 +171,19 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
+                  <Th textAlign="center">Cod. Interno</Th>
                   <Th textAlign="center">Categoría</Th>
                   <Th textAlign="center">Imagen</Th>
                   <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Precio</Th>
                   <Th textAlign="center">Stock</Th>
-                  <Th textAlign="center">Conserv.</Th>
-                  <Th textAlign="center">Unidad</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {products.map((product) => (
                   <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{product.internalCode}</Td>
                     <Td textAlign="center">{product.subCategory.name}</Td>
                     <Td py="0.125rem">
                       <Flex justify="center" align="center" h="5rem" w="100%">
@@ -199,8 +199,6 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                     <Td textAlign="center">{product.name}</Td>
                     <Td textAlign="center">${product.price.toFixed(2)}</Td>
                     <Td textAlign="center">{product.stock}</Td>
-                    <Td textAlign="center">{temperatureCondition(product.temperatureCondition)}</Td>
-                    <Td textAlign="center">{unitType(product.unitType)}</Td>
                     <Td textAlign="center">
                       <IconButton
                         aria-label="Editar producto"
