@@ -175,8 +175,8 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />
           <SidebarButton
-            path="depositos"
-            text="Depósitos"
+            path="depositos-y-estanterias"
+            text="Depós. y estanterias"
             icon={FaWarehouse}
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}

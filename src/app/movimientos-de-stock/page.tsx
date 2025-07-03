@@ -1,7 +1,7 @@
 'use client';
 
 import { NextPage } from 'next';
-import { SideBar, Content, ClientOnly } from '@/components';
+import { SideBar, Content, ClientOnly, StockMovements } from '@/components';
 import { Flex } from '@chakra-ui/react';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
@@ -21,10 +21,9 @@ const ZonesPage: NextPage = () => {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="moviementos" />
+        <SideBar currentPage="movimientos-de-stock" />
         <Content>
-          {/* <StockMovements /> */}
-          <></>
+          <StockMovements />
         </Content>
       </Flex>
     </ClientOnly>
