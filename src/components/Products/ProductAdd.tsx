@@ -151,7 +151,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
           >
             {({ handleSubmit, errors, submitCount, values }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody>
+                <ModalBody pb="0" maxH="70vh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>

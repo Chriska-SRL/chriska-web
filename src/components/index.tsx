@@ -70,3 +70,8 @@ export * from './Warehouses/WarehouseFilters';
 
 export * from './Shelves/ShelveAdd';
 export * from './Shelves/ShelveEdit';
+
+export * from './StockMovements/StockMovements';
+// export * from './StockMovements/StockMovementAdd';
+export * from './StockMovements/StockMovementList';
+// export * from './StockMovements/StockMovementFilters';

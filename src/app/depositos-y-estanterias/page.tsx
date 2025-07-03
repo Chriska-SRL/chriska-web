@@ -21,7 +21,7 @@ const WarehousesPage: NextPage = () => {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="depositos" />
+        <SideBar currentPage="depositos-y-estanterias" />
         <Content>
           <Warehouses />
         </Content>
