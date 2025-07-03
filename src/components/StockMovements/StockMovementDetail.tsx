@@ -38,7 +38,7 @@ export const StockMovementDetail = ({ isOpen, onClose, movement }: StockMovement
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-          Detalle del movimiento
+          Detalle movimiento
         </ModalHeader>
         <ModalCloseButton />
         <Formik
@@ -117,7 +117,7 @@ export const StockMovementDetail = ({ isOpen, onClose, movement }: StockMovement
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Almacén</FormLabel>
+                    <FormLabel>Depósito</FormLabel>
                     <Field
                       as={Input}
                       name="warehouseId"

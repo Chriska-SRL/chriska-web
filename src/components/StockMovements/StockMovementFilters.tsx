@@ -77,7 +77,7 @@ export const StockMovementFilters = ({
       />
 
       <Select
-        placeholder="Filtrar por almacén"
+        placeholder="Filtrar por depósito"
         value={filterWarehouseId}
         onChange={(e) => {
           setFilterWarehouseId(e.target.value);
