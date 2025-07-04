@@ -56,6 +56,12 @@ export * from './Zones/ZoneEdit';
 export * from './Zones/ZoneList';
 export * from './Zones/ZoneFilters';
 
+export * from './Brands/Brands';
+export * from './Brands/BrandAdd';
+export * from './Brands/BrandEdit';
+export * from './Brands/BrandList';
+export * from './Brands/BrandFilters';
+
 export * from './Suppliers/Suppliers';
 export * from './Suppliers/SupplierAdd';
 export * from './Suppliers/SupplierEdit';

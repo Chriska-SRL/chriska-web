@@ -7,12 +7,12 @@ export const getClients = (): Promise<Client[]> => {
   return get<Client[]>(`${API_URL}/Clients`);
 };
 
-export const addClient = (Client: Partial<Client>): Promise<Client> => {
-  return post<Client>(`${API_URL}/Clients`, Client);
+export const addClient = (client: Partial<Client>): Promise<Client> => {
+  return post<Client>(`${API_URL}/Clients`, client);
 };
 
-export const updateClient = (Client: Partial<Client>): Promise<Client> => {
-  return put<Client>(`${API_URL}/Clients`, Client);
+export const updateClient = (client: Partial<Client>): Promise<Client> => {
+  return put<Client>(`${API_URL}/Clients`, client);
 };
 
 export const deleteClient = (id: number): Promise<Client> => {

@@ -24,6 +24,7 @@ import { MdPlace } from 'react-icons/md';
 import { FiBriefcase } from 'react-icons/fi';
 import { LuArrowDownUp } from 'react-icons/lu';
 import { FaWarehouse } from 'react-icons/fa';
+import { FaTags } from 'react-icons/fa';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
@@ -129,6 +130,13 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
             path="productos"
             text="Productos"
             icon={FaCubes}
+            currentPage={currentPage}
+            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+          />
+          <SidebarButton
+            path="marcas"
+            text="Marcas"
+            icon={FaTags}
             currentPage={currentPage}
             {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
           />

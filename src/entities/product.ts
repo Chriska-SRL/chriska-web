@@ -1,3 +1,4 @@
+import { Brand } from './brand';
 import { SubCategory } from './subcategory';
 import { Supplier } from './supplier';
 
@@ -15,4 +16,5 @@ export type Product = {
   observation: string;
   subCategory: SubCategory;
   suppliers: Supplier[];
+  brand: Brand;
 };
