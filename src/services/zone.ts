@@ -7,12 +7,12 @@ export const getZones = (): Promise<Zone[]> => {
   return get<Zone[]>(`${API_URL}/Zones`);
 };
 
-export const addZone = (Zone: Partial<Zone>): Promise<Zone> => {
-  return post<Zone>(`${API_URL}/Zones`, Zone);
+export const addZone = (zone: Partial<Zone>): Promise<Zone> => {
+  return post<Zone>(`${API_URL}/Zones`, zone);
 };
 
-export const updateZone = (Zone: Partial<Zone>): Promise<Zone> => {
-  return put<Zone>(`${API_URL}/Zones`, Zone);
+export const updateZone = (zone: Partial<Zone>): Promise<Zone> => {
+  return put<Zone>(`${API_URL}/Zones`, zone);
 };
 
 export const deleteZone = (id: number): Promise<Zone> => {

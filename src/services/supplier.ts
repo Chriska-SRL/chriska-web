@@ -7,12 +7,12 @@ export const getSuppliers = (): Promise<Supplier[]> => {
   return get<Supplier[]>(`${API_URL}/Suppliers`);
 };
 
-export const addSupplier = (Supplier: Partial<Supplier>): Promise<Supplier> => {
-  return post<Supplier>(`${API_URL}/Suppliers`, Supplier);
+export const addSupplier = (supplier: Partial<Supplier>): Promise<Supplier> => {
+  return post<Supplier>(`${API_URL}/Suppliers`, supplier);
 };
 
-export const updateSupplier = (Supplier: Partial<Supplier>): Promise<Supplier> => {
-  return put<Supplier>(`${API_URL}/Suppliers`, Supplier);
+export const updateSupplier = (supplier: Partial<Supplier>): Promise<Supplier> => {
+  return put<Supplier>(`${API_URL}/Suppliers`, supplier);
 };
 
 export const deleteSupplier = (id: number): Promise<Supplier> => {
