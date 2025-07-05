@@ -15,6 +15,6 @@ export type Product = {
   temperatureCondition: string;
   observation: string;
   subCategory: SubCategory;
-  suppliers: Supplier[];
   brand: Brand;
+  suppliers: Supplier[];
 };

@@ -31,6 +31,7 @@ import { useDeleteProduct, useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validations/validate';
 import { useGetCategories } from '@/hooks/category';
 import { GenericDelete } from '../shared/GenericDelete';
+import { useGetBrands } from '@/hooks/brand';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -49,6 +50,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
 
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
+  const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
   const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
@@ -120,6 +122,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             temperatureCondition: product?.temperatureCondition ?? '',
             observation: product?.observation ?? '',
             subCategoryId: product?.subCategory.id ?? 0,
+            brandId: product?.brand.id ?? 0,
             image: product?.image ?? '',
           }}
           onSubmit={(values) => setProductProps(values)}
@@ -229,6 +232,26 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       validate={validate}
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
+                    <FormLabel>Marca</FormLabel>
+                    <Field
+                      as={Select}
+                      name="brandId"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      placeholder="Seleccione una marca"
+                      disabled={isLoading}
+                      validate={validate}
+                    >
+                      {brands?.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                    </Field>
+                    <FormErrorMessage>{errors.brandId}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
