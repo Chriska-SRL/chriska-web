@@ -31,6 +31,7 @@ import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { useGetBrands } from '@/hooks/brand';
 
 type ProductAddProps = {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
@@ -44,7 +45,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
   const { data, isLoading, error, fieldError } = useAddProduct(productProps);
 
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
-
+  const { data: brands = [], isLoading: isLoadingBrands } = useGetBrands();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
   const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
 
@@ -103,6 +104,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
     temperatureCondition: string;
     observation: string;
     subCategoryId: string;
+    brandId: string;
     image: string;
   }) => {
     const product = {
@@ -114,6 +116,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
       temperatureCondition: values.temperatureCondition,
       observation: values.observation,
       subCategoryId: Number(values.subCategoryId),
+      brandId: Number(values.brandId),
       image: values.image,
     };
     setProductProps(product);
@@ -150,6 +153,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
               observation: '',
               categoryId: '',
               subCategoryId: '',
+              brandId: '',
               image: '',
             }}
             onSubmit={handleSubmit}
@@ -254,6 +258,26 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
                         <option value="Ambient">Natural</option>
                       </Field>
                       <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
+                      <FormLabel>Marca</FormLabel>
+                      <Field
+                        as={Select}
+                        name="brandId"
+                        placeholder="Seleccione una marca"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        disabled={isLoading}
+                        validate={validate}
+                      >
+                        {brands.map((brand) => (
+                          <option key={brand.id} value={brand.id}>
+                            {brand.name}
+                          </option>
+                        ))}
+                      </Field>
+                      <FormErrorMessage>{errors.brandId}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
