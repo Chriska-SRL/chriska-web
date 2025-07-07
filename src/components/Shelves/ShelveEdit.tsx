@@ -33,6 +33,8 @@ import { useUpdateShelve, useDeleteShelve } from '@/hooks/shelve';
 import { GenericDelete } from '../shared/GenericDelete';
 import { Warehouse } from '@/entities/warehouse';
 import { ShelveDelete } from './ShelveDelete';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type ShelveEditProps = {
   shelve: Shelve;
@@ -40,6 +42,8 @@ type ShelveEditProps = {
 };
 
 export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
+  const canEditWarehouses = useUserStore((s) => s.hasPermission(PermissionId.EDIT_WAREHOUSES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
@@ -114,6 +118,7 @@ export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
         size="md"
         bg="transparent"
         _hover={{ bg: hoverBg }}
+        disabled={!canEditWarehouses}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>

@@ -25,7 +25,7 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth: boo
 
   if (!res.ok) {
     const error = await res.text();
-    throw new Error(error || 'Error de red');
+    throw new Error(error || 'Error desconocido');
   }
 
   return await res.json();

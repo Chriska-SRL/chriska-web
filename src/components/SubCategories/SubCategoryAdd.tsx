@@ -30,6 +30,8 @@ import { validate } from '@/utils/validations/validate';
 import { SubCategory } from '@/entities/subcategory';
 import { useAddSubCategory } from '@/hooks/subcategory';
 import { Category } from '@/entities/category';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 type SubCategoryAddProps = {
   category: Category;
@@ -37,6 +39,8 @@ type SubCategoryAddProps = {
 };
 
 export const SubCategoryAdd = ({ category, setCategories }: SubCategoryAddProps) => {
+  const canCreateCategories = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CATEGORIES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -96,15 +100,17 @@ export const SubCategoryAdd = ({ category, setCategories }: SubCategoryAddProps)
 
   return (
     <>
-      <IconButton
-        aria-label="Agregar subcategoría"
-        icon={<FaPlus />}
-        onClick={onOpen}
-        size="md"
-        bg="transparent"
-        _hover={{ bg: iconHoverBg }}
-      />
-
+      {canCreateCategories && (
+        <IconButton
+          aria-label="Agregar subcategoría"
+          icon={<FaPlus />}
+          onClick={onOpen}
+          size="md"
+          bg="transparent"
+          _hover={{ bg: iconHoverBg }}
+          disabled={!canCreateCategories}
+        />
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>

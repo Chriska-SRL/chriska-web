@@ -22,6 +22,9 @@ import { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { RoleEdit } from './RoleEdit';
 import { Role } from '@/entities/role';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { RoleDetail } from './RoleDetail';
 
 type RoleListProps = {
   roles: Role[];
@@ -100,14 +103,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
                   </Text>
 
                   <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.25rem">
-                    <IconButton
-                      aria-label="Editar rol"
-                      icon={<FiEdit />}
-                      onClick={() => handleEditClick(role)}
-                      size="sm"
-                      bg="transparent"
-                      _hover={{ bg: hoverBgIcon }}
-                    />
+                    <RoleDetail role={role} setRoles={setRoles} />
                   </Flex>
                 </Box>
               ))}
@@ -148,14 +144,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
                       </Box>
                     </Td>
                     <Td textAlign="center">
-                      <IconButton
-                        aria-label="Editar rol"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(role)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <RoleDetail role={role} setRoles={setRoles} />
                     </Td>
                   </Tr>
                 ))}

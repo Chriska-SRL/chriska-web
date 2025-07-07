@@ -28,6 +28,8 @@ import { useEffect, useState } from 'react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { useAddVehicleCost } from '@/hooks/vehicleCost';
 import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 export const VehicleCostAdd = ({
   vehicleId,
@@ -36,6 +38,8 @@ export const VehicleCostAdd = ({
   vehicleId: number;
   setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
 }) => {
+  const canCreateVehicles = useUserStore((s) => s.hasPermission(PermissionId.CREATE_VEHICLES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -84,16 +88,18 @@ export const VehicleCostAdd = ({
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar costo
-      </Button>
+      {canCreateVehicles && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar costo
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />

@@ -13,15 +13,14 @@ import {
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
+import { UserDetail } from './UserDetail';
 
 type UserListProps = {
   users: User[];
@@ -31,8 +30,6 @@ type UserListProps = {
 };
 
 export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -40,12 +37,6 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (user: User) => {
-    setSelectedUser(user);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -115,17 +106,7 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     Rol: {user.role.name}
                   </Text>
-                  <IconButton
-                    aria-label="Editar usuario"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(user)}
-                    size="md"
-                    position="absolute"
-                    bottom="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <UserDetail user={user} setUsers={setUsers} />
                 </Box>
               ))}
             </VStack>
@@ -146,19 +127,11 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="12rem">
-                    Nombre de usuario
-                  </Th>
-                  <Th textAlign="center" w="12rem">
-                    Nombre
-                  </Th>
-                  <Th textAlign="center" w="10rem">
-                    Rol
-                  </Th>
-                  <Th textAlign="center" w="8rem">
-                    Estado
-                  </Th>
-                  <Th w="4rem" pr="2rem"></Th>
+                  <Th textAlign="center">Nombre de usuario</Th>
+                  <Th textAlign="center">Nombre</Th>
+                  <Th textAlign="center">Rol</Th>
+                  <Th textAlign="center">Estado</Th>
+                  <Th textAlign="center">Acciones</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -180,15 +153,8 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                         {user.isEnabled ? 'Activo' : 'Inactivo'}
                       </Box>
                     </Td>
-                    <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Editar usuario"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(user)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                    <Td textAlign="center">
+                      <UserDetail user={user} setUsers={setUsers} />
                     </Td>
                   </Tr>
                 ))}
@@ -200,7 +166,6 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
           </Box>
         </>
       )}
-      <UserEdit isOpen={isOpen} onClose={onClose} user={selectedUser} setUsers={setUsers} />
     </>
   );
 };

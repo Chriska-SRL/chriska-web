@@ -32,12 +32,16 @@ import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { useGetBrands } from '@/hooks/brand';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type ProductAddProps = {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
 export const ProductAdd = ({ setProducts }: ProductAddProps) => {
+  const canCreateProducts = useUserStore((s) => s.hasPermission(PermissionId.CREATE_PRODUCTS));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -124,17 +128,18 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar producto
-      </Button>
-
+      {canCreateProducts && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar producto
+        </Button>
+      )}
       <Modal isOpen={isOpen} onClose={handleClose} size="sm" isCentered>
         <ModalOverlay />
         <ModalContent>

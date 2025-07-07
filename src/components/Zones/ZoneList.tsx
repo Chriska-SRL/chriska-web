@@ -22,6 +22,9 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Zone } from '@/entities/zone';
 import { ZoneEdit } from './ZoneEdit';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { ZoneDetail } from './ZoneDetail';
 
 type ZoneListProps = {
   zones: Zone[];
@@ -98,17 +101,7 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     {zone.description}
                   </Text>
-                  <IconButton
-                    aria-label="Editar zona"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(zone)}
-                    size="md"
-                    position="absolute"
-                    bottom="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <ZoneDetail zone={zone} setZones={setZones} />
                 </Box>
               ))}
             </VStack>
@@ -142,14 +135,7 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
                     <Td textAlign="center">{zone.name}</Td>
                     <Td textAlign="center">{zone.description}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Editar zona"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(zone)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <ZoneDetail zone={zone} setZones={setZones} />
                     </Td>
                   </Tr>
                 ))}
@@ -161,7 +147,6 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
           </Box>
         </>
       )}
-      <ZoneEdit isOpen={isOpen} onClose={onClose} zone={selectedZone} setZones={setZones} />
     </>
   );
 };

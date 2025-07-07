@@ -28,12 +28,16 @@ import { Vehicle } from '@/entities/vehicle';
 import { useAddVehicle } from '@/hooks/vehicle';
 import { validate } from '@/utils/validations/validate';
 import { validateVehicle } from '@/utils/validations/validateVehicle';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type VehicleAddProps = {
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
 };
 
 export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
+  const canCreateVehicles = useUserStore((s) => s.hasPermission(PermissionId.CREATE_VEHICLES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -80,16 +84,18 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar vehículo
-      </Button>
+      {canCreateVehicles && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar vehículo
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />

@@ -24,7 +24,7 @@ import {
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
-import { useGetRoles } from '@/hooks/roles';
+import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
 import { useDeleteUser, useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
@@ -263,15 +263,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                       colorScheme="blue"
                     />
                     <Box display="flex" gap="0.75rem">
-                      {user && (
-                        <GenericDelete
-                          item={{ id: user.id, name: user.name }}
-                          isUpdating={isLoading}
-                          setItems={setUsers}
-                          useDeleteHook={useDeleteUser}
-                          onDeleted={onClose}
-                        />
-                      )}
                       <Button
                         type="submit"
                         bg="#4C88D8"

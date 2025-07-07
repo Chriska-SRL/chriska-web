@@ -22,8 +22,9 @@ import {
 import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { VehicleCost } from '@/entities/vehicleCost';
-import { VehicleCostEdit } from './VehicleCostsEdit';
+import { VehicleCostEdit } from './VehicleCostEdit';
 import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { VehicleCostDetail } from './VehicleCostDetail';
 
 type VehicleCostListProps = {
   costs: VehicleCost[];
@@ -84,9 +85,9 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
         <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {costs.map((c) => (
+              {costs.map((cost) => (
                 <Box
-                  key={c.id}
+                  key={cost.id}
                   px="1rem"
                   py="0.5rem"
                   border="1px solid"
@@ -96,27 +97,18 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">Fecha: {new Date(c.date).toLocaleDateString()}</Text>
+                  <Text fontWeight="bold">Fecha: {new Date(cost.date).toLocaleDateString()}</Text>
                   <Text fontSize="sm" color={textColor}>
-                    Tipo: {c.type && VehicleCostTypeLabels[c.type] ? VehicleCostTypeLabels[c.type] : 'Sin tipo'}
+                    Tipo:{' '}
+                    {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Monto: ${c.amount}
+                    Monto: ${cost.amount}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Descripción: {c.description || '—'}
+                    Descripción: {cost.description || '—'}
                   </Text>
-                  <IconButton
-                    aria-label="Editar costo"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(c)}
-                    size="md"
-                    position="absolute"
-                    top="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <VehicleCostDetail vehicleCost={cost} setVehicleCosts={setCosts} />
                 </Box>
               ))}
             </VStack>
@@ -145,25 +137,16 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                 </Tr>
               </Thead>
               <Tbody>
-                {costs.map((c) => (
-                  <Tr key={c.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{new Date(c.date).toLocaleDateString()}</Td>
+                {costs.map((cost) => (
+                  <Tr key={cost.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{new Date(cost.date).toLocaleDateString()}</Td>
                     <Td textAlign="center">
-                      {c.type && VehicleCostTypeLabels[c.type] ? VehicleCostTypeLabels[c.type] : 'Sin tipo'}
+                      {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
                     </Td>
-                    <Td textAlign="center">${c.amount}</Td>
-                    <Td textAlign="center">{c.description || '—'}</Td>
+                    <Td textAlign="center">${cost.amount}</Td>
+                    <Td textAlign="center">{cost.description || '—'}</Td>
                     <Td textAlign="center" pr="3rem">
-                      <Tooltip label="Editar costo">
-                        <IconButton
-                          aria-label="Editar"
-                          icon={<FiEdit />}
-                          onClick={() => handleEditClick(c)}
-                          variant="ghost"
-                          size="lg"
-                          _hover={{ bg: hoverBgIcon }}
-                        />
-                      </Tooltip>
+                      <VehicleCostDetail vehicleCost={cost} setVehicleCosts={setCosts} />
                     </Td>
                   </Tr>
                 ))}

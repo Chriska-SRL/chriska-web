@@ -19,12 +19,11 @@ import {
   useColorModeValue,
   Tooltip,
 } from '@chakra-ui/react';
-import { FiEdit, FiEye } from 'react-icons/fi';
+import { BsCurrencyDollar } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
-
 import { useState } from 'react';
 import { Vehicle } from '@/entities/vehicle';
-import { VehicleEdit } from './VehicleEdit';
+import { VehicleDetail } from './VehicleDetail';
 
 type VehicleListProps = {
   vehicles: Vehicle[];
@@ -91,9 +90,9 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
         <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {vehicles.map((v) => (
+              {vehicles.map((vehicle) => (
                 <Box
-                  key={v.id}
+                  key={vehicle.id}
                   px="1rem"
                   py="0.5rem"
                   border="1px solid"
@@ -103,20 +102,20 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">Matrícula: {v.plate}</Text>
+                  <Text fontWeight="bold">Matrícula: {vehicle.plate}</Text>
                   <Text fontSize="sm" color={textColor}>
-                    Marca: {v.brand}
+                    Marca: {vehicle.brand}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Modelo: {v.model}
+                    Modelo: {vehicle.model}
                   </Text>
                   <Text fontSize="sm" color={textColor}>
-                    Capacidad de cajones: {v.crateCapacity}
+                    Capacidad de cajones: {vehicle.crateCapacity}
                   </Text>
                   <IconButton
                     aria-label="Ver vehículo"
-                    icon={<FiEye />}
-                    onClick={() => handleViewClick(v.id)}
+                    icon={<BsCurrencyDollar />}
+                    onClick={() => handleViewClick(vehicle.id)}
                     size="md"
                     position="absolute"
                     top="0"
@@ -124,17 +123,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                     bg="transparent"
                     _hover={{ bg: hoverBgIcon }}
                   />
-                  <IconButton
-                    aria-label="Editar vehículo"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(v)}
-                    size="md"
-                    position="absolute"
-                    top="0rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
                 </Box>
               ))}
             </VStack>
@@ -164,18 +153,18 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                 </Tr>
               </Thead>
               <Tbody>
-                {vehicles.map((v) => (
-                  <Tr key={v.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{v.plate}</Td>
-                    <Td textAlign="center">{v.brand}</Td>
-                    <Td textAlign="center">{v.model}</Td>
-                    <Td textAlign="center">{v.crateCapacity}</Td>
+                {vehicles.map((vehicle) => (
+                  <Tr key={vehicle.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{vehicle.plate}</Td>
+                    <Td textAlign="center">{vehicle.brand}</Td>
+                    <Td textAlign="center">{vehicle.model}</Td>
+                    <Td textAlign="center">{vehicle.crateCapacity}</Td>
                     <Td textAlign="center">
                       <Tooltip label="Ver costo del vehículo">
                         <IconButton
                           aria-label="Ver vehículo"
-                          icon={<FiEye />}
-                          onClick={() => handleViewClick(v.id)}
+                          icon={<BsCurrencyDollar />}
+                          onClick={() => handleViewClick(vehicle.id)}
                           variant="ghost"
                           size="lg"
                           _hover={{ bg: hoverBgIcon }}
@@ -183,14 +172,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                       </Tooltip>
                     </Td>
                     <Td textAlign="center" pr="3rem">
-                      <IconButton
-                        aria-label="Editar vehículo"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(v)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
                     </Td>
                   </Tr>
                 ))}
@@ -202,7 +184,6 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
           </Box>
         </>
       )}
-      <VehicleEdit isOpen={isOpen} onClose={onClose} vehicle={selectedVehicle} setVehicles={setVehicles} />
     </>
   );
 };

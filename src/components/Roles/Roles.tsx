@@ -6,7 +6,7 @@ import { RoleFilters } from './RoleFilters';
 import { RoleAdd } from './RoleAdd';
 import { RoleList } from './RoleList';
 import { Role } from '@/entities/role';
-import { useGetRoles } from '@/hooks/roles';
+import { useGetRoles } from '@/hooks/role';
 
 export const Roles = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');

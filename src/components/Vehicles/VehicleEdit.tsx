@@ -189,29 +189,18 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                     isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
-                  <Box display="flex" gap="0.75rem">
-                    {vehicle && (
-                      <GenericDelete
-                        item={{ id: vehicle.id, name: vehicle.plate }}
-                        isUpdating={isLoading}
-                        setItems={setVehicles}
-                        useDeleteHook={useDeleteVehicle}
-                        onDeleted={onClose}
-                      />
-                    )}
-                    <Button
-                      type="submit"
-                      bg="#4C88D8"
-                      color="white"
-                      disabled={isLoading}
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      fontSize="1rem"
-                    >
-                      Guardar cambios
-                    </Button>
-                  </Box>
+                  <Button
+                    type="submit"
+                    bg="#4C88D8"
+                    color="white"
+                    disabled={isLoading}
+                    _hover={{ backgroundColor: '#376bb0' }}
+                    width="100%"
+                    leftIcon={<FaCheck />}
+                    fontSize="1rem"
+                  >
+                    Guardar cambios
+                  </Button>
                 </Box>
               </ModalFooter>
             </form>
