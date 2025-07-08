@@ -15,7 +15,9 @@ type UserStore = {
   user: TokenPayload | null;
   isLoggedIn: boolean;
   isHydrated: boolean;
+  permissions: number[];
   setUserFromToken: (token: string) => void;
+  hasPermission: (permissionId: number) => boolean;
   logout: () => void;
 };
 
@@ -27,7 +29,7 @@ const decodeToken = (token: string): TokenPayload | null => {
       username: decoded.username,
       name: decoded.name,
       role: decoded.role,
-      permissions: decoded.permissions ?? [],
+      permissions: decoded.permission ?? [],
       needsPasswordChange: decoded.needsPasswordChange === true || decoded.needsPasswordChange === 'True',
       exp: decoded.exp,
     };
@@ -36,23 +38,39 @@ const decodeToken = (token: string): TokenPayload | null => {
   }
 };
 
-export const useUserStore = create<UserStore>((set) => ({
+export const useUserStore = create<UserStore>((set, get) => ({
   user: null,
   isLoggedIn: false,
   isHydrated: false,
+  permissions: [],
 
   setUserFromToken: (token) => {
     const decoded = decodeToken(token);
     if (decoded) {
+      const numericPermissions = decoded.permissions.map((p) => parseInt(p));
       localStorage.setItem('access_token', token);
-      set({ user: decoded, isLoggedIn: true, isHydrated: true });
+      set({
+        user: decoded,
+        permissions: numericPermissions,
+        isLoggedIn: true,
+        isHydrated: true,
+      });
     } else {
       set({ isHydrated: true });
     }
   },
 
+  hasPermission: (permissionId: number) => {
+    return get().permissions.includes(permissionId);
+  },
+
   logout: () => {
     localStorage.removeItem('access_token');
-    set({ user: null, isLoggedIn: false, isHydrated: true });
+    set({
+      user: null,
+      permissions: [],
+      isLoggedIn: false,
+      isHydrated: true,
+    });
   },
 }));

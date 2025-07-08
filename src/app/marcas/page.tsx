@@ -6,17 +6,21 @@ import { Flex } from '@chakra-ui/react';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 const BrandsPage: NextPage = () => {
   const router = useRouter();
   const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
+  const canViewProducts = useUserStore((s) => s.hasPermission(PermissionId.VIEW_PRODUCTS));
 
   useEffect(() => {
     if (isHydrated && !isLoggedIn) {
       router.push('/iniciar-sesion');
+    } else if (isHydrated && !canViewProducts) {
+      router.push('/');
     }
-  }, [isLoggedIn, isHydrated, router]);
+  }, [isLoggedIn, isHydrated, canViewProducts, router]);
 
   return (
     <ClientOnly>

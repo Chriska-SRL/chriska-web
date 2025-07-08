@@ -29,6 +29,8 @@ import { Shelve } from '@/entities/shelve';
 import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useAddShelve } from '@/hooks/shelve';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 type ShelveAddProps = {
   warehouse: Warehouse;
@@ -36,6 +38,8 @@ type ShelveAddProps = {
 };
 
 export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(PermissionId.CREATE_WAREHOUSES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
@@ -57,7 +61,6 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
         duration: 1500,
         isClosable: true,
       });
-      // Actualizar estanterías del warehouse directamente
       setWarehouses((prev) =>
         prev.map((w) => {
           if (w.id === warehouse.id) {
@@ -102,15 +105,17 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
 
   return (
     <>
-      <IconButton
-        aria-label="Agregar estantería"
-        icon={<FaPlus />}
-        onClick={onOpen}
-        size="md"
-        bg="transparent"
-        _hover={{ bg: iconHoverBg }}
-      />
-
+      {canCreateWarehouses && (
+        <IconButton
+          aria-label="Agregar estantería"
+          icon={<FaPlus />}
+          onClick={onOpen}
+          size="md"
+          bg="transparent"
+          _hover={{ bg: iconHoverBg }}
+          disabled={!canCreateWarehouses}
+        />
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>

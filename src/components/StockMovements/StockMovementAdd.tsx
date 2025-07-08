@@ -32,12 +32,15 @@ import { useGetProducts } from '@/hooks/product';
 import { useUserStore } from '@/stores/useUserStore';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 type StockMovementAddProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
 };
 
 export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) => {
+  const canCreateStockMovements = useUserStore((s) => s.hasPermission(PermissionId.CREATE_STOCK_MOVEMENTS));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -138,17 +141,18 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar movimiento
-      </Button>
-
+      {canCreateStockMovements && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar movimiento
+        </Button>
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>

@@ -22,6 +22,9 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Client } from '@/entities/client';
 import { ClientEdit } from './ClientEdit';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
+import { ClientDetail } from './ClientDetail';
 
 type ClientListProps = {
   clients: Client[];
@@ -107,17 +110,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     Teléfono: {client.phone}
                   </Text>
-                  <IconButton
-                    aria-label="Editar cliente"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(client)}
-                    size="md"
-                    position="absolute"
-                    bottom="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <ClientDetail client={client} setClients={setClients} />
                 </Box>
               ))}
             </VStack>
@@ -165,14 +158,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                     <Td textAlign="center">{client.zone?.name}</Td>
                     <Td textAlign="center">{client.phone}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Editar cliente"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(client)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <ClientDetail client={client} setClients={setClients} />
                     </Td>
                   </Tr>
                 ))}
@@ -184,7 +170,6 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
           </Box>
         </>
       )}
-      <ClientEdit isOpen={isOpen} onClose={onClose} client={selectedClient} setClients={setClients} />
     </>
   );
 };

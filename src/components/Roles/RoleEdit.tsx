@@ -34,7 +34,7 @@ import { FaCheck } from 'react-icons/fa';
 import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
 import { Role } from '@/entities/role';
 import { useEffect, useState } from 'react';
-import { useDeleteRole, useUpdateRole } from '@/hooks/roles';
+import { useDeleteRole, useUpdateRole } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
 import { GenericDelete } from '../shared/GenericDelete';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
@@ -228,27 +228,19 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                           isIndeterminate={isLoading}
                           colorScheme="blue"
                         />
-                        <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                          <GenericDelete
-                            item={{ id: role.id, name: role.name }}
-                            isUpdating={isLoading}
-                            setItems={setRoles}
-                            useDeleteHook={useDeleteRole}
-                            onDeleted={onClose}
-                          />
-                          <Button
-                            type="submit"
-                            isLoading={isLoading}
-                            bg="#4C88D8"
-                            color="white"
-                            _hover={{ backgroundColor: '#376bb0' }}
-                            w="100%"
-                            leftIcon={<FaCheck />}
-                            py="1.375rem"
-                          >
-                            Guardar cambios
-                          </Button>
-                        </Flex>
+
+                        <Button
+                          type="submit"
+                          isLoading={isLoading}
+                          bg="#4C88D8"
+                          color="white"
+                          _hover={{ backgroundColor: '#376bb0' }}
+                          w="100%"
+                          leftIcon={<FaCheck />}
+                          py="1.375rem"
+                        >
+                          Guardar cambios
+                        </Button>
                       </Box>
                     </Flex>
                   </Flex>

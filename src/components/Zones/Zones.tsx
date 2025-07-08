@@ -7,8 +7,12 @@ import { ZoneAdd } from './ZoneAdd';
 import { ZoneList } from './ZoneList';
 import { Zone } from '@/entities/zone';
 import { useGetZones } from '@/hooks/zone';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 export const Zones = () => {
+  const canViewZones = useUserStore((s) => s.hasPermission(PermissionId.VIEW_ZONES));
+
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const { data, isLoading, error } = useGetZones();

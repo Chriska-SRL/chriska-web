@@ -32,6 +32,8 @@ import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { useDeleteCategory, useUpdateCategory } from '@/hooks/category';
 import { GenericDelete } from '../shared/GenericDelete';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryEditProps = {
   category: Category;
@@ -39,6 +41,8 @@ type CategoryEditProps = {
 };
 
 export const CategoryEdit = ({ category, setCategories }: CategoryEditProps) => {
+  const canEditCategories = useUserStore((s) => s.hasPermission(PermissionId.EDIT_CATEGORIES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
@@ -101,6 +105,7 @@ export const CategoryEdit = ({ category, setCategories }: CategoryEditProps) => 
         size="md"
         bg="transparent"
         _hover={{ bg: hoverBg }}
+        disabled={!canEditCategories}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>

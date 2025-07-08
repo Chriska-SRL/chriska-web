@@ -27,12 +27,16 @@ import { useEffect, useState } from 'react';
 import { Zone } from '@/entities/zone';
 import { useAddZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type ZoneAddProps = {
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
 export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
+  const canCreateZones = useUserStore((s) => s.hasPermission(PermissionId.CREATE_ZONES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -75,16 +79,18 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar zona
-      </Button>
+      {canCreateZones && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar zona
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
         <ModalOverlay />

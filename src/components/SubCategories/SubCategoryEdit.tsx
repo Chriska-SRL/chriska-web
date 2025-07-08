@@ -34,6 +34,8 @@ import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory'
 import { Category } from '@/entities/category';
 import { GenericDelete } from '../shared/GenericDelete';
 import { SubCategoryDelete } from './SubCategoryDelete';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type SubCategoryEditProps = {
   subcategory: SubCategory;
@@ -41,6 +43,8 @@ type SubCategoryEditProps = {
 };
 
 export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditProps) => {
+  const canEditCategories = useUserStore((s) => s.hasPermission(PermissionId.EDIT_CATEGORIES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
@@ -115,6 +119,7 @@ export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditP
         size="md"
         bg="transparent"
         _hover={{ bg: iconHoverBg }}
+        disabled={!canEditCategories}
       />
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>

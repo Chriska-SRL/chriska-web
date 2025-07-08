@@ -27,12 +27,16 @@ import { useEffect, useState } from 'react';
 import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useAddWarehouse } from '@/hooks/warehouse';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type WarehouseAddProps = {
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
 export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(PermissionId.CREATE_WAREHOUSES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
@@ -90,17 +94,18 @@ export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar depósito
-      </Button>
-
+      {canCreateWarehouses && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar depósito
+        </Button>
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>

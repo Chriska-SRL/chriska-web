@@ -28,12 +28,16 @@ import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryAddProps = {
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
 export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
+  const canCreateCategories = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CATEGORIES));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
@@ -91,17 +95,19 @@ export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar categoría
-      </Button>
-
+      {canCreateCategories && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+          disabled={!canCreateCategories}
+        >
+          Agregar categoría
+        </Button>
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>

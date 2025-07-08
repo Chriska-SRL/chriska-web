@@ -14,12 +14,14 @@ const HomePage = () => {
   useEffect(() => {
     if (isHydrated && !isLoggedIn) {
       router.push('/iniciar-sesion');
+    } else if (isHydrated) {
+      router.push('/');
     }
   }, [isLoggedIn, isHydrated, router]);
 
   return (
     <ClientOnly>
-      <Flex bg="#f7f7f7">
+      <Flex>
         <SideBar />
         <Content>
           <WelcomePanel />
