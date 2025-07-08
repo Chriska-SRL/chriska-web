@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 
 type GenericDeleteProps = {
   item: { id: number; name: string };
-  isUpdating: boolean;
+  isUpdating?: boolean;
   onDeleted?: () => void;
   setItems: React.Dispatch<React.SetStateAction<any[]>>;
   useDeleteHook: (id?: number) => {
@@ -80,7 +80,10 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
         <ModalContent>
           <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
           <ModalBody>
-            <Text>¿Seguro que querés eliminar este elemento? Esta acción no se puede deshacer.</Text>
+            <Text>
+              ¿Seguro que querés eliminar: {item.name}? <br />
+              Esta acción no se puede deshacer.
+            </Text>
           </ModalBody>
           <ModalFooter display="flex" gap="0.5rem">
             <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>

@@ -27,15 +27,19 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useAddUser, useTemporaryPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
-import { useGetRoles } from '@/hooks/roles';
+import { useGetRoles } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type UserAddProps = {
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
 export const UserAdd = ({ setUsers }: UserAddProps) => {
+  const canCreateUsers = useUserStore((s) => s.hasPermission(PermissionId.CREATE_USERS));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -113,16 +117,18 @@ export const UserAdd = ({ setUsers }: UserAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar usuario
-      </Button>
+      {canCreateUsers && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+        >
+          Agregar usuario
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />

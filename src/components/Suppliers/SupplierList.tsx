@@ -22,6 +22,9 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
+import { SupplierDetail } from './SupplierDetail';
 
 type SupplierListProps = {
   suppliers: Supplier[];
@@ -107,17 +110,7 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     Contacto: {supplier.contactName}
                   </Text>
-                  <IconButton
-                    aria-label="Editar proveedor"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(supplier)}
-                    size="md"
-                    position="absolute"
-                    bottom="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <SupplierDetail supplier={supplier} setSuppliers={setSuppliers} />
                 </Box>
               ))}
             </VStack>
@@ -165,14 +158,7 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
                     <Td textAlign="center">{supplier.phone}</Td>
                     <Td textAlign="center">{supplier.contactName}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Editar proveedor"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(supplier)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <SupplierDetail supplier={supplier} setSuppliers={setSuppliers} />
                     </Td>
                   </Tr>
                 ))}

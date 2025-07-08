@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
-import { useGetRoles } from '@/hooks/roles';
+import { useGetRoles } from '@/hooks/role';
 
 type UserFiltersProps = {
   filterRoleId?: number;

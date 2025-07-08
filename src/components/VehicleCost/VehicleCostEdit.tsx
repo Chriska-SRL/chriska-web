@@ -176,29 +176,18 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                     isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
-                  <Box display="flex" gap="0.75rem">
-                    {cost && (
-                      <GenericDelete
-                        item={{ id: cost.id, name: cost.type }}
-                        isUpdating={isLoading}
-                        setItems={setCosts}
-                        useDeleteHook={useDeleteVehicleCost}
-                        onDeleted={onClose}
-                      />
-                    )}
-                    <Button
-                      type="submit"
-                      bg="#4C88D8"
-                      color="white"
-                      disabled={isLoading}
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      fontSize="1rem"
-                    >
-                      Guardar cambios
-                    </Button>
-                  </Box>
+                  <Button
+                    type="submit"
+                    bg="#4C88D8"
+                    color="white"
+                    disabled={isLoading}
+                    _hover={{ backgroundColor: '#376bb0' }}
+                    width="100%"
+                    leftIcon={<FaCheck />}
+                    fontSize="1rem"
+                  >
+                    Guardar cambios
+                  </Button>
                 </Box>
               </ModalFooter>
             </form>

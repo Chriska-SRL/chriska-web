@@ -22,6 +22,7 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Brand } from '@/entities/brand';
 import { BrandEdit } from './BrandEdit';
+import { BrandDetail } from './BrandDetail';
 
 type BrandListProps = {
   brands: Brand[];
@@ -98,17 +99,7 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     {brand.description}
                   </Text>
-                  <IconButton
-                    aria-label="Editar marca"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(brand)}
-                    size="md"
-                    position="absolute"
-                    bottom="0.25rem"
-                    right="0.25rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
+                  <BrandDetail brand={brand} setBrands={setBrands} />
                 </Box>
               ))}
             </VStack>
@@ -142,14 +133,7 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                     <Td textAlign="center">{brand.name}</Td>
                     <Td textAlign="center">{brand.description}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Editar marca"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(brand)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <BrandDetail brand={brand} setBrands={setBrands} />
                     </Td>
                   </Tr>
                 ))}

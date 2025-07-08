@@ -24,6 +24,9 @@ import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Product } from '@/entities/product';
 import { ProductEdit } from './ProductEdit';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
+import { ProductDetail } from './ProductDetail';
 
 type ProductListProps = {
   products: Product[];
@@ -140,17 +143,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                       maxW="100%"
                     />
                   </Flex>
-                  <IconButton
-                    aria-label="Editar producto"
-                    icon={<FiEdit />}
-                    onClick={() => handleEditClick(product)}
-                    size="md"
-                    position="absolute"
-                    top="0.5rem"
-                    right="0.5rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverColor }}
-                  />
+                  <ProductDetail product={product} setProducts={setProducts} />
                 </Box>
               ))}
             </VStack>
@@ -200,14 +193,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                     <Td textAlign="center">${product.price.toFixed(2)}</Td>
                     <Td textAlign="center">{product.stock}</Td>
                     <Td textAlign="center">
-                      <IconButton
-                        aria-label="Editar producto"
-                        icon={<FiEdit />}
-                        onClick={() => handleEditClick(product)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverColor }}
-                      />
+                      <ProductDetail product={product} setProducts={setProducts} />
                     </Td>
                   </Tr>
                 ))}
@@ -219,7 +205,6 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
           </Box>
         </>
       )}
-      <ProductEdit isOpen={isOpen} onClose={onClose} product={selectedProduct} setProducts={setProducts} />
     </>
   );
 };

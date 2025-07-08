@@ -6,17 +6,21 @@ import { Flex } from '@chakra-ui/react';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 const CategoriesPage: NextPage = () => {
   const router = useRouter();
   const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
+  const canViewCategories = useUserStore((s) => s.hasPermission(PermissionId.VIEW_CATEGORIES));
 
   useEffect(() => {
     if (isHydrated && !isLoggedIn) {
       router.push('/iniciar-sesion');
+    } else if (isHydrated && !canViewCategories) {
+      router.push('/');
     }
-  }, [isLoggedIn, isHydrated, router]);
+  }, [isLoggedIn, isHydrated, canViewCategories, router]);
 
   return (
     <ClientOnly>

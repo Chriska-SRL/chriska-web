@@ -15,18 +15,17 @@ import {
 } from '@chakra-ui/react';
 import { useMediaQuery, useColorModeValue } from '@chakra-ui/react';
 import { ElementType } from 'react';
-import { FaUserShield, FaBars } from 'react-icons/fa6';
+import { FaUserShield, FaBars, FaCar } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
-import { FaCubes } from 'react-icons/fa';
+import { FaCubes, FaTags, FaWarehouse } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
-import { FaCar } from 'react-icons/fa6';
 import { MdPlace } from 'react-icons/md';
 import { FiBriefcase } from 'react-icons/fi';
 import { LuArrowDownUp } from 'react-icons/lu';
-import { FaWarehouse } from 'react-icons/fa';
-import { FaTags } from 'react-icons/fa';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
+import { useUserStore } from '@/stores/useUserStore';
+import { PermissionId } from '@/entities/permissions/permissionId';
 
 type SidebarButtonProps = {
   path: string;
@@ -80,9 +79,34 @@ type SideBarProps = {
   currentPage?: string;
 };
 
+const sidebarItems = [
+  { path: 'roles', text: 'Roles', icon: FaUserShield, permissionId: PermissionId.VIEW_ROLES },
+  { path: 'usuarios', text: 'Usuarios', icon: BsPeopleFill, permissionId: PermissionId.VIEW_USERS },
+  { path: 'productos', text: 'Productos', icon: FaCubes, permissionId: PermissionId.VIEW_PRODUCTS },
+  { path: 'marcas', text: 'Marcas', icon: FaTags, permissionId: PermissionId.VIEW_PRODUCTS },
+  { path: 'categorias', text: 'Categorias', icon: BiCategoryAlt, permissionId: PermissionId.VIEW_CATEGORIES },
+  { path: 'vehiculos', text: 'Vehiculos', icon: FaCar, permissionId: PermissionId.VIEW_VEHICLES },
+  { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, permissionId: PermissionId.VIEW_CLIENTS },
+  { path: 'zonas', text: 'Zonas', icon: MdPlace, permissionId: PermissionId.VIEW_ZONES },
+  { path: 'proveedores', text: 'Proveedores', icon: FiBriefcase, permissionId: PermissionId.VIEW_SUPPLIERS },
+  {
+    path: 'movimientos-de-stock',
+    text: 'Movimientos de stock',
+    icon: LuArrowDownUp,
+    permissionId: PermissionId.VIEW_STOCK_MOVEMENTS,
+  },
+  {
+    path: 'depositos-y-estanterias',
+    text: 'Depós. y estanterias',
+    icon: FaWarehouse,
+    permissionId: PermissionId.VIEW_WAREHOUSES,
+  },
+];
+
 export const SideBar = ({ currentPage }: SideBarProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const hasPermission = useUserStore((s) => s.hasPermission);
 
   const bg = useColorModeValue('white', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -92,6 +116,8 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const activeColor = useColorModeValue('black', 'white');
   const defaultColor = useColorModeValue('gray.600', 'gray.300');
   const hoverColor = useColorModeValue('black', 'white');
+
+  const visibleItems = sidebarItems.filter((item) => hasPermission(item.permissionId));
 
   const renderSidebarContent = () => (
     <Flex
@@ -112,86 +138,18 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
           <ThemeToggle />
         </Flex>
         <Flex flexDir="column" gap="0.625rem" alignItems="start">
-          <SidebarButton
-            path="roles"
-            text="Roles"
-            icon={FaUserShield}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="usuarios"
-            text="Usuarios"
-            icon={BsPeopleFill}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="productos"
-            text="Productos"
-            icon={FaCubes}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="marcas"
-            text="Marcas"
-            icon={FaTags}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="categorias"
-            text="Categorias"
-            icon={BiCategoryAlt}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="vehiculos"
-            text="Vehiculos"
-            icon={FaCar}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="clientes"
-            text="Clientes"
-            icon={BsPeopleFill}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="zonas"
-            text="Zonas"
-            icon={MdPlace}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="proveedores"
-            text="Proveedores"
-            icon={FiBriefcase}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="movimientos-de-stock"
-            text="Movimientos de stock"
-            icon={LuArrowDownUp}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
-          <SidebarButton
-            path="depositos-y-estanterias"
-            text="Depós. y estanterias"
-            icon={FaWarehouse}
-            currentPage={currentPage}
-            {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
-          />
+          {visibleItems.map((item) => (
+            <SidebarButton
+              key={item.path}
+              path={item.path}
+              text={item.text}
+              icon={item.icon}
+              currentPage={currentPage}
+              {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
+            />
+          ))}
         </Flex>
       </Flex>
-
       <UserMenu />
     </Flex>
   );

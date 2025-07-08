@@ -242,18 +242,6 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
-                    <FormLabel>Observaciones</FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="observations"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      validate={validate}
-                    />
-                    <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                  </FormControl>
-
                   <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
                     <FormLabel>Banco</FormLabel>
                     <Field
@@ -314,6 +302,18 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     </Field>
                     <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
                   </FormControl>
+
+                  <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
+                    <FormLabel>Observaciones</FormLabel>
+                    <Field
+                      as={Textarea}
+                      name="observations"
+                      bg={inputBg}
+                      borderColor={borderColor}
+                      validate={validate}
+                    />
+                    <FormErrorMessage>{errors.observations}</FormErrorMessage>
+                  </FormControl>
                 </VStack>
               </ModalBody>
 
@@ -326,29 +326,18 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
-                  <Box display="flex" gap="0.75rem">
-                    {client && (
-                      <GenericDelete
-                        item={{ id: client.id, name: client.name }}
-                        isUpdating={isLoading}
-                        setItems={setClients}
-                        useDeleteHook={useDeleteClient}
-                        onDeleted={onClose}
-                      />
-                    )}
-                    <Button
-                      type="submit"
-                      bg="#4C88D8"
-                      color="white"
-                      disabled={isLoading}
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      fontSize="1rem"
-                    >
-                      Guardar cambios
-                    </Button>
-                  </Box>
+                  <Button
+                    type="submit"
+                    bg="#4C88D8"
+                    color="white"
+                    disabled={isLoading}
+                    _hover={{ backgroundColor: '#376bb0' }}
+                    width="100%"
+                    leftIcon={<FaCheck />}
+                    fontSize="1rem"
+                  >
+                    Guardar cambios
+                  </Button>
                 </Box>
               </ModalFooter>
             </form>

@@ -332,27 +332,19 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
-                  <Box display="flex" gap="0.75rem">
-                    <GenericDelete
-                      item={{ id: product.id, name: product.name }}
-                      isUpdating={isLoading}
-                      setItems={setProducts}
-                      useDeleteHook={useDeleteProduct}
-                      onDeleted={onClose}
-                    />
-                    <Button
-                      type="submit"
-                      bg={buttonBg}
-                      color="white"
-                      disabled={isLoading}
-                      _hover={{ backgroundColor: buttonHover }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      fontSize="0.95rem"
-                    >
-                      Guardar cambios
-                    </Button>
-                  </Box>
+
+                  <Button
+                    type="submit"
+                    bg={buttonBg}
+                    color="white"
+                    disabled={isLoading}
+                    _hover={{ backgroundColor: buttonHover }}
+                    width="100%"
+                    leftIcon={<FaCheck />}
+                    fontSize="0.95rem"
+                  >
+                    Guardar cambios
+                  </Button>
                 </Box>
               </ModalFooter>
             </form>

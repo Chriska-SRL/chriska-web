@@ -29,12 +29,16 @@ import { Client } from '@/entities/client';
 import { useAddClient } from '@/hooks/client';
 import { useGetZones } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
+import { PermissionId } from '@/entities/permissions/permissionId';
+import { useUserStore } from '@/stores/useUserStore';
 
 type ClientAddProps = {
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
 };
 
 export const ClientAdd = ({ setClients }: ClientAddProps) => {
+  const canCreateClients = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CLIENTS));
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -84,17 +88,19 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
-        Agregar cliente
-      </Button>
-
+      {canCreateClients && (
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          w={{ base: '100%', md: 'auto' }}
+          px="1.5rem"
+          disabled={!canCreateClients}
+        >
+          Agregar cliente
+        </Button>
+      )}
       <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
         <ModalOverlay />
         <ModalContent>
@@ -244,18 +250,6 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
-                      <FormLabel>Observaciones</FormLabel>
-                      <Field
-                        as={Textarea}
-                        name="observations"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        validate={validate}
-                      />
-                      <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
                       <FormLabel>Banco</FormLabel>
                       <Field
@@ -316,6 +310,18 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                         ))}
                       </Field>
                       <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
+                      <FormLabel>Observaciones</FormLabel>
+                      <Field
+                        as={Textarea}
+                        name="observations"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        validate={validate}
+                      />
+                      <FormErrorMessage>{errors.observations}</FormErrorMessage>
                     </FormControl>
                   </VStack>
                 </ModalBody>
