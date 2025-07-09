@@ -76,7 +76,7 @@ export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) 
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -91,7 +91,7 @@ export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) 
           </ModalBody>
 
           <ModalFooter py="1.5rem">
-            <Box display="flex" gap="0.75rem" w="100%">
+            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canDeleteCategorys && (
                 <GenericDelete
                   item={{ id: category.id, name: category.name }}

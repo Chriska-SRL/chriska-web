@@ -20,9 +20,11 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type FormValues = {
-  password: string;
+  oldPassword: string;
+  newPassword: string;
   confirmPassword: string;
 };
 
@@ -81,8 +83,9 @@ export const PasswordReset = () => {
     }
 
     setResetProps({
-      userId: user.userId,
-      newPassword: values.password,
+      username: user.username,
+      oldPassword: values.oldPassword,
+      newPassword: values.newPassword,
     });
   };
 
@@ -94,14 +97,14 @@ export const PasswordReset = () => {
         </Text>
         <Box bg={boxBg} boxShadow="lg" borderRadius="0.5rem" p="2rem">
           <Formik
-            initialValues={{ password: '', confirmPassword: '' }}
+            initialValues={{ oldPassword: '', newPassword: '', confirmPassword: '' }}
             onSubmit={handleSubmit}
             validate={(values) => {
               const errors: Partial<FormValues> = {};
-              if (!values.password || values.password.length < 8)
-                errors.password = 'La contraseña debe tener al menos 8 caracteres';
+              if (!values.newPassword || values.newPassword.length < 8)
+                errors.newPassword = 'La contraseña debe tener al menos 8 caracteres';
               if (!values.confirmPassword) errors.confirmPassword = 'Debe confirmar la contraseña';
-              else if (values.password !== values.confirmPassword)
+              else if (values.newPassword !== values.confirmPassword)
                 errors.confirmPassword = 'Las contraseñas no coinciden';
               return errors;
             }}
@@ -110,27 +113,26 @@ export const PasswordReset = () => {
           >
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.password && !!errors.password} isRequired>
-                  <FormLabel htmlFor="password">Nueva contraseña</FormLabel>
-                  <Field as={Input} id="password" name="password" type="password" variant="filled" />
-                  <FormErrorMessage>{errors.password}</FormErrorMessage>
+                <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
+                  <FormLabel htmlFor="oldPassword">Contraseña actual</FormLabel>
+                  <Field as={Input} name="oldPassword" type="password" variant="filled" validate={validateEmpty} />
+                  <FormErrorMessage>{errors.oldPassword}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
+                  <FormLabel htmlFor="newPassword">Nueva contraseña</FormLabel>
+                  <Field as={Input} name="newPassword" type="password" variant="filled" />
+                  <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl
                   mb="1rem"
                   isInvalid={submitCount > 0 && touched.confirmPassword && !!errors.confirmPassword}
-                  isRequired
                 >
                   <FormLabel htmlFor="confirmPassword">Confirmar contraseña</FormLabel>
-                  <Field as={Input} id="confirmPassword" name="confirmPassword" type="password" variant="filled" />
+                  <Field as={Input} name="confirmPassword" type="password" variant="filled" />
                   <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
                 </FormControl>
-
-                {/* {submitCount > 0 && Object.keys(errors).length > 0 && (
-                  <Text color="red.500" fontSize="0.875rem" textAlign="left" pt="0.5rem">
-                    Por favor corregí los errores antes de continuar.
-                  </Text>
-                )} */}
 
                 <Box mt="1.5rem">
                   <Progress

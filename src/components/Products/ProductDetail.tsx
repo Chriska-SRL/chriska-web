@@ -76,14 +76,14 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Detalle del producto
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll">
+          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
             <VStack spacing="0.75rem">
               {detailField('Código interno', product.internalCode)}
               {detailField('Código de barras', product.barcode)}
@@ -100,7 +100,7 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
           </ModalBody>
 
           <ModalFooter py="1.5rem">
-            <Box display="flex" gap="0.75rem" w="100%">
+            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canDeleteProducts && (
                 <GenericDelete
                   item={{ id: product.id, name: product.name }}

@@ -25,7 +25,6 @@ export const Content = ({ children }: { children: ReactNode }) => {
         p={{ base: '1rem', md: '1.5rem' }}
         px={{ base: '1.25rem', md: '1.75rem' }}
         w="100%"
-        maxW="97rem"
         h="95%"
         m={{ base: '0.5rem', md: '1rem' }}
         bg={innerBg}

@@ -67,13 +67,14 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
 
   return (
     <>
-      <IconButton
-        aria-label="Eliminar"
-        icon={<FaTrash />}
+      <Button
         colorScheme="red"
         onClick={() => setConfirmOpen(true)}
         disabled={isUpdating || isLoading}
-      />
+        leftIcon={<FaTrash />}
+      >
+        Eliminar
+      </Button>
 
       <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} isCentered size="xs">
         <ModalOverlay />

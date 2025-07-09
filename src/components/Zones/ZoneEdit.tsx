@@ -19,14 +19,17 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Text,
+  Checkbox,
+  SimpleGrid,
+  Image,
 } from '@chakra-ui/react';
 import { Zone } from '@/entities/zone';
-import { Formik, Field } from 'formik';
+import { Formik, Field, FieldArray } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useUpdateZone, useDeleteZone } from '@/hooks/zone';
+import { useUpdateZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { GenericDelete } from '../shared/GenericDelete';
 
 type ZoneEditProps = {
   isOpen: boolean;
@@ -34,6 +37,8 @@ type ZoneEditProps = {
   zone: Zone | null;
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
+
+const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => {
   const toast = useToast();
@@ -83,6 +88,8 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
     setZoneProps(values);
   };
 
+  const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
       <ModalOverlay />
@@ -96,14 +103,26 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
             id: zone?.id ?? 0,
             name: zone?.name ?? '',
             description: zone?.description ?? '',
+            requestDays: zone?.requestDays ?? ['Martes', 'Jueves'],
+            deliveryDays: zone?.deliveryDays ?? ['Miércoles', 'Jueves', 'Viernes'],
+            zoneImage: zone?.zoneImage ?? '',
           }}
           onSubmit={handleSubmit}
           validateOnChange
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, touched, submitCount }) => (
+          {({ handleSubmit, errors, touched, submitCount, values }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0">
+              <ModalBody
+                pb="0"
+                maxH="31rem"
+                overflow="auto"
+                sx={{
+                  '&::-webkit-scrollbar': { display: 'none' },
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>
@@ -129,6 +148,65 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
+
+                  {/* Checkboxes clickeables */}
+                  <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start" w="100%">
+                    <Box>
+                      <Text mb="0.5rem">Días de pedidos</Text>
+                      <FieldArray name="requestDays">
+                        {({ push, remove }) =>
+                          allDays.map((day) => {
+                            const isChecked = values.requestDays.includes(day);
+                            return (
+                              <Checkbox
+                                key={`pedido-${day}`}
+                                isChecked={isChecked}
+                                onChange={(e) =>
+                                  e.target.checked ? push(day) : remove(values.requestDays.indexOf(day))
+                                }
+                                mb="0.5rem"
+                                w="100%"
+                              >
+                                {day}
+                              </Checkbox>
+                            );
+                          })
+                        }
+                      </FieldArray>
+                    </Box>
+
+                    <Box>
+                      <Text mb="0.5rem">Días de entrega</Text>
+                      <FieldArray name="deliveryDays">
+                        {({ push, remove }) =>
+                          allDays.map((day) => {
+                            const isChecked = values.deliveryDays.includes(day);
+                            return (
+                              <Checkbox
+                                key={`entrega-${day}`}
+                                isChecked={isChecked}
+                                onChange={(e) =>
+                                  e.target.checked ? push(day) : remove(values.deliveryDays.indexOf(day))
+                                }
+                                mb="0.5rem"
+                                w="100%"
+                              >
+                                {day}
+                              </Checkbox>
+                            );
+                          })
+                        }
+                      </FieldArray>
+                    </Box>
+                  </SimpleGrid>
+
+                  {/* Imagen */}
+                  <Box w="100%">
+                    <Text mb="0.5rem">Imagen de la zona</Text>
+                    <Box border="1px solid" borderColor={borderColor} borderRadius="md" overflow="hidden" width="100%">
+                      <Image src={imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
+                    </Box>
+                  </Box>
                 </VStack>
               </ModalBody>
 

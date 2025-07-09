@@ -1,4 +1,5 @@
 export type PasswordReset = {
-  userId: number;
+  username: string;
+  oldPassword: string;
   newPassword: string;
 };
