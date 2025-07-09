@@ -27,5 +27,5 @@ export const temporaryPassword = (userId: number): Promise<TemporaryPasswordResp
 };
 
 export const passwordReset = (passwordReset: PasswordReset): Promise<PasswordResetResponse> => {
-  return post<PasswordResetResponse>(`${API_URL}/Users/resetpassword`, passwordReset);
+  return post<PasswordResetResponse>(`${API_URL}/Users/resetmypassword`, passwordReset);
 };

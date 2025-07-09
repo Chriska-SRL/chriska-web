@@ -13,6 +13,9 @@ import {
   Box,
   Text,
   Button,
+  Image,
+  Checkbox,
+  SimpleGrid,
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
@@ -29,6 +32,8 @@ type ZoneDetailProps = {
   zone: Zone;
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
+
+const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
   const canEditZones = useUserStore((s) => s.hasPermission(PermissionId.EDIT_ZONES));
@@ -65,6 +70,49 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
     </Box>
   );
 
+  const renderDaysCheckboxesGrouped = (diasPedidos: string[], diasEntregas: string[]) => (
+    <Box w="100%">
+      <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start">
+        <Box>
+          <Text mb="0.5rem">Días de pedidos</Text>
+          {allDays.map((day) => (
+            <Checkbox
+              key={`pedido-${day}`}
+              isChecked={diasPedidos.includes(day)}
+              pointerEvents="none"
+              aria-disabled="true"
+              mb="0.5rem"
+              w="100%"
+            >
+              {day}
+            </Checkbox>
+          ))}
+        </Box>
+
+        <Box>
+          <Text mb="0.5rem">Días de entrega</Text>
+          {allDays.map((day) => (
+            <Checkbox
+              key={`entrega-${day}`}
+              isChecked={diasEntregas.includes(day)}
+              pointerEvents="none"
+              aria-disabled="true"
+              mb="0.5rem"
+              w="100%"
+            >
+              {day}
+            </Checkbox>
+          ))}
+        </Box>
+      </SimpleGrid>
+    </Box>
+  );
+
+  // Hardcode de ejemplo
+  const diasPedidos = ['Martes', 'Jueves'];
+  const diasEntregas = ['Miércoles', 'Jueves', 'Viernes'];
+  const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
+
   return (
     <>
       <IconButton
@@ -76,22 +124,41 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Detalle del zona
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll">
+          <ModalBody
+            pb="0"
+            maxH="31rem"
+            overflow="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             <VStack spacing="0.75rem">
               {detailField('Nombre', zone.name)}
               {detailField('Descripción', zone.description)}
+              {renderDaysCheckboxesGrouped(diasPedidos, diasEntregas)}
+
+              <Box w="100%">
+                <Text color={labelColor} mb="0.5rem">
+                  Imagen de la zona
+                </Text>
+                <Box border="1px solid" borderColor={inputBorder} borderRadius="md" overflow="hidden" width="100%">
+                  <Image src={imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
+                </Box>
+              </Box>
             </VStack>
           </ModalBody>
 
           <ModalFooter py="1.5rem">
-            <Box display="flex" gap="0.75rem" w="100%">
+            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canDeleteZones && (
                 <GenericDelete
                   item={{ id: zone.id, name: zone.name }}

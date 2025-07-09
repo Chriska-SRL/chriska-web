@@ -76,14 +76,14 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Detalle del vehículo
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll">
+          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
             <VStack spacing="0.75rem">
               {detailField('Nombre', vehicle.plate)}
               {detailField('Marca', vehicle.brand)}
@@ -92,7 +92,7 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
             </VStack>
           </ModalBody>
           <ModalFooter py="1.5rem">
-            <Box display="flex" gap="0.75rem" w="100%">
+            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canDeleteVehicles && (
                 <GenericDelete
                   item={{ id: vehicle.id, name: vehicle.plate }}

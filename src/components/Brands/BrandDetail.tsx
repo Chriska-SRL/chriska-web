@@ -76,14 +76,14 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Detalle de la marca
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll">
+          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
             <VStack spacing="0.75rem">
               {detailField('Nombre', brand.name)}
               {detailField('Descripción', brand.description)}
@@ -91,7 +91,7 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
           </ModalBody>
 
           <ModalFooter py="1.5rem">
-            <Box display="flex" gap="0.75rem" w="100%">
+            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canDeleteBrands && (
                 <GenericDelete
                   item={{ id: brand.id, name: brand.name }}

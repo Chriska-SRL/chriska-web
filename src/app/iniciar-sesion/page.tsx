@@ -5,6 +5,7 @@ import { Login, ClientOnly } from '@/components';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Text } from '@chakra-ui/react';
 
 const LoginPage: NextPage = () => {
   const router = useRouter();
