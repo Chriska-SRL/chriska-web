@@ -33,10 +33,10 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Role } from '@/entities/role';
 import { useAddRole } from '@/hooks/role';
-import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
+import { PERMISSIONS_METADATA } from '@/utils/permissionMetadata';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type RoleAddProps = {
@@ -44,7 +44,7 @@ type RoleAddProps = {
 };
 
 export const RoleAdd = ({ setRoles }: RoleAddProps) => {
-  const canCreateRoles = useUserStore((s) => s.hasPermission(PermissionId.CREATE_ROLES));
+  const canCreateRoles = useUserStore((s) => s.hasPermission(Permission.CREATE_ROLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

@@ -1,4 +1,4 @@
-export enum PermissionId {
+export enum Permission {
   // Roles
   CREATE_ROLES = 1,
   DELETE_ROLES = 2,

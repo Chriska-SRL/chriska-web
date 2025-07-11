@@ -8,22 +8,15 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
-import { useState } from 'react';
 import { Zone } from '@/entities/zone';
-import { ZoneEdit } from './ZoneEdit';
-import { useUserStore } from '@/stores/useUserStore';
-import { PermissionId } from '@/entities/permissions/permissionId';
 import { ZoneDetail } from './ZoneDetail';
 
 type ZoneListProps = {
@@ -34,8 +27,6 @@ type ZoneListProps = {
 };
 
 export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) => {
-  const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -43,12 +34,6 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (zone: Zone) => {
-    setSelectedZone(zone);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -82,7 +67,7 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="32rem" justifyContent="space-between">
+        <Flex direction="column" h="25rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
               {zones.map((zone) => (
@@ -98,10 +83,12 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
                   position="relative"
                 >
                   <Text fontWeight="bold">{zone.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
+                  <Text fontSize="sm" color={textColor} mt="0.25rem" maxW="17rem">
                     {zone.description}
                   </Text>
-                  <ZoneDetail zone={zone} setZones={setZones} />
+                  <Box position="absolute" top="0" right="0">
+                    <ZoneDetail zone={zone} setZones={setZones} />
+                  </Box>
                 </Box>
               ))}
             </VStack>

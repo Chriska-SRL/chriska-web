@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useAddWarehouse } from '@/hooks/warehouse';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type WarehouseAddProps = {
@@ -35,7 +35,7 @@ type WarehouseAddProps = {
 };
 
 export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
-  const canCreateWarehouses = useUserStore((s) => s.hasPermission(PermissionId.CREATE_WAREHOUSES));
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

@@ -34,7 +34,7 @@ import { useDeleteSubCategory, useUpdateSubCategory } from '@/hooks/subcategory'
 import { Category } from '@/entities/category';
 import { GenericDelete } from '../shared/GenericDelete';
 import { SubCategoryDelete } from './SubCategoryDelete';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SubCategoryEditProps = {
@@ -43,7 +43,7 @@ type SubCategoryEditProps = {
 };
 
 export const SubCategoryEdit = ({ subcategory, setCategories }: SubCategoryEditProps) => {
-  const canEditCategories = useUserStore((s) => s.hasPermission(PermissionId.EDIT_CATEGORIES));
+  const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

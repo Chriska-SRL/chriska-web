@@ -25,8 +25,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { validateVehicle } from '@/utils/validations/validateVehicle';
-import { useUpdateVehicle, useDeleteVehicle } from '@/hooks/vehicle';
-import { GenericDelete } from '../shared/GenericDelete';
+import { useUpdateVehicle } from '@/hooks/vehicle';
 
 type VehicleEditProps = {
   isOpen: boolean;

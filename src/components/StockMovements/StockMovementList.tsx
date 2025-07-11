@@ -8,19 +8,15 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { useState } from 'react';
 import { StockMovement } from '@/entities/stockMovement';
-import { FiEye } from 'react-icons/fi';
 import { StockMovementDetail } from './StockMovementDetail';
 
 type StockMovementListProps = {
@@ -31,8 +27,6 @@ type StockMovementListProps = {
 };
 
 export const StockMovementList = ({ stockMovements, setStockMovements, isLoading, error }: StockMovementListProps) => {
-  const [selectedMovement, setSelectedMovement] = useState<StockMovement | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -40,12 +34,6 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleViewClick = (movement: StockMovement) => {
-    setSelectedMovement(movement);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -145,22 +133,15 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
                 </Tr>
               </Thead>
               <Tbody>
-                {stockMovements.map((mov) => (
-                  <Tr key={mov.id} h="5rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{new Date(mov.date).toLocaleDateString()}</Td>
-                    <Td textAlign="center">{mov.product.name}</Td>
-                    <Td textAlign="center">{mov.quantity}</Td>
-                    <Td textAlign="center">{mov.type}</Td>
-                    <Td textAlign="center">{mov.reason}</Td>
+                {stockMovements.map((stockMovement) => (
+                  <Tr key={stockMovement.id} h="5rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                    <Td textAlign="center">{new Date(stockMovement.date).toLocaleDateString()}</Td>
+                    <Td textAlign="center">{stockMovement.product.name}</Td>
+                    <Td textAlign="center">{stockMovement.quantity}</Td>
+                    <Td textAlign="center">{stockMovement.type}</Td>
+                    <Td textAlign="center">{stockMovement.reason}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <IconButton
-                        aria-label="Ver detalle"
-                        icon={<FiEye />}
-                        onClick={() => handleViewClick(mov)}
-                        variant="ghost"
-                        size="lg"
-                        _hover={{ bg: hoverBgIcon }}
-                      />
+                      <StockMovementDetail movement={stockMovement} setMovements={setStockMovements} />
                     </Td>
                   </Tr>
                 ))}
@@ -172,8 +153,6 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
           </Box>
         </>
       )}
-
-      {!isMobile && <StockMovementDetail isOpen={isOpen} onClose={onClose} movement={selectedMovement} />}
     </>
   );
 };

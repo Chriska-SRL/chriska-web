@@ -22,7 +22,7 @@ import { Product } from '@/entities/product';
 import { ProductEdit } from './ProductEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteProduct } from '@/hooks/product';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ProductDetailProps = {
@@ -31,8 +31,8 @@ type ProductDetailProps = {
 };
 
 export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
-  const canEditProducts = useUserStore((s) => s.hasPermission(PermissionId.EDIT_PRODUCTS));
-  const canDeleteProducts = useUserStore((s) => s.hasPermission(PermissionId.DELETE_PRODUCTS));
+  const canEditProducts = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
+  const canDeleteProducts = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

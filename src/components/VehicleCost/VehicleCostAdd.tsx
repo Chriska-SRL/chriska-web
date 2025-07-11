@@ -28,7 +28,7 @@ import { useEffect, useState } from 'react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { useAddVehicleCost } from '@/hooks/vehicleCost';
 import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 export const VehicleCostAdd = ({
@@ -38,7 +38,7 @@ export const VehicleCostAdd = ({
   vehicleId: number;
   setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
 }) => {
-  const canCreateVehicles = useUserStore((s) => s.hasPermission(PermissionId.CREATE_VEHICLES));
+  const canCreateVehicles = useUserStore((s) => s.hasPermission(Permission.CREATE_VEHICLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

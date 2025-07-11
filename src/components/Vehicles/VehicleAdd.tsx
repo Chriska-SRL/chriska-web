@@ -16,7 +16,6 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
@@ -28,7 +27,7 @@ import { Vehicle } from '@/entities/vehicle';
 import { useAddVehicle } from '@/hooks/vehicle';
 import { validate } from '@/utils/validations/validate';
 import { validateVehicle } from '@/utils/validations/validateVehicle';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type VehicleAddProps = {
@@ -36,7 +35,7 @@ type VehicleAddProps = {
 };
 
 export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
-  const canCreateVehicles = useUserStore((s) => s.hasPermission(PermissionId.CREATE_VEHICLES));
+  const canCreateVehicles = useUserStore((s) => s.hasPermission(Permission.CREATE_VEHICLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

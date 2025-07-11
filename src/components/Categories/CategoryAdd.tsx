@@ -16,7 +16,6 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
   Textarea,
   ModalCloseButton,
   useColorModeValue,
@@ -28,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { useAddCategory } from '@/hooks/category';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryAddProps = {
@@ -36,7 +35,7 @@ type CategoryAddProps = {
 };
 
 export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
-  const canCreateCategories = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CATEGORIES));
+  const canCreateCategories = useUserStore((s) => s.hasPermission(Permission.CREATE_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

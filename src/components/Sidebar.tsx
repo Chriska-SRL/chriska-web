@@ -25,7 +25,7 @@ import { LuArrowDownUp } from 'react-icons/lu';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 import { useUserStore } from '@/stores/useUserStore';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 
 type SidebarButtonProps = {
   path: string;
@@ -80,26 +80,26 @@ type SideBarProps = {
 };
 
 const sidebarItems = [
-  { path: 'roles', text: 'Roles', icon: FaUserShield, permissionId: PermissionId.VIEW_ROLES },
-  { path: 'usuarios', text: 'Usuarios', icon: BsPeopleFill, permissionId: PermissionId.VIEW_USERS },
-  { path: 'productos', text: 'Productos', icon: FaCubes, permissionId: PermissionId.VIEW_PRODUCTS },
-  { path: 'marcas', text: 'Marcas', icon: FaTags, permissionId: PermissionId.VIEW_PRODUCTS },
-  { path: 'categorias', text: 'Categorias', icon: BiCategoryAlt, permissionId: PermissionId.VIEW_CATEGORIES },
-  { path: 'vehiculos', text: 'Vehiculos', icon: FaCar, permissionId: PermissionId.VIEW_VEHICLES },
-  { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, permissionId: PermissionId.VIEW_CLIENTS },
-  { path: 'zonas', text: 'Zonas', icon: MdPlace, permissionId: PermissionId.VIEW_ZONES },
-  { path: 'proveedores', text: 'Proveedores', icon: FiBriefcase, permissionId: PermissionId.VIEW_SUPPLIERS },
+  { path: 'roles', text: 'Roles', icon: FaUserShield, Permission: Permission.VIEW_ROLES },
+  { path: 'usuarios', text: 'Usuarios', icon: BsPeopleFill, Permission: Permission.VIEW_USERS },
+  { path: 'productos', text: 'Productos', icon: FaCubes, Permission: Permission.VIEW_PRODUCTS },
+  { path: 'marcas', text: 'Marcas', icon: FaTags, Permission: Permission.VIEW_PRODUCTS },
+  { path: 'categorias', text: 'Categorias', icon: BiCategoryAlt, Permission: Permission.VIEW_CATEGORIES },
+  { path: 'vehiculos', text: 'Vehiculos', icon: FaCar, Permission: Permission.VIEW_VEHICLES },
+  { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, Permission: Permission.VIEW_CLIENTS },
+  { path: 'zonas', text: 'Zonas', icon: MdPlace, Permission: Permission.VIEW_ZONES },
+  { path: 'proveedores', text: 'Proveedores', icon: FiBriefcase, Permission: Permission.VIEW_SUPPLIERS },
   {
     path: 'movimientos-de-stock',
     text: 'Movimientos de stock',
     icon: LuArrowDownUp,
-    permissionId: PermissionId.VIEW_STOCK_MOVEMENTS,
+    Permission: Permission.VIEW_STOCK_MOVEMENTS,
   },
   {
     path: 'depositos-y-estanterias',
     text: 'Depós. y estanterias',
     icon: FaWarehouse,
-    permissionId: PermissionId.VIEW_WAREHOUSES,
+    Permission: Permission.VIEW_WAREHOUSES,
   },
 ];
 
@@ -117,7 +117,7 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const defaultColor = useColorModeValue('gray.600', 'gray.300');
   const hoverColor = useColorModeValue('black', 'white');
 
-  const visibleItems = sidebarItems.filter((item) => hasPermission(item.permissionId));
+  const visibleItems = sidebarItems.filter((item) => hasPermission(item.Permission));
 
   const renderSidebarContent = () => (
     <Flex

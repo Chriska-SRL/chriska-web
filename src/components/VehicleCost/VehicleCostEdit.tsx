@@ -25,8 +25,7 @@ import { VehicleCost } from '@/entities/vehicleCost';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useUpdateVehicleCost, useDeleteVehicleCost } from '@/hooks/vehicleCost';
-import { GenericDelete } from '../shared/GenericDelete';
+import { useUpdateVehicleCost } from '@/hooks/vehicleCost';
 import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
 
 type VehicleCostEditProps = {

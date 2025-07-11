@@ -10,6 +10,7 @@ export type Product = {
   price: number;
   image: string;
   stock: number;
+  availableStock: number;
   unitType: string;
   description: string;
   temperatureCondition: string;

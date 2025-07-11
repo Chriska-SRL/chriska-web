@@ -22,7 +22,7 @@ import { User } from '@/entities/user';
 import { UserEdit } from './UserEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteUser } from '@/hooks/user';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type UserDetailProps = {
@@ -31,8 +31,8 @@ type UserDetailProps = {
 };
 
 export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
-  const canEditUsers = useUserStore((s) => s.hasPermission(PermissionId.EDIT_USERS));
-  const canDeleteUsers = useUserStore((s) => s.hasPermission(PermissionId.DELETE_USERS));
+  const canEditUsers = useUserStore((s) => s.hasPermission(Permission.EDIT_USERS));
+  const canDeleteUsers = useUserStore((s) => s.hasPermission(Permission.DELETE_USERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

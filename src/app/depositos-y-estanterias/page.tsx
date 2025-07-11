@@ -6,13 +6,13 @@ import { Flex } from '@chakra-ui/react';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 
 const WarehousesPage: NextPage = () => {
   const router = useRouter();
   const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
-  const canViewWarehouses = useUserStore((s) => s.hasPermission(PermissionId.VIEW_WAREHOUSES));
+  const canViewWarehouses = useUserStore((s) => s.hasPermission(Permission.VIEW_WAREHOUSES));
 
   useEffect(() => {
     if (isHydrated && !isLoggedIn) {

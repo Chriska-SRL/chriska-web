@@ -8,20 +8,15 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
-import { useState } from 'react';
 import { Brand } from '@/entities/brand';
-import { BrandEdit } from './BrandEdit';
 import { BrandDetail } from './BrandDetail';
 
 type BrandListProps = {
@@ -32,8 +27,6 @@ type BrandListProps = {
 };
 
 export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProps) => {
-  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -41,12 +34,6 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (brand: Brand) => {
-    setSelectedBrand(brand);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -145,7 +132,6 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
           </Box>
         </>
       )}
-      <BrandEdit isOpen={isOpen} onClose={onClose} brand={selectedBrand} setBrands={setBrands} />
     </>
   );
 };

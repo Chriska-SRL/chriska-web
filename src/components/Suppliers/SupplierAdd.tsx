@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { useAddSupplier } from '@/hooks/supplier';
 import { validate } from '@/utils/validations/validate';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SupplierAddProps = {
@@ -35,7 +35,7 @@ type SupplierAddProps = {
 };
 
 export const SupplierAdd = ({ setSuppliers }: SupplierAddProps) => {
-  const canCreateSuppliers = useUserStore((s) => s.hasPermission(PermissionId.CREATE_SUPPLIERS));
+  const canCreateSuppliers = useUserStore((s) => s.hasPermission(Permission.CREATE_SUPPLIERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

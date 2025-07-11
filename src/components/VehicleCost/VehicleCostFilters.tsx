@@ -1,4 +1,3 @@
-// VehicleCostFilters.tsx
 'use client';
 
 import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';

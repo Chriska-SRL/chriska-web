@@ -27,10 +27,9 @@ import { Field, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
-import { useDeleteProduct, useUpdateProduct } from '@/hooks/product';
+import { useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validations/validate';
 import { useGetCategories } from '@/hooks/category';
-import { GenericDelete } from '../shared/GenericDelete';
 import { useGetBrands } from '@/hooks/brand';
 
 type ProductEditProps = {

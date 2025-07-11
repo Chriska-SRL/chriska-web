@@ -22,7 +22,7 @@ import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteSupplier } from '@/hooks/supplier';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SupplierDetailProps = {
@@ -31,8 +31,8 @@ type SupplierDetailProps = {
 };
 
 export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) => {
-  const canEditSuppliers = useUserStore((s) => s.hasPermission(PermissionId.EDIT_SUPPLIERS));
-  const canDeleteSuppliers = useUserStore((s) => s.hasPermission(PermissionId.DELETE_SUPPLIERS));
+  const canEditSuppliers = useUserStore((s) => s.hasPermission(Permission.EDIT_SUPPLIERS));
+  const canDeleteSuppliers = useUserStore((s) => s.hasPermission(Permission.DELETE_SUPPLIERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

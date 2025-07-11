@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  IconButton,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -9,168 +10,107 @@ import {
   ModalFooter,
   ModalCloseButton,
   VStack,
-  FormControl,
-  FormLabel,
-  Input,
-  Select,
-  Textarea,
-  useColorModeValue,
   Box,
+  Text,
   Button,
+  useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { Field, Formik } from 'formik';
+import { FiEye } from 'react-icons/fi';
 import { StockMovement } from '@/entities/stockMovement';
 
 type StockMovementDetailProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  movement: StockMovement | null;
+  movement: StockMovement;
+  setMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
 };
 
-export const StockMovementDetail = ({ isOpen, onClose, movement }: StockMovementDetailProps) => {
+export const StockMovementDetail = ({ movement, setMovements }: StockMovementDetailProps) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  if (!movement) return null;
+  const detailField = (label: string, value: string | number | null | undefined) => (
+    <Box w="100%">
+      <Text color={labelColor} mb="0.5rem">
+        {label}
+      </Text>
+      <Box
+        px="1rem"
+        py="0.5rem"
+        bg={inputBg}
+        border="1px solid"
+        borderColor={inputBorder}
+        borderRadius="md"
+        minH="2.75rem"
+        maxH="10rem"
+        overflowY="auto"
+        whiteSpace="pre-wrap"
+        wordBreak="break-word"
+      >
+        {value ?? '—'}
+      </Box>
+    </Box>
+  );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-          Detalle movimiento
-        </ModalHeader>
-        <ModalCloseButton />
-        <Formik
-          initialValues={{
-            date: movement.date,
-            quantity: movement.quantity,
-            type: movement.type,
-            reason: movement.reason,
-            productId: movement.product.id,
-            warehouseId: movement.shelve.warehouse.id,
-            shelveId: movement.shelve.id,
-            userId: movement.user.name,
-          }}
-          onSubmit={() => {}}
-        >
-          {({ values }) => (
-            <form>
-              <ModalBody pb="0" maxH="70vh" overflowY="auto">
-                <VStack spacing="0.75rem">
-                  <FormControl>
-                    <FormLabel>Fecha</FormLabel>
-                    <Field
-                      as={Input}
-                      name="date"
-                      type="date"
-                      value={values.date.split('T')[0]}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
+    <>
+      <IconButton
+        aria-label="Ver detalle"
+        icon={<FiEye />}
+        onClick={onOpen}
+        variant="ghost"
+        size="lg"
+        _hover={{ bg: hoverBgIcon }}
+      />
 
-                  <FormControl>
-                    <FormLabel>Cantidad</FormLabel>
-                    <Field
-                      as={Input}
-                      name="quantity"
-                      type="number"
-                      value={values.quantity}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+        <ModalOverlay />
+        <ModalContent mx="auto" borderRadius="lg">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+            Detalle del movimiento
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody
+            pb="0"
+            maxH="31rem"
+            overflow="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            <VStack spacing="0.75rem">
+              {detailField('Fecha', movement.date.split('T')[0])}
+              {detailField('Cantidad', movement.quantity)}
+              {detailField('Tipo', movement.type)}
+              {detailField('Razón', movement.reason)}
+              {detailField('Producto', movement.product.name)}
+              {detailField('Depósito', movement.shelve.warehouse.name)}
+              {detailField('Estantería', movement.shelve.name)}
+              {detailField('Usuario', movement.user.name)}
+            </VStack>
+          </ModalBody>
 
-                  <FormControl>
-                    <FormLabel>Tipo</FormLabel>
-                    <Field as={Select} name="type" value={values.type} bg={inputBg} borderColor={inputBorder} disabled>
-                      <option value="Ingreso">Ingreso</option>
-                      <option value="Egreso">Egreso</option>
-                    </Field>
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Razón</FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="reason"
-                      value={values.reason}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Producto</FormLabel>
-                    <Field
-                      as={Input}
-                      name="productId"
-                      value={`${movement.product.name}`}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Depósito</FormLabel>
-                    <Field
-                      as={Input}
-                      name="warehouseId"
-                      value={`${movement.shelve.warehouse.name}`}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Estantería</FormLabel>
-                    <Field
-                      as={Input}
-                      name="shelveId"
-                      value={`${movement.shelve.name} `}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Usuario</FormLabel>
-                    <Field
-                      as={Input}
-                      name="userId"
-                      value={movement.user.name}
-                      bg={inputBg}
-                      borderColor={inputBorder}
-                      disabled
-                    />
-                  </FormControl>
-                </VStack>
-              </ModalBody>
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.5rem" w="100%">
-                  <Button
-                    bg="gray.500"
-                    color="white"
-                    width="100%"
-                    _hover={{ bg: 'gray.600' }}
-                    onClick={onClose}
-                    py="1.375rem"
-                  >
-                    Cerrar
-                  </Button>
-                </Box>
-              </ModalFooter>
-            </form>
-          )}
-        </Formik>
-      </ModalContent>
-    </Modal>
+          <ModalFooter py="1.5rem">
+            <Box w="100%">
+              <Button
+                bg="gray.500"
+                color="white"
+                width="100%"
+                _hover={{ bg: 'gray.600' }}
+                onClick={onClose}
+                py="1.375rem"
+              >
+                Cerrar
+              </Button>
+            </Box>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };

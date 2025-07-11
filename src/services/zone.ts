@@ -7,6 +7,10 @@ export const getZones = (): Promise<Zone[]> => {
   return get<Zone[]>(`${API_URL}/Zones`);
 };
 
+export const getZoneById = (id: number): Promise<Zone> => {
+  return get<Zone>(`${API_URL}/Zones/${id}`);
+};
+
 export const addZone = (zone: Partial<Zone>): Promise<Zone> => {
   return post<Zone>(`${API_URL}/Zones`, zone);
 };

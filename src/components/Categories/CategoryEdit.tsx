@@ -32,7 +32,7 @@ import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { useDeleteCategory, useUpdateCategory } from '@/hooks/category';
 import { GenericDelete } from '../shared/GenericDelete';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryEditProps = {
@@ -41,7 +41,7 @@ type CategoryEditProps = {
 };
 
 export const CategoryEdit = ({ category, setCategories }: CategoryEditProps) => {
-  const canEditCategories = useUserStore((s) => s.hasPermission(PermissionId.EDIT_CATEGORIES));
+  const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

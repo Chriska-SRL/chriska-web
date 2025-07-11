@@ -22,7 +22,7 @@ import { Vehicle } from '@/entities/vehicle';
 import { VehicleEdit } from './VehicleEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteVehicle } from '@/hooks/vehicle';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type VehicleDetailProps = {
@@ -31,8 +31,8 @@ type VehicleDetailProps = {
 };
 
 export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
-  const canEditVehicles = useUserStore((s) => s.hasPermission(PermissionId.EDIT_VEHICLES));
-  const canDeleteVehicles = useUserStore((s) => s.hasPermission(PermissionId.DELETE_VEHICLES));
+  const canEditVehicles = useUserStore((s) => s.hasPermission(Permission.EDIT_VEHICLES));
+  const canDeleteVehicles = useUserStore((s) => s.hasPermission(Permission.DELETE_VEHICLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

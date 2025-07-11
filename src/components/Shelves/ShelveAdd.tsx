@@ -30,7 +30,7 @@ import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useAddShelve } from '@/hooks/shelve';
 import { useUserStore } from '@/stores/useUserStore';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 
 type ShelveAddProps = {
   warehouse: Warehouse;
@@ -38,7 +38,7 @@ type ShelveAddProps = {
 };
 
 export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
-  const canCreateWarehouses = useUserStore((s) => s.hasPermission(PermissionId.CREATE_WAREHOUSES));
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -47,7 +47,6 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
   const submitBg = useColorModeValue('#4C88D8', 'blue.400');
   const submitHover = useColorModeValue('#376bb0', 'blue.600');
