@@ -16,7 +16,6 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
   Textarea,
   IconButton,
   ModalCloseButton,
@@ -31,7 +30,7 @@ import { SubCategory } from '@/entities/subcategory';
 import { useAddSubCategory } from '@/hooks/subcategory';
 import { Category } from '@/entities/category';
 import { useUserStore } from '@/stores/useUserStore';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 
 type SubCategoryAddProps = {
   category: Category;
@@ -39,7 +38,7 @@ type SubCategoryAddProps = {
 };
 
 export const SubCategoryAdd = ({ category, setCategories }: SubCategoryAddProps) => {
-  const canCreateCategories = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CATEGORIES));
+  const canCreateCategories = useUserStore((s) => s.hasPermission(Permission.CREATE_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

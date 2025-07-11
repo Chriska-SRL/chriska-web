@@ -31,12 +31,11 @@ import {
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck } from 'react-icons/fa';
-import { PERMISSIONS_METADATA } from '@/entities/permissions/permissionMetadata';
+import { PERMISSIONS_METADATA } from '@/utils/permissionMetadata';
 import { Role } from '@/entities/role';
 import { useEffect, useState } from 'react';
-import { useDeleteRole, useUpdateRole } from '@/hooks/role';
+import { useUpdateRole } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
-import { GenericDelete } from '../shared/GenericDelete';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type RoleEditProps = {
@@ -47,8 +46,8 @@ type RoleEditProps = {
 };
 
 export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => {
-  const toast = useToast();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const toast = useToast();
   const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
 

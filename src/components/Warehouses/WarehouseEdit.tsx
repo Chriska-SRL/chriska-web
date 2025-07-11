@@ -31,7 +31,7 @@ import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useUpdateWarehouse, useDeleteWarehouse } from '@/hooks/warehouse';
 import { GenericDelete } from '../shared/GenericDelete';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type WarehouseEditProps = {
@@ -40,7 +40,7 @@ type WarehouseEditProps = {
 };
 
 export const WarehouseEdit = ({ warehouse, setWarehouses }: WarehouseEditProps) => {
-  const canEditWarehouses = useUserStore((s) => s.hasPermission(PermissionId.EDIT_WAREHOUSES));
+  const canEditWarehouses = useUserStore((s) => s.hasPermission(Permission.EDIT_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

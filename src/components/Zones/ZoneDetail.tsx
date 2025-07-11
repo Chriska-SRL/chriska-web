@@ -25,19 +25,20 @@ import { Zone } from '@/entities/zone';
 import { ZoneEdit } from './ZoneEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteZone } from '@/hooks/zone';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { Day } from '@/enums/day.enum';
+
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
 
 type ZoneDetailProps = {
   zone: Zone;
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
 export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
-  const canEditZones = useUserStore((s) => s.hasPermission(PermissionId.EDIT_ZONES));
-  const canDeleteZones = useUserStore((s) => s.hasPermission(PermissionId.DELETE_ZONES));
+  const canEditZones = useUserStore((s) => s.hasPermission(Permission.EDIT_ZONES));
+  const canDeleteZones = useUserStore((s) => s.hasPermission(Permission.DELETE_ZONES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -108,9 +109,8 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
     </Box>
   );
 
-  // Hardcode de ejemplo
-  const diasPedidos = ['Martes', 'Jueves'];
-  const diasEntregas = ['Miércoles', 'Jueves', 'Viernes'];
+  const diasPedidos: Day[] = [Day.TUESDAY, Day.THURSDAY];
+  const diasEntregas: Day[] = [Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY];
   const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
 
   return (
@@ -127,8 +127,8 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Detalle del zona
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+            Detalle de la zona
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody

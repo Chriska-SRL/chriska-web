@@ -1,4 +1,3 @@
-// VehicleCosts.tsx
 'use client';
 
 import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery } from '@chakra-ui/react';

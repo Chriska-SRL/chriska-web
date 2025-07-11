@@ -8,7 +8,6 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
@@ -17,8 +16,6 @@ import {
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { useState } from 'react';
-import { UserEdit } from './UserEdit';
 import { User } from '@/entities/user';
 import { UserDetail } from './UserDetail';
 

@@ -32,7 +32,7 @@ import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { useGetBrands } from '@/hooks/brand';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ProductAddProps = {
@@ -40,7 +40,7 @@ type ProductAddProps = {
 };
 
 export const ProductAdd = ({ setProducts }: ProductAddProps) => {
-  const canCreateProducts = useUserStore((s) => s.hasPermission(PermissionId.CREATE_PRODUCTS));
+  const canCreateProducts = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

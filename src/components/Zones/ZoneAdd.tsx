@@ -31,7 +31,7 @@ import { useEffect, useState } from 'react';
 import { Zone } from '@/entities/zone';
 import { useAddZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ZoneFormValues = {
@@ -49,7 +49,7 @@ type ZoneAddProps = {
 };
 
 export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
-  const canCreateZones = useUserStore((s) => s.hasPermission(PermissionId.CREATE_ZONES));
+  const canCreateZones = useUserStore((s) => s.hasPermission(Permission.CREATE_ZONES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -108,10 +108,10 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
         </Button>
       )}
 
-      <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
             Nueva zona
           </ModalHeader>
           <ModalCloseButton />

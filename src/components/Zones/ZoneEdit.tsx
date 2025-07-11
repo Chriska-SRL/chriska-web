@@ -91,10 +91,10 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
   const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
           Editar zona
         </ModalHeader>
         <ModalCloseButton />

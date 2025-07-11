@@ -8,22 +8,15 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
-import { useState } from 'react';
 import { Supplier } from '@/entities/supplier';
-import { SupplierEdit } from './SupplierEdit';
-import { PermissionId } from '@/entities/permissions/permissionId';
-import { useUserStore } from '@/stores/useUserStore';
 import { SupplierDetail } from './SupplierDetail';
 
 type SupplierListProps = {
@@ -34,8 +27,6 @@ type SupplierListProps = {
 };
 
 export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: SupplierListProps) => {
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -43,12 +34,6 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (supplier: Supplier) => {
-    setSelectedSupplier(supplier);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -170,7 +155,6 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
           </Box>
         </>
       )}
-      <SupplierEdit isOpen={isOpen} onClose={onClose} supplier={selectedSupplier} setSuppliers={setSuppliers} />
     </>
   );
 };

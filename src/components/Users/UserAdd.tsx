@@ -17,7 +17,6 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
@@ -30,7 +29,7 @@ import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from './TemporaryPasswordModal';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type UserAddProps = {
@@ -38,7 +37,7 @@ type UserAddProps = {
 };
 
 export const UserAdd = ({ setUsers }: UserAddProps) => {
-  const canCreateUsers = useUserStore((s) => s.hasPermission(PermissionId.CREATE_USERS));
+  const canCreateUsers = useUserStore((s) => s.hasPermission(Permission.CREATE_USERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

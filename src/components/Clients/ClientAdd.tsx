@@ -29,7 +29,7 @@ import { Client } from '@/entities/client';
 import { useAddClient } from '@/hooks/client';
 import { useGetZones } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ClientAddProps = {
@@ -37,7 +37,7 @@ type ClientAddProps = {
 };
 
 export const ClientAdd = ({ setClients }: ClientAddProps) => {
-  const canCreateClients = useUserStore((s) => s.hasPermission(PermissionId.CREATE_CLIENTS));
+  const canCreateClients = useUserStore((s) => s.hasPermission(Permission.CREATE_CLIENTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

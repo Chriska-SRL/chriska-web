@@ -13,7 +13,6 @@ import {
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
@@ -21,7 +20,6 @@ import {
 } from '@chakra-ui/react';
 import { BsCurrencyDollar } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleDetail } from './VehicleDetail';
 
@@ -34,9 +32,6 @@ type VehicleListProps = {
 
 export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: VehicleListProps) => {
   const router = useRouter();
-
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -45,11 +40,6 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    onOpen();
-  };
 
   const handleViewClick = (vehicleId: number) => {
     router.push(`/vehiculos/${vehicleId}`);

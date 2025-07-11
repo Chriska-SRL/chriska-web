@@ -24,9 +24,8 @@ import { Brand } from '@/entities/brand';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useUpdateBrand, useDeleteBrand } from '@/hooks/brand';
+import { useUpdateBrand } from '@/hooks/brand';
 import { validate } from '@/utils/validations/validate';
-import { GenericDelete } from '../shared/GenericDelete';
 
 type BrandEditProps = {
   isOpen: boolean;

@@ -27,12 +27,10 @@ export const StockMovements = () => {
   const warehouseId = filterWarehouseId ? parseInt(filterWarehouseId) : -1;
   const shelveId = filterShelveId ? parseInt(filterShelveId) : -1;
 
-  // Call hooks with primitive values - no object recreation!
   const allMovements = useGetStockMovements(filterFrom, filterTo);
   const warehouseMovements = useGetStockMovementsByWarehouseId(warehouseId, filterFrom, filterTo);
   const shelveMovements = useGetStockMovementsByShelveId(shelveId, filterFrom, filterTo);
 
-  // Select which data to use based on active filters
   const activeResult = (() => {
     if (filterShelveId) {
       return shelveMovements;

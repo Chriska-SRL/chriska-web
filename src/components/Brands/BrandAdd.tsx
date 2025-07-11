@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { Brand } from '@/entities/brand';
 import { useAddBrand } from '@/hooks/brand';
 import { validate } from '@/utils/validations/validate';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type BrandAddProps = {
@@ -35,7 +35,7 @@ type BrandAddProps = {
 };
 
 export const BrandAdd = ({ setBrands }: BrandAddProps) => {
-  const canCreateBrands = useUserStore((s) => s.hasPermission(PermissionId.CREATE_PRODUCTS));
+  const canCreateBrands = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

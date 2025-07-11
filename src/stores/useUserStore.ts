@@ -17,7 +17,7 @@ type UserStore = {
   isHydrated: boolean;
   permissions: number[];
   setUserFromToken: (token: string) => void;
-  hasPermission: (permissionId: number) => boolean;
+  hasPermission: (Permission: number) => boolean;
   logout: () => void;
 };
 
@@ -60,8 +60,8 @@ export const useUserStore = create<UserStore>((set, get) => ({
     }
   },
 
-  hasPermission: (permissionId: number) => {
-    return get().permissions.includes(permissionId);
+  hasPermission: (Permission: number) => {
+    return get().permissions.includes(Permission);
   },
 
   logout: () => {

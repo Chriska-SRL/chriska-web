@@ -47,7 +47,7 @@ export const useFetch = <P = void, R = unknown>(
   return { data, isLoading, error, fieldError };
 };
 
-export function useFetchNoParams<T>(fn: () => Promise<T>, defaultValue: T): Result<T> {
+export const useFetchNoParams = <T>(fn: () => Promise<T>, defaultValue: T): Result<T> => {
   const [data, setData] = useState<T>(defaultValue);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>();
@@ -71,4 +71,4 @@ export function useFetchNoParams<T>(fn: () => Promise<T>, defaultValue: T): Resu
   }, []);
 
   return { data, isLoading, error };
-}
+};

@@ -26,7 +26,6 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateSupplier, useDeleteSupplier } from '@/hooks/supplier';
 import { validate } from '@/utils/validations/validate';
-import { GenericDelete } from '../shared/GenericDelete';
 
 type SupplierEditProps = {
   isOpen: boolean;

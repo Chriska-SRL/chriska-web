@@ -26,9 +26,8 @@ import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useGetZones } from '@/hooks/zone';
-import { useUpdateClient, useDeleteClient } from '@/hooks/client';
+import { useUpdateClient } from '@/hooks/client';
 import { validate } from '@/utils/validations/validate';
-import { GenericDelete } from '../shared/GenericDelete';
 import { Zone } from '@/entities/zone';
 
 type ClientEditProps = {

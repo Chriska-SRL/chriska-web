@@ -32,14 +32,14 @@ import { useGetProducts } from '@/hooks/product';
 import { useUserStore } from '@/stores/useUserStore';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 
 type StockMovementAddProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
 };
 
 export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) => {
-  const canCreateStockMovements = useUserStore((s) => s.hasPermission(PermissionId.CREATE_STOCK_MOVEMENTS));
+  const canCreateStockMovements = useUserStore((s) => s.hasPermission(Permission.CREATE_STOCK_MOVEMENTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

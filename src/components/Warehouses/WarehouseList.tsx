@@ -7,7 +7,7 @@ import { ShelveAdd } from '../Shelves/ShelveAdd';
 import { ShelveEdit } from '../Shelves/ShelveEdit';
 import { WarehouseEdit } from './WarehouseEdit';
 import { Warehouse } from '@/entities/warehouse';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type WarehouseListProps = {

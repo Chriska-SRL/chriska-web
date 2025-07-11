@@ -9,7 +9,6 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
@@ -20,12 +19,8 @@ import {
   VStack,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
 import { useState } from 'react';
 import { Product } from '@/entities/product';
-import { ProductEdit } from './ProductEdit';
-import { PermissionId } from '@/entities/permissions/permissionId';
-import { useUserStore } from '@/stores/useUserStore';
 import { ProductDetail } from './ProductDetail';
 
 type ProductListProps = {
@@ -36,8 +31,6 @@ type ProductListProps = {
 };
 
 export const ProductList = ({ products, isLoading, error, setProducts }: ProductListProps) => {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -46,12 +39,6 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
   const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverColor = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
-
-  const handleEditClick = (product: Product) => {
-    setSelectedProduct(product);
-    onOpen();
-  };
 
   const temperatureCondition = (condition: string) => {
     switch (condition) {

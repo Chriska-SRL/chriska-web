@@ -31,7 +31,7 @@ export const Content = ({ children }: { children: ReactNode }) => {
         borderRadius="0.5rem"
         border="1px solid"
         borderColor={borderColor}
-        gap="1.25rem"
+        gap="1rem"
         overflowY="auto"
       >
         {children}

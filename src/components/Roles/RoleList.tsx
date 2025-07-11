@@ -8,7 +8,6 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   useDisclosure,
   Box,
   Text,
@@ -19,11 +18,8 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { FiEdit } from 'react-icons/fi';
 import { RoleEdit } from './RoleEdit';
 import { Role } from '@/entities/role';
-import { useUserStore } from '@/stores/useUserStore';
-import { PermissionId } from '@/entities/permissions/permissionId';
 import { RoleDetail } from './RoleDetail';
 
 type RoleListProps = {
@@ -43,12 +39,6 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (role: Role) => {
-    setSelectedRole(role);
-    editModalDisclosure.onOpen();
-  };
 
   if (error) {
     return (
@@ -156,13 +146,6 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
           </Box>
         </>
       )}
-
-      <RoleEdit
-        isOpen={editModalDisclosure.isOpen}
-        onClose={editModalDisclosure.onClose}
-        role={selectedRole}
-        setRoles={setRoles}
-      />
     </>
   );
 };

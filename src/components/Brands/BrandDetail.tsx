@@ -22,7 +22,7 @@ import { Brand } from '@/entities/brand';
 import { BrandEdit } from './BrandEdit';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteBrand } from '@/hooks/brand';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type BrandDetailProps = {
@@ -31,8 +31,8 @@ type BrandDetailProps = {
 };
 
 export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
-  const canEditBrands = useUserStore((s) => s.hasPermission(PermissionId.EDIT_PRODUCTS));
-  const canDeleteBrands = useUserStore((s) => s.hasPermission(PermissionId.DELETE_PRODUCTS));
+  const canEditBrands = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
+  const canDeleteBrands = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

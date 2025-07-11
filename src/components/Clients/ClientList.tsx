@@ -8,22 +8,15 @@ import {
   Th,
   Tbody,
   Td,
-  IconButton,
   Box,
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   VStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiEdit } from 'react-icons/fi';
-import { useState } from 'react';
 import { Client } from '@/entities/client';
-import { ClientEdit } from './ClientEdit';
-import { PermissionId } from '@/entities/permissions/permissionId';
-import { useUserStore } from '@/stores/useUserStore';
 import { ClientDetail } from './ClientDetail';
 
 type ClientListProps = {
@@ -34,8 +27,6 @@ type ClientListProps = {
 };
 
 export const ClientList = ({ clients, setClients, isLoading, error }: ClientListProps) => {
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -43,12 +34,6 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-
-  const handleEditClick = (client: Client) => {
-    setSelectedClient(client);
-    onOpen();
-  };
 
   if (error) {
     return (
@@ -82,7 +67,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="25rem" justifyContent="space-between">
+        <Flex direction="column" h="32rem" justifyContent="space-between">
           <Box overflowY="auto">
             <VStack spacing="1rem" align="stretch">
               {clients.map((client) => (

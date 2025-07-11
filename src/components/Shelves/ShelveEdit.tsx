@@ -33,7 +33,7 @@ import { useUpdateShelve, useDeleteShelve } from '@/hooks/shelve';
 import { GenericDelete } from '../shared/GenericDelete';
 import { Warehouse } from '@/entities/warehouse';
 import { ShelveDelete } from './ShelveDelete';
-import { PermissionId } from '@/entities/permissions/permissionId';
+import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ShelveEditProps = {
@@ -42,7 +42,7 @@ type ShelveEditProps = {
 };
 
 export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
-  const canEditWarehouses = useUserStore((s) => s.hasPermission(PermissionId.EDIT_WAREHOUSES));
+  const canEditWarehouses = useUserStore((s) => s.hasPermission(Permission.EDIT_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
