@@ -17,7 +17,7 @@ import {
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect } from 'react';
 
-type EntityImageUploadProps = {
+type ImageUploadProps = {
   entityType: string;
   entityId: number;
   currentImageUrl?: string | null;
@@ -25,13 +25,13 @@ type EntityImageUploadProps = {
   editable?: boolean;
 };
 
-export const EntityImageUpload = ({
+export const ImageUpload = ({
   entityType,
   entityId,
   currentImageUrl,
   onImageChange,
   editable = true,
-}: EntityImageUploadProps) => {
+}: ImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(currentImageUrl || null);

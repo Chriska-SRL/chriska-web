@@ -29,7 +29,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { EntityImageUpload } from '@/components/EntityImageUpload'; // Ajusta la ruta según tu estructura
+import { ImageUpload } from '@/components/ImageUpload';
 
 type ZoneEditProps = {
   isOpen: boolean;
@@ -211,7 +211,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                   </SimpleGrid>
 
                   {/* Componente de imagen */}
-                  <EntityImageUpload
+                  <ImageUpload
                     entityType="zones"
                     entityId={zone?.id ?? 0}
                     currentImageUrl={currentImageUrl}

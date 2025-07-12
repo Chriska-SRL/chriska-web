@@ -13,7 +13,6 @@ import {
   Box,
   Text,
   Button,
-  Image,
   Checkbox,
   SimpleGrid,
   useColorModeValue,
@@ -28,6 +27,7 @@ import { useDeleteZone } from '@/hooks/zone';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { Day } from '@/enums/day.enum';
+import { ImageUpload } from '@/components/ImageUpload';
 
 const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
 
@@ -109,9 +109,13 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
     </Box>
   );
 
+  const handleImageChange = (newImageUrl: string | null) => {
+    // Actualizar el estado local de zonas cuando se modifica la imagen desde el detail
+    setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl } : z)));
+  };
+
   const diasPedidos: Day[] = [Day.TUESDAY, Day.THURSDAY];
   const diasEntregas: Day[] = [Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY];
-  const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
 
   return (
     <>
@@ -146,14 +150,14 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
               {detailField('Descripción', zone.description)}
               {renderDaysCheckboxesGrouped(diasPedidos, diasEntregas)}
 
-              <Box w="100%">
-                <Text color={labelColor} mb="0.5rem">
-                  Imagen de la zona
-                </Text>
-                <Box border="1px solid" borderColor={inputBorder} borderRadius="md" overflow="hidden" width="100%">
-                  <Image src={zone.imageUrl ?? imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
-                </Box>
-              </Box>
+              {/* Usar ImageUpload en modo solo lectura */}
+              <ImageUpload
+                entityType="zones"
+                entityId={zone.id}
+                currentImageUrl={zone.imageUrl}
+                onImageChange={handleImageChange}
+                editable={false} // Solo lectura en el detail
+              />
             </VStack>
           </ModalBody>
 
