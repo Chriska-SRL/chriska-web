@@ -133,7 +133,7 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
           <ModalCloseButton />
           <ModalBody
             pb="0"
-            maxH="31rem"
+            maxH="35rem"
             overflow="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
@@ -151,7 +151,7 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
                   Imagen de la zona
                 </Text>
                 <Box border="1px solid" borderColor={inputBorder} borderRadius="md" overflow="hidden" width="100%">
-                  <Image src={imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
+                  <Image src={zone.imageUrl ?? imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
                 </Box>
               </Box>
             </VStack>
@@ -159,14 +159,6 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteZones && (
-                <GenericDelete
-                  item={{ id: zone.id, name: zone.name }}
-                  useDeleteHook={useDeleteZone}
-                  setItems={setZones}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditZones && (
                 <Button
                   bg="#4C88D8"
@@ -181,6 +173,14 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
                 >
                   Editar zona
                 </Button>
+              )}
+              {canDeleteZones && (
+                <GenericDelete
+                  item={{ id: zone.id, name: zone.name }}
+                  useDeleteHook={useDeleteZone}
+                  setItems={setZones}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

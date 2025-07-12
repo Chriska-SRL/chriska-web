@@ -105,7 +105,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
             description: zone?.description ?? '',
             requestDays: zone?.requestDays ?? ['Martes', 'Jueves'],
             deliveryDays: zone?.deliveryDays ?? ['Miércoles', 'Jueves', 'Viernes'],
-            zoneImage: zone?.zoneImage ?? '',
+            imageUrl: zone?.imageUrl ?? '',
           }}
           onSubmit={handleSubmit}
           validateOnChange
