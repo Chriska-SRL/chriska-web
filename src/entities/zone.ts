@@ -4,6 +4,5 @@ export type Zone = {
   description: string;
   deliveryDays: string[];
   requestDays: string[];
-  imageUrl: string;
-  // auditInfo
+  imageUrl: string | null;
 };
