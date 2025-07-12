@@ -93,14 +93,6 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
           </ModalBody>
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteVehicles && (
-                <GenericDelete
-                  item={{ id: vehicle.id, name: vehicle.plate }}
-                  useDeleteHook={useDeleteVehicle}
-                  setItems={setVehicles}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditVehicles && (
                 <Button
                   bg="#4C88D8"
@@ -113,8 +105,16 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
                     openEdit();
                   }}
                 >
-                  Editar vehículo
+                  Editar
                 </Button>
+              )}
+              {canDeleteVehicles && (
+                <GenericDelete
+                  item={{ id: vehicle.id, name: vehicle.plate }}
+                  useDeleteHook={useDeleteVehicle}
+                  setItems={setVehicles}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

@@ -92,14 +92,6 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteBrands && (
-                <GenericDelete
-                  item={{ id: brand.id, name: brand.name }}
-                  useDeleteHook={useDeleteBrand}
-                  setItems={setBrands}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditBrands && (
                 <Button
                   bg="#4C88D8"
@@ -112,8 +104,16 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
                     openEdit();
                   }}
                 >
-                  Editar marca
+                  Editar
                 </Button>
+              )}
+              {canDeleteBrands && (
+                <GenericDelete
+                  item={{ id: brand.id, name: brand.name }}
+                  useDeleteHook={useDeleteBrand}
+                  setItems={setBrands}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

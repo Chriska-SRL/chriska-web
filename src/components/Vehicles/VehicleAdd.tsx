@@ -159,7 +159,7 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
-                      <FormLabel>Capacidad de cajón</FormLabel>
+                      <FormLabel>Capacidad de cajones</FormLabel>
                       <Field
                         as={Input}
                         name="crateCapacity"

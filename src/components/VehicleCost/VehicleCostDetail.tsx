@@ -24,6 +24,9 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteVehicleCost } from '@/hooks/vehicleCost';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { getVehicleCostTypeLabel } from '@/enums/vehicleCostType.enum';
+import { formatPrice } from '@/utils/formatters/price';
+import { formatDate } from '@/utils/formatters/date';
 
 type VehicleCostDetailProps = {
   vehicleCost: VehicleCost;
@@ -79,28 +82,30 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
             Detalle del costo
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
+          <ModalBody
+            pb="0"
+            maxH="30rem"
+            overflow="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             <VStack spacing="0.75rem">
-              {detailField('Fecha', new Date(vehicleCost.date).toLocaleDateString('es-ES'))}
-              {detailField('Tipo', vehicleCost.type)}
-              {detailField('Monto', vehicleCost.amount)}
+              {detailField('Fecha', formatDate(vehicleCost.date))}
+              {detailField('Tipo', getVehicleCostTypeLabel(vehicleCost.type))}
+              {detailField('Monto', formatPrice(vehicleCost.amount))}
               {detailField('Descripción', vehicleCost.description)}
             </VStack>
           </ModalBody>
+
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteVehicleCosts && (
-                <GenericDelete
-                  item={{ id: vehicleCost.id, name: vehicleCost.type }}
-                  useDeleteHook={useDeleteVehicleCost}
-                  setItems={setVehicleCosts}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditVehicleCosts && (
                 <Button
                   bg="#4C88D8"
@@ -115,6 +120,17 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
                 >
                   Editar costo
                 </Button>
+              )}
+              {canDeleteVehicleCosts && (
+                <GenericDelete
+                  item={{
+                    id: vehicleCost.id,
+                    name: `${getVehicleCostTypeLabel(vehicleCost.type)} - ${formatPrice(vehicleCost.amount)}`,
+                  }}
+                  useDeleteHook={useDeleteVehicleCost}
+                  setItems={setVehicleCosts}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

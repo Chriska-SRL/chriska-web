@@ -26,7 +26,8 @@ import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateVehicleCost } from '@/hooks/vehicleCost';
-import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { VehicleCostType, VehicleCostTypeOptions } from '@/enums/vehicleCostType.enum';
+import { formatDate } from '@/utils/formatters/date';
 
 type VehicleCostEditProps = {
   isOpen: boolean;
@@ -60,9 +61,21 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
 
   useEffect(() => {
     if (fieldError) {
-      toast({ title: 'Error', description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
+      toast({
+        title: 'Error',
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
     } else if (error) {
-      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
+      toast({
+        title: 'Error inesperado',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
   }, [error, fieldError]);
 
@@ -83,7 +96,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
           Editar costo
         </ModalHeader>
         <ModalCloseButton />
@@ -91,7 +104,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
           initialValues={{
             id: cost?.id ?? 0,
             vehicleId: cost?.vehicleId ?? 0,
-            date: cost?.date ? new Date(cost.date).toISOString().substring(0, 10) : '',
+            date: cost?.date ? formatDate(cost.date) : '',
             type: cost?.type ?? '',
             amount: cost?.amount ?? '',
             description: cost?.description ?? '',
@@ -102,7 +115,16 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
         >
           {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0">
+              <ModalBody
+                pb="0"
+                maxH="31rem"
+                overflow="auto"
+                sx={{
+                  '&::-webkit-scrollbar': { display: 'none' },
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                     <FormLabel>Fecha</FormLabel>
@@ -129,8 +151,8 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                       disabled={isLoading}
                     >
                       <option value="">Seleccionar tipo</option>
-                      {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
-                        <option key={key} value={key}>
+                      {VehicleCostTypeOptions.map(({ value, label }) => (
+                        <option key={value} value={value}>
                           {label}
                         </option>
                       ))}
@@ -145,6 +167,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                       name="amount"
                       type="number"
                       step="0.01"
+                      placeholder="0.00"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
@@ -158,6 +181,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                     <Field
                       as={Textarea}
                       name="description"
+                      placeholder="Descripción opcional del costo..."
                       bg={inputBg}
                       borderColor={borderColor}
                       disabled={isLoading}

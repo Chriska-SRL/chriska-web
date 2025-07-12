@@ -104,14 +104,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteClients && (
-                <GenericDelete
-                  item={{ id: client.id, name: client.name }}
-                  useDeleteHook={useDeleteClient}
-                  setItems={setClients}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditClients && (
                 <Button
                   bg="#4C88D8"
@@ -124,8 +116,16 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                     openEdit();
                   }}
                 >
-                  Editar cliente
+                  Editar
                 </Button>
+              )}
+              {canDeleteClients && (
+                <GenericDelete
+                  item={{ id: client.id, name: client.name }}
+                  useDeleteHook={useDeleteClient}
+                  setItems={setClients}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

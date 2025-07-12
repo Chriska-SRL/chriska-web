@@ -1,4 +1,4 @@
-'use product';
+'use client';
 
 import {
   IconButton,
@@ -18,21 +18,23 @@ import {
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
-import { Product } from '@/entities/product';
-import { ProductEdit } from './ProductEdit';
+import { Category } from '@/entities/category';
+
 import { GenericDelete } from '../shared/GenericDelete';
-import { useDeleteProduct } from '@/hooks/product';
+import { useDeleteSubCategory } from '@/hooks/subcategory';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { SubCategory } from '@/entities/subcategory';
+import { SubCategoryEdit } from './SubCategoryEdit';
 
-type ProductDetailProps = {
-  product: Product;
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+type SubCategoryDetailProps = {
+  subcategory: SubCategory;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
-  const canEditProducts = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
-  const canDeleteProducts = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
+export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDetailProps) => {
+  const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
+  const canDeleteCategories = useUserStore((s) => s.hasPermission(Permission.DELETE_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -41,6 +43,20 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+
+  const onDeleted = () => {
+    onClose();
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat.id === subcategory.category.id
+          ? {
+              ...cat,
+              subCategories: cat.subCategories.filter((sub) => sub.id !== subcategory.id),
+            }
+          : cat,
+      ),
+    );
+  };
 
   const detailField = (label: string, value: string | number | null | undefined) => (
     <Box w="100%">
@@ -79,29 +95,29 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Detalle del producto
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+            Detalle de la subcategoría
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
+          <ModalBody
+            pb="0"
+            maxH="30rem"
+            overflow="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             <VStack spacing="0.75rem">
-              {detailField('Código interno', product.internalCode)}
-              {detailField('Código de barras', product.barcode)}
-              {detailField('Nombre', product.name)}
-              {detailField('Precio', product.price)}
-              {detailField('Unidad', product.unitType)}
-              {detailField('Descripción', product.description)}
-              {detailField('Marca', product.brand.name)}
-              {detailField('Condición de temperatura', product.temperatureCondition)}
-              {detailField('Observaciones', product.observation)}
-              {detailField('Categoría', product.subCategory.category.name)}
-              {detailField('Subcategoría', product.subCategory.name)}
+              {detailField('Nombre', subcategory.name)}
+              {detailField('Descripción', subcategory.description)}
             </VStack>
           </ModalBody>
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditProducts && (
+              {canEditCategories && (
                 <Button
                   bg="#4C88D8"
                   color="white"
@@ -116,12 +132,12 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
                   Editar
                 </Button>
               )}
-              {canDeleteProducts && (
+              {canDeleteCategories && (
                 <GenericDelete
-                  item={{ id: product.id, name: product.name }}
-                  useDeleteHook={useDeleteProduct}
-                  setItems={setProducts}
-                  onDeleted={onClose}
+                  item={{ id: subcategory.id, name: subcategory.name }}
+                  useDeleteHook={useDeleteSubCategory}
+                  setItems={setCategories}
+                  onDeleted={onDeleted}
                 />
               )}
             </Box>
@@ -130,7 +146,12 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
       </Modal>
 
       {isEditOpen && (
-        <ProductEdit isOpen={isEditOpen} onClose={closeEdit} product={product} setProducts={setProducts} />
+        <SubCategoryEdit
+          isOpen={isEditOpen}
+          onClose={closeEdit}
+          subcategory={subcategory}
+          setCategories={setCategories}
+        />
       )}
     </>
   );
