@@ -1,4 +1,4 @@
-import { VehicleCostType } from './vehicleCostType';
+import { VehicleCostType } from '../enums/vehicleCostType.enum';
 
 export type VehicleCost = {
   id: number;

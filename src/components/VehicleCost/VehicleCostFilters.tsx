@@ -1,6 +1,6 @@
 'use client';
 
-import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import {
   Flex,
   Select,

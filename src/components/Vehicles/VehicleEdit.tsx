@@ -106,9 +106,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0">
                 <VStack spacing="0.75rem">
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.plate && !!errors.plate) || fieldError?.campo === 'plate'}
-                  >
+                  <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
                     <FormLabel>Matrícula</FormLabel>
                     <Field
                       as={Input}
@@ -123,9 +121,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                     <FormErrorMessage>{errors.plate}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.brand && !!errors.brand) || fieldError?.campo === 'brand'}
-                  >
+                  <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
                     <FormLabel>Marca</FormLabel>
                     <Field
                       as={Input}
@@ -140,9 +136,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                     <FormErrorMessage>{errors.brand}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isInvalid={(submitCount > 0 && touched.model && !!errors.model) || fieldError?.campo === 'model'}
-                  >
+                  <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
                     <FormLabel>Modelo</FormLabel>
                     <Field
                       as={Input}
@@ -157,13 +151,8 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                     <FormErrorMessage>{errors.model}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isInvalid={
-                      (submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity) ||
-                      fieldError?.campo === 'crateCapacity'
-                    }
-                  >
-                    <FormLabel>Capacidad de cajón</FormLabel>
+                  <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
+                    <FormLabel>Capacidad de cajones</FormLabel>
                     <Field
                       as={Input}
                       name="crateCapacity"

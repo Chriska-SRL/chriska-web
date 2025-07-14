@@ -22,7 +22,6 @@ import {
   Text,
   Checkbox,
   SimpleGrid,
-  Image,
 } from '@chakra-ui/react';
 import { Zone } from '@/entities/zone';
 import { Formik, Field, FieldArray } from 'formik';
@@ -30,6 +29,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
+import { ImageUpload } from '@/components/ImageUpload';
 
 type ZoneEditProps = {
   isOpen: boolean;
@@ -44,6 +44,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
   const toast = useToast();
 
   const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(zone?.imageUrl || null);
   const { data, isLoading, error, fieldError } = useUpdateZone(zoneProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -58,11 +59,13 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
         duration: 1500,
         isClosable: true,
       });
-      setZones((prevZones) => prevZones.map((z) => (z.id === data.id ? { ...z, ...data } : z)));
+      setZones((prevZones) =>
+        prevZones.map((z) => (z.id === data.id ? { ...z, ...data, imageUrl: currentImageUrl || null } : z)),
+      );
       setZoneProps(undefined);
       onClose();
     }
-  }, [data]);
+  }, [data, currentImageUrl]);
 
   useEffect(() => {
     if (fieldError) {
@@ -88,7 +91,13 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
     setZoneProps(values);
   };
 
-  const imagenUrl = 'https://developers.google.com/static/maps/images/landing/hero_geocoding_api.png';
+  const handleImageChange = (newImageUrl: string | null) => {
+    setCurrentImageUrl(newImageUrl);
+
+    if (zone) {
+      setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl || null } : z)));
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
@@ -105,7 +114,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
             description: zone?.description ?? '',
             requestDays: zone?.requestDays ?? ['Martes', 'Jueves'],
             deliveryDays: zone?.deliveryDays ?? ['Miércoles', 'Jueves', 'Viernes'],
-            zoneImage: zone?.zoneImage ?? '',
+            imageUrl: zone?.imageUrl ?? null,
           }}
           onSubmit={handleSubmit}
           validateOnChange
@@ -149,7 +158,6 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
 
-                  {/* Checkboxes clickeables */}
                   <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start" w="100%">
                     <Box>
                       <Text mb="0.5rem">Días de pedidos</Text>
@@ -200,13 +208,13 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                     </Box>
                   </SimpleGrid>
 
-                  {/* Imagen */}
-                  <Box w="100%">
-                    <Text mb="0.5rem">Imagen de la zona</Text>
-                    <Box border="1px solid" borderColor={borderColor} borderRadius="md" overflow="hidden" width="100%">
-                      <Image src={imagenUrl} alt="Imagen de la zona" width="100%" objectFit="cover" />
-                    </Box>
-                  </Box>
+                  <ImageUpload
+                    entityType="zones"
+                    entityId={zone?.id ?? 0}
+                    currentImageUrl={currentImageUrl}
+                    onImageChange={handleImageChange}
+                    editable
+                  />
                 </VStack>
               </ModalBody>
 
