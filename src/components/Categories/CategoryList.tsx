@@ -7,6 +7,8 @@ import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
 import { SubCategoryEdit } from '../SubCategories/SubCategoryEdit';
 import { CategoryEdit } from './CategoryEdit';
 import { Category } from '@/entities/category';
+import { CategoryDetail } from './CategoryDetail';
+import { SubCategoryDetail } from '../SubCategories/SubCategoryDetail';
 
 type CategoryListProps = {
   categories: Category[];
@@ -103,7 +105,7 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
 
                 <Flex alignItems="center" gap="1rem" display={{ base: 'none', md: 'flex' }}>
                   <SubCategoryAdd category={cat} setCategories={setCategories} />
-                  <CategoryEdit category={cat} setCategories={setCategories} />
+                  <CategoryDetail category={cat} setCategories={setCategories} />
                   <IconButton
                     aria-label="Expandir categoría"
                     icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
@@ -117,7 +119,7 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
 
               <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.5rem" display={{ base: 'flex', md: 'none' }}>
                 <SubCategoryAdd category={cat} setCategories={setCategories} />
-                <CategoryEdit category={cat} setCategories={setCategories} />
+                <CategoryDetail category={cat} setCategories={setCategories} />
                 <IconButton
                   aria-label="Expandir categoría"
                   icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
@@ -150,7 +152,7 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
                                 </Text>
                               )}
                             </Box>
-                            <SubCategoryEdit subcategory={sub} setCategories={setCategories} />
+                            <SubCategoryDetail subcategory={sub} setCategories={setCategories} />
                           </Flex>
                           {index < cat.subCategories.length - 1 && <Divider mt="0.5rem" />}
                         </Box>

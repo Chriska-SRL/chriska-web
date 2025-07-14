@@ -27,7 +27,7 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { useAddVehicleCost } from '@/hooks/vehicleCost';
-import { VehicleCostType, VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { VehicleCostType, VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 

@@ -70,6 +70,22 @@ export const UserFilters = ({
       alignItems={{ base: 'stretch', md: 'center' }}
       flexWrap="wrap"
     >
+      <InputGroup w={{ base: '100%', md: '15rem' }}>
+        <Input
+          placeholder="Buscar por nombre..."
+          value={filterName}
+          onChange={handleNameChange}
+          disabled={isLoading}
+          bg={bgInput}
+          borderColor={borderInput}
+          _placeholder={{ color: textColor }}
+          color={textColor}
+        />
+        <InputRightElement>
+          <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
+        </InputRightElement>
+      </InputGroup>
+
       <Select
         value={filterRoleId !== undefined ? String(filterRoleId) : '-1'}
         onChange={handleRoleChange}
@@ -100,22 +116,6 @@ export const UserFilters = ({
         <option value="activo">Activo</option>
         <option value="inactivo">Inactivo</option>
       </Select>
-
-      <InputGroup w={{ base: '100%', md: '15rem' }}>
-        <Input
-          placeholder="Buscar por nombre..."
-          value={filterName}
-          onChange={handleNameChange}
-          disabled={isLoading}
-          bg={bgInput}
-          borderColor={borderInput}
-          _placeholder={{ color: textColor }}
-          color={textColor}
-        />
-        <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
-        </InputRightElement>
-      </InputGroup>
 
       {hasActiveFilters && (
         <IconButton

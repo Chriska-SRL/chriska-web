@@ -36,7 +36,7 @@ export const Brands = () => {
   return (
     <>
       <Text fontSize="1.5rem" fontWeight="bold">
-        Zonas
+        Marcas
       </Text>
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <BrandFilters filterName={filterName} setFilterName={setFilterName} />

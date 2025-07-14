@@ -17,8 +17,9 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { VehicleCost } from '@/entities/vehicleCost';
-import { VehicleCostTypeLabels } from '@/entities/vehicleCostType';
+import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import { VehicleCostDetail } from './VehicleCostDetail';
+import { formatDate } from '@/utils/formatters/date';
 
 type VehicleCostListProps = {
   costs: VehicleCost[];
@@ -125,7 +126,7 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
               <Tbody>
                 {costs.map((cost) => (
                   <Tr key={cost.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{new Date(cost.date).toLocaleDateString()}</Td>
+                    <Td textAlign="center">{formatDate(cost.date)}</Td>
                     <Td textAlign="center">
                       {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
                     </Td>

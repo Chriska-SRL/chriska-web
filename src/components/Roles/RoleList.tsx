@@ -115,9 +115,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="20rem">
-                    Nombre
-                  </Th>
+                  <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center" maxW="30rem">
                     Descripción
                   </Th>

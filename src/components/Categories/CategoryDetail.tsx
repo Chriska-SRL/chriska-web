@@ -1,4 +1,4 @@
-'use category';
+'use client';
 
 import {
   IconButton,
@@ -27,12 +27,12 @@ import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryDetailProps = {
   category: Category;
-  setCategorys: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) => {
-  const canEditCategorys = useUserStore((s) => s.hasPermission(Permission.EDIT_CLIENTS));
-  const canDeleteCategorys = useUserStore((s) => s.hasPermission(Permission.DELETE_CLIENTS));
+export const CategoryDetail = ({ category, setCategories }: CategoryDetailProps) => {
+  const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
+  const canDeleteCategories = useUserStore((s) => s.hasPermission(Permission.DELETE_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -79,11 +79,20 @@ export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Detalle de categoría
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+            Detalle de la categoría
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="sccategoríal">
+          <ModalBody
+            pb="0"
+            maxH="30rem"
+            overflow="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             <VStack spacing="0.75rem">
               {detailField('Nombre', category.name)}
               {detailField('Descripción', category.description)}
@@ -92,15 +101,7 @@ export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) 
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteCategorys && (
-                <GenericDelete
-                  item={{ id: category.id, name: category.name }}
-                  useDeleteHook={useDeleteCategory}
-                  setItems={setCategorys}
-                  onDeleted={onClose}
-                />
-              )}
-              {canEditCategorys && (
+              {canEditCategories && (
                 <Button
                   bg="#4C88D8"
                   color="white"
@@ -112,17 +113,25 @@ export const CategoryDetail = ({ category, setCategorys }: CategoryDetailProps) 
                     openEdit();
                   }}
                 >
-                  Editar categoría
+                  Editar
                 </Button>
+              )}
+              {canDeleteCategories && (
+                <GenericDelete
+                  item={{ id: category.id, name: category.name }}
+                  useDeleteHook={useDeleteCategory}
+                  setItems={setCategories}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {/* {isEditOpen && (
-        <CategoryEdit isOpen={isEditOpen} onClose={closeEdit} category={category} setCategorys={setCategorys} />
-      )} */}
+      {isEditOpen && (
+        <CategoryEdit isOpen={isEditOpen} onClose={closeEdit} category={category} setCategories={setCategories} />
+      )}
     </>
   );
 };

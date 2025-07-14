@@ -92,14 +92,6 @@ export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteRoles && (
-                <GenericDelete
-                  item={{ id: role.id, name: role.name }}
-                  useDeleteHook={useDeleteRole}
-                  setItems={setRoles}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditRoles && (
                 <Button
                   bg="#4C88D8"
@@ -112,8 +104,16 @@ export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
                     openEdit();
                   }}
                 >
-                  Editar rol
+                  Editar
                 </Button>
+              )}
+              {canDeleteRoles && (
+                <GenericDelete
+                  item={{ id: role.id, name: role.name }}
+                  useDeleteHook={useDeleteRole}
+                  setItems={setRoles}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

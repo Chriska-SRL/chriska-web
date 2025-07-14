@@ -101,14 +101,6 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canDeleteSuppliers && (
-                <GenericDelete
-                  item={{ id: supplier.id, name: supplier.name }}
-                  useDeleteHook={useDeleteSupplier}
-                  setItems={setSuppliers}
-                  onDeleted={onClose}
-                />
-              )}
               {canEditSuppliers && (
                 <Button
                   bg="#4C88D8"
@@ -121,8 +113,16 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
                     openEdit();
                   }}
                 >
-                  Editar proveedor
+                  Editar
                 </Button>
+              )}
+              {canDeleteSuppliers && (
+                <GenericDelete
+                  item={{ id: supplier.id, name: supplier.name }}
+                  useDeleteHook={useDeleteSupplier}
+                  setItems={setSuppliers}
+                  onDeleted={onClose}
+                />
               )}
             </Box>
           </ModalFooter>

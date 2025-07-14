@@ -101,7 +101,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
           Agregar cliente
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
