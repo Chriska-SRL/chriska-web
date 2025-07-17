@@ -2,7 +2,7 @@ import { Box, HStack, useColorModeValue } from '@chakra-ui/react';
 import { FaStar } from 'react-icons/fa';
 
 type QualificationSelectorProps = {
-  value: string; // "3/5" format
+  value: string;
   onChange: (value: string) => void;
   size?: string;
   spacing?: string;
@@ -17,7 +17,11 @@ export const QualificationSelector = ({
   const currentRating = value ? parseInt(value.split('/')[0]) : 0;
 
   const handleStarClick = (rating: number) => {
-    onChange(`${rating}/5`);
+    if (rating === currentRating) {
+      onChange('0/5');
+    } else {
+      onChange(`${rating}/5`);
+    }
   };
 
   return (

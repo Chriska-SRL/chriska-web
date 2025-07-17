@@ -17,10 +17,15 @@ import {
   ModalFooter,
   ModalCloseButton,
   useDisclosure,
+  Flex,
+  FormErrorMessage,
+  Progress,
 } from '@chakra-ui/react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
 import { useState } from 'react';
+import { Formik, Field } from 'formik';
 import { BankAccount } from '@/entities/bankAccount';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type BankAccountsManagerProps = {
   bankAccounts: BankAccount[];
@@ -36,53 +41,21 @@ type BankAccountFormData = {
 export const BankAccountsManager = ({ bankAccounts, onChange }: BankAccountsManagerProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
-  const [formData, setFormData] = useState<BankAccountFormData>({
-    bank: '',
-    number: '',
-    name: '',
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
   const labelColor = useColorModeValue('black', 'white');
+  const dividerColor = useColorModeValue('gray.300', 'whiteAlpha.200');
 
-  const handleOpenAdd = () => {
+  const handleAdd = () => {
     setEditingAccount(null);
-    setFormData({ bank: '', number: '', name: '' });
     onOpen();
   };
 
-  const handleOpenEdit = (account: BankAccount) => {
+  const handleEdit = (account: BankAccount) => {
     setEditingAccount(account);
-    setFormData({
-      bank: account.bank,
-      number: account.number,
-      name: account.name,
-    });
     onOpen();
-  };
-
-  const handleSave = () => {
-    if (!formData.bank.trim() || !formData.number.trim() || !formData.name.trim()) {
-      return; // Basic validation
-    }
-
-    if (editingAccount) {
-      // Edit existing account
-      const updatedAccounts = bankAccounts.map((account) =>
-        account.id === editingAccount.id ? { ...account, ...formData } : account,
-      );
-      onChange(updatedAccounts);
-    } else {
-      // Add new account
-      const newAccount: BankAccount = {
-        id: Date.now(), // Temporary ID for new accounts
-        ...formData,
-      };
-      onChange([...bankAccounts, newAccount]);
-    }
-
-    onClose();
   };
 
   const handleDelete = (accountId: number) => {
@@ -90,40 +63,59 @@ export const BankAccountsManager = ({ bankAccounts, onChange }: BankAccountsMana
     onChange(updatedAccounts);
   };
 
+  //Cambiar cuando este la API
+  const handleSubmit = async (values: BankAccountFormData) => {
+    setIsSubmitting(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (editingAccount) {
+      const updatedAccounts = bankAccounts.map((account) =>
+        account.id === editingAccount.id ? { ...account, ...values } : account,
+      );
+      onChange(updatedAccounts);
+    } else {
+      const newAccount: BankAccount = {
+        id: Date.now(),
+        ...values,
+      };
+      onChange([...bankAccounts, newAccount]);
+    }
+
+    setIsSubmitting(false);
+    onClose();
+  };
+
   return (
     <Box w="100%">
-      <FormLabel color={labelColor} mb="0.5rem">
+      <Text color={labelColor} mb="0.5rem">
         Cuentas bancarias
-      </FormLabel>
+      </Text>
 
       <Box
-        minH="2.75rem"
-        maxH="12rem"
-        overflowY="auto"
+        px="1rem"
+        py={bankAccounts.length > 1 ? '0' : '0.75rem'}
+        bg={inputBg}
         border="1px solid"
         borderColor={borderColor}
         borderRadius="md"
-        bg={inputBg}
-        p="0.5rem"
       >
         {bankAccounts.length > 0 ? (
-          <VStack spacing="0.5rem" align="stretch">
+          <VStack spacing="0" align="stretch" divider={<Box h="1px" bg={dividerColor} />}>
             {bankAccounts.map((account) => (
-              <Box
+              <Flex
                 key={account.id}
-                p="0.75rem"
-                bg={useColorModeValue('white', 'whiteAlpha.50')}
-                border="1px solid"
-                borderColor={useColorModeValue('gray.200', 'whiteAlpha.200')}
-                borderRadius="md"
+                flexDir="column"
+                py={bankAccounts.length === 1 ? '0' : '0.75rem'}
+                position="relative"
               >
                 <HStack justify="space-between" align="start">
                   <Box flex="1">
-                    <Text fontWeight="semibold" fontSize="sm" mb="0.25rem">
+                    <Text fontWeight="semibold" fontSize="sm">
                       {account.bank}
                     </Text>
-                    <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')} mb="0.25rem">
-                      Nº: {account.number}
+                    <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
+                      Nº de cuenta: {account.number}
                     </Text>
                     <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
                       Nombre: {account.name}
@@ -135,7 +127,7 @@ export const BankAccountsManager = ({ bankAccounts, onChange }: BankAccountsMana
                       icon={<FaEdit />}
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleOpenEdit(account)}
+                      onClick={() => handleEdit(account)}
                     />
                     <IconButton
                       aria-label="Eliminar cuenta"
@@ -147,76 +139,110 @@ export const BankAccountsManager = ({ bankAccounts, onChange }: BankAccountsMana
                     />
                   </HStack>
                 </HStack>
-              </Box>
+              </Flex>
             ))}
           </VStack>
         ) : (
-          <Text color={useColorModeValue('gray.500', 'gray.400')} textAlign="center" py="1rem">
-            No hay cuentas bancarias agregadas
-          </Text>
+          <Text>No hay cuentas bancarias asociadas</Text>
         )}
       </Box>
 
-      <Button leftIcon={<FaPlus />} onClick={handleOpenAdd} size="sm" mt="0.5rem" variant="outline" w="100%">
+      <Button leftIcon={<FaPlus />} onClick={handleAdd} size="sm" mt="0.5rem" variant="outline" w="100%">
         Agregar cuenta bancaria
       </Button>
 
-      {/* Modal para agregar/editar */}
-      <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{editingAccount ? 'Editar cuenta bancaria' : 'Agregar cuenta bancaria'}</ModalHeader>
+        <ModalContent mx="auto" borderRadius="lg">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+            {editingAccount ? 'Editar cuenta bancaria' : 'Agregar cuenta bancaria'}
+          </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing="1rem">
-              <FormControl>
-                <FormLabel>Banco</FormLabel>
-                <Input
-                  value={formData.bank}
-                  onChange={(e) => setFormData({ ...formData, bank: e.target.value })}
-                  placeholder="Ej: Banco República"
-                  bg={inputBg}
-                  borderColor={borderColor}
-                />
-              </FormControl>
 
-              <FormControl>
-                <FormLabel>Número de cuenta</FormLabel>
-                <Input
-                  value={formData.number}
-                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  placeholder="Ej: 1234567890"
-                  bg={inputBg}
-                  borderColor={borderColor}
-                />
-              </FormControl>
+          <Formik
+            initialValues={{
+              bank: editingAccount?.bank ?? '',
+              number: editingAccount?.number ?? '',
+              name: editingAccount?.name ?? '',
+            }}
+            onSubmit={handleSubmit}
+            validateOnChange
+            validateOnBlur={false}
+          >
+            {({ handleSubmit, errors, touched, submitCount }) => (
+              <form onSubmit={handleSubmit}>
+                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                  <VStack spacing="0.75rem">
+                    <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
+                      <FormLabel>Banco</FormLabel>
+                      <Field
+                        as={Input}
+                        name="bank"
+                        placeholder="Ej: Banco República"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
+                      <FormErrorMessage>{errors.bank}</FormErrorMessage>
+                    </FormControl>
 
-              <FormControl>
-                <FormLabel>Nombre del titular</FormLabel>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Ej: María Sánchez"
-                  bg={inputBg}
-                  borderColor={borderColor}
-                />
-              </FormControl>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button
-              bg="#4C88D8"
-              color="white"
-              _hover={{ backgroundColor: '#376bb0' }}
-              onClick={handleSave}
-              disabled={!formData.bank.trim() || !formData.number.trim() || !formData.name.trim()}
-            >
-              {editingAccount ? 'Guardar cambios' : 'Agregar cuenta'}
-            </Button>
-          </ModalFooter>
+                    <FormControl isInvalid={submitCount > 0 && touched.number && !!errors.number}>
+                      <FormLabel>Número de cuenta</FormLabel>
+                      <Field
+                        as={Input}
+                        name="number"
+                        placeholder="Ej: 1234567890"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
+                      <FormErrorMessage>{errors.number}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                      <FormLabel>Nombre del titular</FormLabel>
+                      <Field
+                        as={Input}
+                        name="name"
+                        placeholder="Ej: María Sánchez"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
+                      <FormErrorMessage>{errors.name}</FormErrorMessage>
+                    </FormControl>
+                  </VStack>
+                </ModalBody>
+
+                <ModalFooter pb="1.5rem">
+                  <Box mt="0.25rem" w="100%">
+                    <Progress
+                      h={isSubmitting ? '4px' : '1px'}
+                      mb="1.25rem"
+                      size="xs"
+                      isIndeterminate={isSubmitting}
+                      colorScheme="blue"
+                    />
+                    <Button
+                      type="submit"
+                      bg="#4C88D8"
+                      color="white"
+                      disabled={isSubmitting}
+                      _hover={{ backgroundColor: '#376bb0' }}
+                      width="100%"
+                      leftIcon={<FaCheck />}
+                      fontSize="1rem"
+                    >
+                      {editingAccount ? 'Guardar cambios' : 'Agregar cuenta'}
+                    </Button>
+                  </Box>
+                </ModalFooter>
+              </form>
+            )}
+          </Formik>
         </ModalContent>
       </Modal>
     </Box>

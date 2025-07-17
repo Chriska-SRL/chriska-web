@@ -95,33 +95,36 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
       { id: 2, bank: 'Banco Santander', number: '0987654321', name: 'Pedro Gutiérrez' },
     ];
 
+    const dividerColor = useColorModeValue('gray.300', 'whiteAlpha.200');
+
     return (
       <Box w="100%">
         <Text color={labelColor} mb="0.5rem">
           Cuentas bancarias
         </Text>
-        <Box minH="2.75rem" maxH="9rem" overflowY="auto">
+        <Box
+          px="1rem"
+          py={defaultBankAccounts.length === 1 ? '0.75rem' : '0'}
+          bg={inputBg}
+          border="1px solid"
+          borderColor={inputBorder}
+          borderRadius="md"
+          minH="2.75rem"
+        >
           {defaultBankAccounts.length > 0 ? (
-            <VStack spacing="0.75rem" align="stretch">
-              {defaultBankAccounts.map((account) => (
-                <Box
-                  key={account.id}
-                  p="0.75rem 1rem"
-                  bg={useColorModeValue('white', 'whiteAlpha.50')}
-                  border="1px solid"
-                  borderColor={useColorModeValue('gray.200', 'whiteAlpha.200')}
-                  borderRadius="md"
-                >
-                  <Text fontWeight="semibold" fontSize="sm" mb="0.25rem">
+            <VStack spacing="0" align="stretch" divider={<Box h="1px" bg={dividerColor} />}>
+              {defaultBankAccounts.map((account, index) => (
+                <Flex key={account.id} flexDir="column" py={defaultBankAccounts.length === 1 ? '0' : '0.75rem'}>
+                  <Text fontWeight="semibold" fontSize="sm">
                     {account.bank}
                   </Text>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')} mb="0.25rem">
+                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
                     Nº de cuenta: {account.number}
                   </Text>
                   <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
                     Nombre: {account.name}
                   </Text>
-                </Box>
+                </Flex>
               ))}
             </VStack>
           ) : (

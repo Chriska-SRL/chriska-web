@@ -272,8 +272,6 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     <FormErrorMessage>{errors.qualification}</FormErrorMessage>
                   </FormControl>
 
-                  {/* Bank Accounts Manager */}
-
                   <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                     <FormLabel>Observaciones</FormLabel>
                     <Field

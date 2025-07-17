@@ -128,7 +128,7 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                   <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Rol</Th>
                   <Th textAlign="center">Estado</Th>
-                  <Th textAlign="center">Acciones</Th>
+                  <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
