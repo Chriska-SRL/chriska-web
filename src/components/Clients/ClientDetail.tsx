@@ -29,6 +29,7 @@ import { useDeleteClient } from '@/hooks/client';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
+import { FaPlus } from 'react-icons/fa6';
 
 type ClientDetailProps = {
   client: Client;
@@ -80,7 +81,9 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         position="relative"
       >
         {value ?? '—'}
-        {onClick && <Icon as={FiEye} />}
+        {onClick && (
+          <Icon as={FiEye} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+        )}
       </Box>
     </Box>
   );
@@ -165,15 +168,15 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
 
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
+        <ModalContent mx="auto" borderRadius="lg" maxH="90%" overflow="auto">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
             Detalle del cliente
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
             pb="0"
-            maxH="30rem"
-            overflow="auto"
+            // maxH="30rem"
+            // overflow="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',
@@ -203,6 +206,32 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
+              <Button
+                bg="#4C88D8"
+                color="white"
+                _hover={{ backgroundColor: '#376bb0' }}
+                width="100%"
+                leftIcon={<FaPlus />}
+                onClick={() => {
+                  onClose();
+                  openEdit();
+                }}
+              >
+                Crear orden
+              </Button>
+              <Button
+                bg="#4C88D8"
+                color="white"
+                _hover={{ backgroundColor: '#376bb0' }}
+                width="100%"
+                leftIcon={<FaPlus />}
+                onClick={() => {
+                  onClose();
+                  openEdit();
+                }}
+              >
+                Crear devolución
+              </Button>
               {canEditClients && (
                 <Button
                   bg="#4C88D8"
