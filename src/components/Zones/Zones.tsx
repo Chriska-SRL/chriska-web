@@ -8,12 +8,30 @@ import { ZoneList } from './ZoneList';
 import { Zone } from '@/entities/zone';
 import { useGetZones } from '@/hooks/zone';
 import { Day } from '@/enums/day.enum';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export const Zones = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const { data, isLoading, error } = useGetZones();
   const [zones, setZones] = useState<Zone[]>([]);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [zoneToOpenModal, setZoneToOpenModal] = useState<number | null>(null);
+
+  const zoneToOpen = searchParams.get('open');
+
+  useEffect(() => {
+    if (zoneToOpen && zones.length > 0) {
+      const zone = zones.find((z) => z.id.toString() === zoneToOpen);
+      if (zone) {
+        setZoneToOpenModal(zone.id);
+        router.replace('/zonas', { scroll: false });
+      }
+    }
+  }, [zoneToOpen, zones, router]);
 
   useEffect(() => {
     if (data) setZones(data);
@@ -66,7 +84,14 @@ export const Zones = () => {
         <ZoneAdd setZones={setZones} />
       </Flex>
 
-      <ZoneList zones={filteredZones} isLoading={isLoading} error={error} setZones={setZones} />
+      <ZoneList
+        zones={filteredZones}
+        isLoading={isLoading}
+        error={error}
+        setZones={setZones}
+        zoneToOpenModal={zoneToOpenModal}
+        setZoneToOpenModal={setZoneToOpenModal}
+      />
     </>
   );
 };

@@ -17,6 +17,7 @@ import {
   useDisclosure,
   HStack,
   Flex,
+  Icon,
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { FaEdit, FaStar } from 'react-icons/fa';
@@ -27,6 +28,7 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteClient } from '@/hooks/client';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { useRouter } from 'next/navigation';
 
 type ClientDetailProps = {
   client: Client;
@@ -37,6 +39,8 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
   const canEditClients = useUserStore((s) => s.hasPermission(Permission.EDIT_CLIENTS));
   const canDeleteClients = useUserStore((s) => s.hasPermission(Permission.DELETE_CLIENTS));
 
+  const router = useRouter();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
 
@@ -45,7 +49,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const detailFieldClickable = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
       <Text color={labelColor} mb="0.5rem">
         {label}
@@ -62,8 +66,21 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        cursor={onClick ? 'pointer' : 'default'}
+        _hover={
+          onClick
+            ? {
+                bg: useColorModeValue('gray.200', 'whiteAlpha.200'),
+                borderColor: useColorModeValue('gray.300', 'whiteAlpha.400'),
+              }
+            : {}
+        }
+        onClick={onClick}
+        transition="all 0.2s"
+        position="relative"
       >
         {value ?? '—'}
+        {onClick && <Icon as={FiEye} />}
       </Box>
     </Box>
   );
@@ -164,20 +181,23 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
             }}
           >
             <VStack spacing="0.75rem">
-              {detailField('Nombre', client.name)}
-              {detailField('RUT', client.rut)}
-              {detailField('Razón Social', client.razonSocial)}
-              {detailField('Dirección', client.address)}
-              {detailField('Dirección en Maps', client.mapsAddress)}
-              {detailField('Horario', client.schedule)}
-              {detailField('Teléfono', client.phone)}
-              {detailField('Persona de contacto', client.contactName)}
-              {detailField('Correo electrónico', client.email)}
+              {detailFieldClickable('Nombre', client.name)}
+              {detailFieldClickable('RUT', client.rut)}
+              {detailFieldClickable('Razón Social', client.razonSocial)}
+              {detailFieldClickable('Dirección', client.address)}
+              {detailFieldClickable('Dirección en Maps', client.mapsAddress)}
+              {detailFieldClickable('Horario', client.schedule)}
+              {detailFieldClickable('Teléfono', client.phone)}
+              {detailFieldClickable('Persona de contacto', client.contactName)}
+              {detailFieldClickable('Correo electrónico', client.email)}
               {renderBankAccounts(client.bankAccounts)}
-              {detailField('Cajones prestados', client.loanedCrates)}
-              {detailField('Zona', client.zone.name)}
+              {detailFieldClickable('Cajones prestados', client.loanedCrates)}
+              {/* {detailFieldClickable('Zona', client.zone.name)} */}
+              {detailFieldClickable('Zona', client.zone.name, () => {
+                router.push(`/zonas?open=${client.zone.id}`);
+              })}
               {renderQualificationStars(client.qualification)}
-              {detailField('Observaciones', client.observations)}
+              {detailFieldClickable('Observaciones', client.observations)}
             </VStack>
           </ModalBody>
 

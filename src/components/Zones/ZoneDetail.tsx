@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
+import { useEffect } from 'react';
 import { Zone } from '@/entities/zone';
 import { ZoneEdit } from './ZoneEdit';
 import { GenericDelete } from '../shared/GenericDelete';
@@ -34,9 +35,11 @@ const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDA
 type ZoneDetailProps = {
   zone: Zone;
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
+export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDetailProps) => {
   const canEditZones = useUserStore((s) => s.hasPermission(Permission.EDIT_ZONES));
   const canDeleteZones = useUserStore((s) => s.hasPermission(Permission.DELETE_ZONES));
 
@@ -47,6 +50,17 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+  };
 
   const detailField = (label: string, value: string | number | null | undefined) => (
     <Box w="100%">
@@ -113,8 +127,9 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
     setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl } : z)));
   };
 
-  const diasPedidos: Day[] = [Day.TUESDAY, Day.THURSDAY];
-  const diasEntregas: Day[] = [Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY];
+  // Usar los datos reales de la zona en lugar de hardcoded
+  const diasPedidos = zone.requestDays || [];
+  const diasEntregas = zone.deliveryDays || [];
 
   return (
     <>
@@ -127,7 +142,7 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
@@ -168,7 +183,7 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -180,7 +195,7 @@ export const ZoneDetail = ({ zone, setZones }: ZoneDetailProps) => {
                   item={{ id: zone.id, name: zone.name }}
                   useDeleteHook={useDeleteZone}
                   setItems={setZones}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

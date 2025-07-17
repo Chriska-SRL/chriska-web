@@ -24,9 +24,11 @@ type ZoneListProps = {
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
   isLoading: boolean;
   error?: string;
+  zoneToOpenModal?: number | null;
+  setZoneToOpenModal?: (id: number | null) => void;
 };
 
-export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) => {
+export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, setZoneToOpenModal }: ZoneListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -87,7 +89,12 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
                     {zone.description}
                   </Text>
                   <Box position="absolute" top="0" right="0">
-                    <ZoneDetail zone={zone} setZones={setZones} />
+                    <ZoneDetail
+                      zone={zone}
+                      setZones={setZones}
+                      forceOpen={zoneToOpenModal === zone.id}
+                      onModalClose={() => setZoneToOpenModal?.(null)}
+                    />
                   </Box>
                 </Box>
               ))}
@@ -122,7 +129,12 @@ export const ZoneList = ({ zones, setZones, isLoading, error }: ZoneListProps) =
                     <Td textAlign="center">{zone.name}</Td>
                     <Td textAlign="center">{zone.description}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <ZoneDetail zone={zone} setZones={setZones} />
+                      <ZoneDetail
+                        zone={zone}
+                        setZones={setZones}
+                        forceOpen={zoneToOpenModal === zone.id}
+                        onModalClose={() => setZoneToOpenModal?.(null)}
+                      />
                     </Td>
                   </Tr>
                 ))}
