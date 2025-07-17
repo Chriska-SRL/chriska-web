@@ -119,17 +119,17 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   <Th textAlign="center" w="14rem">
                     Nombre
                   </Th>
-                  <Th textAlign="center" w="12rem">
-                    RUT
-                  </Th>
                   <Th textAlign="center" w="14rem">
                     Razón social
                   </Th>
-                  <Th textAlign="center" w="10rem">
-                    Zona
+                  <Th textAlign="center" w="12rem">
+                    Contacto
                   </Th>
                   <Th textAlign="center" w="10rem">
                     Teléfono
+                  </Th>
+                  <Th textAlign="center" w="10rem">
+                    Zona
                   </Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
@@ -138,10 +138,10 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                 {clients.map((client) => (
                   <Tr key={client.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{client.name}</Td>
-                    <Td textAlign="center">{client.rut}</Td>
                     <Td textAlign="center">{client.razonSocial}</Td>
-                    <Td textAlign="center">{client.zone?.name}</Td>
+                    <Td textAlign="center">{client.contactName}</Td>
                     <Td textAlign="center">{client.phone}</Td>
+                    <Td textAlign="center">{client.zone?.name}</Td>
                     <Td textAlign="center" pr="2rem">
                       <ClientDetail client={client} setClients={setClients} />
                     </Td>

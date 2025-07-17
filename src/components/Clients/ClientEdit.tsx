@@ -22,6 +22,7 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { Client } from '@/entities/client';
+import { BankAccount } from '@/entities/bankAccount';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
@@ -29,6 +30,8 @@ import { useGetZones } from '@/hooks/zone';
 import { useUpdateClient } from '@/hooks/client';
 import { validate } from '@/utils/validations/validate';
 import { Zone } from '@/entities/zone';
+import { QualificationSelector } from '@/components/QualificationSelector';
+import { BankAccountsManager } from '@/components/BankAccountsManager';
 
 type ClientEditProps = {
   isOpen: boolean;
@@ -46,6 +49,8 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(client?.bankAccounts || []);
 
   useEffect(() => {
     if (data) {
@@ -82,10 +87,11 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Partial<Client> & { zoneId: number }) => {
+  const handleSubmit = (values: any) => {
     const updatedClient = {
       ...values,
       zoneId: values.zoneId,
+      bankAccounts: bankAccounts, // Incluir las bank accounts
     };
     setClientProps(updatedClient);
   };
@@ -111,8 +117,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
             contactName: client?.contactName ?? '',
             email: client?.email ?? '',
             observations: client?.observations ?? '',
-            bank: client?.bank ?? '',
-            bankAccount: client?.bankAccount ?? '',
+            qualification: client?.qualification ?? '',
             loanedCrates: client?.loanedCrates ?? 0,
             zoneId: client?.zone?.id ?? 0,
           }}
@@ -120,7 +125,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
           validateOnChange
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, touched, submitCount }) => (
+          {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0" maxH="70vh" overflowY="auto">
                 <VStack spacing="0.75rem">
@@ -152,14 +157,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
 
                   <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                     <FormLabel>Razón Social</FormLabel>
-                    <Field
-                      as={Input}
-                      name="razonSocial"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      //   validate={validate}
-                    />
+                    <Field as={Input} name="razonSocial" bg={inputBg} borderColor={borderColor} h="2.75rem" />
                     <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                   </FormControl>
 
@@ -178,14 +176,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
 
                   <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                     <FormLabel>Dirección en Maps</FormLabel>
-                    <Field
-                      as={Input}
-                      name="mapsAddress"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      //   validate={validate}
-                    />
+                    <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={borderColor} h="2.75rem" />
                     <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                   </FormControl>
 
@@ -229,43 +220,12 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
-                    <FormLabel>Email</FormLabel>
-                    <Field
-                      as={Input}
-                      name="email"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      //   validate={validate}
-                    />
+                    <FormLabel>Correo electrónico</FormLabel>
+                    <Field as={Input} name="email" type="email" bg={inputBg} borderColor={borderColor} h="2.75rem" />
                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
-                    <FormLabel>Banco</FormLabel>
-                    <Field
-                      as={Input}
-                      name="bank"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                    />
-                    <FormErrorMessage>{errors.bank}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={submitCount > 0 && touched.bankAccount && !!errors.bankAccount}>
-                    <FormLabel>Cuenta bancaria</FormLabel>
-                    <Field
-                      as={Input}
-                      name="bankAccount"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                    />
-                    <FormErrorMessage>{errors.bankAccount}</FormErrorMessage>
-                  </FormControl>
+                  <BankAccountsManager bankAccounts={bankAccounts} onChange={setBankAccounts} />
 
                   <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                     <FormLabel>Cajones prestados</FormLabel>
@@ -273,6 +233,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                       as={Input}
                       name="loanedCrates"
                       type="number"
+                      min="0"
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
@@ -302,6 +263,15 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
                   </FormControl>
 
+                  <FormControl isInvalid={submitCount > 0 && touched.qualification && !!errors.qualification}>
+                    <FormLabel>Calificación</FormLabel>
+                    <QualificationSelector
+                      value={values.qualification}
+                      onChange={(value) => setFieldValue('qualification', value)}
+                    />
+                    <FormErrorMessage>{errors.qualification}</FormErrorMessage>
+                  </FormControl>
+
                   <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                     <FormLabel>Observaciones</FormLabel>
                     <Field
@@ -309,7 +279,8 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                       name="observations"
                       bg={inputBg}
                       borderColor={borderColor}
-                      validate={validate}
+                      rows={3}
+                      resize="vertical"
                     />
                     <FormErrorMessage>{errors.observations}</FormErrorMessage>
                   </FormControl>

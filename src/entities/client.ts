@@ -1,3 +1,4 @@
+import { BankAccount } from './bankAccount';
 import { Zone } from './zone';
 
 export type Client = {
@@ -7,13 +8,13 @@ export type Client = {
   razonSocial: string;
   address: string;
   mapsAddress: string;
-  schedule: string;
   phone: string;
-  contactName: string;
   email: string;
-  observations: string;
-  bank: string;
-  bankAccount: string;
+  contactName: string;
+  schedule: string;
   loanedCrates: number;
+  observations: string;
+  qualification: string;
+  bankAccounts: BankAccount[];
   zone: Zone;
 };

@@ -26,11 +26,14 @@ import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Client } from '@/entities/client';
+import { BankAccount } from '@/entities/bankAccount';
 import { useAddClient } from '@/hooks/client';
 import { useGetZones } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { QualificationSelector } from '@/components/QualificationSelector';
+import { BankAccountsManager } from '@/components/BankAccountsManager';
 
 type ClientAddProps = {
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
@@ -46,6 +49,9 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
   const { data, isLoading, error, fieldError } = useAddClient(clientProps);
 
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
+
+  // Estado para las bank accounts
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -64,6 +70,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
         isClosable: true,
       });
       setClientProps(undefined);
+      setBankAccounts([]); // Limpiar bank accounts
       setClients((prev) => [...prev, data]);
       onClose();
     }
@@ -77,11 +84,11 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Partial<Client> & { zoneId: number }) => {
-    console.log('id', values.zoneId);
+  const handleSubmit = (values: any) => {
     const newClient = {
       ...values,
       zoneId: values.zoneId,
+      bankAccounts: bankAccounts, // Incluir las bank accounts
     };
     setClientProps(newClient);
   };
@@ -120,8 +127,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
               contactName: '',
               email: '',
               observations: '',
-              bank: '',
-              bankAccount: '',
+              qualification: '',
               loanedCrates: 0,
               zoneId: 0,
             }}
@@ -129,7 +135,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount }) => (
+            {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0" maxH="70vh" overflowY="auto">
                   <VStack spacing="0.75rem">
@@ -161,14 +167,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
 
                     <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                       <FormLabel>Razón Social</FormLabel>
-                      <Field
-                        as={Input}
-                        name="razonSocial"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        // validate={validate}
-                      />
+                      <Field as={Input} name="razonSocial" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                     </FormControl>
 
@@ -187,14 +186,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
 
                     <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                       <FormLabel>Dirección en Maps</FormLabel>
-                      <Field
-                        as={Input}
-                        name="mapsAddress"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        // validate={validate}
-                      />
+                      <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                     </FormControl>
 
@@ -238,43 +230,13 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
-                      <FormLabel>Email</FormLabel>
-                      <Field
-                        as={Input}
-                        name="email"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        // validate={validate}
-                      />
+                      <FormLabel>Correo electrónico</FormLabel>
+                      <Field as={Input} name="email" type="email" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
-                      <FormLabel>Banco</FormLabel>
-                      <Field
-                        as={Input}
-                        name="bank"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                      />
-                      <FormErrorMessage>{errors.bank}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.bankAccount && !!errors.bankAccount}>
-                      <FormLabel>Cuenta bancaria</FormLabel>
-                      <Field
-                        as={Input}
-                        name="bankAccount"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                      />
-                      <FormErrorMessage>{errors.bankAccount}</FormErrorMessage>
-                    </FormControl>
+                    {/* Bank Accounts Manager */}
+                    <BankAccountsManager bankAccounts={bankAccounts} onChange={setBankAccounts} />
 
                     <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                       <FormLabel>Cajones prestados</FormLabel>
@@ -282,6 +244,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                         as={Input}
                         name="loanedCrates"
                         type="number"
+                        min="0"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
@@ -312,6 +275,15 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                       <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
                     </FormControl>
 
+                    <FormControl isInvalid={submitCount > 0 && touched.qualification && !!errors.qualification}>
+                      <FormLabel>Calificación</FormLabel>
+                      <QualificationSelector
+                        value={values.qualification}
+                        onChange={(value) => setFieldValue('qualification', value)}
+                      />
+                      <FormErrorMessage>{errors.qualification}</FormErrorMessage>
+                    </FormControl>
+
                     <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                       <FormLabel>Observaciones</FormLabel>
                       <Field
@@ -319,6 +291,8 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
                         name="observations"
                         bg={inputBg}
                         borderColor={inputBorder}
+                        rows={3}
+                        resize="vertical"
                         validate={validate}
                       />
                       <FormErrorMessage>{errors.observations}</FormErrorMessage>
