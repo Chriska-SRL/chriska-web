@@ -15,11 +15,14 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import { VehicleCostDetail } from './VehicleCostDetail';
 import { formatDate } from '@/utils/formatters/date';
+import { FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
 
 type VehicleCostListProps = {
   costs: VehicleCost[];
@@ -34,33 +37,35 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los costos: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!costs || costs.length === 0) {
+  if (!costs?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron costos con esos parámetros de búsqueda.
+          No se encontraron costos.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
@@ -69,14 +74,13 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="25rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {costs.map((cost) => (
                 <Box
                   key={cost.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -84,26 +88,59 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">Fecha: {new Date(cost.date).toLocaleDateString()}</Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Tipo:{' '}
-                    {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Monto: ${cost.amount}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Descripción: {cost.description || '—'}
-                  </Text>
-                  <VehicleCostDetail vehicleCost={cost} setVehicleCosts={setCosts} />
+                  <HStack spacing="0.75rem" mb="0.75rem" pr="2.5rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="lg" noOfLines={1} lineHeight="1.3">
+                        ${cost.amount}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiCalendar} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Fecha</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {formatDate(cost.date)}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Tipo</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Descripción</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {cost.description || 'N/A'}
+                      </Text>
+                    </HStack>
+                  </VStack>
+
+                  <Box position="absolute" top="0.25rem" right="0.5rem">
+                    <VehicleCostDetail vehicleCost={cost} setVehicleCosts={setCosts} />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {costs.length} costos</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {costs.length} costos
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -119,7 +156,9 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                   <Th textAlign="center">Fecha</Th>
                   <Th textAlign="center">Tipo</Th>
                   <Th textAlign="center">Monto</Th>
-                  <Th textAlign="center">Descripción</Th>
+                  <Th textAlign="center" w="25rem">
+                    Descripción
+                  </Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -131,8 +170,12 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                       {cost.type && VehicleCostTypeLabels[cost.type] ? VehicleCostTypeLabels[cost.type] : 'Sin tipo'}
                     </Td>
                     <Td textAlign="center">${cost.amount}</Td>
-                    <Td textAlign="center">{cost.description || '—'}</Td>
-                    <Td textAlign="center" pr="3rem">
+                    <Td textAlign="center">
+                      <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={cost.description}>
+                        {cost.description || 'N/A'}
+                      </Box>
+                    </Td>
+                    <Td textAlign="center" pr="2rem">
                       <VehicleCostDetail vehicleCost={cost} setVehicleCosts={setCosts} />
                     </Td>
                   </Tr>

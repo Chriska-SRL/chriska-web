@@ -71,41 +71,40 @@ export const CategoryList = ({
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar las categorias: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!categories || categories.length === 0) {
+  if (!categories?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron categorías con esos parámetros de búsqueda.
+          No se encontraron categorías.
         </Text>
         <Text fontSize="sm" color={noResultsColor}>
-          Inténtelo con otros parámetros.
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
   }
 
   return (
-    <Flex direction="column" h="100%" maxH="80%" justifyContent="space-between">
-      <Box overflowY="scroll">
-        <VStack spacing="1rem" align="stretch" pb="1rem">
+    <>
+      <Box overflowY="auto" h="calc(100% - 3.5rem)">
+        <VStack spacing="1rem" align="stretch">
           {categories.map((category) => (
             <Box
               key={category.id}
-              px="1rem"
-              py="0.75rem"
+              p="1rem"
               border="1px solid"
               borderColor={borderBox}
               borderRadius="0.5rem"
@@ -113,37 +112,17 @@ export const CategoryList = ({
               boxShadow="sm"
               position="relative"
             >
-              <Flex alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Text
-                    fontWeight="bold"
-                    whiteSpace="nowrap"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    maxW={{ base: '6rem', md: 'none' }}
-                    mt={{ base: '0.125rem', md: '0' }}
-                  >
+              <Flex alignItems="flex-start" justifyContent="space-between">
+                <Box flex="1" minW="0">
+                  <Text fontWeight="bold" fontSize="md" mb="0.5rem">
                     {category.name}
                   </Text>
-                  <Text
-                    fontSize="sm"
-                    color={subDescColor}
-                    mt={{ base: '0.625rem', md: '0.25rem' }}
-                    maxW={{ base: '22rem', md: '40rem' }}
-                    whiteSpace="nowrap"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                  >
+                  <Text fontSize="sm" color={subDescColor}>
                     {category.description}
                   </Text>
                 </Box>
-                <Flex
-                  alignItems="center"
-                  gap="1rem"
-                  position={{ base: 'absolute', md: 'static' }}
-                  top={{ base: '0.5rem', md: 'auto' }}
-                  right={{ base: '0.5rem', md: 'auto' }}
-                >
+
+                <Flex position="absolute" top="0.25rem" right="1rem" gap="0.5rem" alignItems="center">
                   <SubCategoryAdd category={category} setCategories={setCategories} />
                   <CategoryDetail
                     category={category}
@@ -154,7 +133,7 @@ export const CategoryList = ({
                   <IconButton
                     aria-label="Expandir categoría"
                     icon={expandedCategoryIds.includes(category.id) ? <FiChevronDown /> : <FiChevronRight />}
-                    size="md"
+                    size="sm"
                     bg="transparent"
                     _hover={{ bg: iconHoverBg }}
                     onClick={() => toggleExpand(category.id)}
@@ -170,28 +149,30 @@ export const CategoryList = ({
                       No hay subcategorías.
                     </Text>
                   ) : (
-                    <VStack align="start" spacing="0.5rem" pl="2rem">
+                    <VStack align="start" spacing="0.5rem" pl="1rem">
                       {category.subCategories.map((sub, index) => (
                         <Box key={sub.id} w="100%">
-                          <Flex justifyContent="space-between" alignItems="center">
-                            <Box>
-                              <Text fontSize="sm" fontWeight="medium">
+                          <Flex justifyContent="space-between" alignItems="flex-start">
+                            <Box flex="1" pr="3rem" minW="0">
+                              <Text fontSize="sm" fontWeight="medium" noOfLines={2} wordBreak="break-word">
                                 {sub.name}
                               </Text>
                               {sub.description && (
-                                <Text fontSize="xs" color={subDescColor}>
+                                <Text fontSize="xs" color={subDescColor} noOfLines={2} wordBreak="break-word">
                                   {sub.description}
                                 </Text>
                               )}
                             </Box>
-                            <SubCategoryDetail
-                              subcategory={sub}
-                              setCategories={setCategories}
-                              forceOpen={subcategoryToOpenModal === sub.id}
-                              onModalClose={() => setSubcategoryToOpenModal?.(null)}
-                            />
+                            <Box flexShrink="0">
+                              <SubCategoryDetail
+                                subcategory={sub}
+                                setCategories={setCategories}
+                                forceOpen={subcategoryToOpenModal === sub.id}
+                                onModalClose={() => setSubcategoryToOpenModal?.(null)}
+                              />
+                            </Box>
                           </Flex>
-                          {index < category.subCategories.length - 1 && <Divider mt="0.5rem" />}
+                          {index < category.subCategories.length - 1 && <Divider />}
                         </Box>
                       ))}
                     </VStack>
@@ -202,6 +183,9 @@ export const CategoryList = ({
           ))}
         </VStack>
       </Box>
-    </Flex>
+      <Flex alignItems="center" justifyContent={{ base: 'center', md: 'flex-start' }}>
+        <Text fontSize="sm">Mostrando {categories.length} categorías</Text>
+      </Flex>
+    </>
   );
 };

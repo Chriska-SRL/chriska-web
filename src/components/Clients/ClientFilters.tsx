@@ -44,7 +44,7 @@ export const ClientFilters = ({
 
   const searchOptions = [
     { value: 'name', label: 'Nombre' },
-    { value: 'razonSocial', label: 'Razón Social' },
+    { value: 'razonSocial', label: 'Razón social' },
     { value: 'contactName', label: 'Contacto' },
   ];
 

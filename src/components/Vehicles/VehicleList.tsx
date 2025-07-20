@@ -17,8 +17,11 @@ import {
   useMediaQuery,
   useColorModeValue,
   Tooltip,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { BsCurrencyDollar } from 'react-icons/bs';
+import { FiTruck, FiHash, FiTag, FiPackage } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleDetail } from './VehicleDetail';
@@ -37,8 +40,10 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
   const handleViewClick = (vehicleId: number) => {
@@ -48,27 +53,27 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los vehículos: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!vehicles || vehicles.length === 0) {
+  if (!vehicles?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron vehículos con esos parámetros de búsqueda.
+          No se encontraron vehículos.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
@@ -77,14 +82,13 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="25rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {vehicles.map((vehicle) => (
                 <Box
                   key={vehicle.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -92,36 +96,67 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">Matrícula: {vehicle.plate}</Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Marca: {vehicle.brand}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Modelo: {vehicle.model}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Capacidad de cajones: {vehicle.crateCapacity}
-                  </Text>
-                  <IconButton
-                    aria-label="Ver vehículo"
-                    icon={<BsCurrencyDollar />}
-                    onClick={() => handleViewClick(vehicle.id)}
-                    size="md"
-                    position="absolute"
-                    top="0"
-                    right="3rem"
-                    bg="transparent"
-                    _hover={{ bg: hoverBgIcon }}
-                  />
-                  <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
+                  <HStack spacing="0.75rem" mb="0.75rem" pr="6rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {vehicle.plate}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTruck} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Marca</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {vehicle.brand}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Modelo</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {vehicle.model}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Cap. cajones</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{vehicle.crateCapacity}</Text>
+                    </HStack>
+                  </VStack>
+
+                  <Flex position="absolute" top="0.25rem" right="0.5rem" gap="0.5rem" alignItems="center">
+                    <Tooltip label="Ver costo del vehículo">
+                      <IconButton
+                        aria-label="Ver vehículo"
+                        icon={<BsCurrencyDollar />}
+                        onClick={() => handleViewClick(vehicle.id)}
+                        variant="ghost"
+                        size="md"
+                        _hover={{ bg: hoverBgIcon }}
+                      />
+                    </Tooltip>
+                    <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
+                  </Flex>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {vehicles.length} vehículos
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -134,10 +169,18 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Matrícula</Th>
-                  <Th textAlign="center">Marca</Th>
-                  <Th textAlign="center">Modelo</Th>
-                  <Th textAlign="center">Cap. de cajones</Th>
+                  <Th textAlign="center" w="12rem">
+                    Matrícula
+                  </Th>
+                  <Th textAlign="center" w="12rem">
+                    Marca
+                  </Th>
+                  <Th textAlign="center" w="12rem">
+                    Modelo
+                  </Th>
+                  <Th textAlign="center" w="10rem">
+                    Cap. de cajones
+                  </Th>
                   <Th w="4rem"></Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
@@ -161,7 +204,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
                         />
                       </Tooltip>
                     </Td>
-                    <Td textAlign="center" pr="3rem">
+                    <Td textAlign="center" pr="2rem">
                       <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
                     </Td>
                   </Tr>

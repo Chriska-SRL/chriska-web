@@ -141,7 +141,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto" pr="0.5rem">
+                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>

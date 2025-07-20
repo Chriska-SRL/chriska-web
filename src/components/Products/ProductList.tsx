@@ -129,7 +129,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                   <VStack spacing="0.25rem" align="stretch" fontSize="sm">
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiHash} boxSize="14px" color={iconColor} />
+                        <Icon as={FiHash} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Cód. interno</Text>
                       </HStack>
                       <Text fontWeight="semibold">{product.internalCode}</Text>
@@ -137,7 +137,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiDollarSign} boxSize="14px" color={iconColor} />
+                        <Icon as={FiDollarSign} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Precio</Text>
                       </HStack>
                       <Text fontWeight="semibold" color="green.600">
@@ -147,7 +147,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiPackage} boxSize="14px" color={iconColor} />
+                        <Icon as={FiPackage} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Stock</Text>
                       </HStack>
                       <Text fontWeight="semibold">{product.stock}</Text>
@@ -155,7 +155,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiGrid} boxSize="14px" color={iconColor} />
+                        <Icon as={FiGrid} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Unidad</Text>
                       </HStack>
                       <Text fontWeight="semibold">{getUnitTypeLabel(product.unitType)}</Text>
@@ -163,7 +163,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiTag} boxSize="14px" color={iconColor} />
+                        <Icon as={FiTag} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Marca</Text>
                       </HStack>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
@@ -211,16 +211,19 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                   <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{product.internalCode}</Td>
                     <Td textAlign="center">{product.subCategory.name}</Td>
-                    <Td py="0.125rem">
-                      <Flex justify="center" align="center" h="5rem" w="100%">
+                    <Td display="flex" justifyContent="center" align="center">
+                      <ImageModal
+                        src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                        alt={product.name}
+                      >
                         <Image
-                          src={/* product.image ||  */ 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
-                          objectFit="cover"
-                          maxH="100%"
-                          maxW="100%"
-                          h="100%"
+                          src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                          alt={product.name}
+                          boxSize="4rem"
+                          borderRadius="md"
+                          bg="gray.100"
                         />
-                      </Flex>
+                      </ImageModal>
                     </Td>
                     <Td textAlign="center">{product.name}</Td>
                     <Td textAlign="center">{formatPrice(product.price)}</Td>

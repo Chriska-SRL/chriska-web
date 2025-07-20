@@ -88,7 +88,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                 >
                   <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
                     <Flex align="center" justify="center" boxSize="60px" bg="gray.100" borderRadius="md" flexShrink={0}>
-                      <Icon as={FiUser} boxSize="24px" color={iconColor} />
+                      <Icon as={FiUser} boxSize="1.5rem" color={iconColor} />
                     </Flex>
                     <VStack align="start" spacing="0.125rem" flex="1" minW="0">
                       <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
@@ -103,7 +103,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   <VStack spacing="0.25rem" align="stretch" fontSize="sm">
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiFileText} boxSize="14px" color={iconColor} />
+                        <Icon as={FiFileText} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>RUT</Text>
                       </HStack>
                       <Text fontWeight="semibold">{client.rut}</Text>
@@ -111,7 +111,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiUser} boxSize="14px" color={iconColor} />
+                        <Icon as={FiUser} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Contacto</Text>
                       </HStack>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
@@ -121,7 +121,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiPhone} boxSize="14px" color={iconColor} />
+                        <Icon as={FiPhone} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Teléfono</Text>
                       </HStack>
                       <Text fontWeight="semibold">{client.phone || 'N/A'}</Text>
@@ -129,7 +129,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
 
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
-                        <Icon as={FiMapPin} boxSize="14px" color={iconColor} />
+                        <Icon as={FiMapPin} boxSize="0.875rem" color={iconColor} />
                         <Text color={textColor}>Zona</Text>
                       </HStack>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">

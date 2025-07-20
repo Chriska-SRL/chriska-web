@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure,
   FormControl,
   FormLabel,
   Input,
@@ -16,42 +15,33 @@ import {
   VStack,
   Progress,
   Box,
-  IconButton,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Textarea,
-  Flex,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Shelve } from '@/entities/shelve';
 import { validate } from '@/utils/validations/validate';
-import { useUpdateShelve, useDeleteShelve } from '@/hooks/shelve';
-import { GenericDelete } from '../shared/GenericDelete';
+import { useUpdateShelve } from '@/hooks/shelve';
 import { Warehouse } from '@/entities/warehouse';
-import { ShelveDelete } from './ShelveDelete';
-import { Permission } from '@/enums/permission.enum';
-import { useUserStore } from '@/stores/useUserStore';
 
 type ShelveEditProps = {
+  isOpen: boolean;
+  onClose: () => void;
   shelve: Shelve;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
-  const canEditWarehouses = useUserStore((s) => s.hasPermission(Permission.EDIT_WAREHOUSES));
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
+export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEditProps) => {
   const toast = useToast();
   const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const { data, isLoading, error, fieldError } = useUpdateShelve(shelveProps);
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
 
   useEffect(() => {
     if (data) {
@@ -111,16 +101,6 @@ export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
 
   return (
     <>
-      <IconButton
-        aria-label="Editar estantería"
-        icon={<FiEdit />}
-        onClick={onOpen}
-        size="md"
-        bg="transparent"
-        _hover={{ bg: hoverBg }}
-        disabled={!canEditWarehouses}
-      />
-
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
@@ -183,26 +163,18 @@ export const ShelveEdit = ({ shelve, setWarehouses }: ShelveEditProps) => {
                       isIndeterminate={isLoading}
                       colorScheme="blue"
                     />
-                    <Flex gap="1rem" align={{ base: 'stretch', md: 'center' }} w="100%">
-                      <ShelveDelete
-                        shelve={shelve}
-                        isUpdating={isLoading}
-                        onDeleted={onClose}
-                        setWarehouses={setWarehouses}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        bg="#4C88D8"
-                        color="white"
-                        _hover={{ backgroundColor: '#376bb0' }}
-                        width="100%"
-                        leftIcon={<FaCheck />}
-                        py="1.375rem"
-                      >
-                        Confirmar
-                      </Button>
-                    </Flex>
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      bg="#4C88D8"
+                      color="white"
+                      _hover={{ backgroundColor: '#376bb0' }}
+                      width="100%"
+                      leftIcon={<FaCheck />}
+                      py="1.375rem"
+                    >
+                      Confirmar
+                    </Button>
                   </Box>
                 </ModalFooter>
               </form>

@@ -8,7 +8,6 @@ import {
   Th,
   Tbody,
   Td,
-  useDisclosure,
   Box,
   Text,
   Flex,
@@ -16,9 +15,8 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  HStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
-import { RoleEdit } from './RoleEdit';
 import { Role } from '@/entities/role';
 import { RoleDetail } from './RoleDetail';
 
@@ -30,40 +28,39 @@ type RoleListProps = {
 };
 
 export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) => {
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const editModalDisclosure = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los roles: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!roles || roles.length === 0) {
+  if (!roles?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron roles con esos parámetros de búsqueda.
+          No se encontraron roles.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
@@ -72,14 +69,13 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="100%" maxH="32rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {roles.map((role) => (
                 <Box
                   key={role.id}
-                  px="1rem"
-                  py="0.75rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -87,22 +83,30 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">{role.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    {role.description}
-                  </Text>
+                  <HStack spacing="0.75rem" pr="2.5rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {role.name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} noOfLines={3} mt="0.25rem">
+                        {role.description}
+                      </Text>
+                    </VStack>
+                  </HStack>
 
-                  <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.25rem">
+                  <Box position="absolute" top="0" right="0.5rem">
                     <RoleDetail role={role} setRoles={setRoles} />
-                  </Flex>
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {roles.length} roles</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {roles.length} roles
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -115,23 +119,29 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Nombre</Th>
-                  <Th textAlign="center" maxW="30rem">
-                    Descripción
+                  <Th textAlign="center" w="15rem">
+                    Nombre
                   </Th>
-                  <Th px="0"></Th>
+                  <Th textAlign="center">Descripción</Th>
+                  <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {roles.map((role) => (
                   <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
-                    <Td textAlign="center" maxW="30rem">
-                      <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
-                        {role.description}
+                    <Td textAlign="center">
+                      <Box
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        title={role.description}
+                        maxW="30rem"
+                      >
+                        {role.description || 'N/A'}
                       </Box>
                     </Td>
-                    <Td textAlign="center">
+                    <Td textAlign="center" pr="2rem">
                       <RoleDetail role={role} setRoles={setRoles} />
                     </Td>
                   </Tr>
