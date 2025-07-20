@@ -2,10 +2,8 @@
 
 import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack, useColorModeValue } from '@chakra-ui/react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
-import { SubCategoryEdit } from '../SubCategories/SubCategoryEdit';
-import { CategoryEdit } from './CategoryEdit';
 import { Category } from '@/entities/category';
 import { CategoryDetail } from './CategoryDetail';
 import { SubCategoryDetail } from '../SubCategories/SubCategoryDetail';
@@ -15,9 +13,22 @@ type CategoryListProps = {
   isLoading: boolean;
   error?: string;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  categoryToOpenModal?: number | null;
+  setCategoryToOpenModal?: (id: number | null) => void;
+  subcategoryToOpenModal?: number | null;
+  setSubcategoryToOpenModal?: (id: number | null) => void;
 };
 
-export const CategoryList = ({ categories, isLoading, error, setCategories }: CategoryListProps) => {
+export const CategoryList = ({
+  categories,
+  isLoading,
+  error,
+  setCategories,
+  categoryToOpenModal,
+  setCategoryToOpenModal,
+  subcategoryToOpenModal,
+  setSubcategoryToOpenModal,
+}: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
 
   const bgBox = useColorModeValue('white', 'gray.800');
@@ -26,6 +37,18 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
   const subEmptyColor = useColorModeValue('gray.500', 'gray.500');
   const noResultsColor = useColorModeValue('gray.500', 'gray.400');
   const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
+
+  // Auto-expandir categoría cuando se va a abrir una subcategoría
+  useEffect(() => {
+    if (subcategoryToOpenModal) {
+      const categoryWithSubcategory = categories.find((cat) =>
+        cat.subCategories?.some((sub) => sub.id === subcategoryToOpenModal),
+      );
+      if (categoryWithSubcategory && !expandedCategoryIds.includes(categoryWithSubcategory.id)) {
+        setExpandedCategoryIds((prev) => [...prev, categoryWithSubcategory.id]);
+      }
+    }
+  }, [subcategoryToOpenModal, categories, expandedCategoryIds]);
 
   const toggleExpand = (categoryId: number) => {
     setExpandedCategoryIds((prev) =>
@@ -66,9 +89,9 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
     <Flex direction="column" h="100%" maxH="80%" justifyContent="space-between">
       <Box overflowY="scroll">
         <VStack spacing="1rem" align="stretch" pb="1rem">
-          {categories.map((cat) => (
+          {categories.map((category) => (
             <Box
-              key={cat.id}
+              key={category.id}
               px="1rem"
               py="0.75rem"
               border="1px solid"
@@ -88,7 +111,7 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
                     maxW={{ base: '6rem', md: 'none' }}
                     mt={{ base: '0.125rem', md: '0' }}
                   >
-                    {cat.name}
+                    {category.name}
                   </Text>
                   <Text
                     fontSize="sm"
@@ -99,47 +122,57 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
                     overflow="hidden"
                     textOverflow="ellipsis"
                   >
-                    {cat.description}
+                    {category.description}
                   </Text>
                 </Box>
 
                 <Flex alignItems="center" gap="1rem" display={{ base: 'none', md: 'flex' }}>
-                  <SubCategoryAdd category={cat} setCategories={setCategories} />
-                  <CategoryDetail category={cat} setCategories={setCategories} />
+                  <SubCategoryAdd category={category} setCategories={setCategories} />
+                  <CategoryDetail
+                    category={category}
+                    setCategories={setCategories}
+                    forceOpen={categoryToOpenModal === category.id}
+                    onModalClose={() => setCategoryToOpenModal?.(null)}
+                  />
                   <IconButton
                     aria-label="Expandir categoría"
-                    icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
+                    icon={expandedCategoryIds.includes(category.id) ? <FiChevronDown /> : <FiChevronRight />}
                     size="md"
                     bg="transparent"
                     _hover={{ bg: iconHoverBg }}
-                    onClick={() => toggleExpand(cat.id)}
+                    onClick={() => toggleExpand(category.id)}
                   />
                 </Flex>
               </Flex>
 
               <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.5rem" display={{ base: 'flex', md: 'none' }}>
-                <SubCategoryAdd category={cat} setCategories={setCategories} />
-                <CategoryDetail category={cat} setCategories={setCategories} />
+                <SubCategoryAdd category={category} setCategories={setCategories} />
+                <CategoryDetail
+                  category={category}
+                  setCategories={setCategories}
+                  forceOpen={categoryToOpenModal === category.id}
+                  onModalClose={() => setCategoryToOpenModal?.(null)}
+                />
                 <IconButton
                   aria-label="Expandir categoría"
-                  icon={expandedCategoryIds.includes(cat.id) ? <FiChevronDown /> : <FiChevronRight />}
+                  icon={expandedCategoryIds.includes(category.id) ? <FiChevronDown /> : <FiChevronRight />}
                   size="md"
                   bg="transparent"
                   _hover={{ bg: iconHoverBg }}
-                  onClick={() => toggleExpand(cat.id)}
+                  onClick={() => toggleExpand(category.id)}
                 />
               </Flex>
 
-              <Collapse in={expandedCategoryIds.includes(cat.id)} animateOpacity>
+              <Collapse in={expandedCategoryIds.includes(category.id)} animateOpacity>
                 <Box pt="0.75rem">
                   <Divider mb="0.5rem" />
-                  {cat.subCategories.length === 0 ? (
+                  {category.subCategories.length === 0 ? (
                     <Text color={subEmptyColor} fontSize="sm">
                       No hay subcategorías.
                     </Text>
                   ) : (
                     <VStack align="start" spacing="0.5rem" pl="2rem">
-                      {cat.subCategories.map((sub, index) => (
+                      {category.subCategories.map((sub, index) => (
                         <Box key={sub.id} w="100%">
                           <Flex justifyContent="space-between" alignItems="center">
                             <Box>
@@ -152,9 +185,14 @@ export const CategoryList = ({ categories, isLoading, error, setCategories }: Ca
                                 </Text>
                               )}
                             </Box>
-                            <SubCategoryDetail subcategory={sub} setCategories={setCategories} />
+                            <SubCategoryDetail
+                              subcategory={sub}
+                              setCategories={setCategories}
+                              forceOpen={subcategoryToOpenModal === sub.id}
+                              onModalClose={() => setSubcategoryToOpenModal?.(null)}
+                            />
                           </Flex>
-                          {index < cat.subCategories.length - 1 && <Divider mt="0.5rem" />}
+                          {index < category.subCategories.length - 1 && <Divider mt="0.5rem" />}
                         </Box>
                       ))}
                     </VStack>

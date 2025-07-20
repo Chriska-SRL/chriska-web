@@ -7,12 +7,31 @@ import { BrandAdd } from './BrandAdd';
 import { BrandList } from './BrandList';
 import { Brand } from '@/entities/brand';
 import { useGetBrands } from '@/hooks/brand';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export const Brands = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const { data, isLoading, error } = useGetBrands();
   const [brands, setBrands] = useState<Brand[]>([]);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [brandToOpenModal, setBrandToOpenModal] = useState<number | null>(null);
+
+  const brandToOpen = searchParams.get('open');
+
+  useEffect(() => {
+    if (brandToOpen && brands.length > 0) {
+      const brand = brands.find((z) => z.id.toString() === brandToOpen);
+      if (brand) {
+        setBrandToOpenModal(brand.id);
+        router.replace('/marcas', { scroll: false });
+      }
+    }
+  }, [brandToOpen, brands, router]);
 
   useEffect(() => {
     if (data) setBrands(data);
@@ -43,7 +62,14 @@ export const Brands = () => {
         {isMobile && <Divider />}
         <BrandAdd setBrands={setBrands} />
       </Flex>
-      <BrandList brands={filteredBrands} isLoading={isLoading} error={error} setBrands={setBrands} />
+      <BrandList
+        brands={filteredBrands}
+        isLoading={isLoading}
+        error={error}
+        setBrands={setBrands}
+        brandToOpenModal={brandToOpenModal}
+        setBrandToOpenModal={setBrandToOpenModal}
+      />
     </>
   );
 };

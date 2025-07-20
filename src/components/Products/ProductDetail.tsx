@@ -1,4 +1,4 @@
-'use product';
+'use client';
 
 import {
   IconButton,
@@ -15,6 +15,7 @@ import {
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
@@ -24,15 +25,21 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteProduct } from '@/hooks/product';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 type ProductDetailProps = {
   product: Product;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
+export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }: ProductDetailProps) => {
   const canEditProducts = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
   const canDeleteProducts = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
+
+  const router = useRouter();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -42,7 +49,18 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+  };
+
+  const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
       <Text color={labelColor} mb="0.5rem">
         {label}
@@ -59,8 +77,23 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        cursor={onClick ? 'pointer' : 'default'}
+        _hover={
+          onClick
+            ? {
+                bg: useColorModeValue('gray.200', 'whiteAlpha.200'),
+                borderColor: useColorModeValue('gray.300', 'whiteAlpha.400'),
+              }
+            : {}
+        }
+        onClick={onClick}
+        transition="all 0.2s"
+        position="relative"
       >
         {value ?? '—'}
+        {onClick && (
+          <Icon as={FiEye} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+        )}
       </Box>
     </Box>
   );
@@ -76,14 +109,14 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'sm', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             Detalle del producto
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
+          <ModalBody pb="0" maxH="30rem" overflow="scroll" overflowX="hidden">
             <VStack spacing="0.75rem">
               {detailField('Código interno', product.internalCode)}
               {detailField('Código de barras', product.barcode)}
@@ -91,16 +124,38 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
               {detailField('Precio', product.price)}
               {detailField('Unidad', product.unitType)}
               {detailField('Descripción', product.description)}
-              {detailField('Marca', product.brand.name)}
+              {detailField('Marca', product.brand.name, () => {
+                handleClose();
+                router.push(`/marcas?open=${product.brand.id}`);
+              })}
               {detailField('Condición de temperatura', product.temperatureCondition)}
               {detailField('Observaciones', product.observation)}
-              {detailField('Categoría', product.subCategory.category.name)}
-              {detailField('Subcategoría', product.subCategory.name)}
+              {detailField('Categoría', product.subCategory.category.name, () => {
+                handleClose();
+                router.push(`/categorias?open=${product.subCategory.category.id}&type=category`);
+              })}
+              {detailField('Subcategoría', product.subCategory.name, () => {
+                handleClose();
+                router.push(`/categorias?open=${product.subCategory.id}&type=subcategory`);
+              })}
             </VStack>
           </ModalBody>
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
+              <Button
+                bg="#4C88D8"
+                color="white"
+                _hover={{ backgroundColor: '#376bb0' }}
+                width="100%"
+                leftIcon={<FaEdit />}
+                onClick={() => {
+                  handleClose();
+                  openEdit();
+                }}
+              >
+                Registrar movimiento
+              </Button>
               {canEditProducts && (
                 <Button
                   bg="#4C88D8"
@@ -109,7 +164,7 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -121,7 +176,7 @@ export const ProductDetail = ({ product, setProducts }: ProductDetailProps) => {
                   item={{ id: product.id, name: product.name }}
                   useDeleteHook={useDeleteProduct}
                   setItems={setProducts}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

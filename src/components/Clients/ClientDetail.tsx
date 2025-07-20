@@ -50,7 +50,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const detailFieldClickable = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
+  const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
       <Text color={labelColor} mb="0.5rem">
         {label}
@@ -184,23 +184,22 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
             }}
           >
             <VStack spacing="0.75rem">
-              {detailFieldClickable('Nombre', client.name)}
-              {detailFieldClickable('RUT', client.rut)}
-              {detailFieldClickable('Razón Social', client.razonSocial)}
-              {detailFieldClickable('Dirección', client.address)}
-              {detailFieldClickable('Dirección en Maps', client.mapsAddress)}
-              {detailFieldClickable('Horario', client.schedule)}
-              {detailFieldClickable('Teléfono', client.phone)}
-              {detailFieldClickable('Persona de contacto', client.contactName)}
-              {detailFieldClickable('Correo electrónico', client.email)}
+              {detailField('Nombre', client.name)}
+              {detailField('RUT', client.rut)}
+              {detailField('Razón Social', client.razonSocial)}
+              {detailField('Dirección', client.address)}
+              {detailField('Dirección en Maps', client.mapsAddress)}
+              {detailField('Horario', client.schedule)}
+              {detailField('Teléfono', client.phone)}
+              {detailField('Persona de contacto', client.contactName)}
+              {detailField('Correo electrónico', client.email)}
               {renderBankAccounts(client.bankAccounts)}
-              {detailFieldClickable('Cajones prestados', client.loanedCrates)}
-              {/* {detailFieldClickable('Zona', client.zone.name)} */}
-              {detailFieldClickable('Zona', client.zone.name, () => {
+              {detailField('Cajones prestados', client.loanedCrates)}
+              {detailField('Zona', client.zone.name, () => {
                 router.push(`/zonas?open=${client.zone.id}`);
               })}
               {renderQualificationStars(client.qualification)}
-              {detailFieldClickable('Observaciones', client.observations)}
+              {detailField('Observaciones', client.observations)}
             </VStack>
           </ModalBody>
 

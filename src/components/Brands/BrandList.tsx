@@ -24,9 +24,18 @@ type BrandListProps = {
   setBrands: React.Dispatch<React.SetStateAction<Brand[]>>;
   isLoading: boolean;
   error?: string;
+  brandToOpenModal?: number | null;
+  setBrandToOpenModal?: (id: number | null) => void;
 };
 
-export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProps) => {
+export const BrandList = ({
+  brands,
+  setBrands,
+  isLoading,
+  error,
+  brandToOpenModal,
+  setBrandToOpenModal,
+}: BrandListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -86,7 +95,12 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                   <Text fontSize="sm" color={textColor} mt="0.25rem">
                     {brand.description}
                   </Text>
-                  <BrandDetail brand={brand} setBrands={setBrands} />
+                  <BrandDetail
+                    brand={brand}
+                    setBrands={setBrands}
+                    forceOpen={brandToOpenModal === brand.id}
+                    onModalClose={() => setBrandToOpenModal?.(null)}
+                  />
                 </Box>
               ))}
             </VStack>
@@ -120,7 +134,12 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                     <Td textAlign="center">{brand.name}</Td>
                     <Td textAlign="center">{brand.description}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <BrandDetail brand={brand} setBrands={setBrands} />
+                      <BrandDetail
+                        brand={brand}
+                        setBrands={setBrands}
+                        forceOpen={brandToOpenModal === brand.id}
+                        onModalClose={() => setBrandToOpenModal?.(null)}
+                      />
                     </Td>
                   </Tr>
                 ))}
