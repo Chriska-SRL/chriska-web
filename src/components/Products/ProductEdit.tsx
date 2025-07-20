@@ -122,7 +122,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             observation: product?.observation ?? '',
             subCategoryId: product?.subCategory.id ?? 0,
             brandId: product?.brand.id ?? 0,
-            image: product?.image ?? '',
+            image: product?.imageUrl ?? '',
           }}
           onSubmit={(values) => setProductProps(values)}
           validateOnChange={true}
@@ -137,8 +137,8 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     <Flex w="full" justifyContent="center">
                       <Image
                         src={
-                          product.image !== ''
-                            ? product.image
+                          product.imageUrl !== ''
+                            ? product.imageUrl
                             : 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
                         }
                         alt={product.name}

@@ -1,8 +1,6 @@
-import { UnitType } from '@/enums/unitType.enum';
 import { Brand } from './brand';
 import { SubCategory } from './subcategory';
 import { Supplier } from './supplier';
-import { TemperatureCondition } from '@/enums/temperatureCondition';
 
 export type Product = {
   id: number;
@@ -13,9 +11,9 @@ export type Product = {
   imageUrl: string;
   stock: number;
   availableStock: number;
-  unitType: UnitType;
+  unitType: string;
   description: string;
-  temperatureCondition: TemperatureCondition;
+  temperatureCondition: string;
   observation: string;
   subCategory: SubCategory;
   brand: Brand;
