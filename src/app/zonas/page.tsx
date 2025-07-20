@@ -10,17 +10,14 @@ import { Permission } from '@/enums/permission.enum';
 
 const ZonesPage: NextPage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewZones = useUserStore((s) => s.hasPermission(Permission.VIEW_ZONES));
 
   useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated && !canViewZones) {
+    if (isHydrated && !canViewZones) {
       router.push('/');
     }
-  }, [isLoggedIn, isHydrated, canViewZones, router]);
+  }, [isHydrated, canViewZones, router]);
 
   return (
     <ClientOnly>

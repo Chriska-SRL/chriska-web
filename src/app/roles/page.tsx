@@ -10,17 +10,14 @@ import { Permission } from '@/enums/permission.enum';
 
 const RolesPage: NextPage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewRoles = useUserStore((s) => s.hasPermission(Permission.VIEW_ROLES));
 
   useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated && !canViewRoles) {
+    if (isHydrated && !canViewRoles) {
       router.push('/');
     }
-  }, [isLoggedIn, isHydrated, canViewRoles, router]);
+  }, [isHydrated, canViewRoles, router]);
 
   return (
     <ClientOnly>

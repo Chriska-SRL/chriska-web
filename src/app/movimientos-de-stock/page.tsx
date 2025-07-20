@@ -10,17 +10,14 @@ import { Permission } from '@/enums/permission.enum';
 
 const StockMovementsPage: NextPage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewStockMovements = useUserStore((s) => s.hasPermission(Permission.VIEW_STOCK_MOVEMENTS));
 
   useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated && !canViewStockMovements) {
+    if (isHydrated && !canViewStockMovements) {
       router.push('/');
     }
-  }, [isLoggedIn, isHydrated, canViewStockMovements, router]);
+  }, [isHydrated, canViewStockMovements, router]);
 
   return (
     <ClientOnly>

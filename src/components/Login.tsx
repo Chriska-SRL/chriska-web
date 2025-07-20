@@ -15,7 +15,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
 import { useRouter } from 'next/navigation';
 import { Login as LoginValues } from '@/entities/login';
@@ -24,9 +24,7 @@ import { useUserStore } from '@/stores/useUserStore';
 export const Login = () => {
   const router = useRouter();
   const toast = useToast();
-  const [loginProps, setLoginProps] = useState<LoginValues>();
-  const { data, isLoading, error, fieldError } = useLogin(loginProps);
-  const setUserFromToken = useUserStore((state) => state.setUserFromToken);
+  const { performLogin, isLoading, error, fieldError } = useLogin();
   const user = useUserStore((state) => state.user);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
@@ -36,15 +34,6 @@ export const Login = () => {
   const btnHover = useColorModeValue('brand.700', 'brand.700');
 
   useEffect(() => {
-    if (data) {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        setUserFromToken(token);
-      }
-    }
-  }, [data]);
-
-  useEffect(() => {
     if (user) {
       if (user.needsPasswordChange) {
         router.push('/cambiar-contrasena');
@@ -52,7 +41,7 @@ export const Login = () => {
         router.push('/');
       }
     }
-  }, [user]);
+  }, [user, router]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -65,7 +54,7 @@ export const Login = () => {
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   const validateFields = (values: LoginValues) => {
     const errors: Partial<LoginValues> = {};
@@ -87,8 +76,19 @@ export const Login = () => {
     return errors;
   };
 
-  const handleSubmit = (values: LoginValues) => {
-    setLoginProps(values);
+  const handleSubmit = async (values: LoginValues) => {
+    const success = await performLogin(values.username, values.password);
+
+    if (success) {
+      // El store se actualiza automáticamente y el useEffect maneja el redirect
+      toast({
+        title: 'Inicio de sesión exitoso',
+        description: 'Ha iniciado sesión correctamente',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
