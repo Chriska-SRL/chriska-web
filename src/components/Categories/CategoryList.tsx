@@ -1,6 +1,17 @@
 'use client';
 
-import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack, useColorModeValue } from '@chakra-ui/react';
+import {
+  Box,
+  Collapse,
+  Divider,
+  Flex,
+  IconButton,
+  Spinner,
+  Text,
+  VStack,
+  useColorModeValue,
+  useMediaQuery,
+} from '@chakra-ui/react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
@@ -30,6 +41,7 @@ export const CategoryList = ({
   setSubcategoryToOpenModal,
 }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const bgBox = useColorModeValue('white', 'gray.800');
   const borderBox = useColorModeValue('#f2f2f2', 'gray.600');
@@ -125,8 +137,13 @@ export const CategoryList = ({
                     {category.description}
                   </Text>
                 </Box>
-
-                <Flex alignItems="center" gap="1rem" display={{ base: 'none', md: 'flex' }}>
+                <Flex
+                  alignItems="center"
+                  gap="1rem"
+                  position={{ base: 'absolute', md: 'static' }}
+                  top={{ base: '0.5rem', md: 'auto' }}
+                  right={{ base: '0.5rem', md: 'auto' }}
+                >
                   <SubCategoryAdd category={category} setCategories={setCategories} />
                   <CategoryDetail
                     category={category}
@@ -143,24 +160,6 @@ export const CategoryList = ({
                     onClick={() => toggleExpand(category.id)}
                   />
                 </Flex>
-              </Flex>
-
-              <Flex position="absolute" top="0.5rem" right="0.5rem" gap="0.5rem" display={{ base: 'flex', md: 'none' }}>
-                <SubCategoryAdd category={category} setCategories={setCategories} />
-                <CategoryDetail
-                  category={category}
-                  setCategories={setCategories}
-                  forceOpen={categoryToOpenModal === category.id}
-                  onModalClose={() => setCategoryToOpenModal?.(null)}
-                />
-                <IconButton
-                  aria-label="Expandir categoría"
-                  icon={expandedCategoryIds.includes(category.id) ? <FiChevronDown /> : <FiChevronRight />}
-                  size="md"
-                  bg="transparent"
-                  _hover={{ bg: iconHoverBg }}
-                  onClick={() => toggleExpand(category.id)}
-                />
               </Flex>
 
               <Collapse in={expandedCategoryIds.includes(category.id)} animateOpacity>
