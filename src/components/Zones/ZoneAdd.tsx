@@ -160,14 +160,14 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
           w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
         >
-          Agregar zona
+          Nuevo
         </Button>
       )}
 
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'sm', md: 'md' }}
         isCentered
         closeOnOverlayClick={step === 'form'}
       >

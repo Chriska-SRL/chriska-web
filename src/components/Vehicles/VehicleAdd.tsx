@@ -92,11 +92,11 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
           w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
         >
-          Agregar vehículo
+          Nuevo
         </Button>
       )}
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

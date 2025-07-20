@@ -166,7 +166,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg" maxH="90%" overflow="auto">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">

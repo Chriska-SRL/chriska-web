@@ -9,7 +9,6 @@ import {
   InputGroup,
   Icon,
   InputRightElement,
-  InputLeftElement,
   Box,
 } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
@@ -64,15 +63,7 @@ export const ClientFilters = ({
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} w="100%" alignItems="center" flexWrap="wrap">
-      <Box
-        display="flex"
-        bg={bgInput}
-        borderRadius="md"
-        border="1px solid"
-        borderColor={borderInput}
-        overflow="hidden"
-        w={{ base: '100%', md: '20rem' }}
-      >
+      <Box display="flex" bg={bgInput} borderRadius="md" border="1px solid" borderColor={borderInput} overflow="hidden">
         <Select
           value={searchParam}
           onChange={handleSearchParamChange}
@@ -83,6 +74,7 @@ export const ClientFilters = ({
           minW="7rem"
           borderRadius="none"
           _focus={{ boxShadow: 'none' }}
+          maxW={{ base: '5rem', md: '100%' }}
         >
           {searchOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -112,7 +104,6 @@ export const ClientFilters = ({
         </InputGroup>
       </Box>
 
-      {/* Filtro por zona */}
       <Select
         placeholder="Todas las zonas"
         value={filterZone}
@@ -121,6 +112,8 @@ export const ClientFilters = ({
         borderColor={borderInput}
         color={textColor}
         w={{ base: '100%', md: 'auto' }}
+        minW={{ base: '100%', md: '10rem' }}
+        maxW={{ base: '100%', md: '14rem' }}
       >
         {zones?.map((zone) => (
           <option key={zone.id} value={zone.id.toString()}>
@@ -129,7 +122,6 @@ export const ClientFilters = ({
         ))}
       </Select>
 
-      {/* Botón de reset */}
       {hasActiveFilters && (
         <IconButton
           aria-label="Reiniciar filtros"
@@ -138,6 +130,8 @@ export const ClientFilters = ({
           _hover={{ bg: hoverResetBg }}
           onClick={handleResetFilters}
           flexShrink={0}
+          borderColor={borderInput}
+          w={{ base: '100%', md: 'auto' }}
         />
       )}
     </Flex>

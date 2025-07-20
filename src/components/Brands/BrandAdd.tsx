@@ -88,7 +88,7 @@ export const BrandAdd = ({ setBrands }: BrandAddProps) => {
           w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
         >
-          Agregar marca
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>

@@ -137,7 +137,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
           w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
         >
-          Agregar producto
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={handleClose} size="sm" isCentered>

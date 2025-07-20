@@ -124,7 +124,7 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
           px="1.5rem"
           disabled={!canCreateRoles}
         >
-          Agregar rol
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
