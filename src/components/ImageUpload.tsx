@@ -13,6 +13,7 @@ import {
   useToast,
   Spinner,
   Center,
+  Icon,
 } from '@chakra-ui/react';
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect } from 'react';
@@ -269,7 +270,7 @@ export const ImageUpload = ({
                   </VStack>
                 ) : (
                   <VStack color="white" spacing="2">
-                    <FiUpload size="2rem" />
+                    <Icon as={FiUpload} boxSize="2rem" />
                     <Text fontSize="sm" textAlign="center">
                       Click para cambiar imagen
                     </Text>
@@ -297,7 +298,7 @@ export const ImageUpload = ({
               </VStack>
             ) : (
               <VStack spacing="2">
-                <FiImage size="2rem" />
+                <Icon as={FiUpload} boxSize="2rem" />
                 <Text fontSize="sm">Sin imagen</Text>
               </VStack>
             )}

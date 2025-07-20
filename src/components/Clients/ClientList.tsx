@@ -87,9 +87,9 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   position="relative"
                 >
                   <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
-                    <Flex align="center" justify="center" boxSize="60px" bg="gray.100" borderRadius="md" flexShrink={0}>
+                    {/* <Flex align="center" justify="center" boxSize="60px" bg="gray.100" borderRadius="md" flexShrink={0}>
                       <Icon as={FiUser} boxSize="1.5rem" color={iconColor} />
-                    </Flex>
+                    </Flex> */}
                     <VStack align="start" spacing="0.125rem" flex="1" minW="0">
                       <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
                         {client.name}
