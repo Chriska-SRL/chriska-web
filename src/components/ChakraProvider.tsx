@@ -1,15 +1,16 @@
 'use client';
 
 import { ChakraProvider } from '@chakra-ui/react';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import theme from '@/theme/theme.client';
-import { UserHydrator } from '@/components/UserHydrator';
+import { useUserStore } from '@/stores/useUserStore';
 
 export const ChakraProviders = ({ children }: { children: ReactNode }) => {
-  return (
-    <ChakraProvider theme={theme}>
-      <UserHydrator />
-      {children}
-    </ChakraProvider>
-  );
+  const initializeFromStorage = useUserStore((state) => state.initializeFromStorage);
+
+  useEffect(() => {
+    initializeFromStorage();
+  }, [initializeFromStorage]);
+
+  return <ChakraProvider theme={theme}>{children}</ChakraProvider>;
 };

@@ -17,9 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ColorModeScript initialColorMode={chakraConfig.initialColorMode} />
       </head>
       <body>
-        <ChakraProviders>
-          <StoreInitializer>{children}</StoreInitializer>
-        </ChakraProviders>
+        <ChakraProviders>{children}</ChakraProviders>
       </body>
     </html>
   );
