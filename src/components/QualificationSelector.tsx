@@ -1,4 +1,4 @@
-import { Box, HStack, useColorModeValue } from '@chakra-ui/react';
+import { Box, HStack, Icon } from '@chakra-ui/react';
 import { FaStar } from 'react-icons/fa';
 
 type QualificationSelectorProps = {
@@ -35,8 +35,9 @@ export const QualificationSelector = ({
             _hover={{ transform: 'scale(1.1)' }}
             onClick={() => handleStarClick(star)}
           >
-            <FaStar
-              size={size}
+            <Icon
+              as={FaStar}
+              boxSize={size}
               color={star <= currentRating ? '#FFD700' : '#E2E8F0'}
               style={{
                 filter: star <= currentRating ? 'drop-shadow(0 0 3px rgba(255, 215, 0, 0.5))' : 'none',

@@ -5,7 +5,6 @@ import { Login, ClientOnly } from '@/components';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Text } from '@chakra-ui/react';
 
 const LoginPage: NextPage = () => {
   const router = useRouter();
@@ -18,11 +17,18 @@ const LoginPage: NextPage = () => {
     const user = useUserStore.getState().user;
 
     if (isLoggedIn && user?.needsPasswordChange) {
+      // Si necesita cambiar contraseña, ir ahí primero
       router.push('/cambiar-contrasena');
     } else if (isLoggedIn) {
+      // Si ya está logueado, ir al home (sin redirect params)
       router.push('/');
     }
   }, [isLoggedIn, isHydrated, router]);
+
+  // Si ya está logueado y hidratado, no mostrar el login
+  if (isHydrated && isLoggedIn) {
+    return null;
+  }
 
   return (
     <ClientOnly>

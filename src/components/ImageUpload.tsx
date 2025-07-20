@@ -13,9 +13,21 @@ import {
   useToast,
   Spinner,
   Center,
+  Icon,
 } from '@chakra-ui/react';
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect } from 'react';
+
+const getCookie = (name: string): string | null => {
+  if (typeof window === 'undefined') return null;
+
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+};
 
 type ImageUploadProps = {
   entityType: string;
@@ -55,7 +67,11 @@ export const ImageUpload = ({
       const formData = new FormData();
       formData.append('file', file);
 
-      const token = localStorage.getItem('access_token');
+      const token = getCookie('auth-token');
+      if (!token) {
+        throw new Error('Token no disponible');
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Images/${entityType}/${entityId}`, {
         method: 'POST',
         headers: {
@@ -99,7 +115,11 @@ export const ImageUpload = ({
   const deleteImage = async () => {
     setIsDeleting(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = getCookie('auth-token');
+      if (!token) {
+        throw new Error('Token no disponible');
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Images/${entityType}/${entityId}`, {
         method: 'DELETE',
         headers: {
@@ -269,7 +289,7 @@ export const ImageUpload = ({
                   </VStack>
                 ) : (
                   <VStack color="white" spacing="2">
-                    <FiUpload size="2rem" />
+                    <Icon as={FiUpload} boxSize="2rem" />
                     <Text fontSize="sm" textAlign="center">
                       Click para cambiar imagen
                     </Text>
@@ -297,7 +317,7 @@ export const ImageUpload = ({
               </VStack>
             ) : (
               <VStack spacing="2">
-                <FiImage size="2rem" />
+                <Icon as={FiUpload} boxSize="2rem" />
                 <Text fontSize="sm">Sin imagen</Text>
               </VStack>
             )}

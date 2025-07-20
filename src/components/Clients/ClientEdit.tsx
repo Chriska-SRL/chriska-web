@@ -91,7 +91,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
     const updatedClient = {
       ...values,
       zoneId: values.zoneId,
-      bankAccounts: bankAccounts, // Incluir las bank accounts
+      bankAccounts: bankAccounts,
     };
     setClientProps(updatedClient);
   };

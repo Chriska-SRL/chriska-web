@@ -94,7 +94,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
-      stars.push(<FaStar key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} size="2.5rem" />);
+      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="2.5rem" />);
     }
 
     return (
@@ -175,8 +175,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
           <ModalCloseButton />
           <ModalBody
             pb="0"
-            // maxH="30rem"
-            // overflow="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',

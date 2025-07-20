@@ -14,7 +14,7 @@ export const Content = ({ children }: { children: ReactNode }) => {
     <Flex
       justifyContent="center"
       alignItems="center"
-      h="100vh"
+      h="100dvh"
       w="100%"
       bg={outerBg}
       px={{ base: '1rem', md: '0' }}

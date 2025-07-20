@@ -16,7 +16,7 @@ export const WelcomePanel = () => {
         ¡Bienvenido!
       </Text>
       <Text fontSize={{ base: '1rem', md: '1.25rem' }} mt="0.5rem">
-        Selecciona una opción del menú lateral para comenzar
+        Selecciona una opción del menú para comenzar
       </Text>
     </Flex>
   );
