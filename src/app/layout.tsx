@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ColorModeScript } from '@chakra-ui/react';
 import { chakraConfig } from '@/theme/chakraConfig';
-import { StoreInitializer } from '@/components/StoreInitializer';
 
 export const metadata: Metadata = {
   title: 'Chriska SRL',
