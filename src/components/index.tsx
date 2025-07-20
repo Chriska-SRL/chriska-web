@@ -7,7 +7,6 @@ export * from './ClientOnly';
 export * from './PasswordReset';
 export * from './WelcomePanel';
 export * from './ThemeToggle';
-export * from './UserHydrator';
 export * from './Login';
 export * from './UserMenu';
 

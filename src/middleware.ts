@@ -1,34 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtDecode } from 'jwt-decode';
-
-const isTokenValid = (token: string): boolean => {
-  try {
-    const decoded: any = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    return decoded.exp > currentTime;
-  } catch {
-    return false;
-  }
-};
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Solo verificar si existe la cookie, no decodificar
   const authToken = request.cookies.get('auth-token')?.value;
-  const isAuthenticated = authToken && isTokenValid(authToken);
+  const hasToken = !!authToken;
 
-  const publicRoutes = ['/iniciar-sesion'];
-
+  // Rutas públicas - verificar PRIMERO
+  const publicRoutes = ['/iniciar-sesion', '/registrarse', '/forgot-password'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (isPublicRoute) {
-    if (isAuthenticated) {
+    if (hasToken) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     return NextResponse.next();
   }
 
+  // Rutas protegidas - todas las que tenías
   const protectedRoutes = [
     '/',
     '/usuarios',
@@ -44,11 +35,12 @@ export function middleware(request: NextRequest) {
     '/depositos-y-estanterias',
     '/cambiar-contrasena',
     '/perfil',
+    '/configuracion',
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
-  if (isProtectedRoute && !isAuthenticated) {
+  if (isProtectedRoute && !hasToken) {
     return NextResponse.redirect(new URL('/iniciar-sesion', request.url));
   }
 
