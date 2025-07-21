@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtDecode } from 'jwt-decode';
 
 const isTokenValid = (token: string): boolean => {
   try {
-    const decoded: any = jwtDecode(token);
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+
+    const payload = JSON.parse(atob(parts[1]));
+
     const currentTime = Date.now() / 1000;
-    return decoded.exp > currentTime;
+    return payload.exp > currentTime;
   } catch {
     return false;
   }
@@ -57,14 +60,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Coincidir con todas las rutas de solicitud excepto las que comienzan con:
-     * - api (rutas API)
-     * - _next/static (archivos estáticos)
-     * - _next/image (archivos de optimización de imágenes)
-     * - favicon.ico (archivo favicon)
-     * - archivos con extensiones comunes (js, css, png, jpg, etc.)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css|woff|woff2|ttf|eot|ico)$).*)',
   ],
 };
