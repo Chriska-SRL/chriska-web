@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   const hasToken = !!authToken;
 
   // Rutas públicas - verificar PRIMERO
-  const publicRoutes = ['/iniciar-sesion', '/registrarse', '/forgot-password'];
+  const publicRoutes = ['/iniciar-sesion'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (isPublicRoute) {
@@ -49,14 +49,19 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Coincidir con todas las rutas de solicitud excepto las que comienzan con:
-     * - api (rutas API)
-     * - _next/static (archivos estáticos)
-     * - _next/image (archivos de optimización de imágenes)
-     * - favicon.ico (archivo favicon)
-     * - archivos con extensiones comunes (js, css, png, jpg, etc.)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css|woff|woff2|ttf|eot|ico)$).*)',
+    '/',
+    '/usuarios/:path*',
+    '/productos/:path*',
+    '/roles/:path*',
+    '/marcas/:path*',
+    '/categorias/:path*',
+    '/vehiculos/:path*',
+    '/clientes/:path*',
+    '/zonas/:path*',
+    '/proveedores/:path*',
+    '/movimientos-de-stock/:path*',
+    '/depositos-y-estanterias/:path*',
+    '/cambiar-contrasena/:path*',
+    '/iniciar-sesion',
   ],
 };
