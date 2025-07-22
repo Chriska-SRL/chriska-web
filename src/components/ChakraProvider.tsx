@@ -10,7 +10,7 @@ export const ChakraProviders = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     initializeFromStorage();
-  }, [initializeFromStorage]);
+  }, []);
 
   return <ChakraProvider theme={theme}>{children}</ChakraProvider>;
 };

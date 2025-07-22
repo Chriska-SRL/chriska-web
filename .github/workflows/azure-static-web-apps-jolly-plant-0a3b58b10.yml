@@ -55,7 +55,6 @@ jobs:
           app_location: '/'
           api_location: ''
           output_location: ''
-          # skip_app_build: true
           github_id_token: ${{ steps.idtoken.outputs.result }}
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
