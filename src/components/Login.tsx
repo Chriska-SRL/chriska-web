@@ -17,31 +17,17 @@ import {
 import { Formik, Field } from 'formik';
 import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
-import { useRouter } from 'next/navigation';
 import { Login as LoginValues } from '@/entities/login';
-import { useUserStore } from '@/stores/useUserStore';
 
 export const Login = () => {
-  const router = useRouter();
   const toast = useToast();
   const { performLogin, isLoading, error, fieldError } = useLogin();
-  const user = useUserStore((state) => state.user);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
-
-  useEffect(() => {
-    if (user) {
-      if (user.needsPasswordChange) {
-        router.push('/cambiar-contrasena');
-      } else {
-        router.push('/');
-      }
-    }
-  }, [user, router]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -59,13 +45,11 @@ export const Login = () => {
   const validateFields = (values: LoginValues) => {
     const errors: Partial<LoginValues> = {};
 
-    const usernameRegex = /^[a-zA-Z.]+$/;
-
     if (!values.username || values.username.trim().length < 3) {
       errors.username = 'Debe ingresar un nombre de usuario válido';
     } else if (/\s/.test(values.username)) {
       errors.username = 'El nombre de usuario no debe contener espacios';
-    } else if (!usernameRegex.test(values.username)) {
+    } else if (!/^[a-zA-Z.]+$/.test(values.username)) {
       errors.username = 'Solo se permiten letras y puntos (.)';
     }
 
@@ -80,19 +64,18 @@ export const Login = () => {
     const success = await performLogin(values.username, values.password);
 
     if (success) {
-      // El store se actualiza automáticamente y el useEffect maneja el redirect
       toast({
         title: 'Inicio de sesión exitoso',
-        description: 'Ha iniciado sesión correctamente',
+        description: 'Redirigiendo...',
         status: 'success',
-        duration: 2000,
+        duration: 1500,
         isClosable: true,
       });
     }
   };
 
   return (
-    <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
+    <Flex height="100dvh" bg={bg} justifyContent="center" alignItems="center">
       <Container maxW={{ sm: '25rem', base: '20rem' }}>
         <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
           Chriska S.R.L.
@@ -135,7 +118,7 @@ export const Login = () => {
                     _hover={{ backgroundColor: btnHover }}
                     width="100%"
                   >
-                    Iniciar sesión
+                    {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                   </Button>
                 </Box>
               </form>

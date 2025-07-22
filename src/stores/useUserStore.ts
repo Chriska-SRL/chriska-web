@@ -46,11 +46,21 @@ const decodeToken = (token: string): TokenPayload | null => {
   }
 };
 
-// Función para manejar cookies
+// Detectar si estamos en desarrollo
+const isDev = process.env.NODE_ENV === 'development';
+
+// Función para manejar cookies (adaptada para desarrollo)
 const setCookie = (name: string, value: string, days: number = 7) => {
   if (typeof window !== 'undefined') {
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+
+    // En desarrollo, usar configuración más permisiva
+    if (isDev) {
+      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+    } else {
+      // En producción, usar configuración segura
+      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+    }
   }
 };
 
@@ -67,7 +77,11 @@ const getCookie = (name: string): string | null => {
 
 const deleteCookie = (name: string) => {
   if (typeof window !== 'undefined') {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Strict`;
+    if (isDev) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Lax`;
+    } else {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Strict`;
+    }
   }
 };
 
@@ -82,7 +96,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
     if (decoded) {
       const numericPermissions = decoded.permissions.map((p) => parseInt(p));
 
-      // Solo usar cookies como única fuente de verdad
       setCookie('auth-token', token);
 
       set({
@@ -92,7 +105,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
         isHydrated: true,
       });
     } else {
-      // Token inválido o expirado - NO redirigir, solo limpiar
       deleteCookie('auth-token');
       set({
         user: null,
@@ -108,7 +120,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   logout: () => {
-    // Solo limpiar cookies
     deleteCookie('auth-token');
 
     set({
@@ -117,9 +128,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
       isLoggedIn: false,
       isHydrated: true,
     });
-
-    // NO redirigir automáticamente - dejar que el middleware se encargue
-    // O que el componente específico maneje el redirect
   },
 
   initializeFromStorage: () => {
@@ -128,7 +136,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
       return;
     }
 
-    // Solo usar cookies como fuente única
     const token = getCookie('auth-token');
 
     if (token) {
@@ -143,7 +150,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
           isHydrated: true,
         });
       } else {
-        // Token inválido o expirado, limpiar todo
         deleteCookie('auth-token');
         set({
           user: null,
