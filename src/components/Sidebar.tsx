@@ -185,7 +185,7 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
           top="0"
           left="0"
           right="0"
-          height="4rem"
+          height="3.5rem"
           bg={bg}
           borderBottom="1px solid"
           borderColor={borderColor}

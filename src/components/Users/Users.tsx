@@ -44,6 +44,7 @@ export const Users = () => {
       </Text>
       <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <UserFilters
+          isLoadingUsers={isLoading}
           filterRoleId={filterRoleId}
           setFilterRoleId={setFilterRoleId}
           filterStateId={filterStateId}
@@ -52,7 +53,7 @@ export const Users = () => {
           setFilterName={setFilterName}
         />
         {isMobile && <Divider />}
-        <UserAdd setUsers={setUsers} />
+        <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />
       </Flex>
       <UserList users={filteredUsers} isLoading={isLoading} error={error} setUsers={setUsers} />
     </>

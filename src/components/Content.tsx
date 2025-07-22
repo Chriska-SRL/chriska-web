@@ -17,16 +17,15 @@ export const Content = ({ children }: { children: ReactNode }) => {
       h="100dvh"
       w="100%"
       bg={outerBg}
-      px={{ base: '1rem', md: '0' }}
-      pt={isMobile ? '4rem' : '0'}
+      px={{ base: '0.75rem', md: '0.625rem' }}
+      pt={{ base: '3.5rem', md: '0' }}
     >
       <Flex
         flexDir="column"
         p={{ base: '1rem', md: '1.5rem' }}
         px={{ base: '1.25rem', md: '1.75rem' }}
         w="100%"
-        h="95%"
-        m={{ base: '0.5rem', md: '1rem' }}
+        h="97%"
         bg={innerBg}
         borderRadius="0.5rem"
         border="1px solid"

@@ -16,6 +16,7 @@ import { VscDebugRestart } from 'react-icons/vsc';
 import { useGetRoles } from '@/hooks/role';
 
 type UserFiltersProps = {
+  isLoadingUsers: boolean;
   filterRoleId?: number;
   setFilterRoleId: (value?: number) => void;
   filterStateId?: string;
@@ -25,6 +26,7 @@ type UserFiltersProps = {
 };
 
 export const UserFilters = ({
+  isLoadingUsers,
   filterRoleId,
   setFilterRoleId,
   filterStateId,
@@ -33,7 +35,7 @@ export const UserFilters = ({
   setFilterName,
 }: UserFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const { data: roles, isLoading } = useGetRoles();
+  const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -75,7 +77,7 @@ export const UserFilters = ({
           placeholder="Buscar por nombre..."
           value={filterName}
           onChange={handleNameChange}
-          disabled={isLoading}
+          disabled={isLoadingUsers}
           bg={bgInput}
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
@@ -91,7 +93,7 @@ export const UserFilters = ({
         onChange={handleRoleChange}
         bg={bgInput}
         borderColor={borderInput}
-        disabled={isLoading}
+        disabled={isLoadingUsers || isLoadingRoles}
         w={{ base: '100%', md: '12rem' }}
         color={textColor}
       >
@@ -108,7 +110,7 @@ export const UserFilters = ({
         onChange={handleStateChange}
         bg={bgInput}
         borderColor={borderInput}
-        disabled={isLoading}
+        disabled={isLoadingUsers}
         w={{ base: '100%', md: '12rem' }}
         color={textColor}
       >
