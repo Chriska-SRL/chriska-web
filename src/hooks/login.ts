@@ -17,10 +17,7 @@ export const useLogin = () => {
 
     try {
       const result = await login(username, password);
-
-      // Usar el store para manejar el token (que ahora usa cookies)
       setUserFromToken(result.token);
-
       return true;
     } catch (err: any) {
       try {
