@@ -23,21 +23,19 @@ export const Categories = () => {
   const [subcategoryToOpenModal, setSubcategoryToOpenModal] = useState<number | null>(null);
 
   const categoryToOpen = searchParams.get('open');
-  const typeToOpen = searchParams.get('type'); // 'category' o 'subcategory'
+  const typeToOpen = searchParams.get('type');
 
   useEffect(() => {
     if (categoryToOpen && categories.length > 0) {
       const id = parseInt(categoryToOpen);
 
       if (typeToOpen === 'subcategory') {
-        // Buscar la subcategoría en todas las categorías
         const foundCategory = categories.find((cat) => cat.subCategories?.some((sub) => sub.id === id));
         if (foundCategory) {
           setSubcategoryToOpenModal(id);
           router.replace('/categorias', { scroll: false });
         }
       } else {
-        // Buscar la categoría directamente
         const category = categories.find((cat) => cat.id === id);
         if (category) {
           setCategoryToOpenModal(category.id);

@@ -4,7 +4,6 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
-  ModalCloseButton,
   Image,
   Box,
   useDisclosure,
@@ -17,7 +16,7 @@ import { FiMaximize2, FiX } from 'react-icons/fi';
 type ImageModalProps = {
   src: string;
   alt: string;
-  children: React.ReactNode; // El elemento que actúa como trigger (la imagen pequeña)
+  children: React.ReactNode;
   maxW?: string;
   maxH?: string;
 };
@@ -32,7 +31,6 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
 
   return (
     <>
-      {/* Trigger - el elemento que al hacer click abre el modal */}
       <Box
         onClick={onOpen}
         cursor="pointer"
@@ -46,7 +44,6 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
       >
         {children}
 
-        {/* Overlay con icono de expandir que aparece al hover */}
         <Flex
           className="image-overlay"
           position="absolute"
@@ -73,17 +70,10 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
         </Flex>
       </Box>
 
-      {/* Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
         <ModalOverlay bg={overlayBg} />
-        <ModalContent
-          bg="transparent"
-          boxShadow="none"
-          m="0"
-          onClick={onClose} // Cerrar al hacer click fuera de la imagen
-        >
+        <ModalContent bg="transparent" boxShadow="none" m="0" onClick={onClose}>
           <Flex align="center" justify="center" h="100vh" p="2rem" position="relative">
-            {/* Botón de cerrar */}
             <IconButton
               aria-label="Cerrar modal"
               icon={<FiX />}
@@ -102,7 +92,6 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
               }}
             />
 
-            {/* Imagen en grande */}
             <Image
               src={src}
               alt={alt}
@@ -112,7 +101,7 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
               borderRadius="md"
               boxShadow="2xl"
               bg={modalBg}
-              onClick={(e) => e.stopPropagation()} // Prevenir que se cierre al hacer click en la imagen
+              onClick={(e) => e.stopPropagation()}
             />
           </Flex>
         </ModalContent>

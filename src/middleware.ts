@@ -4,11 +4,9 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Solo verificar si existe la cookie, no decodificar
   const authToken = request.cookies.get('auth-token')?.value;
   const hasToken = !!authToken;
 
-  // Rutas públicas - verificar PRIMERO
   const publicRoutes = ['/iniciar-sesion'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
@@ -19,7 +17,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Rutas protegidas - todas las que tenías
   const protectedRoutes = [
     '/',
     '/usuarios',

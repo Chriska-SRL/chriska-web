@@ -26,7 +26,6 @@ const decodeToken = (token: string): TokenPayload | null => {
   try {
     const decoded: any = jwtDecode(token);
 
-    // Verificar si el token ha expirado
     const currentTime = Date.now() / 1000;
     if (decoded.exp < currentTime) {
       return null;
@@ -46,19 +45,15 @@ const decodeToken = (token: string): TokenPayload | null => {
   }
 };
 
-// Detectar si estamos en desarrollo
 const isDev = process.env.NODE_ENV === 'development';
 
-// Función para manejar cookies (adaptada para desarrollo)
 const setCookie = (name: string, value: string, days: number = 7) => {
   if (typeof window !== 'undefined') {
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
 
-    // En desarrollo, usar configuración más permisiva
     if (isDev) {
       document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
     } else {
-      // En producción, usar configuración segura
       document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict; Secure`;
     }
   }

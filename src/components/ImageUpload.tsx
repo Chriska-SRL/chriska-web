@@ -160,8 +160,7 @@ export const ImageUpload = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validaciones
-    const maxSize = 8 * 1024 * 1024; // 8MB
+    const maxSize = 8 * 1024 * 1024;
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (file.size > maxSize) {
@@ -186,14 +185,12 @@ export const ImageUpload = ({
       return;
     }
 
-    // Mostrar preview inmediatamente mientras se sube
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Subir archivo
     uploadImage(file);
   };
 

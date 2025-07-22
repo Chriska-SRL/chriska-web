@@ -127,7 +127,6 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
     setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl } : z)));
   };
 
-  // Usar los datos reales de la zona en lugar de hardcoded
   const diasPedidos = zone.requestDays || [];
   const diasEntregas = zone.deliveryDays || [];
 

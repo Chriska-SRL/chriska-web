@@ -50,7 +50,6 @@ export const CategoryList = ({
   const noResultsColor = useColorModeValue('gray.500', 'gray.400');
   const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
 
-  // Auto-expandir categoría cuando se va a abrir una subcategoría
   useEffect(() => {
     if (subcategoryToOpenModal) {
       const categoryWithSubcategory = categories.find((cat) =>

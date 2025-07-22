@@ -348,9 +348,7 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
                       Finalizar
                     </Button>
                   ) : (
-                    // Si no hay imagen: botón Omitir celeste también
                     <Button
-                      // bg={submitBg}
                       variant="fill"
                       color="white"
                       _hover={{ backgroundColor: buttonHover }}
