@@ -104,7 +104,6 @@ export const ProductFilters = ({
 
   return (
     <Flex gap="1rem" flexDir="column" w="100%">
-      {/* Primera fila - siempre visible */}
       <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap">
         <Box
           display="flex"
@@ -155,7 +154,6 @@ export const ProductFilters = ({
           </InputGroup>
         </Box>
 
-        {/* Botón de filtros avanzados - ahora visible tanto en móvil como desktop */}
         <Button
           leftIcon={<FaFilter />}
           rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
@@ -168,11 +166,11 @@ export const ProductFilters = ({
           color={textColor}
           w={{ base: '100%', md: 'auto' }}
           minW={{ base: '100%', md: '10rem' }}
+          transition="all 0.2s ease"
         >
           Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
         </Button>
 
-        {/* Botón de reset - solo en desktop cuando hay filtros activos */}
         {!isMobile && hasActiveFilters && (
           <IconButton
             aria-label="Reiniciar filtros"
@@ -182,110 +180,126 @@ export const ProductFilters = ({
             onClick={handleResetFilters}
             flexShrink={0}
             borderColor={borderInput}
+            transition="all 0.2s ease"
           />
         )}
       </Flex>
 
-      {/* Filtros avanzados colapsables - tanto para móvil como desktop */}
-      <Collapse in={isFiltersOpen} animateOpacity>
-        <Flex
-          gap="1rem"
-          flexDir={{ base: 'column', md: 'row' }}
-          alignItems="center"
-          flexWrap={{ base: 'nowrap', md: 'wrap' }}
-        >
-          <Select
-            placeholder="Todas las unidades"
-            value={filterUnitType}
-            onChange={(e) => setFilterUnitType(e.target.value)}
-            bg={bgInput}
-            borderColor={borderInput}
-            color={textColor}
-            w={{ base: '100%', md: 'auto' }}
-            minW={{ base: '100%', md: '10rem' }}
-            maxW={{ base: '100%', md: '12rem' }}
+      <Collapse
+        in={isFiltersOpen}
+        animateOpacity
+        transition={{
+          enter: { duration: 0.25, ease: 'easeOut' },
+          exit: { duration: 0.25, ease: 'easeIn' },
+        }}
+        style={{
+          overflow: 'hidden',
+        }}
+      >
+        <Box>
+          <Flex
+            gap="1rem"
+            flexDir={{ base: 'column', md: 'row' }}
+            alignItems="center"
+            flexWrap={{ base: 'nowrap', md: 'wrap' }}
           >
-            {UnitTypeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-
-          <Select
-            placeholder="Todas las marcas"
-            value={filterBrand}
-            onChange={(e) => setFilterBrand(e.target.value)}
-            bg={bgInput}
-            borderColor={borderInput}
-            color={textColor}
-            w={{ base: '100%', md: 'auto' }}
-            minW={{ base: '100%', md: '10rem' }}
-            maxW={{ base: '100%', md: '14rem' }}
-          >
-            {brands?.map((brand) => (
-              <option key={brand.id} value={brand.id.toString()}>
-                {brand.name}
-              </option>
-            ))}
-          </Select>
-
-          <Select
-            placeholder="Todas las categorías"
-            value={filterCategory}
-            onChange={(e) => {
-              setFilterCategory(e.target.value);
-              setFilterSubCategory('');
-            }}
-            bg={bgInput}
-            borderColor={borderInput}
-            color={textColor}
-            w={{ base: '100%', md: 'auto' }}
-            minW={{ base: '100%', md: '10rem' }}
-            maxW={{ base: '100%', md: '15rem' }}
-          >
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id.toString()}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
-
-          <Select
-            placeholder="Todas las subcategorías"
-            value={filterSubCategory}
-            onChange={(e) => setFilterSubCategory(e.target.value)}
-            bg={bgInput}
-            borderColor={borderInput}
-            color={textColor}
-            w={{ base: '100%', md: 'auto' }}
-            minW={{ base: '100%', md: '12rem' }}
-            maxW={{ base: '100%', md: '16rem' }}
-            disabled={!filterCategory}
-          >
-            {filteredSubCategories?.map((subCategory) => (
-              <option key={subCategory.id} value={subCategory.id.toString()}>
-                {subCategory.name}
-              </option>
-            ))}
-          </Select>
-
-          {/* Botón de reset dentro del collapse en móvil */}
-          {isMobile && hasActiveFilters && (
-            <Button
-              leftIcon={<VscDebugRestart />}
-              onClick={handleResetFilters}
+            <Select
+              placeholder="Todas las unidades"
+              value={filterUnitType}
+              onChange={(e) => setFilterUnitType(e.target.value)}
               bg={bgInput}
-              _hover={{ bg: hoverResetBg }}
-              variant="outline"
               borderColor={borderInput}
               color={textColor}
-              w="100%"
+              w={{ base: '100%', md: 'auto' }}
+              minW={{ base: '100%', md: '10rem' }}
+              maxW={{ base: '100%', md: '12rem' }}
+              transition="all 0.2s ease"
             >
-              Limpiar filtros
-            </Button>
-          )}
-        </Flex>
+              {UnitTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              placeholder="Todas las marcas"
+              value={filterBrand}
+              onChange={(e) => setFilterBrand(e.target.value)}
+              bg={bgInput}
+              borderColor={borderInput}
+              color={textColor}
+              w={{ base: '100%', md: 'auto' }}
+              minW={{ base: '100%', md: '10rem' }}
+              maxW={{ base: '100%', md: '14rem' }}
+              transition="all 0.2s ease"
+            >
+              {brands?.map((brand) => (
+                <option key={brand.id} value={brand.id.toString()}>
+                  {brand.name}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              placeholder="Todas las categorías"
+              value={filterCategory}
+              onChange={(e) => {
+                setFilterCategory(e.target.value);
+                setFilterSubCategory('');
+              }}
+              bg={bgInput}
+              borderColor={borderInput}
+              color={textColor}
+              w={{ base: '100%', md: 'auto' }}
+              minW={{ base: '100%', md: '10rem' }}
+              maxW={{ base: '100%', md: '15rem' }}
+              transition="all 0.2s ease"
+            >
+              {categories?.map((category) => (
+                <option key={category.id} value={category.id.toString()}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              placeholder="Todas las subcategorías"
+              value={filterSubCategory}
+              onChange={(e) => setFilterSubCategory(e.target.value)}
+              bg={bgInput}
+              borderColor={borderInput}
+              color={textColor}
+              w={{ base: '100%', md: 'auto' }}
+              minW={{ base: '100%', md: '12rem' }}
+              maxW={{ base: '100%', md: '16rem' }}
+              disabled={!filterCategory}
+              transition="all 0.2s ease"
+            >
+              {filteredSubCategories?.map((subCategory) => (
+                <option key={subCategory.id} value={subCategory.id.toString()}>
+                  {subCategory.name}
+                </option>
+              ))}
+            </Select>
+
+            {isMobile && hasActiveFilters && (
+              <Button
+                leftIcon={<VscDebugRestart />}
+                onClick={handleResetFilters}
+                bg={bgInput}
+                _hover={{ bg: hoverResetBg }}
+                variant="outline"
+                borderColor={borderInput}
+                color={textColor}
+                w="100%"
+                transition="all 0.2s ease"
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </Flex>
+        </Box>
       </Collapse>
     </Flex>
   );
