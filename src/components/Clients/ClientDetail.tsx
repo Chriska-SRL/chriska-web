@@ -30,6 +30,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
+import { QualificationSelector } from '../QualificationSelector';
 
 type ClientDetailProps = {
   client: Client;
@@ -103,7 +104,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
           Calificación
         </Text>
         <Flex justifyContent="center" alignItems="center" w="100%" py="0.5rem">
-          <HStack spacing="1.5rem">{stars}</HStack>
+          <HStack spacing="1rem">{stars}</HStack>
         </Flex>
       </Box>
     );
@@ -166,7 +167,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg" maxH="90%" overflow="auto">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">

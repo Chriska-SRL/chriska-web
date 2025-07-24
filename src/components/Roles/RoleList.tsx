@@ -119,9 +119,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="15rem">
-                    Nombre
-                  </Th>
+                  <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Descripción</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
@@ -131,13 +129,7 @@ export const RoleList = ({ roles, isLoading, error, setRoles }: RoleListProps) =
                   <Tr key={role.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{role.name}</Td>
                     <Td textAlign="center">
-                      <Box
-                        whiteSpace="nowrap"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        title={role.description}
-                        maxW="30rem"
-                      >
+                      <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={role.description}>
                         {role.description || 'N/A'}
                       </Box>
                     </Td>

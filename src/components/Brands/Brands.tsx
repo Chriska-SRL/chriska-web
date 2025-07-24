@@ -54,14 +54,22 @@ export const Brands = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Marcas
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <BrandFilters filterName={filterName} setFilterName={setFilterName} />
-        {isMobile && <Divider />}
-        <BrandAdd setBrands={setBrands} />
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Marcas
+        </Text>
+        {isMobile && <BrandAdd setBrands={setBrands} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+        <BrandFilters filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <BrandAdd setBrands={setBrands} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
       <BrandList
         brands={filteredBrands}
         isLoading={isLoading}

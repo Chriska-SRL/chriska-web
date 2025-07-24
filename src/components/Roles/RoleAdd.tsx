@@ -120,14 +120,13 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
           _hover={{ bg: buttonHover }}
           leftIcon={<FaPlus />}
           onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
           disabled={!canCreateRoles}
         >
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90vh">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

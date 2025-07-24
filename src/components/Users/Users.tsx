@@ -39,10 +39,16 @@ export const Users = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Usuarios
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Usuarios
+        </Text>
+        {isMobile && <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <UserFilters
           isLoadingUsers={isLoading}
           filterRoleId={filterRoleId}
@@ -52,9 +58,11 @@ export const Users = () => {
           filterName={filterName}
           setFilterName={setFilterName}
         />
-        {isMobile && <Divider />}
-        <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />
+        {!isMobile && <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
       <UserList users={filteredUsers} isLoading={isLoading} error={error} setUsers={setUsers} />
     </>
   );

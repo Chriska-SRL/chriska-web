@@ -152,14 +152,7 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
   return (
     <>
       {canCreateZones && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
-          px="1.5rem"
-        >
+        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
           Nuevo
         </Button>
       )}
@@ -167,7 +160,7 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'sm', md: 'md' }}
+        size={{ base: 'xs', md: 'md' }}
         isCentered
         closeOnOverlayClick={step === 'form'}
       >

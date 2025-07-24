@@ -102,10 +102,16 @@ export const Products = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Productos
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Productos
+        </Text>
+        {isMobile && <ProductAdd setProducts={setProducts} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ProductFilters
           filterName={filterName}
           setFilterName={setFilterName}
@@ -120,9 +126,11 @@ export const Products = () => {
           searchParam={searchParam}
           setSearchParam={setSearchParam}
         />
-        {isMobile && <Divider />}
-        <ProductAdd setProducts={setProducts} />
+        {!isMobile && <ProductAdd setProducts={setProducts} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
       <ProductList products={filteredProducts} isLoading={isLoading} error={error} setProducts={setProducts} />
     </>
   );

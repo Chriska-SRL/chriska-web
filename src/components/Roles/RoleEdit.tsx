@@ -110,7 +110,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textAlign="center" fontSize="2rem">

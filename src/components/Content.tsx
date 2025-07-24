@@ -17,13 +17,13 @@ export const Content = ({ children }: { children: ReactNode }) => {
       h="100dvh"
       w="100%"
       bg={outerBg}
-      px={{ base: '0.75rem', md: '0.625rem' }}
+      px="0.75rem"
       pt={{ base: '3.5rem', md: '0' }}
     >
       <Flex
         flexDir="column"
-        p={{ base: '1rem', md: '1.5rem' }}
-        px={{ base: '1.25rem', md: '1.75rem' }}
+        px={{ base: '1rem', md: '1.5rem' }}
+        py="1rem"
         w="100%"
         h="97%"
         bg={innerBg}

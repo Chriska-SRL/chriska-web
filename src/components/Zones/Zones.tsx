@@ -65,12 +65,16 @@ export const Zones = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Zonas
-      </Text>
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Zonas
+        </Text>
+        {isMobile && <ZoneAdd setZones={setZones} />}
+      </Flex>
 
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        {isMobile && <Divider />}
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ZoneFilters
           filterName={filterName}
           setFilterName={setFilterName}
@@ -79,10 +83,10 @@ export const Zones = () => {
           filterEntregaDay={filterEntregaDay}
           setFilterEntregaDay={setFilterEntregaDay}
         />
-
-        {isMobile && <Divider />}
-        <ZoneAdd setZones={setZones} />
+        {!isMobile && <ZoneAdd setZones={setZones} />}
       </Flex>
+
+      {isMobile && <Divider />}
 
       <ZoneList
         zones={filteredZones}

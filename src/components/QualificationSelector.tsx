@@ -12,7 +12,7 @@ export const QualificationSelector = ({
   value,
   onChange,
   size = '2.5rem',
-  spacing = '1.5rem',
+  spacing = '1rem',
 }: QualificationSelectorProps) => {
   const currentRating = value ? parseInt(value.split('/')[0]) : 0;
 

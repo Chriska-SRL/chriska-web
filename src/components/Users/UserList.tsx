@@ -158,7 +158,7 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
                   <Th textAlign="center" w="12rem">
-                    Nombre de usuario
+                    Usuario
                   </Th>
                   <Th textAlign="center" w="15rem">
                     Nombre

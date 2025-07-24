@@ -38,19 +38,27 @@ export const Vehicles = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Vehículos
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Vehículos
+        </Text>
+        {isMobile && <VehicleAdd setVehicles={setVehicles} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <VehicleFilters
           filterPlate={filterPlate}
           setFilterPlate={setFilterPlate}
           availableBrands={availableBrands}
           availableModels={availableModels}
         />
-        {isMobile && <Divider />}
-        <VehicleAdd setVehicles={setVehicles} />
+        {!isMobile && <VehicleAdd setVehicles={setVehicles} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
       <VehicleList vehicles={filteredVehicles} isLoading={isLoading} error={error} setVehicles={setVehicles} />
     </>
   );

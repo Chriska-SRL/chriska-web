@@ -51,15 +51,25 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
     onOpen: openTempPasswordModal,
     onClose: closeTempPasswordModal,
   } = useDisclosure();
+
   const [resetUserId, setResetUserId] = useState<number | undefined>();
   const { data: resetData, isLoading: isLoadingReset, error: resetError } = useTemporaryPassword(resetUserId);
 
   useEffect(() => {
     if (resetData) {
-      onClose();
       openTempPasswordModal();
+      // onClose(); Revisar por que no funciona bien
     }
   }, [resetData]);
+
+  const handleResetPassword = () => {
+    if (user) setResetUserId(user.id);
+  };
+
+  const handleCloseTempPasswordModal = () => {
+    closeTempPasswordModal();
+    setResetUserId(undefined);
+  };
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -122,18 +132,9 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
     setUserProps(user);
   };
 
-  const handleResetPassword = () => {
-    if (user) setResetUserId(user.id);
-  };
-
-  const handleCloseTempPasswordModal = () => {
-    closeTempPasswordModal();
-    setResetUserId(undefined);
-  };
-
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'sm', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

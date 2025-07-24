@@ -71,14 +71,22 @@ export const Categories = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Categorías
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="flex-end" gap="1rem" w="100%">
-        <CategoryFilters filterName={filterName} setFilterName={setFilterName} />
-        {isMobile && <Divider />}
-        <CategoryAdd setCategories={setCategories} />
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Categorías
+        </Text>
+        {isMobile && <CategoryAdd setCategories={setCategories} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+        <CategoryFilters filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <CategoryAdd setCategories={setCategories} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
       <CategoryList
         categories={filteredCategories}
         isLoading={isLoading}

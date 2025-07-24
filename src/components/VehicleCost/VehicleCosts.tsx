@@ -56,7 +56,6 @@ export const VehicleCosts = () => {
 
   return (
     <Flex direction="column" h="100%" gap="1rem">
-      {/* Header fijo */}
       <Box flexShrink="0">
         <Flex alignItems="center" gap="1rem">
           <IconButton
@@ -85,7 +84,6 @@ export const VehicleCosts = () => {
         </Flex>
       </Box>
 
-      {/* Filtros fijos */}
       <Box flexShrink="0">
         <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
           <VehicleCostFilters
