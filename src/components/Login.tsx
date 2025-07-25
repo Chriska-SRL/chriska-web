@@ -17,11 +17,13 @@ import {
 import { Formik, Field } from 'formik';
 import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
+import { useUserStore } from '@/stores/useUserStore';
 import { Login as LoginValues } from '@/entities/login';
 
 export const Login = () => {
   const toast = useToast();
   const { performLogin, isLoading, error, fieldError } = useLogin();
+  const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -64,6 +66,8 @@ export const Login = () => {
     const success = await performLogin(values.username, values.password);
 
     if (success) {
+      setTempPassword(values.password);
+
       toast({
         title: 'Inicio de sesión exitoso',
         description: 'Redirigiendo...',
@@ -76,7 +80,7 @@ export const Login = () => {
 
   return (
     <Flex height="100dvh" bg={bg} justifyContent="center" alignItems="center">
-      <Container maxW={{ sm: '25rem', base: '20rem' }}>
+      <Container maxW={{ base: '90dvw', sm: '25rem' }}>
         <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
           Chriska S.R.L.
         </Text>
@@ -92,13 +96,28 @@ export const Login = () => {
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
-                  <Field as={Input} id="username" name="username" type="text" variant="filled" />
+                  <Field
+                    as={Input}
+                    id="username"
+                    name="username"
+                    type="text"
+                    variant="filled"
+                    disabled={isLoading}
+                    autoCapitalize="none"
+                  />
                   <FormErrorMessage>{errors.username}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
                   <FormLabel htmlFor="password">Contraseña</FormLabel>
-                  <Field as={Input} id="password" name="password" type="password" variant="filled" />
+                  <Field
+                    as={Input}
+                    id="password"
+                    name="password"
+                    type="password"
+                    variant="filled"
+                    disabled={isLoading}
+                  />
                   <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 

@@ -16,10 +16,13 @@ type UserStore = {
   isLoggedIn: boolean;
   isHydrated: boolean;
   permissions: number[];
+  tempPassword?: string; // Nueva propiedad para la contraseña temporal
   setUserFromToken: (token: string) => void;
   hasPermission: (Permission: number) => boolean;
   logout: () => void;
   initializeFromStorage: () => void;
+  setTempPassword: (password: string) => void; // Nueva función
+  clearTempPassword: () => void; // Nueva función
 };
 
 const decodeToken = (token: string): TokenPayload | null => {
@@ -85,6 +88,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
   isLoggedIn: false,
   isHydrated: false,
   permissions: [],
+  tempPassword: undefined, // Inicializar la contraseña temporal
 
   setUserFromToken: (token) => {
     const decoded = decodeToken(token);
@@ -93,11 +97,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
       setCookie('auth-token', token);
 
+      // Preservar la contraseña temporal al actualizar el usuario
+      const currentState = get();
       set({
         user: decoded,
         permissions: numericPermissions,
         isLoggedIn: true,
         isHydrated: true,
+        tempPassword: currentState.tempPassword, // ← PRESERVAR la contraseña temporal
       });
     } else {
       deleteCookie('auth-token');
@@ -106,6 +113,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         permissions: [],
         isLoggedIn: false,
         isHydrated: true,
+        tempPassword: undefined, // Limpiar contraseña temporal en caso de error
       });
     }
   },
@@ -122,6 +130,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
       permissions: [],
       isLoggedIn: false,
       isHydrated: true,
+      tempPassword: undefined, // Limpiar contraseña temporal al hacer logout
     });
   },
 
@@ -151,6 +160,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
           permissions: [],
           isLoggedIn: false,
           isHydrated: true,
+          tempPassword: undefined, // Limpiar contraseña temporal si el token es inválido
         });
       }
     } else {
@@ -159,7 +169,17 @@ export const useUserStore = create<UserStore>((set, get) => ({
         permissions: [],
         isLoggedIn: false,
         isHydrated: true,
+        tempPassword: undefined, // Limpiar contraseña temporal si no hay token
       });
     }
+  },
+
+  // Nuevas funciones para manejar la contraseña temporal
+  setTempPassword: (password: string) => {
+    set({ tempPassword: password });
+  },
+
+  clearTempPassword: () => {
+    set({ tempPassword: undefined });
   },
 }));
