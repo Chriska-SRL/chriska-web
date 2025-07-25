@@ -43,7 +43,6 @@ export const PasswordReset = () => {
 
   useEffect(() => {
     if (data) {
-      // Limpiar la contraseña temporal después del cambio exitoso
       clearTempPassword();
       toast({
         title: 'Contraseña actualizada',
@@ -71,12 +70,6 @@ export const PasswordReset = () => {
       });
     }
   }, [error, fieldError, toast]);
-
-  useEffect(() => {
-    return () => {
-      clearTempPassword();
-    };
-  }, [clearTempPassword]);
 
   const handleSubmit = (values: FormValues) => {
     if (!user?.userId) {
@@ -112,11 +105,11 @@ export const PasswordReset = () => {
   return (
     <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
       <Container maxW={{ base: '90dvw', sm: '25rem' }}>
-        <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
+        <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="0.125rem">
           Cambiar contraseña
         </Text>
         <Text fontSize="0.875rem" color={titleColor} textAlign="center" pb="1rem" opacity={0.7}>
-          Como es tu primer inicio de sesión, debes cambiar tu contraseña temporal
+          Como es tu primer inicio de sesión, debes cambiar tu contraseña
         </Text>
         <Box bg={boxBg} boxShadow="lg" borderRadius="0.5rem" p="2rem">
           <Formik
@@ -161,7 +154,7 @@ export const PasswordReset = () => {
                   />
                   <Button
                     type="submit"
-                    isDisabled={isLoading}
+                    isDisabled={isLoading || !tempPassword}
                     bg={btnBg}
                     color="white"
                     _hover={{ backgroundColor: btnHover }}

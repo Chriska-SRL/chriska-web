@@ -28,7 +28,7 @@ import { useAddUser, useTemporaryPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
-import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 

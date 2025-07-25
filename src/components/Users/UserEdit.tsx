@@ -28,7 +28,7 @@ import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
 import { useDeleteUser, useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
-import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { IoReload } from 'react-icons/io5';
 import { GenericDelete } from '../shared/GenericDelete';
 
