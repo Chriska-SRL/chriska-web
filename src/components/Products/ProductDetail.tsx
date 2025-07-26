@@ -27,6 +27,8 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { getUnitTypeLabel } from '@/enums/unitType.enum';
+import { getTemperatureConditionLabel } from '@/enums/temperatureCondition';
 
 type ProductDetailProps = {
   product: Product;
@@ -113,7 +115,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Detalle del producto
+            Detalle
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb="0" maxH="30rem" overflow="scroll" overflowX="hidden">
@@ -122,13 +124,13 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
               {detailField('Código de barras', product.barcode)}
               {detailField('Nombre', product.name)}
               {detailField('Precio', product.price)}
-              {detailField('Unidad', product.unitType)}
+              {detailField('Unidad', getUnitTypeLabel(product.unitType))}
               {detailField('Descripción', product.description)}
               {detailField('Marca', product.brand.name, () => {
                 handleClose();
                 router.push(`/marcas?open=${product.brand.id}`);
               })}
-              {detailField('Condición de temperatura', product.temperatureCondition)}
+              {detailField('Condición de temperatura', getTemperatureConditionLabel(product.temperatureCondition))}
               {detailField('Observaciones', product.observation)}
               {detailField('Categoría', product.subCategory.category.name, () => {
                 handleClose();

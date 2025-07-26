@@ -10,14 +10,20 @@ import {
   Icon,
   InputRightElement,
   Box,
+  Button,
+  Collapse,
+  useDisclosure,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
+import { FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
 import { useGetZones } from '@/hooks/zone';
 
 type SearchParam = 'name' | 'razonSocial' | 'contactName';
 
 type ClientFiltersProps = {
+  isLoadingClients: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
   filterZone: string;
@@ -27,6 +33,7 @@ type ClientFiltersProps = {
 };
 
 export const ClientFilters = ({
+  isLoadingClients,
   filterName,
   setFilterName,
   filterZone,
@@ -34,7 +41,10 @@ export const ClientFilters = ({
   searchParam,
   setSearchParam,
 }: ClientFiltersProps) => {
-  const { data: zones } = useGetZones();
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const { isOpen: isFiltersOpen, onToggle: toggleFilters } = useDisclosure();
+
+  const { data: zones, isLoading: isLoadingZones } = useGetZones();
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -61,79 +71,137 @@ export const ClientFilters = ({
 
   const hasActiveFilters = filterName !== '' || filterZone !== '';
 
+  const activeSelectFilters = filterZone !== '' ? 1 : 0;
+
   return (
-    <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} w="100%" alignItems="center" flexWrap="wrap">
-      <Box display="flex" bg={bgInput} borderRadius="md" border="1px solid" borderColor={borderInput} overflow="hidden">
-        <Select
-          value={searchParam}
-          onChange={handleSearchParamChange}
-          bg="transparent"
-          border="none"
-          color={textColor}
-          w="auto"
-          minW="7rem"
-          borderRadius="none"
-          _focus={{ boxShadow: 'none' }}
-          maxW={{ base: '5rem', md: '100%' }}
+    <Flex gap="1rem" flexDir="column" w="100%">
+      <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap">
+        <Box
+          display="flex"
+          bg={bgInput}
+          borderRadius="md"
+          border="1px solid"
+          borderColor={borderInput}
+          overflow="hidden"
+          flex={{ base: '1', md: '0 1 auto' }}
         >
-          {searchOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
-
-        <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-        <InputGroup flex="1">
-          <Input
-            placeholder="Buscar..."
-            value={filterName}
-            onChange={(e) => setFilterName(e.target.value)}
+          <Select
+            value={searchParam}
+            onChange={handleSearchParamChange}
             bg="transparent"
             border="none"
-            borderRadius="none"
-            _placeholder={{ color: textColor }}
             color={textColor}
+            w="auto"
+            minW="7rem"
+            borderRadius="none"
             _focus={{ boxShadow: 'none' }}
-            pl="1rem"
-          />
-          <InputRightElement>
-            <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
-          </InputRightElement>
-        </InputGroup>
-      </Box>
+            maxW={{ base: '5rem', md: '100%' }}
+            disabled={isLoadingClients}
+          >
+            {searchOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
 
-      <Select
-        placeholder="Todas las zonas"
-        value={filterZone}
-        onChange={(e) => setFilterZone(e.target.value)}
-        bg={bgInput}
-        borderColor={borderInput}
-        color={textColor}
-        w={{ base: '100%', md: 'auto' }}
-        minW={{ base: '100%', md: '10rem' }}
-        maxW={{ base: '100%', md: '14rem' }}
+          <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+          <InputGroup flex="1">
+            <Input
+              placeholder="Buscar..."
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              bg="transparent"
+              border="none"
+              borderRadius="none"
+              _placeholder={{ color: textColor }}
+              color={textColor}
+              _focus={{ boxShadow: 'none' }}
+              pl="1rem"
+              disabled={isLoadingClients}
+            />
+            <InputRightElement>
+              <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
+            </InputRightElement>
+          </InputGroup>
+        </Box>
+
+        <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center">
+          <Button
+            leftIcon={<FaFilter />}
+            rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
+            onClick={toggleFilters}
+            bg={bgInput}
+            _hover={{ bg: hoverResetBg }}
+            size="md"
+            variant="outline"
+            borderColor={borderInput}
+            color={textColor}
+            disabled={isLoadingClients}
+            flex={{ base: '1', md: 'none' }}
+            minW={{ base: '0', md: '10rem' }}
+            transition="all 0.2s ease"
+          >
+            Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
+          </Button>
+
+          {hasActiveFilters && (
+            <IconButton
+              aria-label="Reiniciar filtros"
+              icon={<VscDebugRestart />}
+              bg={bgInput}
+              _hover={{ bg: hoverResetBg }}
+              onClick={handleResetFilters}
+              disabled={isLoadingClients}
+              flexShrink={0}
+              borderColor={borderInput}
+              transition="all 0.2s ease"
+            />
+          )}
+        </Flex>
+      </Flex>
+
+      <Collapse
+        in={isFiltersOpen}
+        animateOpacity
+        transition={{
+          enter: { duration: 0.25, ease: 'easeOut' },
+          exit: { duration: 0.25, ease: 'easeIn' },
+        }}
+        style={{
+          overflow: 'hidden',
+        }}
       >
-        {zones?.map((zone) => (
-          <option key={zone.id} value={zone.id.toString()}>
-            {zone.name}
-          </option>
-        ))}
-      </Select>
-
-      {hasActiveFilters && (
-        <IconButton
-          aria-label="Reiniciar filtros"
-          icon={<VscDebugRestart />}
-          bg={bgInput}
-          _hover={{ bg: hoverResetBg }}
-          onClick={handleResetFilters}
-          flexShrink={0}
-          borderColor={borderInput}
-          w={{ base: '100%', md: 'auto' }}
-        />
-      )}
+        <Box>
+          <Flex
+            gap="1rem"
+            flexDir={{ base: 'column', md: 'row' }}
+            alignItems="center"
+            flexWrap={{ base: 'nowrap', md: 'wrap' }}
+          >
+            <Select
+              value={filterZone}
+              onChange={(e) => setFilterZone(e.target.value)}
+              bg={bgInput}
+              borderColor={borderInput}
+              color={textColor}
+              disabled={isLoadingClients || isLoadingZones}
+              w={{ base: '100%', md: 'auto' }}
+              minW={{ base: '100%', md: '10rem' }}
+              maxW={{ base: '100%', md: '14rem' }}
+              transition="all 0.2s ease"
+            >
+              {filterZone === '' && <option value="">Filtrar por zona</option>}
+              {zones?.map((zone) => (
+                <option key={zone.id} value={zone.id.toString()}>
+                  {zone.name}
+                </option>
+              ))}
+            </Select>
+          </Flex>
+        </Box>
+      </Collapse>
     </Flex>
   );
 };

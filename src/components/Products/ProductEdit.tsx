@@ -130,7 +130,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         >
           {({ handleSubmit, errors, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70vh" overflowY="auto">
+              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl>
                     <FormLabel>Imagen</FormLabel>

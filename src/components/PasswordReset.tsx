@@ -91,7 +91,7 @@ export const PasswordReset = () => {
         duration: 4000,
         isClosable: true,
       });
-      router.push('/login');
+      router.push('/iniciar-sesion');
       return;
     }
 
@@ -103,7 +103,7 @@ export const PasswordReset = () => {
   };
 
   return (
-    <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
+    <Flex height="100dvh" bg={bg} justifyContent="center" alignItems="center">
       <Container maxW={{ base: '90dvw', sm: '25rem' }}>
         <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="0.125rem">
           Cambiar contraseña
@@ -154,7 +154,7 @@ export const PasswordReset = () => {
                   />
                   <Button
                     type="submit"
-                    isDisabled={isLoading || !tempPassword}
+                    isDisabled={isLoading}
                     bg={btnBg}
                     color="white"
                     _hover={{ backgroundColor: btnHover }}

@@ -8,7 +8,7 @@ const HomePage = () => {
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isHydrated = useUserStore((state) => state.isHydrated);
 
-  if (!isHydrated) {
+  if (!isHydrated || !isLoggedIn) {
     return (
       <Flex height="100dvh" justifyContent="center" alignItems="center">
         <Box textAlign="center">
@@ -16,10 +16,6 @@ const HomePage = () => {
         </Box>
       </Flex>
     );
-  }
-
-  if (!isLoggedIn) {
-    return null;
   }
 
   return (
