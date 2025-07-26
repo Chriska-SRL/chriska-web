@@ -21,7 +21,7 @@ type ImageModalProps = {
   maxH?: string;
 };
 
-export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }: ImageModalProps) => {
+export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90dvh' }: ImageModalProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const overlayBg = useColorModeValue('blackAlpha.600', 'blackAlpha.800');
@@ -73,7 +73,7 @@ export const ImageModal = ({ src, alt, children, maxW = '90vw', maxH = '90vh' }:
       <Modal isOpen={isOpen} onClose={onClose} size="full" isCentered>
         <ModalOverlay bg={overlayBg} />
         <ModalContent bg="transparent" boxShadow="none" m="0" onClick={onClose}>
-          <Flex align="center" justify="center" h="100vh" p="2rem" position="relative">
+          <Flex align="center" justify="center" h="100dvh" p="2rem" position="relative">
             <IconButton
               aria-label="Cerrar modal"
               icon={<FiX />}

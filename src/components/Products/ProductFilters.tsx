@@ -26,6 +26,7 @@ import { useGetSubCategories } from '@/hooks/subcategory';
 type SearchParam = 'name' | 'internalCode' | 'barcode';
 
 type ProductFiltersProps = {
+  isLoadingProducts: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
   filterUnitType: string;
@@ -41,6 +42,7 @@ type ProductFiltersProps = {
 };
 
 export const ProductFilters = ({
+  isLoadingProducts,
   filterName,
   setFilterName,
   filterUnitType,
@@ -57,9 +59,9 @@ export const ProductFilters = ({
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const { isOpen: isFiltersOpen, onToggle: toggleFilters } = useDisclosure();
 
-  const { data: brands } = useGetBrands();
-  const { data: categories } = useGetCategories();
-  const { data: subCategories } = useGetSubCategories();
+  const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
+  const { data: categories, isLoading: isLoadingCategories } = useGetCategories();
+  const { data: subCategories, isLoading: isLoadingSubCategories } = useGetSubCategories();
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -125,6 +127,7 @@ export const ProductFilters = ({
             borderRadius="none"
             _focus={{ boxShadow: 'none' }}
             maxW={{ base: '5rem', md: '100%' }}
+            disabled={isLoadingProducts}
           >
             {searchOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -147,6 +150,7 @@ export const ProductFilters = ({
               color={textColor}
               _focus={{ boxShadow: 'none' }}
               pl="1rem"
+              disabled={isLoadingProducts}
             />
             <InputRightElement>
               <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
@@ -154,35 +158,39 @@ export const ProductFilters = ({
           </InputGroup>
         </Box>
 
-        <Button
-          leftIcon={<FaFilter />}
-          rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
-          onClick={toggleFilters}
-          bg={bgInput}
-          _hover={{ bg: hoverResetBg }}
-          size="md"
-          variant="outline"
-          borderColor={borderInput}
-          color={textColor}
-          w={{ base: '100%', md: 'auto' }}
-          minW={{ base: '100%', md: '10rem' }}
-          transition="all 0.2s ease"
-        >
-          Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
-        </Button>
-
-        {!isMobile && hasActiveFilters && (
-          <IconButton
-            aria-label="Reiniciar filtros"
-            icon={<VscDebugRestart />}
+        <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center">
+          <Button
+            leftIcon={<FaFilter />}
+            rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
+            onClick={toggleFilters}
             bg={bgInput}
             _hover={{ bg: hoverResetBg }}
-            onClick={handleResetFilters}
-            flexShrink={0}
+            size="md"
+            variant="outline"
             borderColor={borderInput}
+            color={textColor}
+            disabled={isLoadingProducts}
+            flex={{ base: '1', md: 'none' }}
+            minW={{ base: '0', md: '10rem' }}
             transition="all 0.2s ease"
-          />
-        )}
+          >
+            Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
+          </Button>
+
+          {hasActiveFilters && (
+            <IconButton
+              aria-label="Reiniciar filtros"
+              icon={<VscDebugRestart />}
+              bg={bgInput}
+              _hover={{ bg: hoverResetBg }}
+              onClick={handleResetFilters}
+              disabled={isLoadingProducts}
+              flexShrink={0}
+              borderColor={borderInput}
+              transition="all 0.2s ease"
+            />
+          )}
+        </Flex>
       </Flex>
 
       <Collapse
@@ -204,17 +212,18 @@ export const ProductFilters = ({
             flexWrap={{ base: 'nowrap', md: 'wrap' }}
           >
             <Select
-              placeholder="Todas las unidades"
               value={filterUnitType}
               onChange={(e) => setFilterUnitType(e.target.value)}
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}
+              disabled={isLoadingProducts}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '12rem' }}
               transition="all 0.2s ease"
             >
+              {filterUnitType === '' && <option value="">Filtrar por unidad</option>}
               {UnitTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -223,17 +232,18 @@ export const ProductFilters = ({
             </Select>
 
             <Select
-              placeholder="Todas las marcas"
               value={filterBrand}
               onChange={(e) => setFilterBrand(e.target.value)}
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}
+              disabled={isLoadingProducts || isLoadingBrands}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '14rem' }}
               transition="all 0.2s ease"
             >
+              {filterBrand === '' && <option value="">Filtrar por marca</option>}
               {brands?.map((brand) => (
                 <option key={brand.id} value={brand.id.toString()}>
                   {brand.name}
@@ -242,7 +252,6 @@ export const ProductFilters = ({
             </Select>
 
             <Select
-              placeholder="Todas las categorías"
               value={filterCategory}
               onChange={(e) => {
                 setFilterCategory(e.target.value);
@@ -251,11 +260,13 @@ export const ProductFilters = ({
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}
+              disabled={isLoadingProducts || isLoadingCategories}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '15rem' }}
               transition="all 0.2s ease"
             >
+              {filterCategory === '' && <option value="">Filtrar por categoría</option>}
               {categories?.map((category) => (
                 <option key={category.id} value={category.id.toString()}>
                   {category.name}
@@ -264,7 +275,6 @@ export const ProductFilters = ({
             </Select>
 
             <Select
-              placeholder="Todas las subcategorías"
               value={filterSubCategory}
               onChange={(e) => setFilterSubCategory(e.target.value)}
               bg={bgInput}
@@ -273,31 +283,16 @@ export const ProductFilters = ({
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '12rem' }}
               maxW={{ base: '100%', md: '16rem' }}
-              disabled={!filterCategory}
+              disabled={!filterCategory || isLoadingProducts || isLoadingSubCategories}
               transition="all 0.2s ease"
             >
+              {filterSubCategory === '' && <option value="">Filtrar por subcategoría</option>}
               {filteredSubCategories?.map((subCategory) => (
                 <option key={subCategory.id} value={subCategory.id.toString()}>
                   {subCategory.name}
                 </option>
               ))}
             </Select>
-
-            {isMobile && hasActiveFilters && (
-              <Button
-                leftIcon={<VscDebugRestart />}
-                onClick={handleResetFilters}
-                bg={bgInput}
-                _hover={{ bg: hoverResetBg }}
-                variant="outline"
-                borderColor={borderInput}
-                color={textColor}
-                w="100%"
-                transition="all 0.2s ease"
-              >
-                Limpiar filtros
-              </Button>
-            )}
           </Flex>
         </Box>
       </Collapse>

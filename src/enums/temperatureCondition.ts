@@ -1,13 +1,13 @@
 export enum TemperatureCondition {
   FROZEN = 'Frozen',
-  REFRIGERATED = 'Refrigerated',
-  ROOM_TEMPERATURE = 'RoomTemperature',
+  COLD = 'Cold',
+  AMBIENT = 'Ambient', //Room temperature
 }
 
 export const TemperatureConditionLabels: Record<TemperatureCondition, string> = {
   [TemperatureCondition.FROZEN]: 'Congelado',
-  [TemperatureCondition.REFRIGERATED]: 'Refrigerado',
-  [TemperatureCondition.ROOM_TEMPERATURE]: 'Temperatura ambiente',
+  [TemperatureCondition.COLD]: 'Frío',
+  [TemperatureCondition.AMBIENT]: 'Temperatura ambiente',
 };
 
 export const getTemperatureConditionLabel = (condition: TemperatureCondition | string): string => {

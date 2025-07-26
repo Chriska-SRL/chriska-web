@@ -136,12 +136,12 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                     gap="2rem"
                     align="start"
                     direction={{ base: 'column', md: 'row' }}
-                    maxH={{ base: 'none', md: '70vh' }}
+                    maxH={{ base: 'none', md: '70dvh' }}
                   >
                     <Box flex="1">
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto">
+                        <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>
@@ -150,9 +150,9 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                     <Box flex="1" textAlign="left" fontWeight="semibold">
                                       {group}
                                     </Box>
-                                    <Text fontSize="sm" color={selectedCountColor} mr="1rem">
+                                    <Text fontSize="sm" color={selectedCountColor} mx="1rem">
                                       {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
-                                      seleccionados
+                                      {isMobile ? 'selec.' : 'seleccionados'}
                                     </Text>
                                     <AccordionIcon />
                                   </AccordionButton>

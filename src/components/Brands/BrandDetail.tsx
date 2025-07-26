@@ -113,7 +113,10 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
                   _hover={{ backgroundColor: '#376bb0' }}
                   width="100%"
                   leftIcon={<FaEdit />}
-                  onClick={handleClose}
+                  onClick={() => {
+                    handleClose();
+                    openEdit();
+                  }}
                 >
                   Editar
                 </Button>

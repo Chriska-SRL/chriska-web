@@ -133,7 +133,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={handleClose} size="sm" isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem">
@@ -160,7 +160,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
           >
             {({ handleSubmit, errors, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>

@@ -169,7 +169,7 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
           >
             {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                       <FormLabel>Fecha</FormLabel>
