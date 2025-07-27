@@ -69,14 +69,14 @@ export const Zones = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Zonas
         </Text>
-        {isMobile && <ZoneAdd setZones={setZones} />}
+        {isMobile && <ZoneAdd isLoading={isLoading} setZones={setZones} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ZoneFilters
-          isLoadingZones={isLoading}
+          isLoading={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterPedidoDay={filterPedidoDay}
@@ -84,7 +84,7 @@ export const Zones = () => {
           filterEntregaDay={filterEntregaDay}
           setFilterEntregaDay={setFilterEntregaDay}
         />
-        {!isMobile && <ZoneAdd setZones={setZones} />}
+        {!isMobile && <ZoneAdd isLoading={isLoading} setZones={setZones} />}
       </Flex>
 
       {isMobile && <Divider />}

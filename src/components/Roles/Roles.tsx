@@ -36,14 +36,14 @@ export const Roles = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Roles
         </Text>
-        {isMobile && <RoleAdd setRoles={setRoles} />}
+        {isMobile && <RoleAdd isLoading={isLoading} setRoles={setRoles} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <RoleFilters filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <RoleAdd setRoles={setRoles} />}
+        <RoleFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <RoleAdd isLoading={isLoading} setRoles={setRoles} />}
       </Flex>
 
       {isMobile && <Divider />}

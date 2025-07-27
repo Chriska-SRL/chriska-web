@@ -5,11 +5,12 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type BrandFiltersProps = {
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
 };
 
-export const BrandFilters = ({ filterName, setFilterName }: BrandFiltersProps) => {
+export const BrandFilters = ({ isLoading, filterName, setFilterName }: BrandFiltersProps) => {
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
@@ -42,6 +43,7 @@ export const BrandFilters = ({ filterName, setFilterName }: BrandFiltersProps) =
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
           color={textColor}
+          disabled={isLoading}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />

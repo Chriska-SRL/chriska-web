@@ -106,14 +106,14 @@ export const Products = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Productos
         </Text>
-        {isMobile && <ProductAdd setProducts={setProducts} />}
+        {isMobile && <ProductAdd isLoading={isLoading} setProducts={setProducts} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ProductFilters
-          isLoadingProducts={isLoading}
+          isLoading={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterUnitType={filterUnitType}
@@ -127,7 +127,7 @@ export const Products = () => {
           searchParam={searchParam}
           setSearchParam={setSearchParam}
         />
-        {!isMobile && <ProductAdd setProducts={setProducts} />}
+        {!isMobile && <ProductAdd isLoading={isLoading} setProducts={setProducts} />}
       </Flex>
 
       {isMobile && <Divider />}

@@ -33,11 +33,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type UserAddProps = {
-  isLoadingUsers: boolean;
+  isLoading: boolean;
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
-export const UserAdd = ({ isLoadingUsers, setUsers }: UserAddProps) => {
+export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) => {
   const canCreateUsers = useUserStore((s) => s.hasPermission(Permission.CREATE_USERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();

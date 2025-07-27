@@ -31,10 +31,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SupplierAddProps = {
+  isLoading: boolean;
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
 };
 
-export const SupplierAdd = ({ setSuppliers }: SupplierAddProps) => {
+export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: SupplierAddProps) => {
   const canCreateSuppliers = useUserStore((s) => s.hasPermission(Permission.CREATE_SUPPLIERS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -92,7 +93,14 @@ export const SupplierAdd = ({ setSuppliers }: SupplierAddProps) => {
   return (
     <>
       {canCreateSuppliers && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingSuppliers}
+        >
           Nuevo
         </Button>
       )}

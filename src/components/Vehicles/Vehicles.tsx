@@ -42,19 +42,20 @@ export const Vehicles = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Vehículos
         </Text>
-        {isMobile && <VehicleAdd setVehicles={setVehicles} />}
+        {isMobile && <VehicleAdd isLoading={isLoading} setVehicles={setVehicles} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <VehicleFilters
+          isLoading={isLoading}
           filterPlate={filterPlate}
           setFilterPlate={setFilterPlate}
           availableBrands={availableBrands}
           availableModels={availableModels}
         />
-        {!isMobile && <VehicleAdd setVehicles={setVehicles} />}
+        {!isMobile && <VehicleAdd isLoading={isLoading} setVehicles={setVehicles} />}
       </Flex>
 
       {isMobile && <Divider />}

@@ -75,14 +75,14 @@ export const Categories = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Categorías
         </Text>
-        {isMobile && <CategoryAdd setCategories={setCategories} />}
+        {isMobile && <CategoryAdd isLoading={isLoading} setCategories={setCategories} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <CategoryFilters filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <CategoryAdd setCategories={setCategories} />}
+        <CategoryFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <CategoryAdd isLoading={isLoading} setCategories={setCategories} />}
       </Flex>
 
       {isMobile && <Divider />}

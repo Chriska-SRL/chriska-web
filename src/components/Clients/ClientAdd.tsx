@@ -36,10 +36,11 @@ import { QualificationSelector } from '@/components/QualificationSelector';
 import { BankAccountsManager } from '@/components/BankAccountsManager';
 
 type ClientAddProps = {
+  isLoading: boolean;
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
 };
 
-export const ClientAdd = ({ setClients }: ClientAddProps) => {
+export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAddProps) => {
   const canCreateClients = useUserStore((s) => s.hasPermission(Permission.CREATE_CLIENTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -102,7 +103,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
           leftIcon={<FaPlus />}
           onClick={onOpen}
           px="1.5rem"
-          disabled={!canCreateClients}
+          disabled={isLoadingClients}
         >
           Nuevo
         </Button>

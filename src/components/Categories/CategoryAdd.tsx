@@ -31,10 +31,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type CategoryAddProps = {
+  isLoading: boolean;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
+export const CategoryAdd = ({ isLoading: isLoadingCategories, setCategories }: CategoryAddProps) => {
   const canCreateCategories = useUserStore((s) => s.hasPermission(Permission.CREATE_CATEGORIES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -101,7 +102,7 @@ export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
           leftIcon={<FaPlus />}
           onClick={onOpen}
           px="1.5rem"
-          disabled={!canCreateCategories}
+          disabled={isLoadingCategories}
         >
           Nuevo
         </Button>

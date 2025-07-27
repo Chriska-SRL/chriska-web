@@ -87,6 +87,7 @@ export const VehicleCosts = () => {
       <Box flexShrink="0">
         <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
           <VehicleCostFilters
+            isLoading={isLoading}
             filterType={filterType}
             setFilterType={setFilterType}
             filterDescription={filterDescription}
@@ -102,7 +103,6 @@ export const VehicleCosts = () => {
         </Flex>
       </Box>
 
-      {/* Lista con altura dinámica */}
       <Box flex="1" minH="0">
         <VehicleCostList costs={filteredCosts} setCosts={setCosts} isLoading={isLoading} error={error} />
       </Box>

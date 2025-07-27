@@ -31,10 +31,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type VehicleAddProps = {
+  isLoading: boolean;
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
 };
 
-export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
+export const VehicleAdd = ({ isLoading: isLoadingVehicles, setVehicles }: VehicleAddProps) => {
   const canCreateVehicles = useUserStore((s) => s.hasPermission(Permission.CREATE_VEHICLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -84,7 +85,14 @@ export const VehicleAdd = ({ setVehicles }: VehicleAddProps) => {
   return (
     <>
       {canCreateVehicles && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingVehicles}
+        >
           Nuevo
         </Button>
       )}
