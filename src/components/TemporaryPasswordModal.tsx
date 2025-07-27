@@ -47,7 +47,14 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered closeOnOverlayClick={hasCopied} closeOnEsc={hasCopied}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size={{ base: 'xs', md: 'md' }}
+      isCentered
+      closeOnOverlayClick={hasCopied}
+      closeOnEsc={hasCopied}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textAlign="center" fontSize="1.75rem">

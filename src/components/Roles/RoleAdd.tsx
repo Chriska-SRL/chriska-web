@@ -27,6 +27,7 @@ import {
   Flex,
   useColorModeValue,
   FormErrorMessage,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -44,6 +45,7 @@ type RoleAddProps = {
 };
 
 export const RoleAdd = ({ setRoles }: RoleAddProps) => {
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const canCreateRoles = useUserStore((s) => s.hasPermission(Permission.CREATE_ROLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -120,17 +122,16 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
           _hover={{ bg: buttonHover }}
           leftIcon={<FaPlus />}
           onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
           disabled={!canCreateRoles}
         >
-          Agregar rol
+          Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'auto', md: '6xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered>
         <ModalOverlay />
-        <ModalContent maxH="90vh">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent>
+          <ModalHeader textAlign="center" fontSize="2rem">
             Nuevo rol
           </ModalHeader>
           <ModalCloseButton />
@@ -147,7 +148,7 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
                     <Box flex="1" minW={0}>
                       <FormControl>
                         <FormLabel>Permisos</FormLabel>
-                        <Box maxH={{ base: '32vh', md: '52vh' }} overflowY="auto" pr="0.5rem">
+                        <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
                               <AccordionItem key={group}>
@@ -156,9 +157,9 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
                                     <Box flex="1" textAlign="left" fontWeight="semibold">
                                       {group}
                                     </Box>
-                                    <Text fontSize="sm" color={textColor} mr="1rem">
+                                    <Text fontSize="sm" color={textColor} mx="1rem">
                                       {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
-                                      seleccionados
+                                      {isMobile ? 'selec.' : 'seleccionados'}
                                     </Text>
                                     <AccordionIcon />
                                   </AccordionButton>

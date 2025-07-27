@@ -18,24 +18,25 @@ import {
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
-import { Category } from '@/entities/category';
-import { CategoryEdit } from './CategoryEdit';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useDeleteCategory } from '@/hooks/category';
+import { useDeleteShelve } from '@/hooks/shelve';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { Shelve } from '@/entities/shelve';
+import { ShelveEdit } from './ShelveEdit';
 import { useEffect } from 'react';
+import { Warehouse } from '@/entities/warehouse';
 
-type CategoryDetailProps = {
-  category: Category;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+type ShelveDetailProps = {
+  shelve: Shelve;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
   forceOpen?: boolean;
   onModalClose?: () => void;
 };
 
-export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClose }: CategoryDetailProps) => {
-  const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
-  const canDeleteCategories = useUserStore((s) => s.hasPermission(Permission.DELETE_CATEGORIES));
+export const ShelveDetail = ({ shelve, setWarehouses, forceOpen, onModalClose }: ShelveDetailProps) => {
+  const canEditWarehouses = useUserStore((s) => s.hasPermission(Permission.EDIT_WAREHOUSES));
+  const canDeleteWarehouses = useUserStore((s) => s.hasPermission(Permission.DELETE_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -94,7 +95,7 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
-            Detalle de la categoría
+            Detalle de la estantería
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
@@ -108,14 +109,15 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
             }}
           >
             <VStack spacing="0.75rem">
-              {detailField('Nombre', category.name)}
-              {detailField('Descripción', category.description)}
+              {detailField('Nombre', shelve.name)}
+              {detailField('Descripción', shelve.description)}
+              {detailField('Almacén padre', shelve.warehouse?.name)}
             </VStack>
           </ModalBody>
 
           <ModalFooter py="1.5rem">
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditCategories && (
+              {canEditWarehouses && (
                 <Button
                   bg="#4C88D8"
                   color="white"
@@ -130,11 +132,11 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
                   Editar
                 </Button>
               )}
-              {canDeleteCategories && (
+              {canDeleteWarehouses && (
                 <GenericDelete
-                  item={{ id: category.id, name: category.name }}
-                  useDeleteHook={useDeleteCategory}
-                  setItems={setCategories}
+                  item={{ id: shelve.id, name: shelve.name }}
+                  useDeleteHook={useDeleteShelve}
+                  setItems={setWarehouses}
                   onDeleted={handleClose}
                 />
               )}
@@ -144,7 +146,7 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
       </Modal>
 
       {isEditOpen && (
-        <CategoryEdit isOpen={isEditOpen} onClose={closeEdit} category={category} setCategories={setCategories} />
+        <ShelveEdit isOpen={isEditOpen} onClose={closeEdit} shelve={shelve} setWarehouses={setWarehouses} />
       )}
     </>
   );

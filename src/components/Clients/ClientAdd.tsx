@@ -101,11 +101,10 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
           _hover={{ bg: buttonHover }}
           leftIcon={<FaPlus />}
           onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
           disabled={!canCreateClients}
         >
-          Agregar cliente
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
@@ -137,7 +136,7 @@ export const ClientAdd = ({ setClients }: ClientAddProps) => {
           >
             {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>

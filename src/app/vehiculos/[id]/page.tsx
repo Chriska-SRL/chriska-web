@@ -11,17 +11,14 @@ import { useEffect } from 'react';
 
 const VehicleCostPage: NextPage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewVehicles = useUserStore((s) => s.hasPermission(Permission.VIEW_VEHICLES));
 
   useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated && !canViewVehicles) {
+    if (isHydrated && !canViewVehicles) {
       router.push('/');
     }
-  }, [isLoggedIn, isHydrated, canViewVehicles, router]);
+  }, [isHydrated, canViewVehicles, router]);
 
   return (
     <ClientOnly>

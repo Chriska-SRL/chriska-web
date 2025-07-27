@@ -125,19 +125,41 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
       flexDir="column"
       justifyContent="space-between"
       minW="15rem"
-      minH="100vh"
+      h="100dvh"
       borderRight="1px solid"
       borderColor={borderColor}
       p="1rem"
     >
-      <Flex flexDir="column">
+      <Flex flexDir="column" flex="1" overflow="hidden">
         <Flex justifyContent="space-between">
-          <Text fontWeight="bold" pt="0.5rem" pb="1.5rem" fontSize="1.25rem" color={textColor}>
+          <Text fontWeight="bold" pt="0.5rem" pb="1rem" fontSize="1.25rem" color={textColor}>
             Chriska S.R.L.
           </Text>
           <ThemeToggle />
         </Flex>
-        <Flex flexDir="column" gap="0.625rem" alignItems="start">
+        <Flex
+          flexDir="column"
+          gap="0.625rem"
+          alignItems="start"
+          overflowY="auto"
+          maxH="calc(100dvh - 12rem)"
+          pr="0.5rem"
+          css={{
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: useColorModeValue('#CBD5E0', '#4A5568'),
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: useColorModeValue('#A0AEC0', '#2D3748'),
+            },
+          }}
+        >
           {visibleItems.map((item) => (
             <SidebarButton
               key={item.path}
@@ -163,7 +185,7 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
           top="0"
           left="0"
           right="0"
-          height="4rem"
+          height="3.5rem"
           bg={bg}
           borderBottom="1px solid"
           borderColor={borderColor}

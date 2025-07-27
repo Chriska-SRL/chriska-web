@@ -15,44 +15,21 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
-import { useRouter } from 'next/navigation';
-import { Login as LoginValues } from '@/entities/login';
 import { useUserStore } from '@/stores/useUserStore';
+import { Login as LoginValues } from '@/entities/login';
 
 export const Login = () => {
-  const router = useRouter();
   const toast = useToast();
-  const [loginProps, setLoginProps] = useState<LoginValues>();
-  const { data, isLoading, error, fieldError } = useLogin(loginProps);
-  const setUserFromToken = useUserStore((state) => state.setUserFromToken);
-  const user = useUserStore((state) => state.user);
+  const { performLogin, isLoading, error, fieldError } = useLogin();
+  const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
-
-  useEffect(() => {
-    if (data) {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        setUserFromToken(token);
-      }
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (user) {
-      if (user.needsPasswordChange) {
-        router.push('/cambiar-contrasena');
-      } else {
-        router.push('/');
-      }
-    }
-  }, [user]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -65,18 +42,16 @@ export const Login = () => {
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   const validateFields = (values: LoginValues) => {
     const errors: Partial<LoginValues> = {};
-
-    const usernameRegex = /^[a-zA-Z.]+$/;
 
     if (!values.username || values.username.trim().length < 3) {
       errors.username = 'Debe ingresar un nombre de usuario válido';
     } else if (/\s/.test(values.username)) {
       errors.username = 'El nombre de usuario no debe contener espacios';
-    } else if (!usernameRegex.test(values.username)) {
+    } else if (!/^[a-zA-Z.]+$/.test(values.username)) {
       errors.username = 'Solo se permiten letras y puntos (.)';
     }
 
@@ -87,13 +62,25 @@ export const Login = () => {
     return errors;
   };
 
-  const handleSubmit = (values: LoginValues) => {
-    setLoginProps(values);
+  const handleSubmit = async (values: LoginValues) => {
+    const success = await performLogin(values.username, values.password);
+
+    if (success) {
+      setTempPassword(values.password);
+
+      toast({
+        title: 'Inicio de sesión exitoso',
+        description: 'Redirigiendo...',
+        status: 'success',
+        duration: 1500,
+        isClosable: true,
+      });
+    }
   };
 
   return (
-    <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
-      <Container maxW={{ sm: '25rem', base: '20rem' }}>
+    <Flex height="100dvh" bg={bg} justifyContent="center" alignItems="center">
+      <Container maxW={{ base: '90dvw', sm: '25rem' }}>
         <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
           Chriska S.R.L.
         </Text>
@@ -109,13 +96,28 @@ export const Login = () => {
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
-                  <Field as={Input} id="username" name="username" type="text" variant="filled" />
+                  <Field
+                    as={Input}
+                    id="username"
+                    name="username"
+                    type="text"
+                    variant="filled"
+                    disabled={isLoading}
+                    autoCapitalize="none"
+                  />
                   <FormErrorMessage>{errors.username}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
                   <FormLabel htmlFor="password">Contraseña</FormLabel>
-                  <Field as={Input} id="password" name="password" type="password" variant="filled" />
+                  <Field
+                    as={Input}
+                    id="password"
+                    name="password"
+                    type="password"
+                    variant="filled"
+                    disabled={isLoading}
+                  />
                   <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 
@@ -135,7 +137,7 @@ export const Login = () => {
                     _hover={{ backgroundColor: btnHover }}
                     width="100%"
                   >
-                    Iniciar sesión
+                    {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                   </Button>
                 </Box>
               </form>

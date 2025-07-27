@@ -7,12 +7,43 @@ import { CategoryAdd } from './CategoryAdd';
 import { CategoryFilters } from './CategoryFilters';
 import { Category } from '@/entities/category';
 import { useGetCategories } from '@/hooks/category';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export const Categories = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const { data, isLoading, error } = useGetCategories();
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [categoryToOpenModal, setCategoryToOpenModal] = useState<number | null>(null);
+  const [subcategoryToOpenModal, setSubcategoryToOpenModal] = useState<number | null>(null);
+
+  const categoryToOpen = searchParams.get('open');
+  const typeToOpen = searchParams.get('type');
+
+  useEffect(() => {
+    if (categoryToOpen && categories.length > 0) {
+      const id = parseInt(categoryToOpen);
+
+      if (typeToOpen === 'subcategory') {
+        const foundCategory = categories.find((cat) => cat.subCategories?.some((sub) => sub.id === id));
+        if (foundCategory) {
+          setSubcategoryToOpenModal(id);
+          router.replace('/categorias', { scroll: false });
+        }
+      } else {
+        const category = categories.find((cat) => cat.id === id);
+        if (category) {
+          setCategoryToOpenModal(category.id);
+          router.replace('/categorias', { scroll: false });
+        }
+      }
+    }
+  }, [categoryToOpen, typeToOpen, categories, router]);
 
   useEffect(() => {
     if (data) setCategories(data);
@@ -40,15 +71,32 @@ export const Categories = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Categorías
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="flex-end" gap="1rem" w="100%">
-        <CategoryFilters filterName={filterName} setFilterName={setFilterName} />
-        {isMobile && <Divider />}
-        <CategoryAdd setCategories={setCategories} />
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Categorías
+        </Text>
+        {isMobile && <CategoryAdd setCategories={setCategories} />}
       </Flex>
-      <CategoryList categories={filteredCategories} isLoading={isLoading} error={error} setCategories={setCategories} />
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+        <CategoryFilters filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <CategoryAdd setCategories={setCategories} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <CategoryList
+        categories={filteredCategories}
+        isLoading={isLoading}
+        error={error}
+        setCategories={setCategories}
+        categoryToOpenModal={categoryToOpenModal}
+        setCategoryToOpenModal={setCategoryToOpenModal}
+        subcategoryToOpenModal={subcategoryToOpenModal}
+        setSubcategoryToOpenModal={setSubcategoryToOpenModal}
+      />
     </>
   );
 };

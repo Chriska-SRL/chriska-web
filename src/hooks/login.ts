@@ -1,45 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { login } from '@/services/login';
-import { Login } from '@/entities/login';
-import { Result, FieldError } from '../utils/result';
+import { useUserStore } from '@/stores/useUserStore';
+import { FieldError } from '../utils/result';
 
-export const useLogin = (props?: Login): Result<boolean> => {
+export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [fieldError, setFieldError] = useState<FieldError>();
-  const [data, setData] = useState<boolean>();
 
-  useEffect(() => {
-    if (!props) return;
+  const setUserFromToken = useUserStore((s) => s.setUserFromToken);
 
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(undefined);
-      setFieldError(undefined);
+  const performLogin = async (username: string, password: string) => {
+    setIsLoading(true);
+    setError(undefined);
+    setFieldError(undefined);
 
+    try {
+      const result = await login(username, password);
+      setUserFromToken(result.token);
+      return true;
+    } catch (err: any) {
       try {
-        const result = await login(props.username, props.password);
-        localStorage.setItem('access_token', result.token);
-        setData(true);
-      } catch (err: any) {
-        try {
-          const parsed = JSON.parse(err.message);
-          if (parsed?.campo && parsed?.error) {
-            setFieldError(parsed);
-          } else if (parsed?.error) {
-            setError(parsed.error);
-          } else {
-            setError(err.message || 'Error desconocido');
-          }
-        } catch {
+        const parsed = JSON.parse(err.message);
+        if (parsed?.campo && parsed?.error) {
+          setFieldError(parsed);
+        } else if (parsed?.error) {
+          setError(parsed.error);
+        } else {
           setError(err.message || 'Error desconocido');
         }
+      } catch {
+        setError(err.message || 'Error desconocido');
       }
+
+      return false;
+    } finally {
       setIsLoading(false);
-    };
+    }
+  };
 
-    fetchData();
-  }, [props]);
-
-  return { data, isLoading, error, fieldError };
+  return {
+    performLogin,
+    isLoading,
+    error,
+    fieldError,
+  };
 };

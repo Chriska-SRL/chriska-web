@@ -2,20 +2,22 @@
 
 import { NextPage } from 'next';
 import { ClientOnly, PasswordReset } from '@/components';
-// import { useUserStore } from '@/stores/useUserStore';
-// import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
+import { Flex, Spinner, Box } from '@chakra-ui/react';
 
-const LoginPage: NextPage = () => {
-  // const router = useRouter();
-  // const isLoggedIn = useUserStore((s) => s.isLoggedIn);
-  // const isHydrated = useUserStore((s) => s.isHydrated);
+const PasswordResetPage: NextPage = () => {
+  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
+  const isHydrated = useUserStore((s) => s.isHydrated);
 
-  // useEffect(() => {
-  //   if (isHydrated && isLoggedIn) {
-  //     router.push('/');
-  //   }
-  // }, [isLoggedIn, isHydrated, router]);
+  if (!isHydrated || !isLoggedIn) {
+    return (
+      <Flex height="100dvh" justifyContent="center" alignItems="center">
+        <Box textAlign="center">
+          <Spinner size="lg" color="blue.500" />
+        </Box>
+      </Flex>
+    );
+  }
 
   return (
     <ClientOnly>
@@ -24,4 +26,4 @@ const LoginPage: NextPage = () => {
   );
 };
 
-export default LoginPage;
+export default PasswordResetPage;

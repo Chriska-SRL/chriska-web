@@ -152,15 +152,8 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
   return (
     <>
       {canCreateZones && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
-          px="1.5rem"
-        >
-          Agregar zona
+        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+          Nuevo
         </Button>
       )}
 
@@ -348,9 +341,7 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
                       Finalizar
                     </Button>
                   ) : (
-                    // Si no hay imagen: botón Omitir celeste también
                     <Button
-                      // bg={submitBg}
                       variant="fill"
                       color="white"
                       _hover={{ backgroundColor: buttonHover }}

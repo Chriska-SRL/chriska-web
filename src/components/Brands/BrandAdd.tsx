@@ -80,18 +80,11 @@ export const BrandAdd = ({ setBrands }: BrandAddProps) => {
   return (
     <>
       {canCreateBrands && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
-          px="1.5rem"
-        >
-          Agregar marca
+        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+          Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

@@ -51,10 +51,16 @@ export const StockMovements = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Movimientos de stock
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Movimientos de stock
+        </Text>
+        {isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <StockMovementFilters
           filterWarehouseId={filterWarehouseId}
           setFilterWarehouseId={setFilterWarehouseId}
@@ -65,9 +71,11 @@ export const StockMovements = () => {
           filterTo={filterTo}
           setFilterTo={setFilterTo}
         />
-        {isMobile && <Divider />}
-        <StockMovementAdd setStockMovements={setStockMovements} />
+        {!isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
       <StockMovementList
         stockMovements={stockMovements}
         isLoading={activeResult.isLoading}

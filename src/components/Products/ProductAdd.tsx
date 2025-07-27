@@ -129,18 +129,11 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
   return (
     <>
       {canCreateProducts && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
-          px="1.5rem"
-        >
-          Agregar producto
+        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+          Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={handleClose} size="sm" isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem">
@@ -167,7 +160,7 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
           >
             {({ handleSubmit, errors, submitCount, values, setFieldValue }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
                       <FormLabel>Código de barras</FormLabel>

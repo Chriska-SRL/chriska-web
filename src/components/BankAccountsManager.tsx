@@ -171,7 +171,7 @@ export const BankAccountsManager = ({ bankAccounts, onChange }: BankAccountsMana
           >
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0" maxH="70vh" overflowY="auto">
+                <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
                       <FormLabel>Banco</FormLabel>

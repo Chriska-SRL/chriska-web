@@ -30,6 +30,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
+import { QualificationSelector } from '../QualificationSelector';
 
 type ClientDetailProps = {
   client: Client;
@@ -50,7 +51,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const detailFieldClickable = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
+  const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
       <Text color={labelColor} mb="0.5rem">
         {label}
@@ -94,7 +95,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
-      stars.push(<FaStar key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} size="2.5rem" />);
+      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="2.5rem" />);
     }
 
     return (
@@ -103,7 +104,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
           Calificación
         </Text>
         <Flex justifyContent="center" alignItems="center" w="100%" py="0.5rem">
-          <HStack spacing="1.5rem">{stars}</HStack>
+          <HStack spacing="1rem">{stars}</HStack>
         </Flex>
       </Box>
     );
@@ -175,8 +176,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
           <ModalCloseButton />
           <ModalBody
             pb="0"
-            // maxH="30rem"
-            // overflow="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',
@@ -184,23 +183,22 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
             }}
           >
             <VStack spacing="0.75rem">
-              {detailFieldClickable('Nombre', client.name)}
-              {detailFieldClickable('RUT', client.rut)}
-              {detailFieldClickable('Razón Social', client.razonSocial)}
-              {detailFieldClickable('Dirección', client.address)}
-              {detailFieldClickable('Dirección en Maps', client.mapsAddress)}
-              {detailFieldClickable('Horario', client.schedule)}
-              {detailFieldClickable('Teléfono', client.phone)}
-              {detailFieldClickable('Persona de contacto', client.contactName)}
-              {detailFieldClickable('Correo electrónico', client.email)}
+              {detailField('Nombre', client.name)}
+              {detailField('RUT', client.rut)}
+              {detailField('Razón Social', client.razonSocial)}
+              {detailField('Dirección', client.address)}
+              {detailField('Dirección en Maps', client.mapsAddress)}
+              {detailField('Horario', client.schedule)}
+              {detailField('Teléfono', client.phone)}
+              {detailField('Persona de contacto', client.contactName)}
+              {detailField('Correo electrónico', client.email)}
               {renderBankAccounts(client.bankAccounts)}
-              {detailFieldClickable('Cajones prestados', client.loanedCrates)}
-              {/* {detailFieldClickable('Zona', client.zone.name)} */}
-              {detailFieldClickable('Zona', client.zone.name, () => {
+              {detailField('Cajones prestados', client.loanedCrates)}
+              {detailField('Zona', client.zone.name, () => {
                 router.push(`/zonas?open=${client.zone.id}`);
               })}
               {renderQualificationStars(client.qualification)}
-              {detailFieldClickable('Observaciones', client.observations)}
+              {detailField('Observaciones', client.observations)}
             </VStack>
           </ModalBody>
 

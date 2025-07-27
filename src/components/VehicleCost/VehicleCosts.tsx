@@ -1,6 +1,6 @@
 'use client';
 
-import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery } from '@chakra-ui/react';
+import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery, Box } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetVehicleCosts } from '@/hooks/vehicleCost';
@@ -55,44 +55,57 @@ export const VehicleCosts = () => {
   }, [costs, filterType, filterDescription, from, to]);
 
   return (
-    <>
-      <Flex alignItems="center" gap="1rem">
-        <IconButton
-          aria-label="Volver"
-          icon={<MdArrowBackIosNew />}
-          onClick={() => router.replace('/vehiculos')}
-          variant="ghost"
-          size="sm"
-        />
-        <Flex gap="0.5rem" alignItems="baseline">
-          <Text fontSize="1.5rem" fontWeight="bold">
-            Costos del vehículo:
-          </Text>
-          {isLoadingVehicle ? (
-            <Spinner size="sm" ml="2rem" />
-          ) : (
+    <Flex direction="column" h="100%" gap="1rem">
+      <Box flexShrink="0">
+        <Flex alignItems="center" gap="1rem">
+          <IconButton
+            aria-label="Volver"
+            icon={<MdArrowBackIosNew />}
+            onClick={() => router.replace('/vehiculos')}
+            variant="ghost"
+            size="sm"
+          />
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            gap={{ base: '0', md: '0.5rem' }}
+            alignItems={{ base: 'start', md: 'baseline' }}
+          >
             <Text fontSize="1.5rem" fontWeight="bold">
-              {vehicle?.plate}
+              Costos del vehículo{isMobile ? ':' : ': '}
             </Text>
-          )}
+            {isLoadingVehicle ? (
+              <Spinner size="md" ml={{ base: '2rem', md: '2rem' }} mt={{ base: '0.5rem', md: 0 }} />
+            ) : (
+              <Text fontSize="1.5rem" fontWeight="bold">
+                {vehicle?.plate}
+              </Text>
+            )}
+          </Flex>
         </Flex>
-      </Flex>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <VehicleCostFilters
-          filterType={filterType}
-          setFilterType={setFilterType}
-          filterDescription={filterDescription}
-          setFilterDescription={setFilterDescription}
-          from={from}
-          to={to}
-          setFrom={setFrom}
-          setTo={setTo}
-          availableTypes={availableTypes}
-        />
-        {isMobile && <Divider />}
-        <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} />
-      </Flex>
-      <VehicleCostList costs={filteredCosts} setCosts={setCosts} isLoading={isLoading} error={error} />
-    </>
+      </Box>
+
+      <Box flexShrink="0">
+        <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+          <VehicleCostFilters
+            filterType={filterType}
+            setFilterType={setFilterType}
+            filterDescription={filterDescription}
+            setFilterDescription={setFilterDescription}
+            from={from}
+            to={to}
+            setFrom={setFrom}
+            setTo={setTo}
+            availableTypes={availableTypes}
+          />
+          {isMobile && <Divider />}
+          <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} />
+        </Flex>
+      </Box>
+
+      {/* Lista con altura dinámica */}
+      <Box flex="1" minH="0">
+        <VehicleCostList costs={filteredCosts} setCosts={setCosts} isLoading={isLoading} error={error} />
+      </Box>
+    </Flex>
   );
 };

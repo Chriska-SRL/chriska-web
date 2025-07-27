@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Flex } from '@chakra-ui/react';
+import { Flex, Spinner, Box } from '@chakra-ui/react';
 import { SideBar, Content, WelcomePanel, ClientOnly } from '../components';
 import { useUserStore } from '@/stores/useUserStore';
 
 const HomePage = () => {
-  const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
-  const isHydrated = useUserStore((s) => s.isHydrated);
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const isHydrated = useUserStore((state) => state.isHydrated);
 
-  useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated) {
-      router.push('/');
-    }
-  }, [isLoggedIn, isHydrated, router]);
+  if (!isHydrated || !isLoggedIn) {
+    return (
+      <Flex height="100dvh" justifyContent="center" alignItems="center">
+        <Box textAlign="center">
+          <Spinner size="lg" color="blue.500" />
+        </Box>
+      </Flex>
+    );
+  }
 
   return (
     <ClientOnly>

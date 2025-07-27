@@ -15,6 +15,7 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  HStack,
 } from '@chakra-ui/react';
 import { Brand } from '@/entities/brand';
 import { BrandDetail } from './BrandDetail';
@@ -24,41 +25,51 @@ type BrandListProps = {
   setBrands: React.Dispatch<React.SetStateAction<Brand[]>>;
   isLoading: boolean;
   error?: string;
+  brandToOpenModal?: number | null;
+  setBrandToOpenModal?: (id: number | null) => void;
 };
 
-export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProps) => {
+export const BrandList = ({
+  brands,
+  setBrands,
+  isLoading,
+  error,
+  brandToOpenModal,
+  setBrandToOpenModal,
+}: BrandListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar las marcas: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!brands || brands.length === 0) {
+  if (!brands?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron marcas registradas.
+          No se encontraron marcas.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Intente agregando una nueva marca.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta agregando una nueva marca.
         </Text>
       </Flex>
     );
@@ -67,14 +78,13 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="32rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {brands.map((brand) => (
                 <Box
                   key={brand.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -82,19 +92,35 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">{brand.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    {brand.description}
-                  </Text>
-                  <BrandDetail brand={brand} setBrands={setBrands} />
+                  <HStack spacing="0.75rem" pr="2.5rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {brand.name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} noOfLines={3} mt="0.25rem">
+                        {brand.description}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <Box position="absolute" top="0" right="0.5rem">
+                    <BrandDetail
+                      brand={brand}
+                      setBrands={setBrands}
+                      forceOpen={brandToOpenModal === brand.id}
+                      onModalClose={() => setBrandToOpenModal?.(null)}
+                    />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {brands.length} marcas</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {brands.length} marcas
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -107,9 +133,7 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="20rem">
-                    Nombre
-                  </Th>
+                  <Th textAlign="center">Nombre</Th>
                   <Th textAlign="center">Descripción</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
@@ -118,9 +142,18 @@ export const BrandList = ({ brands, setBrands, isLoading, error }: BrandListProp
                 {brands.map((brand) => (
                   <Tr key={brand.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{brand.name}</Td>
-                    <Td textAlign="center">{brand.description}</Td>
+                    <Td textAlign="center">
+                      <Box whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" title={brand.description}>
+                        {brand.description || 'N/A'}
+                      </Box>
+                    </Td>
                     <Td textAlign="center" pr="2rem">
-                      <BrandDetail brand={brand} setBrands={setBrands} />
+                      <BrandDetail
+                        brand={brand}
+                        setBrands={setBrands}
+                        forceOpen={brandToOpenModal === brand.id}
+                        onModalClose={() => setBrandToOpenModal?.(null)}
+                      />
                     </Td>
                   </Tr>
                 ))}

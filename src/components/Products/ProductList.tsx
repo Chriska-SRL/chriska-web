@@ -1,4 +1,3 @@
-// Adaptación de ProductList para versión mobile
 'use client';
 
 import {
@@ -13,15 +12,18 @@ import {
   Text,
   Spinner,
   Flex,
-  useDisclosure,
   useMediaQuery,
   Image,
   VStack,
   useColorModeValue,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
-import { useState } from 'react';
 import { Product } from '@/entities/product';
 import { ProductDetail } from './ProductDetail';
+import { getUnitTypeLabel } from '@/enums/unitType.enum';
+import { FiHash, FiDollarSign, FiPackage, FiGrid, FiTag } from 'react-icons/fi';
+import { ImageModal } from '../ImageModal';
 
 type ProductListProps = {
   products: Product[];
@@ -39,6 +41,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
   const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const temperatureCondition = (condition: string) => {
     switch (condition) {
@@ -53,15 +56,8 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
     }
   };
 
-  const unitType = (unitType: string) => {
-    switch (unitType) {
-      case 'Unit':
-        return 'Unidades';
-      case 'Kilo':
-        return 'Kilos';
-      default:
-        return 'Desconocido';
-    }
+  const formatPrice = (price: number) => {
+    return `$${price.toFixed(2)}`;
   };
 
   if (error)
@@ -70,12 +66,14 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
         <Text color="red.500">Error: {error}</Text>
       </Box>
     );
+
   if (isLoading)
     return (
       <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
+
   if (!products?.length)
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
@@ -91,14 +89,13 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" maxH="32rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {products.map((product) => (
                 <Box
                   key={product.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -106,39 +103,88 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">{product.name}</Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Categoría: {product.subCategory.name}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Precio: ${product.price.toFixed(2)}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Stock: {product.stock}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Conservación: {temperatureCondition(product.temperatureCondition)}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Unidad: {unitType(product.unitType)}
-                  </Text>
-                  <Flex justify="center" align="center" mt="0.5rem">
-                    <Image
+                  <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
+                    <ImageModal
                       src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
-                      objectFit="cover"
-                      maxH="5rem"
-                      maxW="100%"
-                    />
-                  </Flex>
-                  <ProductDetail product={product} setProducts={setProducts} />
+                      alt={product.name}
+                    >
+                      <Image
+                        src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                        alt={product.name}
+                        boxSize="60px"
+                        borderRadius="md"
+                        bg="gray.100"
+                      />
+                    </ImageModal>
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {product.name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} noOfLines={1}>
+                        {product.subCategory.name}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiHash} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Cód. interno</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{product.internalCode}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiDollarSign} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Precio</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" color="green.600">
+                        {formatPrice(product.price)}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Stock</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{product.stock}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiGrid} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Unidad</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{getUnitTypeLabel(product.unitType)}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Marca</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {product.brand.name}
+                      </Text>
+                    </HStack>
+                  </VStack>
+
+                  <Box position="absolute" top="0.5rem" right="0.5rem">
+                    <ProductDetail product={product} setProducts={setProducts} />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {products.length} productos</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {products.length} productos
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -165,19 +211,22 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                   <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{product.internalCode}</Td>
                     <Td textAlign="center">{product.subCategory.name}</Td>
-                    <Td py="0.125rem">
-                      <Flex justify="center" align="center" h="5rem" w="100%">
+                    <Td display="flex" justifyContent="center" align="center">
+                      <ImageModal
+                        src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                        alt={product.name}
+                      >
                         <Image
                           src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
-                          objectFit="cover"
-                          maxH="100%"
-                          maxW="100%"
-                          h="100%"
+                          alt={product.name}
+                          boxSize="4rem"
+                          borderRadius="md"
+                          bg="gray.100"
                         />
-                      </Flex>
+                      </ImageModal>
                     </Td>
                     <Td textAlign="center">{product.name}</Td>
-                    <Td textAlign="center">${product.price.toFixed(2)}</Td>
+                    <Td textAlign="center">{formatPrice(product.price)}</Td>
                     <Td textAlign="center">{product.stock}</Td>
                     <Td textAlign="center">
                       <ProductDetail product={product} setProducts={setProducts} />

@@ -79,10 +79,16 @@ export const Clients = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Clientes
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Clientes
+        </Text>
+        {isMobile && <ClientAdd setClients={setClients} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ClientFilters
           filterName={filterName}
           setFilterName={setFilterName}
@@ -91,9 +97,11 @@ export const Clients = () => {
           searchParam={searchParam}
           setSearchParam={setSearchParam}
         />
-        {isMobile && <Divider />}
-        <ClientAdd setClients={setClients} />
+        {!isMobile && <ClientAdd setClients={setClients} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
       <ClientList clients={filteredClients} isLoading={isLoading} error={error} setClients={setClients} />
     </>
   );

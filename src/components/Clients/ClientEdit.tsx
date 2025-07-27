@@ -91,7 +91,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
     const updatedClient = {
       ...values,
       zoneId: values.zoneId,
-      bankAccounts: bankAccounts, // Incluir las bank accounts
+      bankAccounts: bankAccounts,
     };
     setClientProps(updatedClient);
   };
@@ -127,7 +127,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
         >
           {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70vh" overflowY="auto">
+              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>

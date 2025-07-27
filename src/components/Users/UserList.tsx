@@ -15,9 +15,13 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  HStack,
+  Badge,
+  Icon,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { UserDetail } from './UserDetail';
+import { FiUser, FiShield, FiCheckCircle } from 'react-icons/fi';
 
 type UserListProps = {
   users: User[];
@@ -32,33 +36,35 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los usuarios: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!users || users.length === 0) {
+  if (!users?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
-        <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron usuarios con esos parámetros de búsqueda.
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
+        <Text fontSize="lg" fontWeight="semibold">
+          No se encontraron usuarios.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
@@ -67,14 +73,13 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="25rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {users.map((user) => (
                 <Box
                   key={user.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -82,36 +87,64 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Box
-                    position="absolute"
-                    top="0.75rem"
-                    right="0.75rem"
-                    bg={user.isEnabled ? 'green.100' : 'red.100'}
-                    color={user.isEnabled ? 'green.800' : 'red.800'}
-                    px="0.75rem"
-                    py="0.25rem"
-                    borderRadius="full"
-                    fontSize="0.75rem"
-                  >
-                    {user.isEnabled ? 'Activo' : 'Inactivo'}
-                  </Box>
+                  <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {user.name}
+                      </Text>
+                    </VStack>
+                  </HStack>
 
-                  <Text fontWeight="bold">{user.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Usuario: {user.username}
-                  </Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Rol: {user.role.name}
-                  </Text>
-                  <UserDetail user={user} setUsers={setUsers} />
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiUser} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Usuario</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {user.username}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiShield} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Rol</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {user.role.name}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiCheckCircle} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Estado</Text>
+                      </HStack>
+                      <Badge
+                        colorScheme={user.isEnabled ? 'green' : 'red'}
+                        fontSize="0.75rem"
+                        p="0.125rem 0.5rem"
+                        borderRadius="0.375rem"
+                      >
+                        {user.isEnabled ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </HStack>
+                  </VStack>
+
+                  <Box position="absolute" top="0rem" right="0.25rem">
+                    <UserDetail user={user} setUsers={setUsers} />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {users.length} usuarios
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -124,11 +157,19 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Nombre de usuario</Th>
-                  <Th textAlign="center">Nombre</Th>
-                  <Th textAlign="center">Rol</Th>
-                  <Th textAlign="center">Estado</Th>
-                  <Th></Th>
+                  <Th textAlign="center" w="12rem">
+                    Usuario
+                  </Th>
+                  <Th textAlign="center" w="15rem">
+                    Nombre
+                  </Th>
+                  <Th textAlign="center" w="12rem">
+                    Rol
+                  </Th>
+                  <Th textAlign="center" w="8rem">
+                    Estado
+                  </Th>
+                  <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -138,19 +179,16 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
                     <Td textAlign="center">{user.name}</Td>
                     <Td textAlign="center">{user.role.name}</Td>
                     <Td textAlign="center">
-                      <Box
-                        bg={user.isEnabled ? 'green.300' : 'red.300'}
-                        color={user.isEnabled ? 'green.900' : 'red.900'}
-                        px="0.75rem"
-                        py="0.25rem"
-                        borderRadius="full"
+                      <Badge
+                        colorScheme={user.isEnabled ? 'green' : 'red'}
                         fontSize="0.75rem"
-                        display="inline-block"
+                        p="0.25rem 0.75rem"
+                        borderRadius="0.375rem"
                       >
                         {user.isEnabled ? 'Activo' : 'Inactivo'}
-                      </Box>
+                      </Badge>
                     </Td>
-                    <Td textAlign="center">
+                    <Td textAlign="center" pr="2rem">
                       <UserDetail user={user} setUsers={setUsers} />
                     </Td>
                   </Tr>

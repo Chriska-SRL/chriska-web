@@ -95,15 +95,8 @@ export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
   return (
     <>
       {canCreateWarehouses && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
-          px="1.5rem"
-        >
-          Agregar depósito
+        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>

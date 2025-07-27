@@ -20,10 +20,8 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
-import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type FormValues = {
-  oldPassword: string;
   newPassword: string;
   confirmPassword: string;
 };
@@ -32,6 +30,8 @@ export const PasswordReset = () => {
   const router = useRouter();
   const toast = useToast();
   const user = useUserStore((state) => state.user);
+  const tempPassword = useUserStore((state) => state.tempPassword);
+  const clearTempPassword = useUserStore((state) => state.clearTempPassword);
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
 
@@ -43,6 +43,7 @@ export const PasswordReset = () => {
 
   useEffect(() => {
     if (data) {
+      clearTempPassword();
       toast({
         title: 'Contraseña actualizada',
         description: 'La contraseña se ha cambiado correctamente',
@@ -52,7 +53,7 @@ export const PasswordReset = () => {
       });
       router.push('/');
     }
-  }, [data]);
+  }, [data, clearTempPassword, toast, router]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -68,7 +69,7 @@ export const PasswordReset = () => {
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   const handleSubmit = (values: FormValues) => {
     if (!user?.userId) {
@@ -82,22 +83,37 @@ export const PasswordReset = () => {
       return;
     }
 
+    if (!tempPassword) {
+      toast({
+        title: 'Error interno',
+        description: 'No se pudo obtener la contraseña actual. Intente iniciar sesión nuevamente.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+      router.push('/iniciar-sesion');
+      return;
+    }
+
     setResetProps({
       username: user.username,
-      oldPassword: values.oldPassword,
+      oldPassword: tempPassword,
       newPassword: values.newPassword,
     });
   };
 
   return (
-    <Flex height="100vh" bg={bg} justifyContent="center" alignItems="center">
-      <Container maxW={{ sm: '25rem', base: '20rem' }}>
-        <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="1rem">
+    <Flex height="100dvh" bg={bg} justifyContent="center" alignItems="center">
+      <Container maxW={{ base: '90dvw', sm: '25rem' }}>
+        <Text fontSize="1.875rem" fontWeight="bold" color={titleColor} textAlign="center" pb="0.125rem">
           Cambiar contraseña
+        </Text>
+        <Text fontSize="0.875rem" color={titleColor} textAlign="center" pb="1rem" opacity={0.7}>
+          Como es tu primer inicio de sesión, debes cambiar tu contraseña
         </Text>
         <Box bg={boxBg} boxShadow="lg" borderRadius="0.5rem" p="2rem">
           <Formik
-            initialValues={{ oldPassword: '', newPassword: '', confirmPassword: '' }}
+            initialValues={{ newPassword: '', confirmPassword: '' }}
             onSubmit={handleSubmit}
             validate={(values) => {
               const errors: Partial<FormValues> = {};
@@ -113,12 +129,6 @@ export const PasswordReset = () => {
           >
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
-                  <FormLabel htmlFor="oldPassword">Contraseña actual</FormLabel>
-                  <Field as={Input} name="oldPassword" type="password" variant="filled" validate={validateEmpty} />
-                  <FormErrorMessage>{errors.oldPassword}</FormErrorMessage>
-                </FormControl>
-
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
                   <FormLabel htmlFor="newPassword">Nueva contraseña</FormLabel>
                   <Field as={Input} name="newPassword" type="password" variant="filled" />

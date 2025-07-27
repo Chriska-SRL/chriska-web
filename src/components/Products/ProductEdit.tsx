@@ -122,7 +122,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             observation: product?.observation ?? '',
             subCategoryId: product?.subCategory.id ?? 0,
             brandId: product?.brand.id ?? 0,
-            image: product?.image ?? '',
+            image: product?.imageUrl ?? '',
           }}
           onSubmit={(values) => setProductProps(values)}
           validateOnChange={true}
@@ -130,15 +130,15 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         >
           {({ handleSubmit, errors, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70vh" overflowY="auto">
+              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl>
                     <FormLabel>Imagen</FormLabel>
                     <Flex w="full" justifyContent="center">
                       <Image
                         src={
-                          product.image !== ''
-                            ? product.image
+                          product.imageUrl !== ''
+                            ? product.imageUrl
                             : 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
                         }
                         alt={product.name}

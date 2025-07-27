@@ -10,17 +10,14 @@ import { Permission } from '@/enums/permission.enum';
 
 const ClientsPage: NextPage = () => {
   const router = useRouter();
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewClients = useUserStore((s) => s.hasPermission(Permission.VIEW_CLIENTS));
 
   useEffect(() => {
-    if (isHydrated && !isLoggedIn) {
-      router.push('/iniciar-sesion');
-    } else if (isHydrated && !canViewClients) {
+    if (isHydrated && !canViewClients) {
       router.push('/');
     }
-  }, [isLoggedIn, isHydrated, canViewClients, router]);
+  }, [isHydrated, canViewClients, router]);
 
   return (
     <ClientOnly>

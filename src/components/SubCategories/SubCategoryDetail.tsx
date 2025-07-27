@@ -26,13 +26,16 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { SubCategory } from '@/entities/subcategory';
 import { SubCategoryEdit } from './SubCategoryEdit';
+import { useEffect } from 'react';
 
 type SubCategoryDetailProps = {
   subcategory: SubCategory;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDetailProps) => {
+export const SubCategoryDetail = ({ subcategory, setCategories, forceOpen, onModalClose }: SubCategoryDetailProps) => {
   const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
   const canDeleteCategories = useUserStore((s) => s.hasPermission(Permission.DELETE_CATEGORIES));
 
@@ -43,6 +46,18 @@ export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDet
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+    onDeleted();
+  };
 
   const onDeleted = () => {
     onClose();
@@ -92,7 +107,7 @@ export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDet
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
@@ -125,7 +140,7 @@ export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDet
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -137,7 +152,7 @@ export const SubCategoryDetail = ({ subcategory, setCategories }: SubCategoryDet
                   item={{ id: subcategory.id, name: subcategory.name }}
                   useDeleteHook={useDeleteSubCategory}
                   setItems={setCategories}
-                  onDeleted={onDeleted}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

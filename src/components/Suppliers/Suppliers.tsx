@@ -35,14 +35,22 @@ export const Suppliers = () => {
 
   return (
     <>
-      <Text fontSize="1.5rem" fontWeight="bold">
-        Proveedores
-      </Text>
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <SupplierFilters filterName={filterName} setFilterName={setFilterName} />
-        {isMobile && <Divider />}
-        <SupplierAdd setSuppliers={setSuppliers} />
+      <Flex gap="2rem" justifyContent="space-between" alignItems="center">
+        <Text fontSize="1.5rem" fontWeight="bold">
+          Proveedores
+        </Text>
+        {isMobile && <SupplierAdd setSuppliers={setSuppliers} />}
       </Flex>
+
+      {isMobile && <Divider />}
+
+      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
+        <SupplierFilters filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <SupplierAdd setSuppliers={setSuppliers} />}
+      </Flex>
+
+      {isMobile && <Divider />}
+
       <SupplierList suppliers={filteredSuppliers} isLoading={isLoading} error={error} setSuppliers={setSuppliers} />
     </>
   );

@@ -24,13 +24,16 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteBrand } from '@/hooks/brand';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { useEffect } from 'react';
 
 type BrandDetailProps = {
   brand: Brand;
   setBrands: React.Dispatch<React.SetStateAction<Brand[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
+export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: BrandDetailProps) => {
   const canEditBrands = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
   const canDeleteBrands = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
 
@@ -41,6 +44,17 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+  };
 
   const detailField = (label: string, value: string | number | null | undefined) => (
     <Box w="100%">
@@ -76,7 +90,7 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -100,7 +114,7 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -112,7 +126,7 @@ export const BrandDetail = ({ brand, setBrands }: BrandDetailProps) => {
                   item={{ id: brand.id, name: brand.name }}
                   useDeleteHook={useDeleteBrand}
                   setItems={setBrands}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

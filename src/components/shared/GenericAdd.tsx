@@ -69,14 +69,7 @@ export const GenericAddModal = <T extends Record<string, any>>({
 
   return (
     <>
-      <Button
-        bg={buttonBg}
-        _hover={{ bg: buttonHover }}
-        leftIcon={<FaPlus />}
-        onClick={onOpen}
-        w={{ base: '100%', md: 'auto' }}
-        px="1.5rem"
-      >
+      <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
         {buttonLabel}
       </Button>
 

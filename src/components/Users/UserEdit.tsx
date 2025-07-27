@@ -28,7 +28,7 @@ import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
 import { useDeleteUser, useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
-import { TemporaryPasswordModal } from './TemporaryPasswordModal';
+import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { IoReload } from 'react-icons/io5';
 import { GenericDelete } from '../shared/GenericDelete';
 
@@ -51,15 +51,25 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
     onOpen: openTempPasswordModal,
     onClose: closeTempPasswordModal,
   } = useDisclosure();
+
   const [resetUserId, setResetUserId] = useState<number | undefined>();
   const { data: resetData, isLoading: isLoadingReset, error: resetError } = useTemporaryPassword(resetUserId);
 
   useEffect(() => {
     if (resetData) {
-      onClose();
       openTempPasswordModal();
+      // onClose(); Revisar por que no funciona bien
     }
   }, [resetData]);
+
+  const handleResetPassword = () => {
+    if (user) setResetUserId(user.id);
+  };
+
+  const handleCloseTempPasswordModal = () => {
+    closeTempPasswordModal();
+    setResetUserId(undefined);
+  };
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -120,15 +130,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
       roleId: values.roleId ?? 0,
     };
     setUserProps(user);
-  };
-
-  const handleResetPassword = () => {
-    if (user) setResetUserId(user.id);
-  };
-
-  const handleCloseTempPasswordModal = () => {
-    closeTempPasswordModal();
-    setResetUserId(undefined);
   };
 
   return (

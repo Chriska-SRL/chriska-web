@@ -100,11 +100,10 @@ export const CategoryAdd = ({ setCategories }: CategoryAddProps) => {
           _hover={{ bg: buttonHover }}
           leftIcon={<FaPlus />}
           onClick={onOpen}
-          w={{ base: '100%', md: 'auto' }}
           px="1.5rem"
           disabled={!canCreateCategories}
         >
-          Agregar categoría
+          Nuevo
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>

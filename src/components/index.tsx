@@ -7,7 +7,6 @@ export * from './ClientOnly';
 export * from './PasswordReset';
 export * from './WelcomePanel';
 export * from './ThemeToggle';
-export * from './UserHydrator';
 export * from './Login';
 export * from './UserMenu';
 
@@ -78,6 +77,4 @@ export * from './Shelves/ShelveAdd';
 export * from './Shelves/ShelveEdit';
 
 export * from './StockMovements/StockMovements';
-// export * from './StockMovements/StockMovementAdd';
 export * from './StockMovements/StockMovementList';
-// export * from './StockMovements/StockMovementFilters';

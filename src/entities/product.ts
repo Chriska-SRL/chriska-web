@@ -8,7 +8,7 @@ export type Product = {
   barcode: string;
   name: string;
   price: number;
-  image: string;
+  imageUrl: string;
   stock: number;
   availableStock: number;
   unitType: string;
@@ -18,4 +18,5 @@ export type Product = {
   subCategory: SubCategory;
   brand: Brand;
   suppliers: Supplier[];
+  // discounts: Discount[];
 };

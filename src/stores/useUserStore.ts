@@ -16,14 +16,24 @@ type UserStore = {
   isLoggedIn: boolean;
   isHydrated: boolean;
   permissions: number[];
+  tempPassword?: string;
   setUserFromToken: (token: string) => void;
   hasPermission: (Permission: number) => boolean;
   logout: () => void;
+  initializeFromStorage: () => void;
+  setTempPassword: (password: string) => void;
+  clearTempPassword: () => void;
 };
 
 const decodeToken = (token: string): TokenPayload | null => {
   try {
     const decoded: any = jwtDecode(token);
+
+    const currentTime = Date.now() / 1000;
+    if (decoded.exp < currentTime) {
+      return null;
+    }
+
     return {
       userId: parseInt(decoded.userId),
       username: decoded.username,
@@ -38,25 +48,72 @@ const decodeToken = (token: string): TokenPayload | null => {
   }
 };
 
+const isDev = process.env.NODE_ENV === 'development';
+
+const setCookie = (name: string, value: string, days: number = 7) => {
+  if (typeof window !== 'undefined') {
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+
+    if (isDev) {
+      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+    } else {
+      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+    }
+  }
+};
+
+const getCookie = (name: string): string | null => {
+  if (typeof window === 'undefined') return null;
+
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+};
+
+const deleteCookie = (name: string) => {
+  if (typeof window !== 'undefined') {
+    if (isDev) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Lax`;
+    } else {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Strict`;
+    }
+  }
+};
+
 export const useUserStore = create<UserStore>((set, get) => ({
   user: null,
   isLoggedIn: false,
   isHydrated: false,
   permissions: [],
+  tempPassword: undefined,
 
   setUserFromToken: (token) => {
     const decoded = decodeToken(token);
     if (decoded) {
       const numericPermissions = decoded.permissions.map((p) => parseInt(p));
-      localStorage.setItem('access_token', token);
+
+      setCookie('auth-token', token);
+
+      const currentState = get();
       set({
         user: decoded,
         permissions: numericPermissions,
         isLoggedIn: true,
         isHydrated: true,
+        tempPassword: currentState.tempPassword,
       });
     } else {
-      set({ isHydrated: true });
+      deleteCookie('auth-token');
+      set({
+        user: null,
+        permissions: [],
+        isLoggedIn: false,
+        isHydrated: true,
+        tempPassword: undefined,
+      });
     }
   },
 
@@ -65,12 +122,62 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('access_token');
+    deleteCookie('auth-token');
+
     set({
       user: null,
       permissions: [],
       isLoggedIn: false,
       isHydrated: true,
+      tempPassword: undefined, // Limpiar contraseña temporal al hacer logout
     });
+  },
+
+  initializeFromStorage: () => {
+    if (typeof window === 'undefined') {
+      set({ isHydrated: true });
+      return;
+    }
+
+    const token = getCookie('auth-token');
+
+    if (token) {
+      const decoded = decodeToken(token);
+      if (decoded) {
+        const numericPermissions = decoded.permissions.map((p) => parseInt(p));
+
+        set({
+          user: decoded,
+          permissions: numericPermissions,
+          isLoggedIn: true,
+          isHydrated: true,
+        });
+      } else {
+        deleteCookie('auth-token');
+        set({
+          user: null,
+          permissions: [],
+          isLoggedIn: false,
+          isHydrated: true,
+          tempPassword: undefined,
+        });
+      }
+    } else {
+      set({
+        user: null,
+        permissions: [],
+        isLoggedIn: false,
+        isHydrated: true,
+        tempPassword: undefined,
+      });
+    }
+  },
+
+  setTempPassword: (password: string) => {
+    set({ tempPassword: password });
+  },
+
+  clearTempPassword: () => {
+    set({ tempPassword: undefined });
   },
 }));

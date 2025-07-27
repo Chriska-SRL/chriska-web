@@ -111,7 +111,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
         >
           {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70vh" overflowY="auto">
+              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>

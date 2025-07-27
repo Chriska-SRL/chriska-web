@@ -15,9 +15,12 @@ import {
   VStack,
   useMediaQuery,
   useColorModeValue,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Client } from '@/entities/client';
 import { ClientDetail } from './ClientDetail';
+import { FiUser, FiPhone, FiMapPin, FiFileText } from 'react-icons/fi';
 
 type ClientListProps = {
   clients: Client[];
@@ -32,33 +35,35 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
+  const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   if (error) {
     return (
       <Box p="2rem" textAlign="center">
-        <Text color="red.500">Error al cargar los clientes: {error}</Text>
+        <Text color="red.500">Error: {error}</Text>
       </Box>
     );
   }
 
   if (isLoading) {
     return (
-      <Flex justifyContent="center" alignItems="center" h="100%">
+      <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
   }
 
-  if (!clients || clients.length === 0) {
+  if (!clients?.length) {
     return (
-      <Flex direction="column" alignItems="center" justifyContent="center" h="100%" textAlign="center" p="2rem">
+      <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron clientes con esos parámetros de búsqueda.
+          No se encontraron clientes.
         </Text>
-        <Text fontSize="sm" color={textColor}>
-          Inténtelo con otros parámetros.
+        <Text fontSize="sm" color={emptyTextColor}>
+          Intenta con otros parámetros.
         </Text>
       </Flex>
     );
@@ -67,14 +72,13 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="32rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {clients.map((client) => (
                 <Box
                   key={client.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -82,28 +86,71 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">{client.name}</Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    RUT: {client.rut}
-                  </Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Razón social: {client.razonSocial}
-                  </Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Zona: {client.zone?.name}
-                  </Text>
-                  <Text fontSize="sm" color={textColor} mt="0.25rem">
-                    Teléfono: {client.phone}
-                  </Text>
-                  <ClientDetail client={client} setClients={setClients} />
+                  <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
+                    {/* <Flex align="center" justify="center" boxSize="60px" bg="gray.100" borderRadius="md" flexShrink={0}>
+                      <Icon as={FiUser} boxSize="1.5rem" color={iconColor} />
+                    </Flex> */}
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {client.name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} noOfLines={1}>
+                        {client.razonSocial}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>RUT</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{client.rut}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiUser} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Contacto</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {client.contactName || 'N/A'}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPhone} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Teléfono</Text>
+                      </HStack>
+                      <Text fontWeight="semibold">{client.phone || 'N/A'}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiMapPin} boxSize="0.875rem" color={iconColor} />
+                        <Text color={textColor}>Zona</Text>
+                      </HStack>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {client.zone?.name || 'N/A'}
+                      </Text>
+                    </HStack>
+                  </VStack>
+
+                  <Box position="absolute" top="0.5rem" right="0.5rem">
+                    <ClientDetail client={client} setClients={setClients} />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {clients.length} clientes</Text>
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {clients.length} clientes
+            </Text>
           </Box>
-        </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -139,9 +186,9 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   <Tr key={client.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{client.name}</Td>
                     <Td textAlign="center">{client.razonSocial}</Td>
-                    <Td textAlign="center">{client.contactName}</Td>
-                    <Td textAlign="center">{client.phone}</Td>
-                    <Td textAlign="center">{client.zone?.name}</Td>
+                    <Td textAlign="center">{client.contactName || 'N/A'}</Td>
+                    <Td textAlign="center">{client.phone || 'N/A'}</Td>
+                    <Td textAlign="center">{client.zone?.name || 'N/A'}</Td>
                     <Td textAlign="center" pr="2rem">
                       <ClientDetail client={client} setClients={setClients} />
                     </Td>
