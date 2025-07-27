@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
+import { useLogin } from '@/hooks/login';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
 
 export const PasswordReset = () => {
@@ -29,9 +30,13 @@ export const PasswordReset = () => {
   const tempPassword = useUserStore((state) => state.tempPassword);
   const clearTempPassword = useUserStore((state) => state.clearTempPassword);
   const logout = useUserStore((state) => state.logout);
+  const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
+
+  const { performLogin } = useLogin();
+  const [newPassword, setNewPassword] = useState<string>('');
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -40,20 +45,28 @@ export const PasswordReset = () => {
   const btnHover = useColorModeValue('brand.700', 'brand.700');
 
   useEffect(() => {
-    if (data) {
-      clearTempPassword();
-      toast({
-        title: 'Contraseña actualizada',
-        description: 'La contraseña se ha cambiado correctamente',
-        status: 'success',
-        duration: 4000,
-        isClosable: true,
-      });
-      logout();
+    if (data && user?.username && newPassword) {
+      const handleAutoLogin = async () => {
+        clearTempPassword();
 
-      router.push('/iniciar-sesion');
+        toast({
+          title: 'Contraseña actualizada correctamente',
+          description: 'Iniciando sesión...',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+
+        logout();
+
+        await performLogin(user.username, newPassword);
+
+        router.push('/');
+      };
+
+      handleAutoLogin();
     }
-  }, [data, clearTempPassword, toast, router]);
+  }, [data, user?.username, newPassword, clearTempPassword, toast, logout, performLogin, setTempPassword, router]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -83,6 +96,8 @@ export const PasswordReset = () => {
       router.push('/iniciar-sesion');
       return;
     }
+
+    setNewPassword(values.newPassword);
 
     setResetProps({
       username: user.username,
@@ -120,7 +135,7 @@ export const PasswordReset = () => {
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
                   <FormLabel htmlFor="newPassword">Nueva contraseña</FormLabel>
-                  <Field as={Input} name="newPassword" type="password" variant="filled" />
+                  <Field as={Input} name="newPassword" type="password" variant="filled" disabled={isLoading} />
                   <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
                 </FormControl>
 
@@ -129,7 +144,7 @@ export const PasswordReset = () => {
                   isInvalid={submitCount > 0 && touched.confirmPassword && !!errors.confirmPassword}
                 >
                   <FormLabel htmlFor="confirmPassword">Confirmar contraseña</FormLabel>
-                  <Field as={Input} name="confirmPassword" type="password" variant="filled" />
+                  <Field as={Input} name="confirmPassword" type="password" variant="filled" disabled={isLoading} />
                   <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
                 </FormControl>
 
@@ -149,7 +164,7 @@ export const PasswordReset = () => {
                     _hover={{ backgroundColor: btnHover }}
                     width="100%"
                   >
-                    Guardar nueva contraseña
+                    {isLoading ? 'Guardando contraseña...' : 'Guardar nueva contraseña'}
                   </Button>
                 </Box>
               </form>

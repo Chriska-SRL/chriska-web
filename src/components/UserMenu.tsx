@@ -1,19 +1,37 @@
 'use client';
 
-import { Flex, Text, Button, Avatar, useColorModeValue } from '@chakra-ui/react';
+import { Flex, Text, Button, Avatar, useColorModeValue, useToast } from '@chakra-ui/react';
 import { MdLogout } from 'react-icons/md';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export const UserMenu = () => {
   const user = useUserStore((state) => state.user);
   const isHydrated = useUserStore((state) => state.isHydrated);
-  const logout = useUserStore((state) => state.logout);
+  const logout = useUserStore((state) => state.logout); // Tu logout original (sync)
   const router = useRouter();
+  const toast = useToast();
+
+  // 🆕 Estado local de loading
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = () => {
-    logout();
-    router.push('/iniciar-sesion');
+    setIsLoading(true);
+
+    toast({
+      title: 'Cerrando sesión...',
+      status: 'info',
+      duration: 1500,
+      isClosable: true,
+    });
+
+    // Simular delay antes del logout
+    setTimeout(() => {
+      logout(); // Tu función original
+      router.push('/iniciar-sesion');
+      setIsLoading(false); // Opcional, ya que se desmonta el componente
+    }, 800); // Ajustable
   };
 
   if (!isHydrated || !user) return null;
@@ -41,6 +59,9 @@ export const UserMenu = () => {
         onClick={handleSignOut}
         leftIcon={<MdLogout />}
         _hover={{ bg: bgHover }}
+        isLoading={isLoading}
+        loadingText="Cerrando..."
+        disabled={isLoading}
       >
         Cerrar sesión
       </Button>
