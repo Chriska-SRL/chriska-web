@@ -21,17 +21,15 @@ import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
 
-type FormValues = {
-  newPassword: string;
-  confirmPassword: string;
-};
-
 export const PasswordReset = () => {
   const router = useRouter();
   const toast = useToast();
+
   const user = useUserStore((state) => state.user);
   const tempPassword = useUserStore((state) => state.tempPassword);
   const clearTempPassword = useUserStore((state) => state.clearTempPassword);
+  const logout = useUserStore((state) => state.logout);
+
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
 
@@ -51,7 +49,9 @@ export const PasswordReset = () => {
         duration: 4000,
         isClosable: true,
       });
-      router.push('/');
+      logout();
+
+      router.push('/iniciar-sesion');
     }
   }, [data, clearTempPassword, toast, router]);
 
@@ -71,22 +71,11 @@ export const PasswordReset = () => {
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: FormValues) => {
-    if (!user?.userId) {
+  const handleSubmit = (values: { newPassword: string; confirmPassword: string }) => {
+    if (!user?.userId || !tempPassword) {
       toast({
         title: 'Error interno',
-        description: 'No se pudo identificar al usuario. Intente iniciar sesión nuevamente.',
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    if (!tempPassword) {
-      toast({
-        title: 'Error interno',
-        description: 'No se pudo obtener la contraseña actual. Intente iniciar sesión nuevamente.',
+        description: 'Ocurrió un error inesperado. Intente iniciar sesión nuevamente.',
         status: 'error',
         duration: 4000,
         isClosable: true,
@@ -116,7 +105,7 @@ export const PasswordReset = () => {
             initialValues={{ newPassword: '', confirmPassword: '' }}
             onSubmit={handleSubmit}
             validate={(values) => {
-              const errors: Partial<FormValues> = {};
+              const errors: Partial<{ newPassword: string; confirmPassword: string }> = {};
               if (!values.newPassword || values.newPassword.length < 8)
                 errors.newPassword = 'La contraseña debe tener al menos 8 caracteres';
               if (!values.confirmPassword) errors.confirmPassword = 'Debe confirmar la contraseña';
