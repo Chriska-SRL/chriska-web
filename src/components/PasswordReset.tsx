@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
-import { useLogin } from '@/hooks/login';
+// import { useLogin } from '@/hooks/login';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
 
 export const PasswordReset = () => {
@@ -35,8 +35,8 @@ export const PasswordReset = () => {
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
 
-  const { performLogin } = useLogin();
-  const [newPassword, setNewPassword] = useState<string>('');
+  // const { performLogin } = useLogin();
+  // const [newPassword, setNewPassword] = useState<string>('');
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -44,29 +44,47 @@ export const PasswordReset = () => {
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
 
+  // useEffect(() => {
+  //   if (data && user?.username && newPassword) {
+  //     const handleAutoLogin = async () => {
+  //       clearTempPassword();
+
+  //       toast({
+  //         title: 'Contraseña actualizada correctamente',
+  //         description: 'Iniciando sesión...',
+  //         status: 'success',
+  //         duration: 3000,
+  //         isClosable: true,
+  //       });
+
+  //       logout();
+
+  //       await performLogin(user.username, newPassword);
+
+  //       router.push('/');
+  //     };
+
+  //     handleAutoLogin();
+
+  //   }
+  // }, [data, user?.username, newPassword, clearTempPassword, toast, logout, performLogin, setTempPassword, router]);
+
   useEffect(() => {
-    if (data && user?.username && newPassword) {
-      const handleAutoLogin = async () => {
-        clearTempPassword();
+    if (data) {
+      clearTempPassword();
+      toast({
+        title: 'Contraseña actualizada correctamente',
+        description: 'Debes volver a iniciar sesión',
+        status: 'success',
+        duration: 4000,
+        isClosable: true,
+      });
 
-        toast({
-          title: 'Contraseña actualizada correctamente',
-          description: 'Iniciando sesión...',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
+      logout();
 
-        logout();
-
-        await performLogin(user.username, newPassword);
-
-        router.push('/');
-      };
-
-      handleAutoLogin();
+      router.push('/iniciar-sesion');
     }
-  }, [data, user?.username, newPassword, clearTempPassword, toast, logout, performLogin, setTempPassword, router]);
+  }, [data, clearTempPassword, toast, router]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -97,7 +115,7 @@ export const PasswordReset = () => {
       return;
     }
 
-    setNewPassword(values.newPassword);
+    // setNewPassword(values.newPassword);
 
     setResetProps({
       username: user.username,
