@@ -113,6 +113,7 @@ export const Products = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ProductFilters
+          isLoadingProducts={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterUnitType={filterUnitType}

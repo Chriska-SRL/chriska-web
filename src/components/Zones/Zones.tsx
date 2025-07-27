@@ -76,6 +76,7 @@ export const Zones = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ZoneFilters
+          isLoadingZones={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterPedidoDay={filterPedidoDay}

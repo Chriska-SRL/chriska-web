@@ -90,6 +90,7 @@ export const Clients = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ClientFilters
+          isLoadingClients={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterZone={filterZone}
