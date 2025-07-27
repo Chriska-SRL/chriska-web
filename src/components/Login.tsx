@@ -19,9 +19,12 @@ import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
 import { useUserStore } from '@/stores/useUserStore';
 import { Login as LoginValues } from '@/entities/login';
+import { useRouter } from 'next/navigation';
 
 export const Login = () => {
+  const router = useRouter();
   const toast = useToast();
+
   const { performLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
 
@@ -44,24 +47,6 @@ export const Login = () => {
     }
   }, [error, fieldError, toast]);
 
-  const validateFields = (values: LoginValues) => {
-    const errors: Partial<LoginValues> = {};
-
-    if (!values.username || values.username.trim().length < 3) {
-      errors.username = 'Debe ingresar un nombre de usuario válido';
-    } else if (/\s/.test(values.username)) {
-      errors.username = 'El nombre de usuario no debe contener espacios';
-    } else if (!/^[a-zA-Z.]+$/.test(values.username)) {
-      errors.username = 'Solo se permiten letras y puntos (.)';
-    }
-
-    if (!values.password) {
-      errors.password = 'Debe ingresar la contraseña';
-    }
-
-    return errors;
-  };
-
   const handleSubmit = async (values: LoginValues) => {
     const success = await performLogin(values.username, values.password);
 
@@ -75,6 +60,8 @@ export const Login = () => {
         duration: 1500,
         isClosable: true,
       });
+
+      router.push('/');
     }
   };
 
@@ -88,7 +75,20 @@ export const Login = () => {
           <Formik
             initialValues={{ username: '', password: '' }}
             onSubmit={handleSubmit}
-            validate={validateFields}
+            validate={(values) => {
+              const errors: Partial<LoginValues> = {};
+              if (!values.username || values.username.trim().length < 3) {
+                errors.username = 'Debe ingresar un nombre de usuario válido';
+              } else if (/\s/.test(values.username)) {
+                errors.username = 'El nombre de usuario no debe contener espacios';
+              } else if (!/^[a-zA-Z.]+$/.test(values.username)) {
+                errors.username = 'Solo se permiten letras y puntos (.)';
+              }
+              if (!values.password) {
+                errors.password = 'Debe ingresar la contraseña';
+              }
+              return errors;
+            }}
             validateOnChange
             validateOnBlur={false}
           >
