@@ -1,40 +1,29 @@
 'use client';
 
-import { Flex, Text, Button, Avatar, useColorModeValue, useToast } from '@chakra-ui/react';
+import { Flex, Text, Button, Avatar, useColorModeValue } from '@chakra-ui/react';
 import { MdLogout } from 'react-icons/md';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export const UserMenu = () => {
+  const router = useRouter();
+
   const user = useUserStore((state) => state.user);
   const isHydrated = useUserStore((state) => state.isHydrated);
-  const logout = useUserStore((state) => state.logout); // Tu logout original (sync)
-  const router = useRouter();
-  const toast = useToast();
+  const logout = useUserStore((state) => state.logout);
 
-  // 🆕 Estado local de loading
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = () => {
     setIsLoading(true);
 
-    toast({
-      title: 'Cerrando sesión...',
-      status: 'info',
-      duration: 1500,
-      isClosable: true,
-    });
-
-    // Simular delay antes del logout
     setTimeout(() => {
-      logout(); // Tu función original
+      logout();
       router.push('/iniciar-sesion');
-      setIsLoading(false); // Opcional, ya que se desmonta el componente
-    }, 800); // Ajustable
+      setIsLoading(false);
+    }, 1200);
   };
-
-  if (!isHydrated || !user) return null;
 
   const bgButton = useColorModeValue('gray.100', 'gray.700');
   const bgHover = useColorModeValue('gray.200', 'gray.600');
@@ -43,9 +32,9 @@ export const UserMenu = () => {
   return (
     <Flex flexDir="column" gap="1rem">
       <Flex alignItems="center" gap="0.75rem">
-        <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={user.name} />
+        <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={user?.name} />
         <Text fontWeight="bold" color={textColor}>
-          {user.name}
+          {user?.name}
         </Text>
       </Flex>
       <Button
@@ -60,7 +49,7 @@ export const UserMenu = () => {
         leftIcon={<MdLogout />}
         _hover={{ bg: bgHover }}
         isLoading={isLoading}
-        loadingText="Cerrando..."
+        loadingText="Cerrando sesión..."
         disabled={isLoading}
       >
         Cerrar sesión
