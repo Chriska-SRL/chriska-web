@@ -10,7 +10,6 @@ export const UserMenu = () => {
   const router = useRouter();
 
   const user = useUserStore((state) => state.user);
-  const isHydrated = useUserStore((state) => state.isHydrated);
   const logout = useUserStore((state) => state.logout);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +21,7 @@ export const UserMenu = () => {
       logout();
       router.push('/iniciar-sesion');
       setIsLoading(false);
-    }, 1200);
+    }, 1500);
   };
 
   const bgButton = useColorModeValue('gray.100', 'gray.700');

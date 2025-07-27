@@ -129,7 +129,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
       permissions: [],
       isLoggedIn: false,
       isHydrated: true,
-      tempPassword: undefined, // Limpiar contraseña temporal al hacer logout
+      tempPassword: undefined,
     });
   },
 

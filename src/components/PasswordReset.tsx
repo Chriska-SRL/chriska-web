@@ -30,7 +30,7 @@ export const PasswordReset = () => {
   const tempPassword = useUserStore((state) => state.tempPassword);
   const clearTempPassword = useUserStore((state) => state.clearTempPassword);
   const logout = useUserStore((state) => state.logout);
-  const setTempPassword = useUserStore((state) => state.setTempPassword);
+  // const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
