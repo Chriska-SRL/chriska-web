@@ -27,12 +27,17 @@ export const Login = () => {
 
   const { performLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
+  const logout = useUserStore((state) => state.logout);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
+
+  useEffect(() => {
+    logout();
+  }, [logout]);
 
   useEffect(() => {
     if (error || fieldError) {
@@ -48,6 +53,8 @@ export const Login = () => {
   }, [error, fieldError, toast]);
 
   const handleSubmit = async (values: LoginValues) => {
+    logout();
+
     const success = await performLogin(values.username, values.password);
 
     if (success) {
@@ -61,7 +68,17 @@ export const Login = () => {
         isClosable: true,
       });
 
-      router.push('/');
+      setTimeout(() => {
+        const currentState = useUserStore.getState();
+        const needsPasswordChange = currentState.user?.needsPasswordChange;
+
+        if (needsPasswordChange) {
+          router.refresh();
+          router.push('/cambiar-contrasena');
+        } else {
+          window.location.href = '/';
+        }
+      }, 800);
     }
   };
 
