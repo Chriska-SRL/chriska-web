@@ -31,10 +31,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type WarehouseAddProps = {
+  isLoading: boolean;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
+export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: WarehouseAddProps) => {
   const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -95,7 +96,14 @@ export const WarehouseAdd = ({ setWarehouses }: WarehouseAddProps) => {
   return (
     <>
       {canCreateWarehouses && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingWarehouses}
+        >
           Nuevo
         </Button>
       )}

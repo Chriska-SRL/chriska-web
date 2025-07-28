@@ -14,11 +14,12 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type CategoryFiltersProps = {
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
 };
 
-export const CategoryFilters = ({ filterName, setFilterName }: CategoryFiltersProps) => {
+export const CategoryFilters = ({ isLoading, filterName, setFilterName }: CategoryFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const inputBg = useColorModeValue('#f2f2f2', 'gray.700');
@@ -52,6 +53,7 @@ export const CategoryFilters = ({ filterName, setFilterName }: CategoryFiltersPr
           borderColor={inputBorder}
           color={textColor}
           _placeholder={{ color: textColor }}
+          disabled={isLoading}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />

@@ -14,13 +14,14 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type VehicleFiltersProps = {
+  isLoading: boolean;
   filterPlate: string;
   setFilterPlate: (value: string) => void;
   availableBrands: string[];
   availableModels: string[];
 };
 
-export const VehicleFilters = ({ filterPlate, setFilterPlate }: VehicleFiltersProps) => {
+export const VehicleFilters = ({ isLoading: isLoadingVehicles, filterPlate, setFilterPlate }: VehicleFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -55,6 +56,7 @@ export const VehicleFilters = ({ filterPlate, setFilterPlate }: VehicleFiltersPr
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
           color={textColor}
+          disabled={isLoadingVehicles}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />

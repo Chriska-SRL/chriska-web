@@ -39,14 +39,14 @@ export const Suppliers = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Proveedores
         </Text>
-        {isMobile && <SupplierAdd setSuppliers={setSuppliers} />}
+        {isMobile && <SupplierAdd isLoading={isLoading} setSuppliers={setSuppliers} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <SupplierFilters filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <SupplierAdd setSuppliers={setSuppliers} />}
+        <SupplierFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <SupplierAdd isLoading={isLoading} setSuppliers={setSuppliers} />}
       </Flex>
 
       {isMobile && <Divider />}

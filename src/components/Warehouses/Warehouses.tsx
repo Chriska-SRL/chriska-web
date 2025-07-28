@@ -42,14 +42,14 @@ export const Warehouses = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Depósitos y estanterías
         </Text>
-        {isMobile && <WarehouseAdd setWarehouses={setWarehouses} />}
+        {isMobile && <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <WarehouseFilters filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <WarehouseAdd setWarehouses={setWarehouses} />}
+        <WarehouseFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />}
       </Flex>
 
       {isMobile && <Divider />}

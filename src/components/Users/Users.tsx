@@ -43,14 +43,14 @@ export const Users = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Usuarios
         </Text>
-        {isMobile && <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />}
+        {isMobile && <UserAdd isLoading={isLoading} setUsers={setUsers} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <UserFilters
-          isLoadingUsers={isLoading}
+          isLoading={isLoading}
           filterRoleId={filterRoleId}
           setFilterRoleId={setFilterRoleId}
           filterStateId={filterStateId}
@@ -58,7 +58,7 @@ export const Users = () => {
           filterName={filterName}
           setFilterName={setFilterName}
         />
-        {!isMobile && <UserAdd isLoadingUsers={isLoading} setUsers={setUsers} />}
+        {!isMobile && <UserAdd isLoading={isLoading} setUsers={setUsers} />}
       </Flex>
 
       {isMobile && <Divider />}

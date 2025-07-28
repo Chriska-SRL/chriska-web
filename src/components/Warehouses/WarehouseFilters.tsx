@@ -14,11 +14,12 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type WarehouseFiltersProps = {
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
 };
 
-export const WarehouseFilters = ({ filterName, setFilterName }: WarehouseFiltersProps) => {
+export const WarehouseFilters = ({ isLoading, filterName, setFilterName }: WarehouseFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const inputBg = useColorModeValue('#f2f2f2', 'gray.700');
@@ -52,6 +53,7 @@ export const WarehouseFilters = ({ filterName, setFilterName }: WarehouseFilters
           borderColor={inputBorder}
           color={textColor}
           _placeholder={{ color: textColor }}
+          disabled={isLoading}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />

@@ -23,7 +23,7 @@ import { useGetZones } from '@/hooks/zone';
 type SearchParam = 'name' | 'razonSocial' | 'contactName';
 
 type ClientFiltersProps = {
-  isLoadingClients: boolean;
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
   filterZone: string;
@@ -33,7 +33,7 @@ type ClientFiltersProps = {
 };
 
 export const ClientFilters = ({
-  isLoadingClients,
+  isLoading,
   filterName,
   setFilterName,
   filterZone,
@@ -51,6 +51,7 @@ export const ClientFilters = ({
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
+  const disabledColor = useColorModeValue('#fafafa', '#202532');
 
   const searchOptions = [
     { value: 'name', label: 'Nombre' },
@@ -78,10 +79,8 @@ export const ClientFilters = ({
       <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap">
         <Box
           display="flex"
-          bg={bgInput}
+          bg={isLoading ? disabledColor : bgInput}
           borderRadius="md"
-          border="1px solid"
-          borderColor={borderInput}
           overflow="hidden"
           flex={{ base: '1', md: '0 1 auto' }}
         >
@@ -96,7 +95,7 @@ export const ClientFilters = ({
             borderRadius="none"
             _focus={{ boxShadow: 'none' }}
             maxW={{ base: '5rem', md: '100%' }}
-            disabled={isLoadingClients}
+            disabled={isLoading}
           >
             {searchOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -119,7 +118,7 @@ export const ClientFilters = ({
               color={textColor}
               _focus={{ boxShadow: 'none' }}
               pl="1rem"
-              disabled={isLoadingClients}
+              disabled={isLoading}
             />
             <InputRightElement>
               <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
@@ -138,7 +137,7 @@ export const ClientFilters = ({
             variant="outline"
             borderColor={borderInput}
             color={textColor}
-            disabled={isLoadingClients}
+            disabled={isLoading}
             flex={{ base: '1', md: 'none' }}
             minW={{ base: '0', md: '10rem' }}
             transition="all 0.2s ease"
@@ -153,7 +152,7 @@ export const ClientFilters = ({
               bg={bgInput}
               _hover={{ bg: hoverResetBg }}
               onClick={handleResetFilters}
-              disabled={isLoadingClients}
+              disabled={isLoading}
               flexShrink={0}
               borderColor={borderInput}
               transition="all 0.2s ease"
@@ -186,7 +185,7 @@ export const ClientFilters = ({
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}
-              disabled={isLoadingClients || isLoadingZones}
+              disabled={isLoading || isLoadingZones}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '14rem' }}

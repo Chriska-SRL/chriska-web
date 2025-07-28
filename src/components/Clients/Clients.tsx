@@ -83,13 +83,14 @@ export const Clients = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Clientes
         </Text>
-        {isMobile && <ClientAdd setClients={setClients} />}
+        {isMobile && <ClientAdd isLoading={isLoading} setClients={setClients} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <ClientFilters
+          isLoading={isLoading}
           filterName={filterName}
           setFilterName={setFilterName}
           filterZone={filterZone}
@@ -97,7 +98,7 @@ export const Clients = () => {
           searchParam={searchParam}
           setSearchParam={setSearchParam}
         />
-        {!isMobile && <ClientAdd setClients={setClients} />}
+        {!isMobile && <ClientAdd isLoading={isLoading} setClients={setClients} />}
       </Flex>
 
       {isMobile && <Divider />}

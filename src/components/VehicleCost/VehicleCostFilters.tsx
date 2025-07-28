@@ -16,6 +16,7 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type VehicleCostFiltersProps = {
+  isLoading: boolean;
   filterType?: string;
   setFilterType: (value?: string) => void;
   filterDescription: string;
@@ -28,6 +29,7 @@ type VehicleCostFiltersProps = {
 };
 
 export const VehicleCostFilters = ({
+  isLoading,
   filterType,
   setFilterType,
   filterDescription,
@@ -78,6 +80,7 @@ export const VehicleCostFilters = ({
         borderColor={borderInput}
         w={{ base: '100%', md: '12rem' }}
         color={textColor}
+        disabled={isLoading}
       >
         <option value="-1">Filtrar por tipo</option>
         {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
@@ -96,6 +99,7 @@ export const VehicleCostFilters = ({
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
           color={textColor}
+          disabled={isLoading}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
@@ -111,6 +115,7 @@ export const VehicleCostFilters = ({
         borderColor={borderInput}
         color={textColor}
         w={{ base: '100%', md: '11rem' }}
+        disabled={isLoading}
       />
       <Input
         type="date"
@@ -121,6 +126,7 @@ export const VehicleCostFilters = ({
         borderColor={borderInput}
         color={textColor}
         w={{ base: '100%', md: '11rem' }}
+        disabled={isLoading}
       />
 
       {hasActiveFilters && (

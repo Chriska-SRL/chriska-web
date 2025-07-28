@@ -21,7 +21,7 @@ import { Day } from '@/enums/day.enum';
 import { AiOutlineSearch } from 'react-icons/ai';
 
 type ZoneFiltersProps = {
-  isLoadingZones: boolean;
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
   filterPedidoDay: Day | '';
@@ -31,7 +31,7 @@ type ZoneFiltersProps = {
 };
 
 export const ZoneFilters = ({
-  isLoadingZones,
+  isLoading,
   filterName,
   setFilterName,
   filterPedidoDay,
@@ -67,7 +67,7 @@ export const ZoneFilters = ({
             placeholder="Buscar por nombre..."
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
-            disabled={isLoadingZones}
+            disabled={isLoading}
             bg={bgInput}
             borderColor={borderInput}
             _placeholder={{ color: textColor }}
@@ -89,7 +89,7 @@ export const ZoneFilters = ({
             variant="outline"
             borderColor={borderInput}
             color={textColor}
-            disabled={isLoadingZones}
+            disabled={isLoading}
             flex={{ base: '1', md: 'none' }}
             minW={{ base: '0', md: '10rem' }}
             transition="all 0.2s ease"
@@ -104,7 +104,7 @@ export const ZoneFilters = ({
               bg={bgInput}
               _hover={{ bg: hoverResetBg }}
               onClick={handleResetFilters}
-              disabled={isLoadingZones}
+              disabled={isLoading}
               flexShrink={0}
               borderColor={borderInput}
               transition="all 0.2s ease"
@@ -135,7 +135,7 @@ export const ZoneFilters = ({
               placeholder="Día de pedido"
               value={filterPedidoDay || ''}
               onChange={(e) => setFilterPedidoDay(e.target.value as Day | '')}
-              disabled={isLoadingZones}
+              disabled={isLoading}
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}
@@ -156,7 +156,7 @@ export const ZoneFilters = ({
               placeholder="Día de entrega"
               value={filterEntregaDay || ''}
               onChange={(e) => setFilterEntregaDay(e.target.value as Day | '')}
-              disabled={isLoadingZones}
+              disabled={isLoading}
               bg={bgInput}
               borderColor={borderInput}
               color={textColor}

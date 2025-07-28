@@ -21,7 +21,7 @@ import { FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
 import { useGetRoles } from '@/hooks/role';
 
 type UserFiltersProps = {
-  isLoadingUsers: boolean;
+  isLoading: boolean;
   filterRoleId?: number;
   setFilterRoleId: (value?: number) => void;
   filterStateId?: string;
@@ -31,7 +31,7 @@ type UserFiltersProps = {
 };
 
 export const UserFilters = ({
-  isLoadingUsers,
+  isLoading,
   filterRoleId,
   setFilterRoleId,
   filterStateId,
@@ -83,7 +83,7 @@ export const UserFilters = ({
             placeholder="Buscar por nombre..."
             value={filterName}
             onChange={handleNameChange}
-            disabled={isLoadingUsers}
+            disabled={isLoading}
             bg={bgInput}
             borderColor={borderInput}
             _placeholder={{ color: textColor }}
@@ -105,7 +105,7 @@ export const UserFilters = ({
             variant="outline"
             borderColor={borderInput}
             color={textColor}
-            disabled={isLoadingUsers}
+            disabled={isLoading}
             flex={{ base: '1', md: 'none' }}
             minW={{ base: '0', md: '10rem' }}
             transition="all 0.2s ease"
@@ -120,7 +120,7 @@ export const UserFilters = ({
               bg={bgInput}
               _hover={{ bg: hoverResetBg }}
               onClick={handleResetFilters}
-              disabled={isLoadingUsers}
+              disabled={isLoading}
               flexShrink={0}
               borderColor={borderInput}
               transition="all 0.2s ease"
@@ -152,7 +152,7 @@ export const UserFilters = ({
               onChange={handleRoleChange}
               bg={bgInput}
               borderColor={borderInput}
-              disabled={isLoadingUsers || isLoadingRoles}
+              disabled={isLoading || isLoadingRoles}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '14rem' }}
@@ -172,7 +172,7 @@ export const UserFilters = ({
               onChange={handleStateChange}
               bg={bgInput}
               borderColor={borderInput}
-              disabled={isLoadingUsers}
+              disabled={isLoading}
               w={{ base: '100%', md: 'auto' }}
               minW={{ base: '100%', md: '10rem' }}
               maxW={{ base: '100%', md: '14rem' }}

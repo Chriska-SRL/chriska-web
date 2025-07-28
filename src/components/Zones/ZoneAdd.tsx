@@ -46,10 +46,11 @@ type ZoneFormValues = {
 const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 type ZoneAddProps = {
+  isLoading: boolean;
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
+export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) => {
   const canCreateZones = useUserStore((s) => s.hasPermission(Permission.CREATE_ZONES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -152,7 +153,14 @@ export const ZoneAdd = ({ setZones }: ZoneAddProps) => {
   return (
     <>
       {canCreateZones && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingZones}
+        >
           Nuevo
         </Button>
       )}

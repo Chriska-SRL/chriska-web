@@ -19,21 +19,24 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
+// import { useLogin } from '@/hooks/login';
 import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
-
-type FormValues = {
-  newPassword: string;
-  confirmPassword: string;
-};
 
 export const PasswordReset = () => {
   const router = useRouter();
   const toast = useToast();
+
   const user = useUserStore((state) => state.user);
   const tempPassword = useUserStore((state) => state.tempPassword);
   const clearTempPassword = useUserStore((state) => state.clearTempPassword);
+  const logout = useUserStore((state) => state.logout);
+  // const setTempPassword = useUserStore((state) => state.setTempPassword);
+
   const [resetProps, setResetProps] = useState<ResetPassword>();
   const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
+
+  // const { performLogin } = useLogin();
+  // const [newPassword, setNewPassword] = useState<string>('');
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -41,17 +44,45 @@ export const PasswordReset = () => {
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
 
+  // useEffect(() => {
+  //   if (data && user?.username && newPassword) {
+  //     const handleAutoLogin = async () => {
+  //       clearTempPassword();
+
+  //       toast({
+  //         title: 'Contraseña actualizada correctamente',
+  //         description: 'Iniciando sesión...',
+  //         status: 'success',
+  //         duration: 3000,
+  //         isClosable: true,
+  //       });
+
+  //       logout();
+
+  //       await performLogin(user.username, newPassword);
+
+  //       router.push('/');
+  //     };
+
+  //     handleAutoLogin();
+
+  //   }
+  // }, [data, user?.username, newPassword, clearTempPassword, toast, logout, performLogin, setTempPassword, router]);
+
   useEffect(() => {
     if (data) {
       clearTempPassword();
       toast({
-        title: 'Contraseña actualizada',
-        description: 'La contraseña se ha cambiado correctamente',
+        title: 'Contraseña actualizada correctamente',
+        description: 'Debes volver a iniciar sesión',
         status: 'success',
         duration: 4000,
         isClosable: true,
       });
-      router.push('/');
+
+      logout();
+
+      router.push('/iniciar-sesion');
     }
   }, [data, clearTempPassword, toast, router]);
 
@@ -71,22 +102,11 @@ export const PasswordReset = () => {
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: FormValues) => {
-    if (!user?.userId) {
+  const handleSubmit = (values: { newPassword: string; confirmPassword: string }) => {
+    if (!user?.userId || !tempPassword) {
       toast({
         title: 'Error interno',
-        description: 'No se pudo identificar al usuario. Intente iniciar sesión nuevamente.',
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    if (!tempPassword) {
-      toast({
-        title: 'Error interno',
-        description: 'No se pudo obtener la contraseña actual. Intente iniciar sesión nuevamente.',
+        description: 'Ocurrió un error inesperado. Intente iniciar sesión nuevamente.',
         status: 'error',
         duration: 4000,
         isClosable: true,
@@ -94,6 +114,8 @@ export const PasswordReset = () => {
       router.push('/iniciar-sesion');
       return;
     }
+
+    // setNewPassword(values.newPassword);
 
     setResetProps({
       username: user.username,
@@ -116,7 +138,7 @@ export const PasswordReset = () => {
             initialValues={{ newPassword: '', confirmPassword: '' }}
             onSubmit={handleSubmit}
             validate={(values) => {
-              const errors: Partial<FormValues> = {};
+              const errors: Partial<{ newPassword: string; confirmPassword: string }> = {};
               if (!values.newPassword || values.newPassword.length < 8)
                 errors.newPassword = 'La contraseña debe tener al menos 8 caracteres';
               if (!values.confirmPassword) errors.confirmPassword = 'Debe confirmar la contraseña';
@@ -131,7 +153,7 @@ export const PasswordReset = () => {
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.newPassword && !!errors.newPassword}>
                   <FormLabel htmlFor="newPassword">Nueva contraseña</FormLabel>
-                  <Field as={Input} name="newPassword" type="password" variant="filled" />
+                  <Field as={Input} name="newPassword" type="password" variant="filled" disabled={isLoading} />
                   <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
                 </FormControl>
 
@@ -140,7 +162,7 @@ export const PasswordReset = () => {
                   isInvalid={submitCount > 0 && touched.confirmPassword && !!errors.confirmPassword}
                 >
                   <FormLabel htmlFor="confirmPassword">Confirmar contraseña</FormLabel>
-                  <Field as={Input} name="confirmPassword" type="password" variant="filled" />
+                  <Field as={Input} name="confirmPassword" type="password" variant="filled" disabled={isLoading} />
                   <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
                 </FormControl>
 
@@ -160,7 +182,7 @@ export const PasswordReset = () => {
                     _hover={{ backgroundColor: btnHover }}
                     width="100%"
                   >
-                    Guardar nueva contraseña
+                    {isLoading ? 'Guardando contraseña...' : 'Guardar nueva contraseña'}
                   </Button>
                 </Box>
               </form>

@@ -14,11 +14,12 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type RoleFiltersProps = {
+  isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
 };
 
-export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => {
+export const RoleFilters = ({ isLoading, filterName, setFilterName }: RoleFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -51,6 +52,7 @@ export const RoleFilters = ({ filterName, setFilterName }: RoleFiltersProps) => 
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
           color={textColor}
+          disabled={isLoading}
         />
         <InputRightElement>
           <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />

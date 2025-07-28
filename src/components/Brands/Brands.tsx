@@ -58,14 +58,14 @@ export const Brands = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Marcas
         </Text>
-        {isMobile && <BrandAdd setBrands={setBrands} />}
+        {isMobile && <BrandAdd isLoading={isLoading} setBrands={setBrands} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <BrandFilters filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <BrandAdd setBrands={setBrands} />}
+        <BrandFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
+        {!isMobile && <BrandAdd isLoading={isLoading} setBrands={setBrands} />}
       </Flex>
 
       {isMobile && <Divider />}

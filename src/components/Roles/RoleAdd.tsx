@@ -41,10 +41,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type RoleAddProps = {
+  isLoading: boolean;
   setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleAdd = ({ setRoles }: RoleAddProps) => {
+export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const canCreateRoles = useUserStore((s) => s.hasPermission(Permission.CREATE_ROLES));
 
@@ -123,7 +124,7 @@ export const RoleAdd = ({ setRoles }: RoleAddProps) => {
           leftIcon={<FaPlus />}
           onClick={onOpen}
           px="1.5rem"
-          disabled={!canCreateRoles}
+          disabled={isLoadingRoles}
         >
           Nuevo
         </Button>

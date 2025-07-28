@@ -36,10 +36,11 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type ProductAddProps = {
+  isLoading: boolean;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductAdd = ({ setProducts }: ProductAddProps) => {
+export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: ProductAddProps) => {
   const canCreateProducts = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -129,7 +130,14 @@ export const ProductAdd = ({ setProducts }: ProductAddProps) => {
   return (
     <>
       {canCreateProducts && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingProducts}
+        >
           Nuevo
         </Button>
       )}
