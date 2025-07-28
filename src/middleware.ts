@@ -39,11 +39,27 @@ export function middleware(request: NextRequest) {
           return response;
         }
 
-        if (decoded.needsPasswordChange === true) {
-          return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
-        } else {
-          return NextResponse.redirect(new URL('/', request.url));
-        }
+        const redirectUrl = decoded.needsPasswordChange === true ? '/cambiar-contrasena' : '/';
+
+        return NextResponse.redirect(new URL(redirectUrl, request.url));
+      }
+      return NextResponse.next();
+    }
+
+    if (pathname === '/') {
+      if (!authToken) {
+        return NextResponse.redirect(new URL('/iniciar-sesion', request.url));
+      }
+
+      const decoded = decodeJwtPayload(authToken);
+      if (!decoded) {
+        const response = NextResponse.redirect(new URL('/iniciar-sesion', request.url));
+        response.cookies.delete('auth-token');
+        return response;
+      }
+
+      if (decoded.needsPasswordChange === true) {
+        return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
       }
 
       return NextResponse.next();
@@ -54,7 +70,6 @@ export function middleware(request: NextRequest) {
     }
 
     const decoded = decodeJwtPayload(authToken);
-
     if (!decoded) {
       const response = NextResponse.redirect(new URL('/iniciar-sesion', request.url));
       response.cookies.delete('auth-token');
@@ -73,15 +88,9 @@ export function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch (error) {
-    if (pathname === '/iniciar-sesion') {
-      const response = NextResponse.next();
-      response.cookies.delete('auth-token');
-      return response;
-    } else {
-      const response = NextResponse.redirect(new URL('/iniciar-sesion', request.url));
-      response.cookies.delete('auth-token');
-      return response;
-    }
+    const response = NextResponse.redirect(new URL('/iniciar-sesion', request.url));
+    response.cookies.delete('auth-token');
+    return response;
   }
 }
 

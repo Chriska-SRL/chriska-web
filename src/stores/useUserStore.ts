@@ -85,8 +85,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
   tempPassword: undefined,
 
   setUserFromToken: (token) => {
-    deleteCookie('auth-token');
-
     const decoded = decodeToken(token);
 
     if (decoded) {
@@ -141,7 +139,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
       const decoded = decodeToken(token);
       if (decoded) {
         const numericPermissions = decoded.permissions.map((p) => parseInt(p));
-
         set({
           user: decoded,
           permissions: numericPermissions,
