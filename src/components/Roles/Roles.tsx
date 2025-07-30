@@ -10,25 +10,43 @@ import { useGetRoles } from '@/hooks/role';
 
 export const Roles = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterName, setFilterName] = useState<string>('');
 
-  const { data, isLoading, error } = useGetRoles();
+  const { data, isLoading, error } = useGetRoles(currentPage, pageSize);
   const [roles, setRoles] = useState<Role[]>([]);
 
   useEffect(() => {
-    if (data) setRoles(data);
+    if (data) {
+      setRoles(data);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterName]);
 
   const filteredRoles = useMemo(() => {
+    if (!filterName) return roles;
+
     const normalize = (text: string) =>
       text
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase();
 
-    return roles.filter((role) => (filterName ? normalize(role.name).includes(normalize(filterName)) : true));
+    return roles.filter((role) => normalize(role.name).includes(normalize(filterName)));
   }, [roles, filterName]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -48,7 +66,16 @@ export const Roles = () => {
 
       {isMobile && <Divider />}
 
-      <RoleList roles={filteredRoles} isLoading={isLoading} error={error} setRoles={setRoles} />
+      <RoleList
+        roles={filterName ? filteredRoles : roles}
+        isLoading={isLoading}
+        error={error}
+        setRoles={setRoles}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </>
   );
 };
