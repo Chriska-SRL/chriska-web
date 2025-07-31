@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { CategoryList } from './CategoryList';
 import { CategoryAdd } from './CategoryAdd';
 import { CategoryFilters } from './CategoryFilters';
@@ -12,15 +12,30 @@ import { useRouter } from 'next/navigation';
 
 export const Categories = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
-  const { data, isLoading, error } = useGetCategories();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryToOpenModal, setCategoryToOpenModal] = useState<number | null>(null);
+  const [subcategoryToOpenModal, setSubcategoryToOpenModal] = useState<number | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Filter state
+  const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+
+  // Filters for API call
+  const filters = useMemo(
+    () => ({
+      name: filterName || undefined,
+    }),
+    [filterName],
+  );
+
+  const { data, isLoading, error } = useGetCategories(currentPage, pageSize, filters);
 
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const [categoryToOpenModal, setCategoryToOpenModal] = useState<number | null>(null);
-  const [subcategoryToOpenModal, setSubcategoryToOpenModal] = useState<number | null>(null);
 
   const categoryToOpen = searchParams.get('open');
   const typeToOpen = searchParams.get('type');
@@ -46,28 +61,27 @@ export const Categories = () => {
   }, [categoryToOpen, typeToOpen, categories, router]);
 
   useEffect(() => {
-    if (data) setCategories(data);
+    if (data) {
+      setCategories(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '') {
+      setIsFilterLoading(true);
+    }
+  }, [filterName]);
 
-  const filteredCategories = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
-    return categories.filter((category) => {
-      const categoryMatch = filterName ? normalize(category.name).includes(normalize(filterName)) : true;
-
-      const subcategoryMatch = category.subCategories?.some((subcategory) =>
-        normalize(subcategory.name).includes(normalize(filterName)),
-      );
-
-      return categoryMatch || subcategoryMatch;
-    });
-  }, [categories, filterName]);
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  }, []);
 
   return (
     <>
@@ -82,20 +96,30 @@ export const Categories = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <CategoryFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <CategoryAdd isLoading={isLoading} setCategories={setCategories} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <CategoryAdd isLoading={isLoading} setCategories={setCategories} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <CategoryList
-        categories={filteredCategories}
-        isLoading={isLoading}
+        categories={categories}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setCategories={setCategories}
         categoryToOpenModal={categoryToOpenModal}
         setCategoryToOpenModal={setCategoryToOpenModal}
         subcategoryToOpenModal={subcategoryToOpenModal}
         setSubcategoryToOpenModal={setSubcategoryToOpenModal}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );

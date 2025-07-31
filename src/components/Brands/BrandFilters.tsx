@@ -39,30 +39,25 @@ export const BrandFilters = ({ isLoading, filterName, setFilterName }: BrandFilt
     setFilterName('');
   };
 
-  // Sync inputValue when filterName changes externally
   useEffect(() => {
     setInputValue(filterName);
   }, [filterName]);
 
+  const hasActiveFilters = filterName !== '';
+
   return (
-    <Flex
-      gap="1rem"
-      flexDir="row"
-      w="100%"
-      alignItems="center"
-      flexWrap="wrap"
-    >
-      <InputGroup flex="1" minW={{ base: '0', md: '15rem' }}>
+    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
+      <InputGroup flex="1">
         <Input
           placeholder="Buscar por nombre..."
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          disabled={isLoading}
           bg={bgInput}
           borderColor={borderInput}
           _placeholder={{ color: textColor }}
           color={textColor}
-          disabled={isLoading}
         />
         <InputRightElement>
           <IconButton
@@ -78,7 +73,7 @@ export const BrandFilters = ({ isLoading, filterName, setFilterName }: BrandFilt
         </InputRightElement>
       </InputGroup>
 
-      {filterName && (
+      {hasActiveFilters && (
         <IconButton
           aria-label="Reiniciar filtros"
           icon={<VscDebugRestart />}
