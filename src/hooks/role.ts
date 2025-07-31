@@ -3,7 +3,7 @@ import { Role } from '@/entities/role';
 import { addRole, deleteRole, getRoles, updateRole } from '@/services/role';
 import { useFetch } from '@/utils/useFetch';
 
-export const useGetRoles = (page: number = 1, pageSize: number = 10) => {
+export const useGetRoles = (page: number = 1, pageSize: number = 10, filterName?: string) => {
   const [data, setData] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -14,7 +14,7 @@ export const useGetRoles = (page: number = 1, pageSize: number = 10) => {
       setError(undefined);
 
       try {
-        const result = await getRoles(page, pageSize);
+        const result = await getRoles(page, pageSize, filterName);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');
@@ -24,7 +24,7 @@ export const useGetRoles = (page: number = 1, pageSize: number = 10) => {
     };
 
     fetchRoles();
-  }, [page, pageSize]);
+  }, [page, pageSize, filterName]);
 
   return { data, isLoading, error };
 };

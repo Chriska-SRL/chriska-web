@@ -48,7 +48,11 @@ export const Pagination = ({
 
   return (
     <HStack spacing="0.75rem" align="center">
-      <HStack spacing="0.5rem" align="center">
+      <HStack 
+        spacing="0.5rem" 
+        align="center"
+        display={{ base: 'none', md: 'flex' }}
+      >
         <Text fontSize="sm" color={textColor} whiteSpace="nowrap">
           Por página:
         </Text>
@@ -69,10 +73,9 @@ export const Pagination = ({
           }}
           borderRadius="md"
         >
-          <option value={5}>5</option>
           <option value={10}>10</option>
           <option value={20}>20</option>
-          <option value={50}>50</option>
+          <option value={30}>30</option>
         </Select>
       </HStack>
 

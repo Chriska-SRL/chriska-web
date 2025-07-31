@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RoleFilters } from './RoleFilters';
 import { RoleAdd } from './RoleAdd';
 import { RoleList } from './RoleList';
@@ -13,31 +13,24 @@ export const Roles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const { data, isLoading, error } = useGetRoles(currentPage, pageSize);
+  const { data, isLoading, error } = useGetRoles(currentPage, pageSize, filterName);
   const [roles, setRoles] = useState<Role[]>([]);
 
   useEffect(() => {
     if (data) {
       setRoles(data);
+      setIsFilterLoading(false);
     }
   }, [data]);
 
   useEffect(() => {
     setCurrentPage(1);
+    if (filterName !== '') {
+      setIsFilterLoading(true);
+    }
   }, [filterName]);
-
-  const filteredRoles = useMemo(() => {
-    if (!filterName) return roles;
-
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-
-    return roles.filter((role) => normalize(role.name).includes(normalize(filterName)));
-  }, [roles, filterName]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -61,14 +54,20 @@ export const Roles = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <RoleFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <RoleAdd isLoading={isLoading} setRoles={setRoles} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <RoleAdd isLoading={isLoading} setRoles={setRoles} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <RoleList
-        roles={filterName ? filteredRoles : roles}
-        isLoading={isLoading}
+        roles={roles}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setRoles={setRoles}
         currentPage={currentPage}

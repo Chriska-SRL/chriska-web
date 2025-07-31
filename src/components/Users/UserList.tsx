@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { UserDetail } from './UserDetail';
+import { Pagination } from '../Pagination';
 import { FiUser, FiShield, FiCheckCircle } from 'react-icons/fi';
 
 type UserListProps = {
@@ -28,9 +29,22 @@ type UserListProps = {
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) => {
+export const UserList = ({
+  users,
+  setUsers,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: UserListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -40,6 +54,8 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  const hasNextPage = users.length === pageSize;
 
   if (error) {
     return (
@@ -139,11 +155,19 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {users.length} usuarios
             </Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       ) : (
         <>
@@ -196,9 +220,17 @@ export const UserList = ({ users, setUsers, isLoading, error }: UserListProps) =
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
             <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       )}
     </>
