@@ -61,14 +61,10 @@ export const Login = () => {
       isClosable: true,
     });
 
-    const needsPasswordChange = useUserStore.getState().user?.needsPasswordChange;
-
+    // Force store rehydration and let middleware handle redirection
+    useUserStore.getState().initializeFromStorage();
     router.refresh();
-    if (needsPasswordChange) {
-      router.push('/cambiar-contrasena');
-    } else {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   const handleSubmit = async (values: LoginValues) => {
