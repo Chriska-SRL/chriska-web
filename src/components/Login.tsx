@@ -52,7 +52,7 @@ export const Login = () => {
     }
   }, [error, fieldError, toast]);
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = async () => {
     toast({
       title: 'Inicio de sesión exitoso',
       description: 'Redirigiendo...',
@@ -61,8 +61,13 @@ export const Login = () => {
       isClosable: true,
     });
 
-    // Force store rehydration and let middleware handle redirection
+    // Force store rehydration and wait for it to complete
     useUserStore.getState().initializeFromStorage();
+    
+    // Wait a bit for cookie to be available on server side
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    // Now navigate and let middleware handle redirection
     router.refresh();
     router.push('/');
   };
@@ -72,7 +77,7 @@ export const Login = () => {
 
     if (success) {
       setTempPassword(values.password);
-      handleLoginSuccess();
+      await handleLoginSuccess();
     }
   };
 
@@ -81,7 +86,7 @@ export const Login = () => {
 
     if (success) {
       setTempPassword('');
-      handleLoginSuccess();
+      await handleLoginSuccess();
     }
   };
 
