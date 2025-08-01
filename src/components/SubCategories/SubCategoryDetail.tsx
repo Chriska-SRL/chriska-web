@@ -36,7 +36,13 @@ type SubCategoryDetailProps = {
   onSubcategoryDeleted?: () => void;
 };
 
-export const SubCategoryDetail = ({ subcategory, setCategories, forceOpen, onModalClose, onSubcategoryDeleted }: SubCategoryDetailProps) => {
+export const SubCategoryDetail = ({
+  subcategory,
+  setCategories,
+  forceOpen,
+  onModalClose,
+  onSubcategoryDeleted,
+}: SubCategoryDetailProps) => {
   const canEditCategories = useUserStore((s) => s.hasPermission(Permission.EDIT_CATEGORIES));
   const canDeleteCategories = useUserStore((s) => s.hasPermission(Permission.DELETE_CATEGORIES));
 
@@ -57,7 +63,6 @@ export const SubCategoryDetail = ({ subcategory, setCategories, forceOpen, onMod
   const handleClose = () => {
     onClose();
     onModalClose?.();
-    onDeleted();
   };
 
   const onDeleted = () => {
@@ -156,8 +161,8 @@ export const SubCategoryDetail = ({ subcategory, setCategories, forceOpen, onMod
                 <GenericDelete
                   item={{ id: subcategory.id, name: subcategory.name }}
                   useDeleteHook={useDeleteSubCategory}
-                  setItems={setCategories}
-                  onDeleted={handleClose}
+                  setItems={() => {}}
+                  onDeleted={onDeleted}
                 />
               )}
             </Box>

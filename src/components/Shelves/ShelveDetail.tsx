@@ -160,7 +160,7 @@ export const ShelveDetail = ({
                 <GenericDelete
                   item={{ id: shelve.id, name: shelve.name }}
                   useDeleteHook={useDeleteShelve}
-                  setItems={setWarehouses}
+                  setItems={() => {}}
                   onDeleted={onDeleted}
                 />
               )}
