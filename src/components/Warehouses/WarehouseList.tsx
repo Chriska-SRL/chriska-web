@@ -21,15 +21,29 @@ import { ShelveDetail } from '../Shelves/ShelveDetail';
 import { WarehouseDetail } from './WarehouseDetail';
 import { Warehouse } from '@/entities/warehouse';
 import { ShelveEdit } from '../Shelves/ShelveEdit';
+import { Pagination } from '../Pagination';
 
 type WarehouseListProps = {
   warehouses: Warehouse[];
   isLoading: boolean;
   error?: string;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: WarehouseListProps) => {
+export const WarehouseList = ({
+  warehouses,
+  isLoading,
+  error,
+  setWarehouses,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: WarehouseListProps) => {
   const [expandedWarehouseIds, setExpandedWarehouseIds] = useState<number[]>([]);
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -67,7 +81,7 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron almacenes.
+          No se encontraron depósitos.
         </Text>
         <Text fontSize="sm" color={noResultsColor}>
           Intenta con otros parámetros.
@@ -84,6 +98,8 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
             <Box
               key={wh.id}
               p="1rem"
+              pb="1rem"
+              // pb={expandedWarehouseIds.includes(wh.id) ? "0" : "1rem"}
               border="1px solid"
               borderColor={borderBox}
               borderRadius="0.5rem"
@@ -93,7 +109,7 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
             >
               <Flex alignItems="flex-start" justifyContent="space-between">
                 <Box flex="1" minW="0">
-                  <Text fontWeight="bold" fontSize="md" mb="0.5rem">
+                  <Text fontWeight="bold" fontSize="md" mb="0.125rem">
                     {wh.name}
                   </Text>
                   <Text fontSize="sm" color={subDescColor} noOfLines={2} wordBreak="break-word" mb="0.25rem">
@@ -111,7 +127,7 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
                   <ShelveAdd warehouse={wh} setWarehouses={setWarehouses} />
                   <WarehouseDetail warehouse={wh} setWarehouses={setWarehouses} />
                   <IconButton
-                    aria-label="Expandir almacén"
+                    aria-label="Expandir depósito"
                     icon={expandedWarehouseIds.includes(wh.id) ? <FiChevronDown /> : <FiChevronRight />}
                     size="sm"
                     bg="transparent"
@@ -123,10 +139,10 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
 
               <Collapse in={expandedWarehouseIds.includes(wh.id)} animateOpacity>
                 <Box pt="0.75rem">
-                  <Divider mb="0.5rem" />
-                  {wh.shelves.length === 0 ? (
+                  <Divider mb="1.25rem" />
+                  {!wh.shelves || wh.shelves.length === 0 ? (
                     <Text color={subEmptyColor} fontSize="sm">
-                      No hay estanterías.
+                      El depósito no tiene estanterías.
                     </Text>
                   ) : (
                     <VStack align="start" spacing="0.5rem" pl="1rem">
@@ -158,8 +174,18 @@ export const WarehouseList = ({ warehouses, isLoading, error, setWarehouses }: W
           ))}
         </VStack>
       </Box>
-      <Flex alignItems="center" justifyContent={{ base: 'center', md: 'flex-start' }}>
-        <Text fontSize="sm">Mostrando {warehouses.length} almacenes</Text>
+      <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+        <Text fontSize="sm" fontWeight="medium">
+          Mostrando {warehouses.length} depósitos
+        </Text>
+        <Pagination
+          currentPage={currentPage}
+          pageSize={pageSize}
+          hasNextPage={warehouses.length === pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          isLoading={isLoading}
+        />
       </Flex>
     </>
   );

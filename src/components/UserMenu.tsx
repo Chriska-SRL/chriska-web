@@ -21,7 +21,7 @@ export const UserMenu = () => {
       logout();
       router.push('/iniciar-sesion');
       setIsLoading(false);
-    }, 1500);
+    }, 2500);
   };
 
   const bgButton = useColorModeValue('gray.100', 'gray.700');

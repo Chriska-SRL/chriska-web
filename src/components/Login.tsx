@@ -13,7 +13,10 @@ import {
   Flex,
   useToast,
   useColorModeValue,
+  HStack,
+  IconButton,
 } from '@chakra-ui/react';
+import { FiCode } from 'react-icons/fi';
 import { Formik, Field } from 'formik';
 import { useEffect } from 'react';
 import { useLogin } from '@/hooks/login';
@@ -25,7 +28,7 @@ export const Login = () => {
   const router = useRouter();
   const toast = useToast();
 
-  const { performLogin, isLoading, error, fieldError } = useLogin();
+  const { performLogin, performDevLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
@@ -33,6 +36,8 @@ export const Login = () => {
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
+  const devBtnBg = useColorModeValue('orange.500', 'orange.500');
+  const devBtnHover = useColorModeValue('orange.600', 'orange.600');
 
   useEffect(() => {
     if (error || fieldError) {
@@ -47,21 +52,40 @@ export const Login = () => {
     }
   }, [error, fieldError, toast]);
 
+  const handleLoginSuccess = () => {
+    toast({
+      title: 'Inicio de sesión exitoso',
+      description: 'Redirigiendo...',
+      status: 'success',
+      duration: 1500,
+      isClosable: true,
+    });
+
+    const needsPasswordChange = useUserStore.getState().user?.needsPasswordChange;
+
+    router.refresh();
+    if (needsPasswordChange) {
+      router.push('/cambiar-contrasena');
+    } else {
+      router.push('/');
+    }
+  };
+
   const handleSubmit = async (values: LoginValues) => {
     const success = await performLogin(values.username, values.password);
 
     if (success) {
       setTempPassword(values.password);
+      handleLoginSuccess();
+    }
+  };
 
-      toast({
-        title: 'Inicio de sesión exitoso',
-        description: 'Redirigiendo...',
-        status: 'success',
-        duration: 1500,
-        isClosable: true,
-      });
+  const handleDevLogin = async () => {
+    const success = await performDevLogin();
 
-      router.push('/');
+    if (success) {
+      setTempPassword('');
+      handleLoginSuccess();
     }
   };
 
@@ -129,16 +153,29 @@ export const Login = () => {
                     isIndeterminate={isLoading}
                     colorScheme="blue"
                   />
-                  <Button
-                    type="submit"
-                    isDisabled={isLoading}
-                    bg={btnBg}
-                    color="white"
-                    _hover={{ backgroundColor: btnHover }}
-                    width="100%"
-                  >
-                    {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                  </Button>
+                  <HStack spacing="0.5rem">
+                    <Button
+                      type="submit"
+                      isDisabled={isLoading}
+                      bg={btnBg}
+                      color="white"
+                      _hover={{ backgroundColor: btnHover }}
+                      flex="1"
+                    >
+                      {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                    </Button>
+
+                    <IconButton
+                      onClick={handleDevLogin}
+                      isDisabled={isLoading}
+                      bg={devBtnBg}
+                      color="white"
+                      _hover={{ backgroundColor: devBtnHover }}
+                      icon={<FiCode />}
+                      aria-label="Login de desarrollo"
+                      size="md"
+                    />
+                  </HStack>
                 </Box>
               </form>
             )}

@@ -10,32 +10,46 @@ import { User } from '@/entities/user';
 
 export const Users = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
-  const { data, isLoading, error } = useGetUsers();
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    if (data) setUsers(data);
-  }, [data]);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [filterRoleId, setFilterRoleId] = useState<number | undefined>();
   const [filterStateId, setFilterStateId] = useState<string | undefined>();
   const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const filteredUsers = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const filters = useMemo(() => {
+    const result: { name?: string; roleId?: number; isEnabled?: boolean } = {};
+    if (filterName) result.name = filterName;
+    if (filterRoleId) result.roleId = filterRoleId;
+    if (filterStateId) result.isEnabled = filterStateId === 'activo';
+    return Object.keys(result).length > 0 ? result : undefined;
+  }, [filterName, filterRoleId, filterStateId]);
 
-    return users.filter((user) => {
-      const matchRole = filterRoleId ? user.role.id === filterRoleId : true;
-      const matchState = filterStateId ? (filterStateId === 'activo' ? user.isEnabled : !user.isEnabled) : true;
-      const matchName = filterName ? normalize(user.name).includes(normalize(filterName)) : true;
-      return matchRole && matchState && matchName;
-    });
-  }, [users, filterRoleId, filterStateId, filterName]);
+  const { data, isLoading, error } = useGetUsers(currentPage, pageSize, filters);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      setUsers(data);
+      setIsFilterLoading(false);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '' || filterRoleId || filterStateId) {
+      setIsFilterLoading(true);
+    }
+  }, [filterName, filterRoleId, filterStateId]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -58,12 +72,27 @@ export const Users = () => {
           filterName={filterName}
           setFilterName={setFilterName}
         />
-        {!isMobile && <UserAdd isLoading={isLoading} setUsers={setUsers} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <UserAdd isLoading={isLoading} setUsers={setUsers} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
-      <UserList users={filteredUsers} isLoading={isLoading} error={error} setUsers={setUsers} />
+      <UserList
+        users={users}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
+        setUsers={setUsers}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </>
   );
 };

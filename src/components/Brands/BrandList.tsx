@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { Brand } from '@/entities/brand';
 import { BrandDetail } from './BrandDetail';
+import { Pagination } from '../Pagination';
 
 type BrandListProps = {
   brands: Brand[];
@@ -27,6 +28,10 @@ type BrandListProps = {
   error?: string;
   brandToOpenModal?: number | null;
   setBrandToOpenModal?: (id: number | null) => void;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export const BrandList = ({
@@ -36,6 +41,10 @@ export const BrandList = ({
   error,
   brandToOpenModal,
   setBrandToOpenModal,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
 }: BrandListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -45,6 +54,8 @@ export const BrandList = ({
   const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+
+  const hasNextPage = brands.length === pageSize;
 
   if (error) {
     return (
@@ -115,11 +126,19 @@ export const BrandList = ({
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {brands.length} marcas
             </Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       ) : (
         <>
@@ -160,9 +179,17 @@ export const BrandList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
             <Text fontSize="sm">Mostrando {brands.length} marcas</Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       )}
     </>

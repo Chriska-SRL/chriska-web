@@ -32,9 +32,16 @@ type ShelveDetailProps = {
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
   forceOpen?: boolean;
   onModalClose?: () => void;
+  onShelveDeleted?: () => void;
 };
 
-export const ShelveDetail = ({ shelve, setWarehouses, forceOpen, onModalClose }: ShelveDetailProps) => {
+export const ShelveDetail = ({
+  shelve,
+  setWarehouses,
+  forceOpen,
+  onModalClose,
+  onShelveDeleted,
+}: ShelveDetailProps) => {
   const canEditWarehouses = useUserStore((s) => s.hasPermission(Permission.EDIT_WAREHOUSES));
   const canDeleteWarehouses = useUserStore((s) => s.hasPermission(Permission.DELETE_WAREHOUSES));
 
@@ -55,6 +62,24 @@ export const ShelveDetail = ({ shelve, setWarehouses, forceOpen, onModalClose }:
   const handleClose = () => {
     onClose();
     onModalClose?.();
+  };
+
+  const onDeleted = () => {
+    onClose();
+    if (onShelveDeleted) {
+      onShelveDeleted();
+    } else {
+      setWarehouses((prev) =>
+        prev.map((warehouse) =>
+          warehouse.id === shelve.warehouse.id
+            ? {
+                ...warehouse,
+                shelves: warehouse.shelves.filter((s) => s.id !== shelve.id),
+              }
+            : warehouse,
+        ),
+      );
+    }
   };
 
   const detailField = (label: string, value: string | number | null | undefined) => (
@@ -111,7 +136,6 @@ export const ShelveDetail = ({ shelve, setWarehouses, forceOpen, onModalClose }:
             <VStack spacing="0.75rem">
               {detailField('Nombre', shelve.name)}
               {detailField('Descripción', shelve.description)}
-              {detailField('Almacén padre', shelve.warehouse?.name)}
             </VStack>
           </ModalBody>
 
@@ -136,8 +160,8 @@ export const ShelveDetail = ({ shelve, setWarehouses, forceOpen, onModalClose }:
                 <GenericDelete
                   item={{ id: shelve.id, name: shelve.name }}
                   useDeleteHook={useDeleteShelve}
-                  setItems={setWarehouses}
-                  onDeleted={handleClose}
+                  setItems={() => {}}
+                  onDeleted={onDeleted}
                 />
               )}
             </Box>

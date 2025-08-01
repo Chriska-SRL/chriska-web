@@ -63,6 +63,7 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
 
   useEffect(() => {
     if (data) {
+      console.log('aca', data);
       toast({
         title: 'Usuario creado',
         description: `El usuario ha sido creado correctamente.`,

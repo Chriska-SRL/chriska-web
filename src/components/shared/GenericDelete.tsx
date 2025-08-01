@@ -21,6 +21,7 @@ type GenericDeleteProps = {
   onDeleted?: () => void;
   setItems: React.Dispatch<React.SetStateAction<any[]>>;
   useDeleteHook: (id?: number) => {
+    success?: boolean;
     data?: any;
     isLoading: boolean;
     error?: string;
@@ -31,10 +32,10 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number>();
-  const { data, isLoading, error } = useDeleteHook(deleteId);
+  const { success, data, isLoading, error } = useDeleteHook(deleteId);
 
   useEffect(() => {
-    if (data) {
+    if (success || data) {
       toast({
         title: 'Elemento eliminado',
         description: `Se ha eliminado correctamente.`,
@@ -47,7 +48,7 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
       setDeleteId(undefined);
       onDeleted?.();
     }
-  }, [data]);
+  }, [success, data]);
 
   useEffect(() => {
     if (error) {

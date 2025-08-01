@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { WarehouseList } from './WarehouseList';
 import { WarehouseAdd } from './WarehouseAdd';
 import { WarehouseFilters } from './WarehouseFilters';
@@ -10,31 +10,45 @@ import { useGetWarehouses } from '@/hooks/warehouse';
 
 export const Warehouses = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Filter state
+  const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+  
+  // Filters for API call
+  const filters = useMemo(() => ({
+    name: filterName || undefined,
+  }), [filterName]);
 
-  const { data, isLoading, error } = useGetWarehouses();
-  const [categories, setWarehouses] = useState<Warehouse[]>([]);
+  const { data, isLoading, error } = useGetWarehouses(currentPage, pageSize, filters);
 
   useEffect(() => {
-    if (data) setWarehouses(data);
+    if (data) {
+      setWarehouses(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '') {
+      setIsFilterLoading(true);
+    }
+  }, [filterName]);
 
-  const filteredWarehouses = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
-    return categories.filter((warehouse) => {
-      const warehouseMatch = filterName ? normalize(warehouse.name).includes(normalize(filterName)) : true;
-
-      const shelveMatch = warehouse.shelves?.some((shelve) => normalize(shelve.name).includes(normalize(filterName)));
-
-      return warehouseMatch || shelveMatch;
-    });
-  }, [categories, filterName]);
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  }, []);
 
   return (
     <>
@@ -49,16 +63,26 @@ export const Warehouses = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <WarehouseFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <WarehouseList
-        warehouses={filteredWarehouses}
-        isLoading={isLoading}
+        warehouses={warehouses}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setWarehouses={setWarehouses}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );

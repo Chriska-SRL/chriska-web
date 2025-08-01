@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { login } from '@/services/login';
+import { login, getToken } from '@/services/login';
 import { useUserStore } from '@/stores/useUserStore';
 import { FieldError } from '../utils/result';
 
@@ -39,8 +39,36 @@ export const useLogin = () => {
     }
   };
 
+  const performDevLogin = async () => {
+    setIsLoading(true);
+    setError(undefined);
+    setFieldError(undefined);
+
+    try {
+      const result = await getToken();
+      setUserFromToken(result.token);
+      return true;
+    } catch (err: any) {
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed?.error) {
+          setError(parsed.error);
+        } else {
+          setError(err.message || 'Error desconocido');
+        }
+      } catch {
+        setError(err.message || 'Error desconocido');
+      }
+
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     performLogin,
+    performDevLogin,
     isLoading,
     error,
     fieldError,

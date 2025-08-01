@@ -6,10 +6,9 @@ import { useUserStore } from '@/stores/useUserStore';
 import { Flex, Spinner, Box } from '@chakra-ui/react';
 
 const PasswordResetPage: NextPage = () => {
-  const isLoggedIn = useUserStore((s) => s.isLoggedIn);
   const isHydrated = useUserStore((s) => s.isHydrated);
 
-  if (!isHydrated || !isLoggedIn) {
+  if (!isHydrated) {
     return (
       <Flex height="100dvh" justifyContent="center" alignItems="center">
         <Box textAlign="center">

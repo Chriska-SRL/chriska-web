@@ -21,7 +21,13 @@ export const useFetch = <P = void, R = unknown>(
         setIsLoading(true);
         try {
           const result = await fn(params as P);
-          setData(result);
+
+          if (result === undefined || result === null) {
+            setData(true as R);
+          } else {
+            setData(result);
+          }
+
           setError(undefined);
           setFieldError(undefined);
         } catch (err: any) {
@@ -57,7 +63,13 @@ export const useFetchNoParams = <T>(fn: () => Promise<T>, defaultValue: T): Resu
       setIsLoading(true);
       try {
         const result = await fn();
-        setData(result);
+
+        if (result === undefined || result === null) {
+          setData(defaultValue);
+        } else {
+          setData(result);
+        }
+
         setError(undefined);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');

@@ -27,11 +27,36 @@ const getHeaders = (withAuth: boolean): HeadersInit => {
   return headers;
 };
 
+const addLocationToBody = (body: any, method: Method): any => {
+  if (method !== 'POST' && method !== 'PUT') {
+    return body;
+  }
+
+  if (body && body.location) {
+    return body;
+  }
+
+  const defaultCoords = { latitude: 0, longitude: 0 };
+
+  if (!body) {
+    return {
+      location: defaultCoords,
+    };
+  }
+
+  return {
+    ...body,
+    location: defaultCoords,
+  };
+};
+
 const request = async <T>(method: Method, url: string, body?: any, withAuth: boolean = true): Promise<T> => {
+  const processedBody = addLocationToBody(body, method);
+
   const res = await fetch(url, {
     method,
     headers: getHeaders(withAuth),
-    body: body ? JSON.stringify(body) : undefined,
+    body: processedBody ? JSON.stringify(processedBody) : undefined,
   });
 
   if (!res.ok) {
@@ -39,7 +64,16 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth: boo
     throw new Error(error || 'Error desconocido');
   }
 
-  return await res.json();
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
+
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await res.json();
+  }
+
+  return undefined as T;
 };
 
 export const get = <T>(url: string, withAuth = true) => request<T>('GET', url, undefined, withAuth);

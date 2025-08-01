@@ -18,6 +18,7 @@ import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
 import { Category } from '@/entities/category';
 import { CategoryDetail } from './CategoryDetail';
 import { SubCategoryDetail } from '../SubCategories/SubCategoryDetail';
+import { Pagination } from '../Pagination';
 
 type CategoryListProps = {
   categories: Category[];
@@ -28,6 +29,10 @@ type CategoryListProps = {
   setCategoryToOpenModal?: (id: number | null) => void;
   subcategoryToOpenModal?: number | null;
   setSubcategoryToOpenModal?: (id: number | null) => void;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export const CategoryList = ({
@@ -39,6 +44,10 @@ export const CategoryList = ({
   setCategoryToOpenModal,
   subcategoryToOpenModal,
   setSubcategoryToOpenModal,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
 }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -143,13 +152,13 @@ export const CategoryList = ({
               <Collapse in={expandedCategoryIds.includes(category.id)} animateOpacity>
                 <Box pt="0.75rem">
                   <Divider mb="0.5rem" />
-                  {category.subCategories.length === 0 ? (
+                  {!category.subCategories || category.subCategories.length === 0 ? (
                     <Text color={subEmptyColor} fontSize="sm">
-                      No hay subcategorías.
+                      La categoría no tiene subcategorías.
                     </Text>
                   ) : (
                     <VStack align="start" spacing="0.5rem" pl="1rem">
-                      {category.subCategories.map((sub, index) => (
+                      {category.subCategories?.map((sub, index) => (
                         <Box key={sub.id} w="100%">
                           <Flex justifyContent="space-between" alignItems="flex-start">
                             <Box flex="1" pr="3rem" minW="0">
@@ -171,7 +180,7 @@ export const CategoryList = ({
                               />
                             </Box>
                           </Flex>
-                          {index < category.subCategories.length - 1 && <Divider />}
+                          {index < category.subCategories?.length - 1 && <Divider />}
                         </Box>
                       ))}
                     </VStack>
@@ -182,8 +191,18 @@ export const CategoryList = ({
           ))}
         </VStack>
       </Box>
-      <Flex alignItems="center" justifyContent={{ base: 'center', md: 'flex-start' }}>
-        <Text fontSize="sm">Mostrando {categories.length} categorías</Text>
+      <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+        <Text fontSize="sm" fontWeight="medium">
+          Mostrando {categories.length} categorías
+        </Text>
+        <Pagination
+          currentPage={currentPage}
+          pageSize={pageSize}
+          hasNextPage={categories.length === pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          isLoading={isLoading}
+        />
       </Flex>
     </>
   );

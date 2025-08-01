@@ -5,11 +5,11 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Icon,
   IconButton,
-  useMediaQuery,
   useColorModeValue,
+  useMediaQuery,
 } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
 
@@ -21,52 +21,77 @@ type CategoryFiltersProps = {
 
 export const CategoryFilters = ({ isLoading, filterName, setFilterName }: CategoryFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [inputValue, setInputValue] = useState(filterName);
 
-  const inputBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const inputBorder = useColorModeValue('#f2f2f2', 'gray.700');
-  const iconColor = useColorModeValue('gray.600', 'gray.300');
-  const hoverReset = useColorModeValue('#e0dede', 'gray.600');
+  const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
+  const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
+  const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterName(e.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (inputValue.length >= 2 || inputValue.length === 0) {
+      setFilterName(inputValue);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleResetFilters = () => {
+    setInputValue('');
     setFilterName('');
   };
 
+  useEffect(() => {
+    setInputValue(filterName);
+  }, [filterName]);
+
+  const hasActiveFilters = filterName !== '';
+
   return (
-    <Flex
-      gap="1rem"
-      flexDir={{ base: 'column', md: 'row' }}
-      w="100%"
-      alignItems={{ base: 'stretch', md: 'center' }}
-      flexWrap="wrap"
-    >
-      <InputGroup w={{ base: '100%', md: '15rem' }}>
+    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
+      <InputGroup flex="1">
         <Input
           placeholder="Buscar por nombre..."
-          value={filterName}
-          onChange={handleNameChange}
-          bg={inputBg}
-          borderColor={inputBorder}
-          color={textColor}
-          _placeholder={{ color: textColor }}
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           disabled={isLoading}
+          bg={bgInput}
+          borderColor={borderInput}
+          _placeholder={{ color: textColor }}
+          color={textColor}
         />
         <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={iconColor} />
+          <IconButton
+            aria-label="Buscar"
+            icon={<AiOutlineSearch size="1.25rem" />}
+            size="sm"
+            variant="ghost"
+            onClick={handleSearch}
+            disabled={isLoading}
+            color={textColor}
+            _hover={{}}
+          />
         </InputRightElement>
       </InputGroup>
 
-      {filterName && (
+      {hasActiveFilters && (
         <IconButton
           aria-label="Reiniciar filtros"
           icon={<VscDebugRestart />}
-          bg={inputBg}
-          _hover={{ bg: hoverReset }}
+          bg={bgInput}
+          _hover={{ bg: hoverResetBg }}
           onClick={handleResetFilters}
+          flexShrink={0}
+          disabled={isLoading}
         />
       )}
     </Flex>

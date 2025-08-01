@@ -53,12 +53,9 @@ const isDev = process.env.NODE_ENV === 'development';
 const setCookie = (name: string, value: string, days: number = 7) => {
   if (typeof window !== 'undefined') {
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    const cookieString = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax${!isDev ? '; Secure' : ''}`;
 
-    if (isDev) {
-      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
-    } else {
-      document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict; Secure`;
-    }
+    document.cookie = cookieString;
   }
 };
 
@@ -75,11 +72,8 @@ const getCookie = (name: string): string | null => {
 
 const deleteCookie = (name: string) => {
   if (typeof window !== 'undefined') {
-    if (isDev) {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Lax`;
-    } else {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Strict`;
-    }
+    const cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Lax`;
+    document.cookie = cookieString;
   }
 };
 
@@ -92,9 +86,9 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   setUserFromToken: (token) => {
     const decoded = decodeToken(token);
+
     if (decoded) {
       const numericPermissions = decoded.permissions.map((p) => parseInt(p));
-
       setCookie('auth-token', token);
 
       const currentState = get();
@@ -145,7 +139,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
       const decoded = decodeToken(token);
       if (decoded) {
         const numericPermissions = decoded.permissions.map((p) => parseInt(p));
-
         set({
           user: decoded,
           permissions: numericPermissions,

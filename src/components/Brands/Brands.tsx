@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrandFilters } from './BrandFilters';
 import { BrandAdd } from './BrandAdd';
 import { BrandList } from './BrandList';
@@ -12,8 +12,12 @@ import { useRouter } from 'next/navigation';
 
 export const Brands = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const { data, isLoading, error } = useGetBrands();
+  const { data, isLoading, error } = useGetBrands(currentPage, pageSize, filterName);
   const [brands, setBrands] = useState<Brand[]>([]);
 
   const searchParams = useSearchParams();
@@ -34,23 +38,27 @@ export const Brands = () => {
   }, [brandToOpen, brands, router]);
 
   useEffect(() => {
-    if (data) setBrands(data);
+    if (data) {
+      setBrands(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '') {
+      setIsFilterLoading(true);
+    }
+  }, [filterName]);
 
-  const filteredBrands = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    return brands.filter((brand) => {
-      const matchName = filterName ? normalize(brand.name).includes(normalize(filterName)) : true;
-      return matchName;
-    });
-  }, [brands, filterName]);
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -65,18 +73,28 @@ export const Brands = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <BrandFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <BrandAdd isLoading={isLoading} setBrands={setBrands} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <BrandAdd isLoading={isLoading} setBrands={setBrands} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <BrandList
-        brands={filteredBrands}
-        isLoading={isLoading}
+        brands={brands}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setBrands={setBrands}
         brandToOpenModal={brandToOpenModal}
         setBrandToOpenModal={setBrandToOpenModal}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );
