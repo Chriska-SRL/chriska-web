@@ -47,7 +47,7 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
     if (data) {
       toast({
         title: 'Almacén actualizado',
-        description: 'El almacén ha sido modificado correctamente.',
+        description: 'El depósito ha sido modificado correctamente.',
         status: 'success',
         duration: 1500,
         isClosable: true,
@@ -93,7 +93,7 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="2rem" pb="0">
-          Editar almacén
+          Editar depósito
         </ModalHeader>
         <ModalCloseButton />
         <Formik

@@ -2,15 +2,16 @@
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { WarehouseList } from './WarehouseList';
-import { WarehouseAdd } from './WarehouseAdd';
-import { WarehouseFilters } from './WarehouseFilters';
-import { Warehouse } from '@/entities/warehouse';
-import { useGetWarehouses } from '@/hooks/warehouse';
+import { ShelveList } from './ShelveList';
+import { ShelveAdd } from './ShelveAdd';
+import { ShelveFilters } from './ShelveFilters';
+import { Shelve } from '@/entities/shelve';
+import { useGetShelves } from '@/hooks/shelve';
+import { useGetWarehousesSimple } from '@/hooks/warehouse';
 
-export const Warehouses = () => {
+export const Shelves = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [shelves, setShelves] = useState<Shelve[]>([]);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,28 +19,33 @@ export const Warehouses = () => {
   
   // Filter state
   const [filterName, setFilterName] = useState<string>('');
+  const [filterWarehouseId, setFilterWarehouseId] = useState<number | undefined>(undefined);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
+  
+  // Get warehouses for adding shelves and for the parent warehouse reference
+  const { data: warehouses } = useGetWarehousesSimple();
   
   // Filters for API call
   const filters = useMemo(() => ({
     name: filterName || undefined,
-  }), [filterName]);
+    warehouseId: filterWarehouseId,
+  }), [filterName, filterWarehouseId]);
 
-  const { data, isLoading, error } = useGetWarehouses(currentPage, pageSize, filters);
+  const { data, isLoading, error } = useGetShelves(currentPage, pageSize, filters);
 
   useEffect(() => {
     if (data) {
-      setWarehouses(data);
+      setShelves(data);
       setIsFilterLoading(false);
     }
   }, [data]);
 
   useEffect(() => {
     setCurrentPage(1);
-    if (filterName !== '') {
+    if (filterName !== '' || filterWarehouseId) {
       setIsFilterLoading(true);
     }
-  }, [filterName]);
+  }, [filterName, filterWarehouseId]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -54,31 +60,44 @@ export const Warehouses = () => {
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
-          Depósitos y estanterías
+          Estanterías
         </Text>
-        {isMobile && <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />}
+        {isMobile && warehouses && (
+          <ShelveAdd 
+            warehouse={warehouses[0]} 
+            setWarehouses={() => {}} 
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <WarehouseFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-
-        {!isMobile && (
+        <ShelveFilters 
+          isLoading={isLoading} 
+          filterName={filterName} 
+          setFilterName={setFilterName}
+          filterWarehouseId={filterWarehouseId}
+          setFilterWarehouseId={setFilterWarehouseId}
+        />
+        {!isMobile && warehouses && (
           <>
             <Divider orientation="vertical" />
-            <WarehouseAdd isLoading={isLoading} setWarehouses={setWarehouses} />
+            <ShelveAdd 
+              warehouse={warehouses[0]} 
+              setWarehouses={() => {}} 
+            />
           </>
         )}
       </Flex>
 
       {isMobile && <Divider />}
 
-      <WarehouseList
-        warehouses={warehouses}
+      <ShelveList
+        shelves={shelves}
+        setShelves={setShelves}
         isLoading={isLoading || isFilterLoading}
         error={error}
-        setWarehouses={setWarehouses}
         currentPage={currentPage}
         pageSize={pageSize}
         onPageChange={handlePageChange}

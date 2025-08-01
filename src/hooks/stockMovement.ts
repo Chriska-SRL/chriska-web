@@ -92,7 +92,7 @@ export const useGetStockMovementsByWarehouseId = (
         const result = await getStockMovementsByWarehouseId({ id: warehouseId, from, to });
         setData(result);
       } catch (err: any) {
-        setError(err.message || 'Error al cargar movimientos por almacén');
+        setError(err.message || 'Error al cargar movimientos por depósito');
       } finally {
         setIsLoading(false);
       }

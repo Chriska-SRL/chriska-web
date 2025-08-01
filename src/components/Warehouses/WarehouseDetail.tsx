@@ -94,7 +94,7 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
-            Detalle del almacén
+            Detalle del depósito
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
