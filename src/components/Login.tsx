@@ -61,10 +61,9 @@ export const Login = () => {
       isClosable: true,
     });
 
-    const needsPasswordChange = useUserStore.getState().user?.needsPasswordChange;
+    const user = useUserStore.getState().user;
 
-    router.refresh();
-    if (needsPasswordChange) {
+    if (user?.needsPasswordChange) {
       router.push('/cambiar-contrasena');
     } else {
       router.push('/');

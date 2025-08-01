@@ -134,6 +134,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     }
 
     const token = getCookie('auth-token');
+    const tempPassword = sessionStorage.getItem('temp-password') || undefined;
 
     if (token) {
       const decoded = decodeToken(token);
@@ -144,9 +145,11 @@ export const useUserStore = create<UserStore>((set, get) => ({
           permissions: numericPermissions,
           isLoggedIn: true,
           isHydrated: true,
+          tempPassword,
         });
       } else {
         deleteCookie('auth-token');
+        sessionStorage.removeItem('temp-password');
         set({
           user: null,
           permissions: [],
@@ -156,6 +159,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
         });
       }
     } else {
+      sessionStorage.removeItem('temp-password');
       set({
         user: null,
         permissions: [],
@@ -167,10 +171,18 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   setTempPassword: (password: string) => {
+    // Store in both Zustand and sessionStorage for persistence
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('temp-password', password);
+    }
     set({ tempPassword: password });
   },
 
   clearTempPassword: () => {
+    // Clear from both Zustand and sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('temp-password');
+    }
     set({ tempPassword: undefined });
   },
 }));
