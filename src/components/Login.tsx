@@ -61,15 +61,14 @@ export const Login = () => {
       isClosable: true,
     });
 
-    // Force store rehydration and wait for it to complete
+    // Force store rehydration
     useUserStore.getState().initializeFromStorage();
     
-    // Wait a bit for cookie to be available on server side
-    await new Promise(resolve => setTimeout(resolve, 150));
+    // Wait for cookie to propagate to Vercel's Edge Runtime
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Now navigate and let middleware handle redirection
-    router.refresh();
-    router.push('/');
+    // Use full page navigation for Vercel middleware compatibility
+    window.location.assign('/');
   };
 
   const handleSubmit = async (values: LoginValues) => {

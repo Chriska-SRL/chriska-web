@@ -53,8 +53,12 @@ const isDev = process.env.NODE_ENV === 'development';
 const setCookie = (name: string, value: string, days: number = 7) => {
   if (typeof window !== 'undefined') {
     const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    // Enhanced cookie setting for Vercel compatibility
     const cookieString = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax${!isDev ? '; Secure' : ''}`;
 
+    document.cookie = cookieString;
+    
+    // Force immediate cookie availability in document
     document.cookie = cookieString;
   }
 };
