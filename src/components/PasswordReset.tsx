@@ -52,6 +52,8 @@ export const PasswordReset = () => {
         isClosable: true,
       });
 
+      // Refresh and navigate to let middleware handle the redirection
+      router.refresh();
       router.push('/iniciar-sesion');
     }
   }, [data, clearTempPassword, logout, toast]);

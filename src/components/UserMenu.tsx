@@ -19,8 +19,9 @@ export const UserMenu = () => {
 
     setTimeout(() => {
       logout();
+      // Refresh and navigate to let middleware handle the redirection
+      router.refresh();
       router.push('/iniciar-sesion');
-      setIsLoading(false);
     }, 2500);
   };
 

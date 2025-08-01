@@ -61,13 +61,16 @@ export const Login = () => {
       isClosable: true,
     });
 
-    const user = useUserStore.getState().user;
+    // Small delay to ensure cookie propagation before navigation
+    setTimeout(() => {
+      const user = useUserStore.getState().user;
 
-    if (user?.needsPasswordChange) {
-      router.push('/cambiar-contrasena');
-    } else {
-      router.push('/');
-    }
+      if (user?.needsPasswordChange) {
+        router.push('/cambiar-contrasena');
+      } else {
+        router.push('/');
+      }
+    }, 100);
   };
 
   const handleSubmit = async (values: LoginValues) => {
