@@ -110,52 +110,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
     );
   };
 
-  const renderBankAccounts = (bankAccounts?: BankAccount[]) => {
-    const defaultBankAccounts: BankAccount[] = bankAccounts || [
-      { id: 1, bank: 'Banco República', number: '1234567890', name: 'Maria Sanchez' },
-      { id: 2, bank: 'Banco Santander', number: '0987654321', name: 'Pedro Gutiérrez' },
-    ];
-
-    const dividerColor = useColorModeValue('gray.300', 'whiteAlpha.200');
-
-    return (
-      <Box w="100%">
-        <Text color={labelColor} mb="0.5rem">
-          Cuentas bancarias
-        </Text>
-        <Box
-          px="1rem"
-          py={defaultBankAccounts.length === 1 ? '0.75rem' : '0'}
-          bg={inputBg}
-          border="1px solid"
-          borderColor={inputBorder}
-          borderRadius="md"
-          minH="2.75rem"
-        >
-          {defaultBankAccounts.length > 0 ? (
-            <VStack spacing="0" align="stretch" divider={<Box h="1px" bg={dividerColor} />}>
-              {defaultBankAccounts.map((account, index) => (
-                <Flex key={account.id} flexDir="column" py={defaultBankAccounts.length === 1 ? '0' : '0.75rem'}>
-                  <Text fontWeight="semibold" fontSize="sm">
-                    {account.bank}
-                  </Text>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
-                    Nº de cuenta: {account.number}
-                  </Text>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
-                    Nombre: {account.name}
-                  </Text>
-                </Flex>
-              ))}
-            </VStack>
-          ) : (
-            <Text>—</Text>
-          )}
-        </Box>
-      </Box>
-    );
-  };
-
   return (
     <>
       <IconButton
@@ -192,7 +146,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
               {detailField('Teléfono', client.phone)}
               {detailField('Persona de contacto', client.contactName)}
               {detailField('Correo electrónico', client.email)}
-              {renderBankAccounts(client.bankAccounts)}
               {detailField('Cajones prestados', client.loanedCrates)}
               {detailField('Zona', client.zone.name, () => {
                 router.push(`/zonas?open=${client.zone.id}`);

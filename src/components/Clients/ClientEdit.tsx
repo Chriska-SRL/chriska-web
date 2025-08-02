@@ -31,7 +31,6 @@ import { useUpdateClient } from '@/hooks/client';
 import { validate } from '@/utils/validations/validate';
 import { Zone } from '@/entities/zone';
 import { QualificationSelector } from '@/components/QualificationSelector';
-import { BankAccountsManager } from '@/components/BankAccountsManager';
 
 type ClientEditProps = {
   isOpen: boolean;
@@ -224,8 +223,6 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     <Field as={Input} name="email" type="email" bg={inputBg} borderColor={borderColor} h="2.75rem" />
                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                   </FormControl>
-
-                  <BankAccountsManager bankAccounts={bankAccounts} onChange={setBankAccounts} />
 
                   <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                     <FormLabel>Cajones prestados</FormLabel>

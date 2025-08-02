@@ -33,7 +33,6 @@ import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { QualificationSelector } from '@/components/QualificationSelector';
-import { BankAccountsManager } from '@/components/BankAccountsManager';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -234,9 +233,6 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                       <Field as={Input} name="email" type="email" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
-
-                    {/* Bank Accounts Manager */}
-                    <BankAccountsManager bankAccounts={bankAccounts} onChange={setBankAccounts} />
 
                     <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                       <FormLabel>Cajones prestados</FormLabel>
