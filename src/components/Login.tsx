@@ -61,7 +61,6 @@ export const Login = () => {
       isClosable: true,
     });
 
-    // Small delay to ensure cookie propagation before navigation
     setTimeout(() => {
       const user = useUserStore.getState().user;
 

@@ -93,8 +93,44 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
               {detailField('Teléfono', supplier.phone)}
               {detailField('Persona de contacto', supplier.contactName)}
               {detailField('Correo electrónico', supplier.email)}
-              {detailField('Banco', supplier.bank)}
-              {detailField('Cuenta bancaria', supplier.bankAccount)}
+              <Box w="100%">
+                <Text color={labelColor} mb="0.5rem">
+                  Cuentas bancarias
+                </Text>
+                {supplier.bankAccounts && supplier.bankAccounts.length > 0 ? (
+                  <VStack spacing="0.5rem" align="stretch">
+                    {supplier.bankAccounts.map((account, index) => (
+                      <Box
+                        key={`bank-account-${index}`}
+                        px="1rem"
+                        py="0.5rem"
+                        bg={inputBg}
+                        border="1px solid"
+                        borderColor={inputBorder}
+                        borderRadius="md"
+                      >
+                        <Text fontSize="sm" fontWeight="semibold">{account.accountName}</Text>
+                        <Text fontSize="sm">{account.bank}</Text>
+                        <Text fontSize="sm">{account.accountNumber}</Text>
+                      </Box>
+                    ))}
+                  </VStack>
+                ) : (
+                  <Box
+                    px="1rem"
+                    py="0.5rem"
+                    bg={inputBg}
+                    border="1px solid"
+                    borderColor={inputBorder}
+                    borderRadius="md"
+                    textAlign="center"
+                  >
+                    <Text fontSize="sm" color="gray.500">
+                      El proveedor no tiene cuentas bancarias registradas
+                    </Text>
+                  </Box>
+                )}
+              </Box>
               {detailField('Observaciones', supplier.observations)}
             </VStack>
           </ModalBody>

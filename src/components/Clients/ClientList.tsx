@@ -147,7 +147,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
           </Box>
           <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {clients.length} clientes
+              Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
           </Box>
         </>
@@ -198,7 +198,7 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {clients.length} clientes</Text>
+            <Text fontSize="sm">Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}</Text>
           </Box>
         </>
       )}

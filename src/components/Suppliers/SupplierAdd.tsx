@@ -20,14 +20,17 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Select,
 } from '@chakra-ui/react';
-import { Formik, Field } from 'formik';
-import { FaPlus, FaCheck } from 'react-icons/fa';
+import { Formik, Field, FieldArray } from 'formik';
+import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Supplier } from '@/entities/supplier';
+import { BankAccount } from '@/entities/bankAccount';
 import { useAddSupplier } from '@/hooks/supplier';
-import { validate } from '@/utils/validations/validate';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
+import { Bank, BankOptions } from '@/enums/bank.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SupplierAddProps = {
@@ -86,8 +89,11 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Partial<Supplier>) => {
-    setSupplierProps(values);
+  const handleSubmit = (values: any) => {
+    setSupplierProps({
+      ...values,
+      bankAccounts: values.bankAccounts || [],
+    });
   };
 
   return (
@@ -122,11 +128,51 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
               phone: '',
               contactName: '',
               email: '',
-              bank: '',
-              bankAccount: '',
+              bankAccounts: [],
               observations: '',
             }}
             onSubmit={handleSubmit}
+            validate={(values) => {
+              const errors: any = {};
+
+              const nameError = validateEmpty(values.name);
+              if (nameError) errors.name = nameError;
+
+              const razonSocialError = validateEmpty(values.razonSocial);
+              if (razonSocialError) errors.razonSocial = razonSocialError;
+
+              const addressError = validateEmpty(values.address);
+              if (addressError) errors.address = addressError;
+
+              const mapsAddressError = validateEmpty(values.mapsAddress);
+              if (mapsAddressError) errors.mapsAddress = mapsAddressError;
+
+              const contactNameError = validateEmpty(values.contactName);
+              if (contactNameError) errors.contactName = contactNameError;
+
+              if (!values.rut || values.rut.trim() === '') {
+                errors.rut = 'Campo obligatorio';
+              } else if (!/^\d+$/.test(values.rut)) {
+                errors.rut = 'El RUT debe contener solo números';
+              } else if (values.rut.length !== 12) {
+                errors.rut = 'El RUT debe tener exactamente 12 dígitos';
+              }
+
+              if (!values.phone || values.phone.trim() === '') {
+                errors.phone = 'Campo obligatorio';
+              } else if (!/^\d+$/.test(values.phone)) {
+                errors.phone = 'El teléfono debe contener solo números';
+              }
+
+              if (!values.email || values.email.trim() === '') {
+                errors.email = 'Campo obligatorio';
+              } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+                errors.email = 'Email inválido';
+              }
+
+
+              return errors;
+            }}
             validateOnChange
             validateOnBlur={false}
           >
@@ -136,27 +182,13 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                       <FormLabel>Nombre</FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                      />
+                      <Field as={Input} name="name" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.name}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                       <FormLabel>RUT</FormLabel>
-                      <Field
-                        as={Input}
-                        name="rut"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                      />
+                      <Field as={Input} name="rut" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
                       <FormErrorMessage>{errors.rut}</FormErrorMessage>
                     </FormControl>
 
@@ -196,16 +228,94 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.bank && !!errors.bank}>
-                      <FormLabel>Banco</FormLabel>
-                      <Field as={Input} name="bank" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
-                      <FormErrorMessage>{errors.bank}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.bankAccount && !!errors.bankAccount}>
-                      <FormLabel>Cuenta bancaria</FormLabel>
-                      <Field as={Input} name="bankAccount" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
-                      <FormErrorMessage>{errors.bankAccount}</FormErrorMessage>
+                    <FormControl>
+                      <FormLabel>Cuentas bancarias</FormLabel>
+                      <FieldArray name="bankAccounts">
+                        {({ push, remove, form }) => (
+                          <VStack spacing="0.75rem" align="stretch">
+                            {form.values.bankAccounts.map((account: BankAccount, index: number) => (
+                              <Box
+                                key={index}
+                                p="1rem"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="lg"
+                                position="relative"
+                              >
+                                <VStack spacing="0.5rem">
+                                  <FormControl isRequired>
+                                    <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
+                                    <Field
+                                      as={Input}
+                                      name={`bankAccounts.${index}.accountName`}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                      required
+                                    />
+                                  </FormControl>
+                                  <FormControl isRequired>
+                                    <FormLabel fontSize="sm">Banco</FormLabel>
+                                    <Field
+                                      as={Select}
+                                      name={`bankAccounts.${index}.bank`}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                      required
+                                    >
+                                      <option value="">Seleccionar banco</option>
+                                      {BankOptions.map((bank) => (
+                                        <option key={bank} value={bank}>
+                                          {bank}
+                                        </option>
+                                      ))}
+                                    </Field>
+                                  </FormControl>
+                                  <FormControl isRequired>
+                                    <FormLabel fontSize="sm">Número de cuenta</FormLabel>
+                                    <Field
+                                      as={Input}
+                                      name={`bankAccounts.${index}.accountNumber`}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                      required
+                                    />
+                                  </FormControl>
+                                </VStack>
+                                <Button
+                                  position="absolute"
+                                  top="0.5rem"
+                                  right="0.5rem"
+                                  size="xs"
+                                  colorScheme="red"
+                                  variant="ghost"
+                                  onClick={() => remove(index)}
+                                >
+                                  <FaTrash />
+                                </Button>
+                              </Box>
+                            ))}
+                            <Button
+                              type="button"
+                              size="sm"
+                              leftIcon={<FaPlus />}
+                              onClick={() => push({ accountName: '', bank: '', accountNumber: '' })}
+                              variant="ghost"
+                            >
+                              Agregar cuenta bancaria
+                            </Button>
+                          </VStack>
+                        )}
+                      </FieldArray>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>

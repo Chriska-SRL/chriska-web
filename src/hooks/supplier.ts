@@ -1,8 +1,33 @@
+import { useState, useEffect } from 'react';
 import { Supplier } from '@/entities/supplier';
-import { getSuppliers, addSupplier, updateSupplier, deleteSupplier } from '@/services/supplier';
-import { useFetch, useFetchNoParams } from '../utils/useFetch';
+import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from '@/services/supplier';
+import { useFetch } from '@/utils/useFetch';
 
-export const useGetSuppliers = () => useFetchNoParams<Supplier[]>(getSuppliers, []);
+export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterName?: string) => {
+  const [data, setData] = useState<Supplier[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        const result = await getSuppliers(page, pageSize, filterName);
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSuppliers();
+  }, [page, pageSize, filterName]);
+
+  return { data, isLoading, error };
+};
 
 export const useAddSupplier = (props?: Partial<Supplier>) =>
   useFetch<Partial<Supplier>, Supplier>(addSupplier, props, { parseFieldError: true });

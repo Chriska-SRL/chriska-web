@@ -181,7 +181,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
           </Box>
           <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {products.length} productos
+              Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}
             </Text>
           </Box>
         </>
@@ -237,7 +237,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {products.length} productos</Text>
+            <Text fontSize="sm">Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}</Text>
           </Box>
         </>
       )}

@@ -110,7 +110,7 @@ export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, s
           </Box>
           <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {zones.length} zonas
+              Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}
             </Text>
           </Box>
         </>
@@ -154,7 +154,7 @@ export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, s
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {zones.length} zonas</Text>
+            <Text fontSize="sm">Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}</Text>
           </Box>
         </>
       )}

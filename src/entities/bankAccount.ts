@@ -1,6 +1,5 @@
 export type BankAccount = {
-  id: number;
+  accountName: string;
+  accountNumber: string;
   bank: string;
-  number: string;
-  name: string;
 };

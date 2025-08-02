@@ -109,7 +109,7 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
             </VStack>
           </Box>
           <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {stockMovements.length} movimientos</Text>
+            <Text fontSize="sm">Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}</Text>
           </Box>
         </Flex>
       ) : (
@@ -149,7 +149,7 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {stockMovements.length} movimientos</Text>
+            <Text fontSize="sm">Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}</Text>
           </Box>
         </>
       )}

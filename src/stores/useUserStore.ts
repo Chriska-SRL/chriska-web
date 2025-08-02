@@ -171,7 +171,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   setTempPassword: (password: string) => {
-    // Store in both Zustand and sessionStorage for persistence
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('temp-password', password);
     }
@@ -179,7 +178,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   clearTempPassword: () => {
-    // Clear from both Zustand and sessionStorage
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('temp-password');
     }

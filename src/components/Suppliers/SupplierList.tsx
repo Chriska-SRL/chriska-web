@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { Supplier } from '@/entities/supplier';
 import { SupplierDetail } from './SupplierDetail';
+import { Pagination } from '../Pagination';
 import { FiFileText, FiUser, FiPhone, FiBriefcase } from 'react-icons/fi';
 
 type SupplierListProps = {
@@ -27,9 +28,22 @@ type SupplierListProps = {
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: SupplierListProps) => {
+export const SupplierList = ({
+  suppliers,
+  setSuppliers,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: SupplierListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -39,6 +53,8 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  const hasNextPage = suppliers.length === pageSize;
 
   if (error) {
     return (
@@ -143,11 +159,19 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {suppliers.length} proveedores
+              Mostrando {suppliers.length} proveedor{suppliers.length !== 1 ? 'es' : ''}
             </Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       ) : (
         <>
@@ -185,9 +209,17 @@ export const SupplierList = ({ suppliers, setSuppliers, isLoading, error }: Supp
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {suppliers.length} proveedores</Text>
-          </Box>
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm">Mostrando {suppliers.length} proveedor{suppliers.length !== 1 ? 'es' : ''}</Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       )}
     </>

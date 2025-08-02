@@ -157,7 +157,7 @@ export const UserList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {users.length} usuarios
+              Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -221,7 +221,7 @@ export const UserList = ({
             </Table>
           </TableContainer>
           <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {users.length} usuarios</Text>
+            <Text fontSize="sm">Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}</Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

@@ -153,7 +153,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
           </Box>
           <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {vehicles.length} vehículos
+              Mostrando {vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}
             </Text>
           </Box>
         </>
@@ -213,7 +213,7 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
             </Table>
           </TableContainer>
           <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
+            <Text fontSize="sm">Mostrando {vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}</Text>
           </Box>
         </>
       )}

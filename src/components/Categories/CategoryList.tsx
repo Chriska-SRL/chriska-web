@@ -193,7 +193,7 @@ export const CategoryList = ({
       </Box>
       <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
         <Text fontSize="sm" fontWeight="medium">
-          Mostrando {categories.length} categorías
+          Mostrando {categories.length} categoría{categories.length !== 1 ? 's' : ''}
         </Text>
         <Pagination
           currentPage={currentPage}
