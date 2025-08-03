@@ -151,6 +151,15 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
+                  <ProductImageUpload
+                    product={{
+                      ...product,
+                      imageUrl: finalImageUrl,
+                    }}
+                    onImageChange={handleImageChange}
+                    editable
+                  />
+                  
                   <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                     <FormLabel>Código interno</FormLabel>
                     <Field as={Input} name="internalCode" bg={inputBg} borderColor={inputBorder} disabled />
@@ -324,15 +333,6 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     </Field>
                     <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                   </FormControl>
-
-                  <ProductImageUpload
-                    product={{
-                      ...product,
-                      imageUrl: finalImageUrl,
-                    }}
-                    onImageChange={handleImageChange}
-                    editable
-                  />
                 </VStack>
               </ModalBody>
 

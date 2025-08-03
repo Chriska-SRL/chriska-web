@@ -21,6 +21,7 @@ import { FiEye } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Product } from '@/entities/product';
 import { ProductEdit } from './ProductEdit';
+import { ProductImageUpload } from './ProductImageUpload';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteProduct } from '@/hooks/product';
 import { Permission } from '@/enums/permission.enum';
@@ -120,6 +121,10 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
           <ModalCloseButton />
           <ModalBody pb="0" maxH="30rem" overflow="scroll" overflowX="hidden">
             <VStack spacing="0.75rem">
+              <ProductImageUpload 
+                product={product} 
+                editable={false}
+              />
               {detailField('Código interno', product.internalCode)}
               {detailField('Código de barras', product.barcode)}
               {detailField('Nombre', product.name)}

@@ -32,7 +32,7 @@ export const Products = () => {
       categoryId?: number;
       subCategoryId?: number;
     } = {};
-    
+
     if (filterName) {
       switch (searchParam) {
         case 'name':
@@ -46,12 +46,12 @@ export const Products = () => {
           break;
       }
     }
-    
+
     if (filterUnitType) result.unitType = filterUnitType;
     if (filterBrand) result.brandId = parseInt(filterBrand);
     if (filterCategory) result.categoryId = parseInt(filterCategory);
     if (filterSubCategory) result.subCategoryId = parseInt(filterSubCategory);
-    
+
     return Object.keys(result).length > 0 ? result : undefined;
   }, [filterName, searchParam, filterUnitType, filterBrand, filterCategory, filterSubCategory]);
 
@@ -108,7 +108,13 @@ export const Products = () => {
           searchParam={searchParam}
           setSearchParam={setSearchParam}
         />
-        {!isMobile && <ProductAdd isLoading={isLoading} setProducts={setProducts} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <ProductAdd isLoading={isLoading} setProducts={setProducts} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}

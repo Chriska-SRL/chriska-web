@@ -222,10 +222,10 @@ export const ProductList = ({
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Cod. Interno</Th>
-                  <Th textAlign="center">Categoría</Th>
                   <Th textAlign="center">Imagen</Th>
+                  <Th textAlign="center">Cod. Interno</Th>
                   <Th textAlign="center">Nombre</Th>
+                  <Th textAlign="center">Categoría</Th>
                   <Th textAlign="center">Precio</Th>
                   <Th textAlign="center">Stock</Th>
                   <Th></Th>
@@ -234,8 +234,6 @@ export const ProductList = ({
               <Tbody>
                 {products.map((product, index) => (
                   <Tr key={`${product.id}-${index}`} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{product.internalCode}</Td>
-                    <Td textAlign="center">{product.subCategory.name}</Td>
                     <Td display="flex" justifyContent="center" align="center">
                       <ImageModal
                         src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
@@ -251,7 +249,9 @@ export const ProductList = ({
                         />
                       </ImageModal>
                     </Td>
+                    <Td textAlign="center">{product.internalCode}</Td>
                     <Td textAlign="center">{product.name}</Td>
+                    <Td textAlign="center">{product.subCategory.name}</Td>
                     <Td textAlign="center">{formatPrice(product.price)}</Td>
                     <Td textAlign="center">{product.stock}</Td>
                     <Td textAlign="center">

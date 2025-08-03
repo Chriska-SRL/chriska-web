@@ -172,7 +172,13 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
     setProductProps(product);
   };
 
-  const hasImage = createdProduct?.imageUrl;
+  const [hasImage, setHasImage] = useState(false);
+
+  useEffect(() => {
+    if (createdProduct?.imageUrl) {
+      setHasImage(true);
+    }
+  }, [createdProduct?.imageUrl]);
 
   return (
     <>
@@ -444,7 +450,11 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                   </Box>
 
                   {createdProduct && (
-                    <ProductImageUpload product={createdProduct} onImageChange={handleImageChange} editable />
+                    <ProductImageUpload
+                      product={createdProduct}
+                      onImageChange={handleImageChange}
+                      editable={!hasImage}
+                    />
                   )}
                 </VStack>
               </ModalBody>
