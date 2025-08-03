@@ -12,93 +12,74 @@ type SearchParam = 'name' | 'internalCode' | 'barcode';
 
 export const Products = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterName, setFilterName] = useState<string>('');
+  const [filterUnitType, setFilterUnitType] = useState<string | undefined>();
+  const [filterBrand, setFilterBrand] = useState<string | undefined>();
+  const [filterCategory, setFilterCategory] = useState<string | undefined>();
+  const [filterSubCategory, setFilterSubCategory] = useState<string | undefined>();
+  const [searchParam, setSearchParam] = useState<SearchParam>('name');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  // TODO: Cuando esté lista la API, este hook debería recibir los filtros como parámetros
-  // const { data, isLoading, error } = useGetProducts({
-  //   search: filterName,
-  //   searchParam,
-  //   unitType: filterUnitType,
-  //   brandId: filterBrand,
-  //   categoryId: filterCategory,
-  //   subCategoryId: filterSubCategory
-  // });
-  const { data, isLoading, error } = useGetProducts();
+  const filters = useMemo(() => {
+    const result: {
+      name?: string;
+      internalCode?: string;
+      barcode?: string;
+      unitType?: string;
+      brandId?: number;
+      categoryId?: number;
+      subCategoryId?: number;
+    } = {};
+    
+    if (filterName) {
+      switch (searchParam) {
+        case 'name':
+          result.name = filterName;
+          break;
+        case 'internalCode':
+          result.internalCode = filterName;
+          break;
+        case 'barcode':
+          result.barcode = filterName;
+          break;
+      }
+    }
+    
+    if (filterUnitType) result.unitType = filterUnitType;
+    if (filterBrand) result.brandId = parseInt(filterBrand);
+    if (filterCategory) result.categoryId = parseInt(filterCategory);
+    if (filterSubCategory) result.subCategoryId = parseInt(filterSubCategory);
+    
+    return Object.keys(result).length > 0 ? result : undefined;
+  }, [filterName, searchParam, filterUnitType, filterBrand, filterCategory, filterSubCategory]);
+
+  const { data, isLoading, error } = useGetProducts(currentPage, pageSize, filters);
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (data) setProducts(data);
+    if (data) {
+      setProducts(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  // Estados de filtros
-  const [filterName, setFilterName] = useState<string>('');
-  const [filterUnitType, setFilterUnitType] = useState<string>('');
-  const [filterBrand, setFilterBrand] = useState<string>('');
-  const [filterCategory, setFilterCategory] = useState<string>('');
-  const [filterSubCategory, setFilterSubCategory] = useState<string>('');
-  const [searchParam, setSearchParam] = useState<SearchParam>('name');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '' || filterUnitType || filterBrand || filterCategory || filterSubCategory) {
+      setIsFilterLoading(true);
+    }
+  }, [filterName, searchParam, filterUnitType, filterBrand, filterCategory, filterSubCategory]);
 
-  // TODO: Cuando esté lista la API, remover este filtrado del lado del cliente
-  // La API debería devolver los resultados ya filtrados
-  const filteredProducts = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    return products.filter((product) => {
-      // Filtro por búsqueda según el parámetro seleccionado
-      let matchSearch = true;
-      if (filterName) {
-        const searchValue = normalize(filterName);
-        switch (searchParam) {
-          case 'name':
-            matchSearch = normalize(product.name).includes(searchValue);
-            break;
-          case 'internalCode':
-            matchSearch = normalize(product.internalCode || '').includes(searchValue);
-            break;
-          case 'barcode':
-            matchSearch = normalize(product.barcode || '').includes(searchValue);
-            break;
-        }
-      }
-
-      // Filtro por tipo de unidad
-      const matchUnitType = filterUnitType ? product.unitType === filterUnitType : true;
-
-      // Filtro por marca
-      const matchBrand = filterBrand ? product.brand.id.toString() === filterBrand : true;
-
-      // Filtro por categoría (a través de subcategoría)
-      const matchCategory = filterCategory ? product.subCategory.category.id.toString() === filterCategory : true;
-
-      // Filtro por subcategoría
-      const matchSubCategory = filterSubCategory ? product.subCategory.id.toString() === filterSubCategory : true;
-
-      return matchSearch && matchUnitType && matchBrand && matchCategory && matchSubCategory;
-    });
-  }, [products, filterName, filterUnitType, filterBrand, filterCategory, filterSubCategory, searchParam]);
-
-  // TODO: Cuando esté lista la API, agregar useEffect para hacer llamadas cuando cambien los filtros
-  // useEffect(() => {
-  //   // Debounce la búsqueda para evitar demasiadas llamadas a la API
-  //   const timeoutId = setTimeout(() => {
-  //     if (filterName || filterUnitType || filterBrand || filterCategory || filterSubCategory) {
-  //       // Hacer nueva llamada a la API con los filtros
-  //       refetch({
-  //         search: filterName,
-  //         searchParam,
-  //         unitType: filterUnitType,
-  //         brandId: filterBrand,
-  //         categoryId: filterCategory,
-  //         subCategoryId: filterSubCategory
-  //       });
-  //     }
-  //   }, 500);
-  //
-  //   return () => clearTimeout(timeoutId);
-  // }, [filterName, filterUnitType, filterBrand, filterCategory, filterSubCategory, searchParam]);
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -132,7 +113,16 @@ export const Products = () => {
 
       {isMobile && <Divider />}
 
-      <ProductList products={filteredProducts} isLoading={isLoading} error={error} setProducts={setProducts} />
+      <ProductList
+        products={products}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
+        setProducts={setProducts}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </>
   );
 };

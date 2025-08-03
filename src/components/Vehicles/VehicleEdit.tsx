@@ -82,7 +82,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

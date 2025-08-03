@@ -7,21 +7,23 @@ import {
   useColorModeValue,
   IconButton,
   InputGroup,
-  Icon,
   InputRightElement,
   Box,
   Button,
-  Collapse,
-  useDisclosure,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
   useMediaQuery,
 } from '@chakra-ui/react';
+import { useState, useEffect, useCallback } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
-import { FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa';
 import { UnitTypeOptions } from '@/enums/unitType.enum';
 import { useGetBrands } from '@/hooks/brand';
 import { useGetCategories } from '@/hooks/category';
-import { useGetSubCategories } from '@/hooks/subcategory';
 
 type SearchParam = 'name' | 'internalCode' | 'barcode';
 
@@ -29,14 +31,14 @@ type ProductFiltersProps = {
   isLoading: boolean;
   filterName: string;
   setFilterName: (value: string) => void;
-  filterUnitType: string;
-  setFilterUnitType: (value: string) => void;
-  filterBrand: string;
-  setFilterBrand: (value: string) => void;
-  filterCategory: string;
-  setFilterCategory: (value: string) => void;
-  filterSubCategory: string;
-  setFilterSubCategory: (value: string) => void;
+  filterUnitType?: string;
+  setFilterUnitType: (value?: string) => void;
+  filterBrand?: string;
+  setFilterBrand: (value?: string) => void;
+  filterCategory?: string;
+  setFilterCategory: (value?: string) => void;
+  filterSubCategory?: string;
+  setFilterSubCategory: (value?: string) => void;
   searchParam: SearchParam;
   setSearchParam: (value: SearchParam) => void;
 };
@@ -57,18 +59,19 @@ export const ProductFilters = ({
   setSearchParam,
 }: ProductFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const { isOpen: isFiltersOpen, onToggle: toggleFilters } = useDisclosure();
-
   const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
   const { data: categories, isLoading: isLoadingCategories } = useGetCategories();
-  const { data: subCategories, isLoading: isLoadingSubCategories } = useGetSubCategories();
+  const [inputValue, setInputValue] = useState(filterName);
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
-  const disabledColor = useColorModeValue('#fafafa', '#202532');
+  const popoverBg = useColorModeValue('white', 'gray.800');
+  const popoverBorder = useColorModeValue('gray.200', 'gray.600');
+  const focusBorderColor = useColorModeValue('blue.400', 'blue.300');
+  const focusBoxShadow = useColorModeValue('0 0 0 1px rgb(66, 153, 225)', '0 0 0 1px rgb(144, 205, 244)');
 
   const searchOptions = [
     { value: 'name', label: 'Nombre' },
@@ -76,225 +79,282 @@ export const ProductFilters = ({
     { value: 'barcode', label: 'Código de barras' },
   ];
 
-  const handleSearchParamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSearchParamChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSearchParam(e.target.value as SearchParam);
+    setInputValue('');
     setFilterName('');
-  };
+  }, [setSearchParam, setFilterName]);
 
-  const handleResetFilters = () => {
+  const handleUnitTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setFilterUnitType(value === '-1' ? undefined : value);
+  }, [setFilterUnitType]);
+
+  const handleBrandChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setFilterBrand(value === '-1' ? undefined : value);
+  }, [setFilterBrand]);
+
+  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setFilterCategory(value === '-1' ? undefined : value);
+    setFilterSubCategory(undefined);
+  }, [setFilterCategory, setFilterSubCategory]);
+
+  const handleSubCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setFilterSubCategory(value === '-1' ? undefined : value);
+  }, [setFilterSubCategory]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  }, []);
+
+  const handleSearch = useCallback(() => {
+    if (inputValue.length >= 2 || inputValue.length === 0) {
+      setFilterName(inputValue);
+    }
+  }, [inputValue, setFilterName]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  }, [handleSearch]);
+
+  const handleResetFilters = useCallback(() => {
+    setFilterUnitType(undefined);
+    setFilterBrand(undefined);
+    setFilterCategory(undefined);
+    setFilterSubCategory(undefined);
+    setInputValue('');
     setFilterName('');
-    setFilterUnitType('');
-    setFilterBrand('');
-    setFilterCategory('');
-    setFilterSubCategory('');
     setSearchParam('name');
-  };
+  }, [setFilterUnitType, setFilterBrand, setFilterCategory, setFilterSubCategory, setFilterName, setSearchParam]);
 
-  const hasActiveFilters =
-    filterName !== '' ||
-    filterUnitType !== '' ||
-    filterBrand !== '' ||
-    filterCategory !== '' ||
-    filterSubCategory !== '';
+  // Sync inputValue when filterName changes externally
+  useEffect(() => {
+    setInputValue(filterName);
+  }, [filterName]);
 
-  const activeSelectFilters = [filterUnitType, filterBrand, filterCategory, filterSubCategory].filter(
-    (f) => f !== '',
-  ).length;
+  const hasActiveFilters = 
+    filterUnitType !== undefined || 
+    filterBrand !== undefined || 
+    filterCategory !== undefined || 
+    filterSubCategory !== undefined || 
+    filterName !== '';
+
+  const activeSelectFilters = [
+    filterUnitType !== undefined ? 1 : 0,
+    filterBrand !== undefined ? 1 : 0,
+    filterCategory !== undefined ? 1 : 0,
+    filterSubCategory !== undefined ? 1 : 0,
+  ].reduce((a, b) => a + b, 0);
 
   const filteredSubCategories = filterCategory
-    ? subCategories?.filter((sub) => sub.category.id.toString() === filterCategory)
-    : subCategories;
+    ? categories?.find(c => c.id.toString() === filterCategory)?.subCategories
+    : [];
 
   return (
-    <Flex gap="1rem" flexDir="column" w="100%">
-      <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap">
-        <Box
-          display="flex"
-          bg={isLoading ? disabledColor : bgInput}
-          borderRadius="md"
-          overflow="hidden"
-          flex={{ base: '1', md: '0 1 auto' }}
+    <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
+      <Box
+        display="flex"
+        bg={bgInput}
+        borderRadius="md"
+        overflow="hidden"
+        flex="1"
+        borderWidth="1px"
+        borderColor={borderInput}
+      >
+        <Select
+          value={searchParam}
+          onChange={handleSearchParamChange}
+          bg="transparent"
+          border="none"
+          color={textColor}
+          w="auto"
+          minW="7rem"
+          borderRadius="none"
+          _focus={{ boxShadow: 'none' }}
+          maxW={{ base: '5rem', md: '100%' }}
+          disabled={isLoading}
         >
-          <Select
-            value={searchParam}
-            onChange={handleSearchParamChange}
+          {searchOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+
+        <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+        <InputGroup flex="1">
+          <Input
+            placeholder="Buscar..."
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             bg="transparent"
             border="none"
-            color={textColor}
-            w="auto"
-            minW="7rem"
             borderRadius="none"
-            _focus={{ boxShadow: 'none' }}
-            maxW={{ base: '5rem', md: '100%' }}
-            disabled={isLoading}
-          >
-            {searchOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-
-          <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-          <InputGroup flex="1">
-            <Input
-              placeholder="Buscar..."
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              bg="transparent"
-              border="none"
-              borderRadius="none"
-              _placeholder={{ color: textColor }}
-              color={textColor}
-              _focus={{ boxShadow: 'none' }}
-              pl="1rem"
-              disabled={isLoading}
-            />
-            <InputRightElement>
-              <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
-            </InputRightElement>
-          </InputGroup>
-        </Box>
-
-        <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center">
-          <Button
-            leftIcon={<FaFilter />}
-            rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
-            onClick={toggleFilters}
-            bg={bgInput}
-            _hover={{ bg: hoverResetBg }}
-            size="md"
-            variant="outline"
-            borderColor={borderInput}
+            _placeholder={{ color: textColor }}
             color={textColor}
+            _focus={{ boxShadow: 'none' }}
+            pl="1rem"
             disabled={isLoading}
-            flex={{ base: '1', md: 'none' }}
-            minW={{ base: '0', md: '10rem' }}
-            transition="all 0.2s ease"
-          >
-            Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
-          </Button>
-
-          {hasActiveFilters && (
+          />
+          <InputRightElement>
             <IconButton
-              aria-label="Reiniciar filtros"
-              icon={<VscDebugRestart />}
+              aria-label="Buscar"
+              icon={<AiOutlineSearch size="1.25rem" />}
+              size="sm"
+              variant="ghost"
+              onClick={handleSearch}
+              disabled={isLoading}
+              color={textColor}
+              _hover={{}}
+            />
+          </InputRightElement>
+        </InputGroup>
+      </Box>
+
+      <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center" flexShrink={0}>
+        <Popover placement="bottom-end">
+          <PopoverTrigger>
+            <Button
+              leftIcon={<FaFilter />}
               bg={bgInput}
               _hover={{ bg: hoverResetBg }}
-              onClick={handleResetFilters}
-              disabled={isLoading}
-              flexShrink={0}
+              size="md"
+              variant="outline"
               borderColor={borderInput}
+              color={textColor}
+              disabled={isLoading}
+              flex={{ base: '1', md: 'none' }}
+              minW={{ base: '0', md: '10rem' }}
               transition="all 0.2s ease"
-            />
-          )}
-        </Flex>
-      </Flex>
-
-      <Collapse
-        in={isFiltersOpen}
-        animateOpacity
-        transition={{
-          enter: { duration: 0.25, ease: 'easeOut' },
-          exit: { duration: 0.25, ease: 'easeIn' },
-        }}
-        style={{
-          overflow: 'hidden',
-        }}
-      >
-        <Box>
-          <Flex
-            gap="1rem"
-            flexDir={{ base: 'column', md: 'row' }}
-            alignItems="center"
-            flexWrap={{ base: 'nowrap', md: 'wrap' }}
+            >
+              Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            w="auto"
+            minW="18rem"
+            maxW="22rem"
+            bg={popoverBg}
+            borderColor={popoverBorder}
+            shadow="xl"
+            borderRadius="md"
           >
-            <Select
-              value={filterUnitType}
-              onChange={(e) => setFilterUnitType(e.target.value)}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              disabled={isLoading}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '10rem' }}
-              maxW={{ base: '100%', md: '12rem' }}
-              transition="all 0.2s ease"
-            >
-              {filterUnitType === '' && <option value="">Filtrar por unidad</option>}
-              {UnitTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+            <PopoverArrow bg={popoverBg} />
+            <PopoverBody p="0.75rem">
+              <Flex gap="0.75rem" flexDir="column">
+                <Select
+                  value={filterUnitType !== undefined ? filterUnitType : '-1'}
+                  onChange={handleUnitTypeChange}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  disabled={isLoading}
+                  color={textColor}
+                  transition="all 0.2s ease"
+                  borderRadius="md"
+                  _focus={{
+                    borderColor: focusBorderColor,
+                    boxShadow: focusBoxShadow,
+                  }}
+                >
+                  {filterUnitType === undefined && <option value="-1">Filtrar por unidad</option>}
+                  {UnitTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
 
-            <Select
-              value={filterBrand}
-              onChange={(e) => setFilterBrand(e.target.value)}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              disabled={isLoading || isLoadingBrands}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '10rem' }}
-              maxW={{ base: '100%', md: '14rem' }}
-              transition="all 0.2s ease"
-            >
-              {filterBrand === '' && <option value="">Filtrar por marca</option>}
-              {brands?.map((brand) => (
-                <option key={brand.id} value={brand.id.toString()}>
-                  {brand.name}
-                </option>
-              ))}
-            </Select>
+                <Select
+                  value={filterBrand !== undefined ? filterBrand : '-1'}
+                  onChange={handleBrandChange}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  disabled={isLoading || isLoadingBrands}
+                  color={textColor}
+                  transition="all 0.2s ease"
+                  borderRadius="md"
+                  _focus={{
+                    borderColor: focusBorderColor,
+                    boxShadow: focusBoxShadow,
+                  }}
+                >
+                  {filterBrand === undefined && <option value="-1">Filtrar por marca</option>}
+                  {brands?.map((brand) => (
+                    <option key={brand.id} value={brand.id.toString()}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </Select>
 
-            <Select
-              value={filterCategory}
-              onChange={(e) => {
-                setFilterCategory(e.target.value);
-                setFilterSubCategory('');
-              }}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              disabled={isLoading || isLoadingCategories}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '10rem' }}
-              maxW={{ base: '100%', md: '15rem' }}
-              transition="all 0.2s ease"
-            >
-              {filterCategory === '' && <option value="">Filtrar por categoría</option>}
-              {categories?.map((category) => (
-                <option key={category.id} value={category.id.toString()}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
+                <Select
+                  value={filterCategory !== undefined ? filterCategory : '-1'}
+                  onChange={handleCategoryChange}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  disabled={isLoading || isLoadingCategories}
+                  color={textColor}
+                  transition="all 0.2s ease"
+                  borderRadius="md"
+                  _focus={{
+                    borderColor: focusBorderColor,
+                    boxShadow: focusBoxShadow,
+                  }}
+                >
+                  {filterCategory === undefined && <option value="-1">Filtrar por categoría</option>}
+                  {categories?.map((category) => (
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
 
-            <Select
-              value={filterSubCategory}
-              onChange={(e) => setFilterSubCategory(e.target.value)}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '12rem' }}
-              maxW={{ base: '100%', md: '16rem' }}
-              disabled={!filterCategory || isLoading || isLoadingSubCategories}
-              transition="all 0.2s ease"
-            >
-              {filterSubCategory === '' && <option value="">Filtrar por subcategoría</option>}
-              {filteredSubCategories?.map((subCategory) => (
-                <option key={subCategory.id} value={subCategory.id.toString()}>
-                  {subCategory.name}
-                </option>
-              ))}
-            </Select>
-          </Flex>
-        </Box>
-      </Collapse>
+                <Select
+                  value={filterSubCategory !== undefined ? filterSubCategory : '-1'}
+                  onChange={handleSubCategoryChange}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  disabled={isLoading || !filterCategory}
+                  color={textColor}
+                  transition="all 0.2s ease"
+                  borderRadius="md"
+                  _focus={{
+                    borderColor: focusBorderColor,
+                    boxShadow: focusBoxShadow,
+                  }}
+                >
+                  {filterSubCategory === undefined && <option value="-1">Filtrar por subcategoría</option>}
+                  {filteredSubCategories?.map((subCategory) => (
+                    <option key={subCategory.id} value={subCategory.id.toString()}>
+                      {subCategory.name}
+                    </option>
+                  ))}
+                </Select>
+              </Flex>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+
+        {hasActiveFilters && (
+          <IconButton
+            aria-label="Reiniciar filtros"
+            icon={<VscDebugRestart />}
+            bg={bgInput}
+            _hover={{ bg: hoverResetBg }}
+            onClick={handleResetFilters}
+            disabled={isLoading}
+            flexShrink={0}
+            borderColor={borderInput}
+            transition="all 0.2s ease"
+          />
+        )}
+      </Flex>
     </Flex>
   );
 };

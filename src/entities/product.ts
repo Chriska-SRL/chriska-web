@@ -14,7 +14,7 @@ export type Product = {
   unitType: string;
   description: string;
   temperatureCondition: string;
-  observation: string;
+  observations: string;
   subCategory: SubCategory;
   brand: Brand;
   suppliers: Supplier[];

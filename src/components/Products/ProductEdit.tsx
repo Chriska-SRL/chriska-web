@@ -17,20 +17,19 @@ import {
   Box,
   Select,
   useToast,
-  Image,
-  Flex,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validations/validate';
 import { useGetCategories } from '@/hooks/category';
 import { useGetBrands } from '@/hooks/brand';
+import { ProductImageUpload } from './ProductImageUpload';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -48,8 +47,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const buttonHover = useColorModeValue('#376bb0', 'blue.600');
 
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.imageUrl || null);
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
-  const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
+  const { data: brands } = useGetBrands();
   const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
@@ -73,11 +73,13 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         duration: 1500,
         isClosable: true,
       });
-      setProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
+      setProducts((prevProducts) =>
+        prevProducts.map((p) => (p.id === data.id ? { ...p, ...data, imageUrl: currentImageUrl || '' } : p)),
+      );
       setProductProps(undefined);
       onClose();
     }
-  }, [data]);
+  }, [data, currentImageUrl, setProducts, onClose, toast]);
 
   useEffect(() => {
     if (fieldError) {
@@ -97,12 +99,30 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
+
+  const handleImageChange = useCallback(
+    (newImageUrl: string | null) => {
+      setCurrentImageUrl(newImageUrl);
+
+      if (product) {
+        // Add timestamp to force refresh in the product list as well
+        const timestampedUrl = newImageUrl ? `${newImageUrl}?t=${Date.now()}` : '';
+
+        setProducts((prevProducts) =>
+          prevProducts.map((p) => (p.id === product.id ? { ...p, imageUrl: timestampedUrl } : p)),
+        );
+      }
+    },
+    [product, setProducts],
+  );
 
   if (!product) return null;
 
+  const finalImageUrl = currentImageUrl || product.imageUrl;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="1.75rem">
@@ -119,10 +139,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             unitType: product?.unitType ?? '',
             description: product?.description ?? '',
             temperatureCondition: product?.temperatureCondition ?? '',
-            observation: product?.observation ?? '',
+            observations: product?.observations ?? '',
             subCategoryId: product?.subCategory.id ?? 0,
             brandId: product?.brand.id ?? 0,
-            image: product?.imageUrl ?? '',
           }}
           onSubmit={(values) => setProductProps(values)}
           validateOnChange={true}
@@ -132,21 +151,6 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
-                  <FormControl>
-                    <FormLabel>Imagen</FormLabel>
-                    <Flex w="full" justifyContent="center">
-                      <Image
-                        src={
-                          product.imageUrl !== ''
-                            ? product.imageUrl
-                            : 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                        }
-                        alt={product.name}
-                        maxH="20rem"
-                      />
-                    </Flex>
-                  </FormControl>
-
                   <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                     <FormLabel>Código interno</FormLabel>
                     <Field as={Input} name="internalCode" bg={inputBg} borderColor={inputBorder} disabled />
@@ -271,15 +275,16 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && !!errors.observation}>
+                  <FormControl isInvalid={submitCount > 0 && !!errors.observations}>
                     <FormLabel>Observaciones</FormLabel>
                     <Field
                       as={Textarea}
-                      name="observation"
+                      name="observations"
                       bg={inputBg}
                       borderColor={inputBorder}
                       disabled={isLoading}
                     />
+                    <FormErrorMessage>{errors.observations}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl>
@@ -319,6 +324,15 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     </Field>
                     <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                   </FormControl>
+
+                  <ProductImageUpload
+                    product={{
+                      ...product,
+                      imageUrl: finalImageUrl,
+                    }}
+                    onImageChange={handleImageChange}
+                    editable
+                  />
                 </VStack>
               </ModalBody>
 

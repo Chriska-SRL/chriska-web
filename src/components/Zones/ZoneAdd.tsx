@@ -168,7 +168,7 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'xs', md: 'sm' }}
         isCentered
         closeOnOverlayClick={step === 'form'}
       >

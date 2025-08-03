@@ -107,7 +107,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">

@@ -111,7 +111,7 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
         </Button>
       )}
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -169,7 +169,6 @@ export const SupplierAdd = ({ isLoading: isLoadingSuppliers, setSuppliers }: Sup
               } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
                 errors.email = 'Email inválido';
               }
-
 
               return errors;
             }}

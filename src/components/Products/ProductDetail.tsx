@@ -111,7 +111,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -131,7 +131,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 router.push(`/marcas?open=${product.brand.id}`);
               })}
               {detailField('Condición de temperatura', getTemperatureConditionLabel(product.temperatureCondition))}
-              {detailField('Observaciones', product.observation)}
+              {detailField('Observaciones', product.observations)}
               {detailField('Categoría', product.subCategory.category.name, () => {
                 handleClose();
                 router.push(`/categorias?open=${product.subCategory.category.id}&type=category`);
