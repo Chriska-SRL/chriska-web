@@ -23,14 +23,35 @@ import { FaEdit } from 'react-icons/fa';
 import { useEffect } from 'react';
 import { Zone } from '@/entities/zone';
 import { ZoneEdit } from './ZoneEdit';
+import { ZoneImageUpload } from './ZoneImageUpload';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteZone } from '@/hooks/zone';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { Day } from '@/enums/day.enum';
-import { ImageUpload } from '@/components/ImageUpload';
+import { Day, getDayLabel } from '@/enums/day.enum';
 
 const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+
+// Mapeo para convertir días en español a inglés
+const spanishToEnglishDayMap: Record<string, Day> = {
+  'Lunes': Day.MONDAY,
+  'Martes': Day.TUESDAY,
+  'Miércoles': Day.WEDNESDAY,
+  'Jueves': Day.THURSDAY,
+  'Viernes': Day.FRIDAY,
+  'Sábado': Day.SATURDAY,
+};
+
+const convertDaysToEnglish = (days: string[]): Day[] => {
+  return days.map(day => {
+    // Si ya está en inglés, lo devolvemos tal como está
+    if (Object.values(Day).includes(day as Day)) {
+      return day as Day;
+    }
+    // Si está en español, lo convertimos
+    return spanishToEnglishDayMap[day] || day as Day;
+  }).filter(day => Object.values(Day).includes(day)); // Filtrar valores válidos
+};
 
 type ZoneDetailProps = {
   zone: Zone;
@@ -99,7 +120,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
               mb="0.5rem"
               w="100%"
             >
-              {day}
+              {getDayLabel(day)}
             </Checkbox>
           ))}
         </Box>
@@ -115,7 +136,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
               mb="0.5rem"
               w="100%"
             >
-              {day}
+              {getDayLabel(day)}
             </Checkbox>
           ))}
         </Box>
@@ -127,8 +148,8 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
     setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl } : z)));
   };
 
-  const diasPedidos = zone.requestDays || [];
-  const diasEntregas = zone.deliveryDays || [];
+  const diasPedidos = convertDaysToEnglish(zone.requestDays || []);
+  const diasEntregas = convertDaysToEnglish(zone.deliveryDays || []);
 
   return (
     <>
@@ -159,16 +180,13 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
             }}
           >
             <VStack spacing="0.75rem">
+              <ZoneImageUpload 
+                zone={zone} 
+                editable={false}
+              />
               {detailField('Nombre', zone.name)}
               {detailField('Descripción', zone.description)}
               {renderDaysCheckboxesGrouped(diasPedidos, diasEntregas)}
-
-              <ImageUpload
-                entityType="zones"
-                entityId={zone.id}
-                currentImageUrl={zone.imageUrl}
-                onImageChange={handleImageChange}
-              />
             </VStack>
           </ModalBody>
 

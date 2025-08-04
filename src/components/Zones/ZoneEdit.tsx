@@ -24,12 +24,13 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { Zone } from '@/entities/zone';
+import { ZoneImageUpload } from './ZoneImageUpload';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
-import { ImageUpload } from '@/components/ImageUpload';
+import { Day, getDayLabel } from '@/enums/day.enum';
 
 type ZoneEditProps = {
   isOpen: boolean;
@@ -38,7 +39,28 @@ type ZoneEditProps = {
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+
+// Mapeo para convertir días en español a inglés
+const spanishToEnglishDayMap: Record<string, Day> = {
+  'Lunes': Day.MONDAY,
+  'Martes': Day.TUESDAY,
+  'Miércoles': Day.WEDNESDAY,
+  'Jueves': Day.THURSDAY,
+  'Viernes': Day.FRIDAY,
+  'Sábado': Day.SATURDAY,
+};
+
+const convertDaysToEnglish = (days: string[]): Day[] => {
+  return days.map(day => {
+    // Si ya está en inglés, lo devolvemos tal como está
+    if (Object.values(Day).includes(day as Day)) {
+      return day as Day;
+    }
+    // Si está en español, lo convertimos
+    return spanishToEnglishDayMap[day] || day as Day;
+  }).filter(day => Object.values(Day).includes(day)); // Filtrar valores válidos
+};
 
 export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => {
   const toast = useToast();
@@ -112,8 +134,8 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
             id: zone?.id ?? 0,
             name: zone?.name ?? '',
             description: zone?.description ?? '',
-            requestDays: zone?.requestDays ?? ['Martes', 'Jueves'],
-            deliveryDays: zone?.deliveryDays ?? ['Miércoles', 'Jueves', 'Viernes'],
+            requestDays: convertDaysToEnglish(zone?.requestDays ?? []),
+            deliveryDays: convertDaysToEnglish(zone?.deliveryDays ?? []),
             imageUrl: zone?.imageUrl ?? null,
           }}
           onSubmit={handleSubmit}
@@ -133,6 +155,15 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                 }}
               >
                 <VStack spacing="0.75rem">
+                  <ZoneImageUpload
+                    zone={{
+                      ...zone,
+                      imageUrl: currentImageUrl,
+                    }}
+                    onImageChange={handleImageChange}
+                    editable
+                  />
+                  
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>
                     <Field
@@ -175,7 +206,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                                 mb="0.5rem"
                                 w="100%"
                               >
-                                {day}
+                                {getDayLabel(day)}
                               </Checkbox>
                             );
                           })
@@ -199,7 +230,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                                 mb="0.5rem"
                                 w="100%"
                               >
-                                {day}
+                                {getDayLabel(day)}
                               </Checkbox>
                             );
                           })
@@ -208,13 +239,6 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                     </Box>
                   </SimpleGrid>
 
-                  <ImageUpload
-                    entityType="zones"
-                    entityId={zone?.id ?? 0}
-                    currentImageUrl={currentImageUrl}
-                    onImageChange={handleImageChange}
-                    editable
-                  />
                 </VStack>
               </ModalBody>
 

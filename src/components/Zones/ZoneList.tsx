@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { Zone } from '@/entities/zone';
 import { ZoneDetail } from './ZoneDetail';
+import { Pagination } from '../Pagination';
 
 type ZoneListProps = {
   zones: Zone[];
@@ -27,9 +28,24 @@ type ZoneListProps = {
   error?: string;
   zoneToOpenModal?: number | null;
   setZoneToOpenModal?: (id: number | null) => void;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, setZoneToOpenModal }: ZoneListProps) => {
+export const ZoneList = ({ 
+  zones, 
+  setZones, 
+  isLoading, 
+  error, 
+  zoneToOpenModal, 
+  setZoneToOpenModal,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: ZoneListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -38,6 +54,8 @@ export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, s
   const emptyTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+
+  const hasNextPage = zones.length === pageSize;
 
   if (error) {
     return (
@@ -108,11 +126,19 @@ export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, s
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}
             </Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       ) : (
         <>
@@ -153,9 +179,17 @@ export const ZoneList = ({ zones, setZones, isLoading, error, zoneToOpenModal, s
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
             <Text fontSize="sm">Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}</Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       )}
     </>
