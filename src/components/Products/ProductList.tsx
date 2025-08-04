@@ -59,19 +59,6 @@ export const ProductList = ({
 
   const hasNextPage = products.length === pageSize;
 
-  const temperatureCondition = (condition: string) => {
-    switch (condition) {
-      case 'Cold':
-        return 'Frío';
-      case 'Frozen':
-        return 'Congelado';
-      case 'Ambient':
-        return 'Natural';
-      default:
-        return 'Desconocido';
-    }
-  };
-
   const formatPrice = (price: number) => {
     return `$${price.toFixed(2)}`;
   };
@@ -263,7 +250,9 @@ export const ProductList = ({
             </Table>
           </TableContainer>
           <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}</Text>
+            <Text fontSize="sm">
+              Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}
+            </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}
