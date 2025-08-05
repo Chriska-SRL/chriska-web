@@ -164,15 +164,16 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
 
       <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
             Detalle de la zona
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
             pb="0"
-            maxH="30rem"
-            overflow="auto"
+            flex="1"
+            maxH="calc(90dvh - 200px)"
+            overflowY="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',
@@ -190,7 +191,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
+          <ModalFooter py="1.5rem" flexShrink={0}>
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canEditZones && (
                 <Button

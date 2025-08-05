@@ -29,6 +29,7 @@ import { useEffect, useState } from 'react';
 import { useGetZones } from '@/hooks/zone';
 import { useUpdateClient } from '@/hooks/client';
 import { validate } from '@/utils/validations/validate';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Zone } from '@/entities/zone';
 import { QualificationSelector } from '@/components/QualificationSelector';
 
@@ -168,14 +169,21 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
+                      validate={validateEmpty}
                     />
                     <FormErrorMessage>{errors.address}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                     <FormLabel>Dirección en Maps</FormLabel>
-                    <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <Field
+                      as={Input}
+                      name="mapsAddress"
+                      bg={inputBg}
+                      borderColor={borderColor}
+                      h="2.75rem"
+                      validate={validateEmpty}
+                    />
                     <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                   </FormControl>
 
@@ -187,7 +195,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                       bg={inputBg}
                       borderColor={borderColor}
                       h="2.75rem"
-                      validate={validate}
+                      validate={validateEmpty}
                     />
                     <FormErrorMessage>{errors.schedule}</FormErrorMessage>
                   </FormControl>
@@ -224,6 +232,27 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                   </FormControl>
 
+                  <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
+                    <FormLabel>Zona</FormLabel>
+                    <Field
+                      as={Select}
+                      name="zoneId"
+                      placeholder="Seleccionar zona"
+                      bg={inputBg}
+                      borderColor={borderColor}
+                      h="2.75rem"
+                      validate={validate}
+                      disabled={isLoadingZones}
+                    >
+                      {zones?.map((zone: Zone) => (
+                        <option key={zone.id} value={zone.id}>
+                          {zone.name}
+                        </option>
+                      ))}
+                    </Field>
+                    <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
+                  </FormControl>
+
                   <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                     <FormLabel>Cajones prestados</FormLabel>
                     <Field
@@ -237,27 +266,6 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                       validate={validate}
                     />
                     <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
-                    <FormLabel>Zona</FormLabel>
-                    <Field
-                      as={Select}
-                      name="zoneId"
-                      placeholder="Seleccionar zona"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoadingZones}
-                    >
-                      {zones?.map((z: Zone) => (
-                        <option key={z.id} value={z.id}>
-                          {z.name}
-                        </option>
-                      ))}
-                    </Field>
-                    <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.qualification && !!errors.qualification}>

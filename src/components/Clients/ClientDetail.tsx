@@ -31,13 +31,16 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
 import { QualificationSelector } from '../QualificationSelector';
+import { useEffect } from 'react';
 
 type ClientDetailProps = {
   client: Client;
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
+export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: ClientDetailProps) => {
   const canEditClients = useUserStore((s) => s.hasPermission(Permission.EDIT_CLIENTS));
   const canDeleteClients = useUserStore((s) => s.hasPermission(Permission.DELETE_CLIENTS));
 
@@ -45,6 +48,17 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+  };
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -121,15 +135,18 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90%" overflow="auto">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
             Detalle del cliente
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
             pb="0"
+            flex="1"
+            maxH="calc(90dvh - 200px)"
+            overflowY="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',
@@ -146,16 +163,16 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
               {detailField('Teléfono', client.phone)}
               {detailField('Persona de contacto', client.contactName)}
               {detailField('Correo electrónico', client.email)}
-              {detailField('Cajones prestados', client.loanedCrates)}
               {detailField('Zona', client.zone.name, () => {
                 router.push(`/zonas?open=${client.zone.id}`);
               })}
+              {detailField('Cajones prestados', client.loanedCrates)}
               {renderQualificationStars(client.qualification)}
               {detailField('Observaciones', client.observations)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
+          <ModalFooter py="1.5rem" flexShrink={0}>
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               <Button
                 bg="#4C88D8"
@@ -164,7 +181,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                 width="100%"
                 leftIcon={<FaPlus />}
                 onClick={() => {
-                  onClose();
+                  handleClose();
                   openEdit();
                 }}
               >
@@ -177,7 +194,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                 width="100%"
                 leftIcon={<FaPlus />}
                 onClick={() => {
-                  onClose();
+                  handleClose();
                   openEdit();
                 }}
               >
@@ -191,7 +208,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -203,7 +220,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                   item={{ id: client.id, name: client.name }}
                   useDeleteHook={useDeleteClient}
                   setItems={setClients}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

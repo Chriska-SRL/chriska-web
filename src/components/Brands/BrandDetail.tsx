@@ -92,19 +92,29 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
 
       <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
             Detalle de la marca
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
+          <ModalBody
+            pb="0"
+            flex="1"
+            maxH="calc(90dvh - 200px)"
+            overflowY="auto"
+            sx={{
+              '&::-webkit-scrollbar': { display: 'none' },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             <VStack spacing="0.75rem">
               {detailField('Nombre', brand.name)}
               {detailField('Descripción', brand.description)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
+          <ModalFooter py="1.5rem" flexShrink={0}>
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               {canEditBrands && (
                 <Button

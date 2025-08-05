@@ -79,32 +79,47 @@ export const ProductFilters = ({
     { value: 'barcode', label: 'Código de barras' },
   ];
 
-  const handleSearchParamChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSearchParam(e.target.value as SearchParam);
-    setInputValue('');
-    setFilterName('');
-  }, [setSearchParam, setFilterName]);
+  const handleSearchParamChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSearchParam(e.target.value as SearchParam);
+      setInputValue('');
+      setFilterName('');
+    },
+    [setSearchParam, setFilterName],
+  );
 
-  const handleUnitTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFilterUnitType(value === '-1' ? undefined : value);
-  }, [setFilterUnitType]);
+  const handleUnitTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setFilterUnitType(value === '-1' ? undefined : value);
+    },
+    [setFilterUnitType],
+  );
 
-  const handleBrandChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFilterBrand(value === '-1' ? undefined : value);
-  }, [setFilterBrand]);
+  const handleBrandChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setFilterBrand(value === '-1' ? undefined : value);
+    },
+    [setFilterBrand],
+  );
 
-  const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFilterCategory(value === '-1' ? undefined : value);
-    setFilterSubCategory(undefined);
-  }, [setFilterCategory, setFilterSubCategory]);
+  const handleCategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setFilterCategory(value === '-1' ? undefined : value);
+      setFilterSubCategory(undefined);
+    },
+    [setFilterCategory, setFilterSubCategory],
+  );
 
-  const handleSubCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFilterSubCategory(value === '-1' ? undefined : value);
-  }, [setFilterSubCategory]);
+  const handleSubCategoryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setFilterSubCategory(value === '-1' ? undefined : value);
+    },
+    [setFilterSubCategory],
+  );
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -116,11 +131,14 @@ export const ProductFilters = ({
     }
   }, [inputValue, setFilterName]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  }, [handleSearch]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
 
   const handleResetFilters = useCallback(() => {
     setFilterUnitType(undefined);
@@ -137,11 +155,11 @@ export const ProductFilters = ({
     setInputValue(filterName);
   }, [filterName]);
 
-  const hasActiveFilters = 
-    filterUnitType !== undefined || 
-    filterBrand !== undefined || 
-    filterCategory !== undefined || 
-    filterSubCategory !== undefined || 
+  const hasActiveFilters =
+    filterUnitType !== undefined ||
+    filterBrand !== undefined ||
+    filterCategory !== undefined ||
+    filterSubCategory !== undefined ||
     filterName !== '';
 
   const activeSelectFilters = [
@@ -152,7 +170,7 @@ export const ProductFilters = ({
   ].reduce((a, b) => a + b, 0);
 
   const filteredSubCategories = filterCategory
-    ? categories?.find(c => c.id.toString() === filterCategory)?.subCategories
+    ? categories?.find((c) => c.id.toString() === filterCategory)?.subCategories
     : [];
 
   return (
@@ -163,6 +181,7 @@ export const ProductFilters = ({
         borderRadius="md"
         overflow="hidden"
         flex="1"
+        w="100%"
         borderWidth="1px"
         borderColor={borderInput}
       >

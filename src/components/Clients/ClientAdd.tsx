@@ -33,6 +33,7 @@ import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { QualificationSelector } from '@/components/QualificationSelector';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -87,7 +88,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
   const handleSubmit = (values: any) => {
     const newClient = {
       ...values,
-      zoneId: values.zoneId,
+      zoneId: Number(values.zoneId),
       bankAccounts: bankAccounts, // Incluir las bank accounts
     };
     setClientProps(newClient);
@@ -128,7 +129,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
               observations: '',
               qualification: '',
               loanedCrates: 0,
-              zoneId: 0,
+              zoneId: '',
             }}
             onSubmit={handleSubmit}
             validateOnChange
@@ -166,7 +167,14 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                       <FormLabel>Razón Social</FormLabel>
-                      <Field as={Input} name="razonSocial" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
+                      <Field
+                        as={Input}
+                        name="razonSocial"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
                       <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                     </FormControl>
 
@@ -185,7 +193,14 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                       <FormLabel>Dirección en Maps</FormLabel>
-                      <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
+                      <Field
+                        as={Input}
+                        name="mapsAddress"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
                       <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                     </FormControl>
 
@@ -230,23 +245,16 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                       <FormLabel>Correo electrónico</FormLabel>
-                      <Field as={Input} name="email" type="email" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
-                      <FormErrorMessage>{errors.email}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
-                      <FormLabel>Cajones prestados</FormLabel>
                       <Field
                         as={Input}
-                        name="loanedCrates"
-                        type="number"
-                        min="0"
+                        name="email"
+                        type="email"
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="2.75rem"
-                        validate={validate}
+                        validate={validateEmpty}
                       />
-                      <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
+                      <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
@@ -262,13 +270,28 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                         validate={validate}
                         disabled={isLoadingZones}
                       >
-                        {zones?.map((z) => (
-                          <option key={z.id} value={z.id}>
-                            {z.name}
+                        {zones?.map((zone) => (
+                          <option key={zone.id} value={zone.id}>
+                            {zone.name}
                           </option>
                         ))}
                       </Field>
                       <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
+                      <FormLabel>Cajones prestados</FormLabel>
+                      <Field
+                        as={Input}
+                        name="loanedCrates"
+                        type="number"
+                        min="0"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validate}
+                      />
+                      <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.qualification && !!errors.qualification}>
@@ -289,7 +312,6 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                         borderColor={inputBorder}
                         rows={3}
                         resize="vertical"
-                        validate={validate}
                       />
                       <FormErrorMessage>{errors.observations}</FormErrorMessage>
                     </FormControl>
