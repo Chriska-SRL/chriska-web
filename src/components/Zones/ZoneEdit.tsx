@@ -66,11 +66,17 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
   const toast = useToast();
 
   const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(zone?.imageUrl || null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const { data, isLoading, error, fieldError } = useUpdateZone(zoneProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+
+  useEffect(() => {
+    if (zone?.imageUrl) {
+      setCurrentImageUrl(zone.imageUrl);
+    }
+  }, [zone?.imageUrl]);
 
   useEffect(() => {
     if (data) {
@@ -155,14 +161,16 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                 }}
               >
                 <VStack spacing="0.75rem">
-                  <ZoneImageUpload
-                    zone={{
-                      ...zone,
-                      imageUrl: currentImageUrl,
-                    }}
-                    onImageChange={handleImageChange}
-                    editable
-                  />
+                  {zone && (
+                    <ZoneImageUpload
+                      zone={{
+                        ...zone,
+                        imageUrl: currentImageUrl,
+                      }}
+                      onImageChange={handleImageChange}
+                      editable
+                    />
+                  )}
                   
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>
