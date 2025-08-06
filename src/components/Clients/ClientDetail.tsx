@@ -64,6 +64,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const accountSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
@@ -168,6 +169,33 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
               })}
               {detailField('Cajones prestados', client.loanedCrates)}
               {renderQualificationStars(client.qualification)}
+              {client.bankAccounts && client.bankAccounts.length > 0 && (
+                <Box w="100%">
+                  <Text color={labelColor} mb="0.5rem">
+                    Cuentas bancarias
+                  </Text>
+                  <VStack spacing="0.5rem" align="stretch">
+                    {client.bankAccounts.map((account: BankAccount, index: number) => (
+                      <Box
+                        key={index}
+                        px="1rem"
+                        py="0.5rem"
+                        bg={inputBg}
+                        border="1px solid"
+                        borderColor={inputBorder}
+                        borderRadius="md"
+                      >
+                        <Text fontWeight="semibold" fontSize="sm">
+                          {account.accountName}
+                        </Text>
+                        <Text fontSize="sm" color={accountSubtextColor}>
+                          {account.bank} - {account.accountNumber}
+                        </Text>
+                      </Box>
+                    ))}
+                  </VStack>
+                </Box>
+              )}
               {detailField('Observaciones', client.observations)}
             </VStack>
           </ModalBody>

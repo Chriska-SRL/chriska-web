@@ -21,9 +21,11 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  HStack,
+  IconButton,
 } from '@chakra-ui/react';
-import { Formik, Field } from 'formik';
-import { FaPlus, FaCheck } from 'react-icons/fa';
+import { Formik, Field, FieldArray } from 'formik';
+import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -34,6 +36,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { QualificationSelector } from '@/components/QualificationSelector';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { Bank, BankOptions } from '@/enums/bank.enum';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -301,6 +304,108 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                         onChange={(value) => setFieldValue('qualification', value)}
                       />
                       <FormErrorMessage>{errors.qualification}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Cuentas bancarias</FormLabel>
+                      <FieldArray name="bankAccounts">
+                        {({ push, remove, form }) => (
+                          <VStack spacing="0.75rem" align="stretch">
+                            {bankAccounts.map((account: BankAccount, index: number) => (
+                              <Box
+                                key={index}
+                                p="1rem"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="lg"
+                                position="relative"
+                              >
+                                <VStack spacing="0.5rem">
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
+                                    <Input
+                                      value={account.accountName}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].accountName = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    />
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Banco</FormLabel>
+                                    <Select
+                                      value={account.bank}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].bank = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    >
+                                      <option value="">Seleccionar banco</option>
+                                      {BankOptions.map((bank) => (
+                                        <option key={bank} value={bank}>
+                                          {bank}
+                                        </option>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Número de cuenta</FormLabel>
+                                    <Input
+                                      value={account.accountNumber}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].accountNumber = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    />
+                                  </FormControl>
+                                </VStack>
+                                <Button
+                                  position="absolute"
+                                  top="0.5rem"
+                                  right="0.5rem"
+                                  size="xs"
+                                  colorScheme="red"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    const updatedAccounts = bankAccounts.filter((_, i) => i !== index);
+                                    setBankAccounts(updatedAccounts);
+                                  }}
+                                >
+                                  <FaTrash />
+                                </Button>
+                              </Box>
+                            ))}
+                            <Button
+                              type="button"
+                              size="sm"
+                              leftIcon={<FaPlus />}
+                              onClick={() => setBankAccounts([...bankAccounts, { accountName: '', bank: '', accountNumber: '' }])}
+                              variant="ghost"
+                            >
+                              Agregar cuenta bancaria
+                            </Button>
+                          </VStack>
+                        )}
+                      </FieldArray>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>

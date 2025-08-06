@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import {
   addVehicleCost,
@@ -15,7 +16,36 @@ type VehicleCostsInRangeProps = {
   to: Date;
 };
 
-export const useGetVehicleCosts = (vehicleId: number) => useFetch<number, VehicleCost[]>(getVehicleCosts, vehicleId);
+export const useGetVehicleCosts = (
+  vehicleId: number,
+  page: number = 1,
+  pageSize: number = 10,
+  filters?: { type?: string; description?: string; from?: string; to?: string }
+) => {
+  const [data, setData] = useState<VehicleCost[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    const fetchVehicleCosts = async () => {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        const result = await getVehicleCosts(vehicleId, page, pageSize, filters);
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVehicleCosts();
+  }, [vehicleId, page, pageSize, filters?.type, filters?.description, filters?.from, filters?.to]);
+
+  return { data, isLoading, error };
+};
 
 export const useGetVehicleCostById = (id: number) => useFetch<number, VehicleCost>(getVehicleCostById, id);
 

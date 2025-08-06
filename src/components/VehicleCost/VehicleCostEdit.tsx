@@ -104,7 +104,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
           initialValues={{
             id: cost?.id ?? 0,
             vehicleId: cost?.vehicleId ?? 0,
-            date: cost?.date ? formatDate(cost.date) : '',
+            date: cost?.date ? new Date(cost.date).toISOString().split('T')[0] : '',
             type: cost?.type ?? '',
             amount: cost?.amount ?? '',
             description: cost?.description ?? '',

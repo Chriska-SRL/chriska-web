@@ -1,7 +1,7 @@
 'use client';
 
-import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery, Box } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery, Box, Skeleton } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetVehicleCosts } from '@/hooks/vehicleCost';
 import { VehicleCost } from '@/entities/vehicleCost';
@@ -18,94 +18,102 @@ export const VehicleCosts = () => {
   const { id } = useParams<{ id: string }>();
   const vehicleId = Number(id);
 
-  const { data, isLoading, error } = useGetVehicleCosts(vehicleId);
   const [costs, setCosts] = useState<VehicleCost[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [filterType, setFilterType] = useState<string>('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+
+  const { data, isLoading, error } = useGetVehicleCosts(vehicleId, page, pageSize, {
+    type: filterType,
+    from,
+    to,
+  });
 
   const { data: vehicleData, isLoading: isLoadingVehicle } = useGetVehicleById(vehicleId);
   const [vehicle, setVehice] = useState<Vehicle>();
 
   useEffect(() => {
-    if (data) setCosts(data);
-  }, [data]);
+    if (data) {
+      setCosts(data);
+      setHasNextPage(data.length === pageSize);
+      setIsFilterLoading(false);
+    }
+  }, [data, pageSize]);
 
   useEffect(() => {
     if (vehicleData) setVehice(vehicleData);
   }, [vehicleData]);
 
-  const [filterType, setFilterType] = useState<string | undefined>();
-  const [filterDescription, setFilterDescription] = useState<string>('');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-
-  const availableTypes = useMemo(() => [...new Set(costs.map((c) => c.type))], [costs]);
-
-  const filteredCosts = useMemo(() => {
-    const normalize = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
-    return costs.filter((c) => {
-      const matchType = filterType ? normalize(c.type) === normalize(filterType) : true;
-      const matchDesc = filterDescription
-        ? normalize(c.description ?? '').includes(normalize(filterDescription))
-        : true;
-      const matchFrom = from ? new Date(c.date) >= new Date(from) : true;
-      const matchTo = to ? new Date(c.date) <= new Date(to) : true;
-
-      return matchType && matchDesc && matchFrom && matchTo;
-    });
-  }, [costs, filterType, filterDescription, from, to]);
+  useEffect(() => {
+    setPage(1);
+    setIsFilterLoading(true);
+  }, [filterType, from, to]);
 
   return (
     <Flex direction="column" h="100%" gap="1rem">
-      <Box flexShrink="0">
-        <Flex alignItems="center" gap="1rem">
-          <IconButton
-            aria-label="Volver"
-            icon={<MdArrowBackIosNew />}
-            onClick={() => router.replace('/vehiculos')}
-            variant="ghost"
-            size="sm"
-          />
-          <Flex
-            direction={{ base: 'column', md: 'row' }}
-            gap={{ base: '0', md: '0.5rem' }}
-            alignItems={{ base: 'start', md: 'baseline' }}
-          >
-            <Text fontSize="1.5rem" fontWeight="bold">
-              Costos del vehículo{isMobile ? ':' : ': '}
-            </Text>
-            {isLoadingVehicle ? (
-              <Spinner size="md" ml={{ base: '2rem', md: '2rem' }} mt={{ base: '0.5rem', md: 0 }} />
-            ) : (
-              <Text fontSize="1.5rem" fontWeight="bold">
-                {vehicle?.plate}
-              </Text>
-            )}
+      <Box>
+        <Flex justifyContent="space-between" alignItems="center">
+          <Flex alignItems="center" gap="0.5rem">
+            <IconButton
+              aria-label="Volver"
+              icon={<MdArrowBackIosNew />}
+              onClick={() => router.replace('/vehiculos')}
+              variant="ghost"
+              size="sm"
+            />
+            <Flex gap={{ base: '0', md: '0.5rem' }} alignItems={{ base: 'start', md: 'baseline' }}>
+              {!isMobile && (
+                <Text fontSize="1.5rem" fontWeight="bold">
+                  Costos del vehiculo:&nbsp;
+                </Text>
+              )}
+              {/* <Spinner size="md" ml="2rem" mt={{ base: '0.5rem', md: 0 }} /> */}
+              <Skeleton w="7.5rem" h="2.25rem" isLoaded={!isLoadingVehicle}>
+                <Text fontSize="1.5rem" fontWeight="bold">
+                  {vehicle?.plate}
+                </Text>{' '}
+              </Skeleton>
+            </Flex>
           </Flex>
+          {isMobile && <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} isLoading={isLoading} />}
         </Flex>
       </Box>
 
       <Box flexShrink="0">
         <Flex direction={{ base: 'column-reverse', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
           <VehicleCostFilters
-            isLoading={isLoading}
+            isLoading={isLoading || isFilterLoading}
             filterType={filterType}
             setFilterType={setFilterType}
-            filterDescription={filterDescription}
-            setFilterDescription={setFilterDescription}
             from={from}
             to={to}
             setFrom={setFrom}
             setTo={setTo}
-            availableTypes={availableTypes}
           />
-          {isMobile && <Divider />}
-          <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} />
+          {!isMobile && (
+            <>
+              <Divider orientation="vertical" />
+              <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} isLoading={isLoading} />
+            </>
+          )}
         </Flex>
       </Box>
 
-      <Box flex="1" minH="0">
-        <VehicleCostList costs={filteredCosts} setCosts={setCosts} isLoading={isLoading} error={error} />
-      </Box>
+      <VehicleCostList
+        costs={isFilterLoading ? [] : costs}
+        setCosts={setCosts}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
+        currentPage={page}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </Flex>
   );
 };

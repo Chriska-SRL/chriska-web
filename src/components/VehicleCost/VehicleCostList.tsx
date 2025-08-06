@@ -18,6 +18,7 @@ import {
   HStack,
   Icon,
 } from '@chakra-ui/react';
+import { Pagination } from '@/components/Pagination';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import { VehicleCostDetail } from './VehicleCostDetail';
@@ -29,9 +30,24 @@ type VehicleCostListProps = {
   setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCostListProps) => {
+export const VehicleCostList = ({
+  costs,
+  setCosts,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  hasNextPage,
+  onPageChange,
+  onPageSizeChange,
+}: VehicleCostListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -135,11 +151,21 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {costs.length} costo{costs.length !== 1 ? 's' : ''}
             </Text>
-          </Box>
+            {!isLoading && (costs.length > 0 || currentPage > 1) && (
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={isLoading}
+              />
+            )}
+          </Flex>
         </>
       ) : (
         <>
@@ -156,9 +182,7 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
                   <Th textAlign="center">Fecha</Th>
                   <Th textAlign="center">Tipo</Th>
                   <Th textAlign="center">Monto</Th>
-                  <Th textAlign="center" w="25rem">
-                    Descripción
-                  </Th>
+                  <Th textAlign="center">Descripción</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -183,9 +207,21 @@ export const VehicleCostList = ({ costs, setCosts, isLoading, error }: VehicleCo
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {costs.length} costo{costs.length !== 1 ? 's' : ''}</Text>
-          </Box>
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm">
+              {costs.length} costo{costs.length !== 1 ? 's' : ''}
+            </Text>
+            {!isLoading && (costs.length > 0 || currentPage > 1) && (
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={isLoading}
+              />
+            )}
+          </Flex>
         </>
       )}
     </>

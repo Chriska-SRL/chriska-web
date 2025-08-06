@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Vehicle } from '@/entities/vehicle';
 import {
   addVehicle,
@@ -9,7 +10,31 @@ import {
 } from '@/services/vehicle';
 import { useFetch, useFetchNoParams } from '@/utils/useFetch';
 
-export const useGetVehicles = () => useFetchNoParams<Vehicle[]>(getVehicles, []);
+export const useGetVehicles = (page: number = 1, pageSize: number = 10, filters?: { plate?: string; brand?: string; model?: string }) => {
+  const [data, setData] = useState<Vehicle[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        const result = await getVehicles(page, pageSize, filters);
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVehicles();
+  }, [page, pageSize, filters?.plate, filters?.brand, filters?.model]);
+
+  return { data, isLoading, error };
+};
 
 export const useGetVehicleById = (id: number) => useFetch<number, Vehicle>(getVehicleById, id);
 

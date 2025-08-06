@@ -24,9 +24,10 @@ import {
   Text,
   HStack,
   Icon,
+  Checkbox,
 } from '@chakra-ui/react';
 import { FaPlus, FaCheck } from 'react-icons/fa';
-import { Field, Formik } from 'formik';
+import { Field, Formik, FieldArray } from 'formik';
 import { useEffect, useState, useCallback } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { useAddProduct } from '@/hooks/product';
@@ -37,6 +38,8 @@ import { useGetBrands } from '@/hooks/brand';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { ProductImageUpload } from './ProductImageUpload';
+import { useGetSuppliers } from '@/hooks/supplier';
+import { Supplier } from '@/entities/supplier';
 
 type ProductAddProps = {
   isLoading: boolean;
@@ -56,6 +59,7 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
 
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
   const { data: brands = [] } = useGetBrands();
+  const { data: suppliers = [] } = useGetSuppliers(1, 100);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
   const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
 
@@ -67,6 +71,10 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
   const submitHover = useColorModeValue('#376bb0', 'blue.600');
   const successBg = useColorModeValue('green.50', 'green.900');
   const successColor = useColorModeValue('green.600', 'green.200');
+  const selectedBg = useColorModeValue('blue.50', 'blue.900');
+  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
+  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (data) {
@@ -157,6 +165,7 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
     observations: string;
     subCategoryId: string;
     brandId: string;
+    supplierIds: number[];
   }) => {
     const product = {
       barcode: values.barcode,
@@ -168,6 +177,7 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
       observations: values.observations,
       subCategoryId: Number(values.subCategoryId),
       brandId: Number(values.brandId),
+      supplierIds: values.supplierIds,
     };
     setProductProps(product);
   };
@@ -221,6 +231,7 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                 categoryId: '',
                 subCategoryId: '',
                 brandId: '',
+                supplierIds: [],
               }}
               onSubmit={handleSubmit}
               validateOnChange
@@ -403,6 +414,66 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                           ))}
                         </Field>
                         <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>Proveedores</FormLabel>
+                        <FieldArray name="supplierIds">
+                          {({ push, remove, form }) => (
+                            <Box>
+                              {suppliers && suppliers.length > 0 && (
+                                <Box
+                                  maxH="15rem"
+                                  overflowY="auto"
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  borderRadius="md"
+                                  p="0.5rem"
+                                >
+                                  <VStack spacing="0.5rem" align="stretch">
+                                    {suppliers.map((supplier: Supplier) => {
+                                      const isSelected = form.values.supplierIds.includes(supplier.id);
+                                      return (
+                                        <HStack
+                                          key={supplier.id}
+                                          p="0.5rem 1rem"
+                                          bg={isSelected ? selectedBg : inputBg}
+                                          borderRadius="md"
+                                          border="1px solid"
+                                          borderColor={isSelected ? 'blue.400' : 'transparent'}
+                                          spacing="1rem"
+                                          cursor="pointer"
+                                          onClick={() => {
+                                            if (isSelected) {
+                                              const index = form.values.supplierIds.indexOf(supplier.id);
+                                              remove(index);
+                                            } else {
+                                              push(supplier.id);
+                                            }
+                                          }}
+                                          _hover={{
+                                            bg: isSelected ? selectedHoverBg : unselectedHoverBg,
+                                          }}
+                                          transition="all 0.2s"
+                                        >
+                                          <Checkbox isChecked={isSelected} onChange={() => {}} pointerEvents="none" />
+                                          <VStack align="start" flex="1" spacing="0">
+                                            <Text fontWeight="semibold" fontSize="sm">
+                                              {supplier.name}
+                                            </Text>
+                                            <Text fontSize="xs" color={supplierSubtextColor}>
+                                              {supplier.contactName} - {supplier.phone}
+                                            </Text>
+                                          </VStack>
+                                        </HStack>
+                                      );
+                                    })}
+                                  </VStack>
+                                </Box>
+                              )}
+                            </Box>
+                          )}
+                        </FieldArray>
                       </FormControl>
                     </VStack>
                   </ModalBody>

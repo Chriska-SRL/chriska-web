@@ -68,6 +68,7 @@ export const ProductFilters = ({
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
+  const disabledColor = useColorModeValue('#fafafa', '#202532');
   const popoverBg = useColorModeValue('white', 'gray.800');
   const popoverBorder = useColorModeValue('gray.200', 'gray.600');
   const focusBorderColor = useColorModeValue('blue.400', 'blue.300');
@@ -177,13 +178,13 @@ export const ProductFilters = ({
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
       <Box
         display="flex"
-        bg={bgInput}
+        bg={isLoading ? disabledColor : bgInput}
         borderRadius="md"
         overflow="hidden"
         flex="1"
         w="100%"
         borderWidth="1px"
-        borderColor={borderInput}
+        borderColor={isLoading ? disabledColor : borderInput}
       >
         <Select
           value={searchParam}

@@ -36,17 +36,17 @@ type ClientListProps = {
   setClientToOpenModal: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
-export const ClientList = ({ 
-  clients, 
-  setClients, 
-  isLoading, 
-  error, 
+export const ClientList = ({
+  clients,
+  setClients,
+  isLoading,
+  error,
   currentPage,
   pageSize,
   onPageChange,
   onPageSizeChange,
   clientToOpenModal,
-  setClientToOpenModal
+  setClientToOpenModal,
 }: ClientListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -157,8 +157,8 @@ export const ClientList = ({
                   </VStack>
 
                   <Box position="absolute" top="0.5rem" right="0.5rem">
-                    <ClientDetail 
-                      client={client} 
+                    <ClientDetail
+                      client={client}
                       setClients={setClients}
                       forceOpen={clientToOpenModal === client.id}
                       onModalClose={() => setClientToOpenModal(null)}
@@ -168,7 +168,7 @@ export const ClientList = ({
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="space-between" px="1rem">
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
@@ -220,8 +220,8 @@ export const ClientList = ({
                     <Td textAlign="center">{client.phone || 'N/A'}</Td>
                     <Td textAlign="center">{client.zone?.name || 'N/A'}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <ClientDetail 
-                        client={client} 
+                      <ClientDetail
+                        client={client}
                         setClients={setClients}
                         forceOpen={clientToOpenModal === client.id}
                         onModalClose={() => setClientToOpenModal(null)}
@@ -233,7 +233,9 @@ export const ClientList = ({
             </Table>
           </TableContainer>
           <Box mt="0.5rem" display="flex" alignItems="center" justifyContent="space-between">
-            <Text fontSize="sm">Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}</Text>
+            <Text fontSize="sm">
+              Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
+            </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

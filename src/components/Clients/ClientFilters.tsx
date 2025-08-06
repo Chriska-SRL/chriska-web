@@ -120,15 +120,12 @@ export const ClientFilters = ({
     setInputValue(filterName);
   }, [filterName]);
 
-  const hasActiveFilters =
-    filterQualification !== '' ||
-    filterZoneId !== '' ||
-    filterName !== '';
+  const hasActiveFilters = filterQualification !== '' || filterZoneId !== '' || filterName !== '';
 
-  const activeSelectFilters = [
-    filterQualification !== '' ? 1 : 0,
-    filterZoneId !== '' ? 1 : 0,
-  ].reduce((a, b) => a + b, 0);
+  const activeSelectFilters = [filterQualification !== '' ? 1 : 0, filterZoneId !== '' ? 1 : 0].reduce(
+    (a, b) => a + b,
+    0,
+  );
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
@@ -140,7 +137,7 @@ export const ClientFilters = ({
         flex="1"
         w="100%"
         borderWidth="1px"
-        borderColor={borderInput}
+        borderColor={isLoading ? disabledColor : borderInput}
       >
         <Select
           value={searchParam}

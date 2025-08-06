@@ -20,8 +20,11 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  HStack,
+  Checkbox,
+  Text,
 } from '@chakra-ui/react';
-import { Field, Formik } from 'formik';
+import { Field, Formik, FieldArray } from 'formik';
 import { useEffect, useState, useCallback } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
@@ -29,7 +32,9 @@ import { useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validations/validate';
 import { useGetCategories } from '@/hooks/category';
 import { useGetBrands } from '@/hooks/brand';
+import { useGetSuppliers } from '@/hooks/supplier';
 import { ProductImageUpload } from './ProductImageUpload';
+import { Supplier } from '@/entities/supplier';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -38,6 +43,21 @@ type ProductEditProps = {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
+interface ProductEditFormValues {
+  id: number;
+  internalCode: string;
+  barcode: string;
+  name: string;
+  price: number;
+  unitType: string;
+  description: string;
+  temperatureCondition: string;
+  observations: string;
+  subCategoryId: number;
+  brandId: number;
+  supplierIds: number[];
+}
+
 export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEditProps) => {
   const toast = useToast();
 
@@ -45,11 +65,16 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
   const buttonBg = useColorModeValue('#4C88D8', 'blue.500');
   const buttonHover = useColorModeValue('#376bb0', 'blue.600');
+  const selectedBg = useColorModeValue('blue.50', 'blue.900');
+  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
+  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.imageUrl || null);
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
   const { data: brands } = useGetBrands();
+  const { data: suppliers } = useGetSuppliers(1, 100);
   const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
@@ -117,6 +142,27 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     [product, setProducts],
   );
 
+  const handleSubmit = (values: {
+    id: number;
+    internalCode: string;
+    barcode: string;
+    name: string;
+    price: number;
+    unitType: string;
+    description: string;
+    temperatureCondition: string;
+    observations: string;
+    subCategoryId: number;
+    brandId: number;
+    supplierIds: number[];
+  }) => {
+    const { supplierIds, ...productData } = values;
+    setProductProps({
+      ...productData,
+      supplierIds: supplierIds,
+    } as any);
+  };
+
   if (!product) return null;
 
   const finalImageUrl = currentImageUrl || product.imageUrl;
@@ -129,7 +175,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
           Editar producto
         </ModalHeader>
         <ModalCloseButton />
-        <Formik
+        <Formik<ProductEditFormValues>
           initialValues={{
             id: product?.id ?? 0,
             internalCode: product?.internalCode ?? '',
@@ -142,8 +188,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             observations: product?.observations ?? '',
             subCategoryId: product?.subCategory.id ?? 0,
             brandId: product?.brand.id ?? 0,
+            supplierIds: product?.suppliers?.map((s) => s.id) ?? [],
           }}
-          onSubmit={(values) => setProductProps(values)}
+          onSubmit={handleSubmit}
           validateOnChange={true}
           validateOnBlur={false}
         >
@@ -159,7 +206,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     onImageChange={handleImageChange}
                     editable
                   />
-                  
+
                   <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
                     <FormLabel>Código interno</FormLabel>
                     <Field as={Input} name="internalCode" bg={inputBg} borderColor={inputBorder} disabled />
@@ -332,6 +379,66 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       ))}
                     </Field>
                     <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Proveedores</FormLabel>
+                    <FieldArray name="supplierIds">
+                      {({ push, remove, form }) => (
+                        <Box>
+                          {suppliers && suppliers.length > 0 && (
+                            <Box
+                              maxH="15rem"
+                              overflowY="auto"
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              borderRadius="md"
+                              p="0.5rem"
+                            >
+                              <VStack spacing="0.5rem" align="stretch">
+                                {suppliers.map((supplier: Supplier) => {
+                                  const isSelected = form.values.supplierIds.includes(supplier.id);
+                                  return (
+                                    <HStack
+                                      key={supplier.id}
+                                      p="0.5rem 1rem"
+                                      bg={isSelected ? selectedBg : inputBg}
+                                      borderRadius="md"
+                                      border="1px solid"
+                                      borderColor={isSelected ? 'blue.400' : 'transparent'}
+                                      spacing="1rem"
+                                      cursor="pointer"
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          const index = form.values.supplierIds.indexOf(supplier.id);
+                                          remove(index);
+                                        } else {
+                                          push(supplier.id);
+                                        }
+                                      }}
+                                      _hover={{
+                                        bg: isSelected ? selectedHoverBg : unselectedHoverBg,
+                                      }}
+                                      transition="all 0.2s"
+                                    >
+                                      <Checkbox isChecked={isSelected} onChange={() => {}} pointerEvents="none" />
+                                      <VStack align="start" flex="1" spacing="0">
+                                        <Text fontWeight="semibold" fontSize="sm">
+                                          {supplier.name}
+                                        </Text>
+                                        <Text fontSize="xs" color={supplierSubtextColor}>
+                                          {supplier.contactName} - {supplier.phone}
+                                        </Text>
+                                      </VStack>
+                                    </HStack>
+                                  );
+                                })}
+                              </VStack>
+                            </Box>
+                          )}
+                        </Box>
+                      )}
+                    </FieldArray>
                   </FormControl>
                 </VStack>
               </ModalBody>

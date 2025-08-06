@@ -17,28 +17,22 @@ import { VscDebugRestart } from 'react-icons/vsc';
 
 type VehicleCostFiltersProps = {
   isLoading: boolean;
-  filterType?: string;
-  setFilterType: (value?: string) => void;
-  filterDescription: string;
-  setFilterDescription: (value: string) => void;
+  filterType: string;
+  setFilterType: (value: string) => void;
   from: string;
   to: string;
   setFrom: (value: string) => void;
   setTo: (value: string) => void;
-  availableTypes: string[];
 };
 
 export const VehicleCostFilters = ({
   isLoading,
   filterType,
   setFilterType,
-  filterDescription,
-  setFilterDescription,
   from,
   to,
   setFrom,
   setTo,
-  availableTypes,
 }: VehicleCostFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -49,21 +43,16 @@ export const VehicleCostFilters = ({
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setFilterType(value === '-1' ? undefined : value);
-  };
-
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterDescription(e.target.value);
+    setFilterType(value === '-1' ? '' : value);
   };
 
   const handleResetFilters = () => {
-    setFilterType(undefined);
-    setFilterDescription('');
+    setFilterType('');
     setFrom('');
     setTo('');
   };
 
-  const hasActiveFilters = !!filterType || filterDescription !== '' || from !== '' || to !== '';
+  const hasActiveFilters = !!filterType || from !== '' || to !== '';
 
   return (
     <Flex
@@ -90,22 +79,6 @@ export const VehicleCostFilters = ({
         ))}
       </Select>
 
-      <InputGroup w={{ base: '100%', md: '15rem' }}>
-        <Input
-          placeholder="Buscar en descripción..."
-          value={filterDescription}
-          onChange={handleDescriptionChange}
-          bg={bgInput}
-          borderColor={borderInput}
-          _placeholder={{ color: textColor }}
-          color={textColor}
-          disabled={isLoading}
-        />
-        <InputRightElement>
-          <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
-        </InputRightElement>
-      </InputGroup>
-
       <Input
         type="date"
         value={from}
@@ -116,7 +89,9 @@ export const VehicleCostFilters = ({
         color={textColor}
         w={{ base: '100%', md: '11rem' }}
         disabled={isLoading}
+        placeholder="Desde"
       />
+      
       <Input
         type="date"
         value={to}
@@ -127,6 +102,7 @@ export const VehicleCostFilters = ({
         color={textColor}
         w={{ base: '100%', md: '11rem' }}
         disabled={isLoading}
+        placeholder="Hasta"
       />
 
       {hasActiveFilters && (

@@ -51,6 +51,9 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const hoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const hoverBorderColor = useColorModeValue('gray.300', 'whiteAlpha.400');
+  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (forceOpen) {
@@ -84,8 +87,8 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         _hover={
           onClick
             ? {
-                bg: useColorModeValue('gray.200', 'whiteAlpha.200'),
-                borderColor: useColorModeValue('gray.300', 'whiteAlpha.400'),
+                bg: hoverBg,
+                borderColor: hoverBorderColor,
               }
             : {}
         }
@@ -152,6 +155,47 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 handleClose();
                 router.push(`/categorias?open=${product.subCategory.id}&type=subcategory`);
               })}
+              {product.suppliers && product.suppliers.length > 0 && (
+                <Box w="100%">
+                  <Text color={labelColor} mb="0.5rem">
+                    Proveedores
+                  </Text>
+                  <VStack spacing="0.5rem" align="stretch">
+                    {product.suppliers.map((supplier) => (
+                      <Box
+                        key={supplier.id}
+                        px="1rem"
+                        py="0.5rem"
+                        bg={inputBg}
+                        border="1px solid"
+                        borderColor={inputBorder}
+                        borderRadius="md"
+                        cursor="pointer"
+                        _hover={{
+                          bg: hoverBg,
+                          borderColor: hoverBorderColor,
+                        }}
+                        onClick={() => {
+                          handleClose();
+                          router.push(`/proveedores?open=${supplier.id}`);
+                        }}
+                        transition="all 0.2s"
+                        position="relative"
+                      >
+                        <Text>{supplier.name}</Text>
+                        <Icon
+                          as={FiEye}
+                          position="absolute"
+                          right="1rem"
+                          top="50%"
+                          transform="translateY(-50%)"
+                          boxSize="1rem"
+                        />
+                      </Box>
+                    ))}
+                  </VStack>
+                </Box>
+              )}
             </VStack>
           </ModalBody>
 
