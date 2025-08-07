@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { FiEye } from 'react-icons/fi';
 import { StockMovement } from '@/entities/stockMovement';
+import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
 
 type StockMovementDetailProps = {
   movement: StockMovement;
@@ -86,11 +87,11 @@ export const StockMovementDetail = ({ movement, setMovements }: StockMovementDet
             <VStack spacing="0.75rem">
               {detailField('Fecha', movement.date.split('T')[0])}
               {detailField('Cantidad', movement.quantity)}
-              {detailField('Tipo', movement.type)}
+              {detailField('Tipo', getStockMovementTypeLabel(movement.type))}
               {detailField('Razón', movement.reason)}
               {detailField('Producto', movement.product.name)}
-              {detailField('Depósito', movement.shelve.warehouse.name)}
-              {detailField('Estantería', movement.shelve.name)}
+              {detailField('Depósito', movement.product.shelve?.warehouse?.name || 'No especificado')}
+              {detailField('Estantería', movement.product.shelve?.name || 'No especificada')}
               {detailField('Usuario', movement.user.name)}
             </VStack>
           </ModalBody>

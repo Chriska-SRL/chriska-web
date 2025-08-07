@@ -25,7 +25,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Field, Formik, FieldArray } from 'formik';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
@@ -35,6 +35,8 @@ import { useGetBrands } from '@/hooks/brand';
 import { useGetSuppliers } from '@/hooks/supplier';
 import { ProductImageUpload } from './ProductImageUpload';
 import { Supplier } from '@/entities/supplier';
+import { useGetWarehousesSimple } from '@/hooks/warehouse';
+import { useGetShelves } from '@/hooks/shelve';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -56,6 +58,7 @@ interface ProductEditFormValues {
   subCategoryId: number;
   brandId: number;
   supplierIds: number[];
+  shelveId: number;
 }
 
 export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEditProps) => {
@@ -75,10 +78,20 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
   const { data: brands } = useGetBrands();
   const { data: suppliers } = useGetSuppliers(1, 100);
+  const { data: warehouses = [], isLoading: isLoadingWarehouses } = useGetWarehousesSimple();
   const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
   );
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(
+    product?.shelve?.warehouse?.id ?? null,
+  );
+  
+  const shelveFilters = useMemo(() => {
+    return selectedWarehouseId ? { warehouseId: selectedWarehouseId } : undefined;
+  }, [selectedWarehouseId]);
+  
+  const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
   const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
   const filteredSubCategories = selectedCategory?.subCategories ?? [];
@@ -86,6 +99,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   useEffect(() => {
     if (product?.subCategory?.category?.id) {
       setSelectedCategoryId(product.subCategory.category.id);
+    }
+    if (product?.shelve?.warehouse?.id) {
+      setSelectedWarehouseId(product.shelve.warehouse.id);
     }
   }, [product]);
 
@@ -155,6 +171,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     subCategoryId: number;
     brandId: number;
     supplierIds: number[];
+    shelveId: number;
   }) => {
     const { supplierIds, ...productData } = values;
     setProductProps({
@@ -189,12 +206,13 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             subCategoryId: product?.subCategory.id ?? 0,
             brandId: product?.brand.id ?? 0,
             supplierIds: product?.suppliers?.map((s) => s.id) ?? [],
+            shelveId: product?.shelve?.id ?? 0,
           }}
           onSubmit={handleSubmit}
           validateOnChange={true}
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, submitCount }) => (
+          {({ handleSubmit, errors, submitCount, setFieldValue, values }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
@@ -379,6 +397,53 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       ))}
                     </Field>
                     <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={submitCount > 0 && !!errors.warehouseId}>
+                    <FormLabel>Depósito</FormLabel>
+                    <Field
+                      as={Select}
+                      name="warehouseId"
+                      placeholder="Seleccionar depósito"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      disabled={isLoading || isLoadingWarehouses}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                        const selectedId = Number(e.target.value);
+                        setFieldValue('warehouseId', selectedId);
+                        setFieldValue('shelveId', '');
+                        setSelectedWarehouseId(selectedId || null);
+                      }}
+                      value={selectedWarehouseId || ''}
+                      validate={validate}
+                    >
+                      {warehouses.map((warehouse) => (
+                        <option key={warehouse.id} value={warehouse.id}>
+                          {warehouse.name}
+                        </option>
+                      ))}
+                    </Field>
+                    <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                    <FormLabel>Estantería</FormLabel>
+                    <Field
+                      as={Select}
+                      name="shelveId"
+                      placeholder="Seleccionar estantería"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      disabled={isLoading || !selectedWarehouseId}
+                      validate={validate}
+                    >
+                      {shelves.map((shelve) => (
+                        <option key={shelve.id} value={shelve.id}>
+                          {shelve.name}
+                        </option>
+                      ))}
+                    </Field>
+                    <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl>

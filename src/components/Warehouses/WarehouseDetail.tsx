@@ -110,7 +110,6 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
             <VStack spacing="0.75rem">
               {detailField('Nombre', warehouse.name)}
               {detailField('Descripción', warehouse.description)}
-              {detailField('Dirección', warehouse.address)}
             </VStack>
           </ModalBody>
 

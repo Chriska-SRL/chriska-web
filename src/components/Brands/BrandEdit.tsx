@@ -26,6 +26,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateBrand } from '@/hooks/brand';
 import { validate } from '@/utils/validations/validate';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type BrandEditProps = {
   isOpen: boolean;
@@ -124,7 +125,7 @@ export const BrandEdit = ({ isOpen, onClose, brand, setBrands }: BrandEditProps)
                       name="description"
                       bg={inputBg}
                       borderColor={borderColor}
-                      validate={validate}
+                      validate={validateEmpty}
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>

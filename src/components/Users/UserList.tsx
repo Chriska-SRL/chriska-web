@@ -221,7 +221,9 @@ export const UserList = ({
             </Table>
           </TableContainer>
           <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}</Text>
+            <Text fontSize="sm">
+              Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
+            </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

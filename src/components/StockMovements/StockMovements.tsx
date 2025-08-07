@@ -1,59 +1,53 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { StockMovementList } from './StockMovementList';
 import { StockMovement } from '@/entities/stockMovement';
-import {
-  useGetStockMovements,
-  useGetStockMovementsByShelveId,
-  useGetStockMovementsByWarehouseId,
-} from '@/hooks/stockMovement';
-import { subDays, formatISO } from 'date-fns';
+import { useGetStockMovements } from '@/hooks/stockMovement';
 import { StockMovementAdd } from './StockMovementAdd';
 import { StockMovementFilters } from './StockMovementFilters';
 
 export const StockMovements = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const today = formatISO(new Date(), { representation: 'date' });
-  const weekAgo = formatISO(subDays(new Date(), 7), { representation: 'date' });
-
-  const [filterWarehouseId, setFilterWarehouseId] = useState('');
-  const [filterShelveId, setFilterShelveId] = useState('');
-  const [filterFrom, setFilterFrom] = useState(weekAgo);
-  const [filterTo, setFilterTo] = useState(today);
-
-  const warehouseId = filterWarehouseId ? parseInt(filterWarehouseId) : -1;
-  const shelveId = filterShelveId ? parseInt(filterShelveId) : -1;
-
-  const allMovements = useGetStockMovements(filterFrom, filterTo);
-  const warehouseMovements = useGetStockMovementsByWarehouseId(warehouseId, filterFrom, filterTo);
-  const shelveMovements = useGetStockMovementsByShelveId(shelveId, filterFrom, filterTo);
-
-  const activeResult = (() => {
-    if (filterShelveId) {
-      return shelveMovements;
-    } else if (filterWarehouseId) {
-      return warehouseMovements;
-    } else {
-      return allMovements;
-    }
-  })();
-
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+
+  const [filters, setFilters] = useState<{ warehouseId?: number; shelveId?: number }>({
+    warehouseId: undefined,
+    shelveId: undefined,
+  });
+
+  const { data, isLoading, error } = useGetStockMovements(page, pageSize, filters);
 
   useEffect(() => {
-    if (activeResult.data) {
-      setStockMovements(activeResult.data);
+    if (data) {
+      setStockMovements(data);
+      setTotalCount(data.length);
+      setHasNextPage(false);
     }
-  }, [activeResult.data]);
+  }, [data]);
+
+  const handleFilterChange = useCallback((newFilters: { warehouseId?: number; shelveId?: number }) => {
+    setIsFilterLoading(true);
+    setFilters(newFilters);
+    setPage(1);
+
+    setTimeout(() => {
+      setIsFilterLoading(false);
+    }, 500);
+  }, []);
 
   return (
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
-          Movimientos de stock
+          {isMobile ? 'Mov.' : 'Movimientos'} de stock
         </Text>
         {isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
       </Flex>
@@ -61,16 +55,7 @@ export const StockMovements = () => {
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <StockMovementFilters
-          filterWarehouseId={filterWarehouseId}
-          setFilterWarehouseId={setFilterWarehouseId}
-          filterShelveId={filterShelveId}
-          setFilterShelveId={setFilterShelveId}
-          filterFrom={filterFrom}
-          setFilterFrom={setFilterFrom}
-          filterTo={filterTo}
-          setFilterTo={setFilterTo}
-        />
+        <StockMovementFilters filters={filters} onFiltersChange={handleFilterChange} isLoading={isFilterLoading} />
         {!isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
       </Flex>
 
@@ -78,9 +63,14 @@ export const StockMovements = () => {
 
       <StockMovementList
         stockMovements={stockMovements}
-        isLoading={activeResult.isLoading}
-        error={activeResult.error}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
         setStockMovements={setStockMovements}
+        totalCount={totalCount}
+        currentPage={page}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        onPageChange={setPage}
       />
     </>
   );

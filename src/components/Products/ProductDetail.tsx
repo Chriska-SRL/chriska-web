@@ -155,6 +155,15 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 handleClose();
                 router.push(`/categorias?open=${product.subCategory.id}&type=subcategory`);
               })}
+              {product.shelve && (
+                <>
+                  {detailField('Depósito', product.shelve.warehouse.name, () => {
+                    handleClose();
+                    router.push(`/depositos?open=${product.shelve.warehouse.id}`);
+                  })}
+                  {detailField('Estantería', product.shelve.name)}
+                </>
+              )}
               {product.suppliers && product.suppliers.length > 0 && (
                 <Box w="100%">
                   <Text color={labelColor} mb="0.5rem">

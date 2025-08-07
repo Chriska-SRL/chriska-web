@@ -27,12 +27,12 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { StockMovement } from '@/entities/stockMovement';
 import { useAddStockMovement } from '@/hooks/stockMovement';
-import { useGetWarehouses } from '@/hooks/warehouse';
 import { useGetProducts } from '@/hooks/product';
 import { useUserStore } from '@/stores/useUserStore';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
+import { StockMovementTypeOptions } from '@/enums/stockMovementType.enum';
 
 type StockMovementAddProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
@@ -47,13 +47,7 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
   const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
   const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps as any);
 
-  const user = useUserStore((s) => s.user);
-
-  const { data: warehouses } = useGetWarehouses();
   const { data: products } = useGetProducts();
-
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number>();
-  const [selectedShelves, setSelectedShelves] = useState<{ id: number; name: string }[]>([]);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -97,16 +91,6 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
     }
   }, [error, fieldError]);
 
-  useEffect(() => {
-    if (selectedWarehouseId && warehouses) {
-      const warehouse = warehouses.find((w) => w.id === selectedWarehouseId);
-      if (warehouse) {
-        setSelectedShelves(warehouse.shelves);
-      }
-    } else {
-      setSelectedShelves([]);
-    }
-  }, [selectedWarehouseId, warehouses]);
 
   const handleSubmit = (values: {
     date: string;
@@ -114,28 +98,13 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
     type: string;
     reason: string;
     productId: string;
-    warehouseId: string;
-    shelveId: string;
   }) => {
-    if (!user) {
-      toast({
-        title: 'Error',
-        description: 'Usuario no identificado',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-
     setMovementProps({
       date: values.date,
       quantity: values.quantity,
       type: values.type,
       reason: values.reason,
       productId: Number(values.productId),
-      shelveId: Number(values.shelveId),
-      userId: user.userId,
     } as any);
   };
 
@@ -160,14 +129,12 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
               type: '',
               reason: '',
               productId: '',
-              warehouseId: '',
-              shelveId: '',
             }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount, values, setFieldValue }) => (
+            {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
                 <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                   <VStack spacing="0.75rem">
@@ -210,8 +177,11 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                         validate={validate}
                         disabled={isLoading}
                       >
-                        <option value="Ingreso">Ingreso</option>
-                        <option value="Egreso">Egreso</option>
+                        {StockMovementTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                       </Field>
                       <FormErrorMessage>{errors.type}</FormErrorMessage>
                     </FormControl>
@@ -249,50 +219,6 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                       <FormErrorMessage>{errors.productId}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.warehouseId && !!errors.warehouseId}>
-                      <FormLabel>Depósito</FormLabel>
-                      <Field
-                        as={Select}
-                        name="warehouseId"
-                        placeholder="Seleccionar un depósito"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        validate={validate}
-                        onChange={(e: any) => {
-                          setFieldValue('warehouseId', e.target.value);
-                          setSelectedWarehouseId(Number(e.target.value));
-                          setFieldValue('shelveId', '');
-                        }}
-                        disabled={isLoading}
-                      >
-                        {warehouses?.map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
-                      <FormLabel>Estantería</FormLabel>
-                      <Field
-                        as={Select}
-                        name="shelveId"
-                        placeholder="Seleccionar estantería"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        validate={validate}
-                        disabled={!selectedWarehouseId || isLoading}
-                      >
-                        {selectedShelves.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
-                    </FormControl>
                   </VStack>
                 </ModalBody>
 

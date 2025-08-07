@@ -31,6 +31,7 @@ import { validate } from '@/utils/validations/validate';
 import { useAddShelve } from '@/hooks/shelve';
 import { useUserStore } from '@/stores/useUserStore';
 import { Permission } from '@/enums/permission.enum';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type ShelveAddProps = {
   warehouse: Warehouse;
@@ -159,7 +160,7 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="5rem"
-                          validate={validate}
+                          validate={validateEmpty}
                           disabled={isLoading}
                         />
                         <FormErrorMessage>{errors.description}</FormErrorMessage>

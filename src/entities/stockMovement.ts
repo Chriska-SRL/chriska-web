@@ -1,5 +1,4 @@
 import { Product } from './product';
-import { Shelve } from './shelve';
 import { User } from './user';
 
 export type StockMovement = {
@@ -8,7 +7,6 @@ export type StockMovement = {
   quantity: number;
   type: string;
   reason: string;
-  shelve: Shelve;
   user: User;
   product: Product;
 };

@@ -27,6 +27,7 @@ import { Shelve } from '@/entities/shelve';
 import { validate } from '@/utils/validations/validate';
 import { useUpdateShelve } from '@/hooks/shelve';
 import { Warehouse } from '@/entities/warehouse';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type ShelveEditProps = {
   isOpen: boolean;
@@ -146,7 +147,7 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
                         bg={inputBg}
                         borderColor={inputBorder}
                         h="5rem"
-                        validate={validate}
+                        validate={validateEmpty}
                         disabled={isLoading}
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>

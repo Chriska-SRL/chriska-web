@@ -28,7 +28,7 @@ import {
 } from '@chakra-ui/react';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { Field, Formik, FieldArray } from 'formik';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
@@ -40,6 +40,8 @@ import { useUserStore } from '@/stores/useUserStore';
 import { ProductImageUpload } from './ProductImageUpload';
 import { useGetSuppliers } from '@/hooks/supplier';
 import { Supplier } from '@/entities/supplier';
+import { useGetWarehousesSimple } from '@/hooks/warehouse';
+import { useGetShelves } from '@/hooks/shelve';
 
 type ProductAddProps = {
   isLoading: boolean;
@@ -60,8 +62,18 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
   const { data: brands = [] } = useGetBrands();
   const { data: suppliers = [] } = useGetSuppliers(1, 100);
+  const { data: warehouses = [], isLoading: isLoadingWarehouses } = useGetWarehousesSimple();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
   const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>('');
+  
+  const shelveFilters = useMemo(() => {
+    return selectedWarehouseId && selectedWarehouseId !== '' 
+      ? { warehouseId: Number(selectedWarehouseId) } 
+      : undefined;
+  }, [selectedWarehouseId]);
+  
+  const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
@@ -166,6 +178,7 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
     subCategoryId: string;
     brandId: string;
     supplierIds: number[];
+    shelveId: string;
   }) => {
     const product = {
       barcode: values.barcode,
@@ -178,8 +191,9 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
       subCategoryId: Number(values.subCategoryId),
       brandId: Number(values.brandId),
       supplierIds: values.supplierIds,
+      shelveId: Number(values.shelveId),
     };
-    setProductProps(product);
+    setProductProps(product as any);
   };
 
   const [hasImage, setHasImage] = useState(false);
@@ -232,6 +246,8 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                 subCategoryId: '',
                 brandId: '',
                 supplierIds: [],
+                warehouseId: '',
+                shelveId: '',
               }}
               onSubmit={handleSubmit}
               validateOnChange
@@ -414,6 +430,53 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                           ))}
                         </Field>
                         <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && !!errors.warehouseId}>
+                        <FormLabel>Depósito</FormLabel>
+                        <Field
+                          as={Select}
+                          name="warehouseId"
+                          placeholder="Seleccionar depósito"
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          value={selectedWarehouseId}
+                          disabled={isLoading || isLoadingWarehouses}
+                          onChange={(e: any) => {
+                            const selectedId = e.target.value;
+                            setFieldValue('warehouseId', selectedId);
+                            setFieldValue('shelveId', '');
+                            setSelectedWarehouseId(selectedId);
+                          }}
+                          validate={validate}
+                        >
+                          {warehouses.map((warehouse) => (
+                            <option key={warehouse.id} value={warehouse.id}>
+                              {warehouse.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                        <FormLabel>Estantería</FormLabel>
+                        <Field
+                          as={Select}
+                          name="shelveId"
+                          placeholder="Seleccionar estantería"
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          disabled={isLoading || !selectedWarehouseId}
+                          validate={validate}
+                        >
+                          {shelves.map((shelve) => (
+                            <option key={shelve.id} value={shelve.id}>
+                              {shelve.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
                       </FormControl>
 
                       <FormControl>
