@@ -81,11 +81,10 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
   }, [debouncedProductSearch, productSearchType]);
 
   // Solo hacer la llamada si tenemos filtros válidos
-  const shouldFetchProducts = productFilters !== undefined;
   const { data: products, isLoading: isLoadingProducts } = useGetProducts(
     1, 
     10, 
-    shouldFetchProducts ? productFilters : undefined
+    productFilters
   );
 
   // Actualizar el término de búsqueda cuando se completa la búsqueda
