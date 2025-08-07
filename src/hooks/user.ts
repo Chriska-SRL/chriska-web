@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/entities/user';
 import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporaryPassword } from '@/services/user';
 import { PasswordReset } from '@/entities/password-reset/password-reset';
@@ -17,13 +17,20 @@ export const useGetUsers = (page: number = 1, pageSize: number = 10, filters?: U
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
+  // Memoize filters to prevent unnecessary re-renders
+  const memoizedFilters = useMemo(() => filters, [
+    filters?.name,
+    filters?.roleId,
+    filters?.isEnabled
+  ]);
+
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        const result = await getUsers(page, pageSize, filters);
+        const result = await getUsers(page, pageSize, memoizedFilters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');
@@ -33,7 +40,7 @@ export const useGetUsers = (page: number = 1, pageSize: number = 10, filters?: U
     };
 
     fetchUsers();
-  }, [page, pageSize, filters]);
+  }, [page, pageSize, memoizedFilters]);
 
   return { data, isLoading, error };
 };

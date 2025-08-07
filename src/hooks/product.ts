@@ -30,6 +30,14 @@ export const useGetProducts = (page: number = 1, pageSize: number = 10, filters?
   ]);
 
   useEffect(() => {
+    // No hacer llamada si filters es undefined
+    if (filters === undefined) {
+      setData([]);
+      setIsLoading(false);
+      setError(undefined);
+      return;
+    }
+
     const fetchProducts = async () => {
       setIsLoading(true);
       setError(undefined);
@@ -45,7 +53,7 @@ export const useGetProducts = (page: number = 1, pageSize: number = 10, filters?
     };
 
     fetchProducts();
-  }, [page, pageSize, memoizedFilters]);
+  }, [page, pageSize, memoizedFilters, filters]);
 
   return { data, isLoading, error };
 };

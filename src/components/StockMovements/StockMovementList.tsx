@@ -27,7 +27,6 @@ type StockMovementListProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
   isLoading: boolean;
   error?: string;
-  totalCount: number;
   currentPage: number;
   pageSize: number;
   hasNextPage: boolean;
@@ -39,7 +38,6 @@ export const StockMovementList = ({
   setStockMovements,
   isLoading,
   error,
-  totalCount,
   currentPage,
   pageSize,
   hasNextPage,
@@ -197,7 +195,7 @@ export const StockMovementList = ({
           </TableContainer>
           <HStack justifyContent="space-between" mt="0.5rem">
             <Text fontSize="sm" color={textColor}>
-              Mostrando {stockMovements.length} de {totalCount} movimiento{totalCount !== 1 ? 's' : ''}
+              Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}

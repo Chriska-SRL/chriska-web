@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { StockMovement } from '@/entities/stockMovement';
 import { getStockMovements, getStockMovementById, addStockMovement } from '@/services/stockMovement';
 import { Result } from '@/utils/result';
 import { useFetch } from '@/utils/useFetch';
 
 type StockMovementFilters = {
-  warehouseId?: number;
-  shelveId?: number;
+  Type?: string;
+  DateFrom?: string;
+  DateTo?: string;
+  ProductId?: number;
+  CreatedBy?: number;
 };
 
 export const useGetStockMovements = (
@@ -18,13 +21,22 @@ export const useGetStockMovements = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
+  // Memoize filters to prevent unnecessary re-renders
+  const memoizedFilters = useMemo(() => filters, [
+    filters.Type,
+    filters.DateFrom,
+    filters.DateTo,
+    filters.ProductId,
+    filters.CreatedBy,
+  ]);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        const result = await getStockMovements(page, pageSize, filters);
+        const result = await getStockMovements(page, pageSize, memoizedFilters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error al cargar movimientos');
@@ -34,7 +46,7 @@ export const useGetStockMovements = (
     };
 
     fetchData();
-  }, [page, pageSize, filters]);
+  }, [page, pageSize, memoizedFilters]);
 
   return { data, isLoading, error };
 };

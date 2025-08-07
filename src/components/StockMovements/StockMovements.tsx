@@ -14,13 +14,21 @@ export const StockMovements = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const [filters, setFilters] = useState<{ warehouseId?: number; shelveId?: number }>({
-    warehouseId: undefined,
-    shelveId: undefined,
+  const [filters, setFilters] = useState<{
+    Type?: string;
+    DateFrom?: string;
+    DateTo?: string;
+    ProductId?: number;
+    CreatedBy?: number;
+  }>({
+    Type: undefined,
+    DateFrom: undefined,
+    DateTo: undefined,
+    ProductId: undefined,
+    CreatedBy: undefined,
   });
 
   const { data, isLoading, error } = useGetStockMovements(page, pageSize, filters);
@@ -28,20 +36,22 @@ export const StockMovements = () => {
   useEffect(() => {
     if (data) {
       setStockMovements(data);
-      setTotalCount(data.length);
       setHasNextPage(false);
     }
   }, [data]);
 
-  const handleFilterChange = useCallback((newFilters: { warehouseId?: number; shelveId?: number }) => {
-    setIsFilterLoading(true);
-    setFilters(newFilters);
-    setPage(1);
+  const handleFilterChange = useCallback(
+    (newFilters: { Type?: string; DateFrom?: string; DateTo?: string; ProductId?: number; CreatedBy?: number }) => {
+      setIsFilterLoading(true);
+      setFilters(newFilters);
+      setPage(1);
 
-    setTimeout(() => {
-      setIsFilterLoading(false);
-    }, 500);
-  }, []);
+      setTimeout(() => {
+        setIsFilterLoading(false);
+      }, 500);
+    },
+    [],
+  );
 
   return (
     <>
@@ -56,7 +66,13 @@ export const StockMovements = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <StockMovementFilters filters={filters} onFiltersChange={handleFilterChange} isLoading={isFilterLoading} />
-        {!isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <StockMovementAdd setStockMovements={setStockMovements} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -66,7 +82,6 @@ export const StockMovements = () => {
         isLoading={isLoading || isFilterLoading}
         error={error}
         setStockMovements={setStockMovements}
-        totalCount={totalCount}
         currentPage={page}
         pageSize={pageSize}
         hasNextPage={hasNextPage}
