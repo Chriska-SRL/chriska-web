@@ -212,7 +212,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
           validateOnChange={true}
           validateOnBlur={false}
         >
-          {({ handleSubmit, errors, submitCount, setFieldValue, values }) => (
+          {({ handleSubmit, errors, submitCount, setFieldValue }) => (
             <form onSubmit={handleSubmit}>
               <ModalBody pb="0" maxH="70dvh" overflowY="auto">
                 <VStack spacing="0.75rem">
@@ -399,31 +399,29 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                     <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && !!errors.warehouseId}>
+                  <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
                     <FormLabel>Depósito</FormLabel>
-                    <Field
-                      as={Select}
-                      name="warehouseId"
+                    <Select
                       placeholder="Seleccionar depósito"
                       bg={inputBg}
                       borderColor={inputBorder}
                       disabled={isLoading || isLoadingWarehouses}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                         const selectedId = Number(e.target.value);
-                        setFieldValue('warehouseId', selectedId);
                         setFieldValue('shelveId', '');
                         setSelectedWarehouseId(selectedId || null);
                       }}
                       value={selectedWarehouseId || ''}
-                      validate={validate}
                     >
                       {warehouses.map((warehouse) => (
                         <option key={warehouse.id} value={warehouse.id}>
                           {warehouse.name}
                         </option>
                       ))}
-                    </Field>
-                    <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
+                    </Select>
+                    <FormErrorMessage>
+                      {errors.shelveId && 'Depósito es requerido'}
+                    </FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
