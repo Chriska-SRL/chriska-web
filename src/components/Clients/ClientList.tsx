@@ -21,15 +21,33 @@ import {
 import { Client } from '@/entities/client';
 import { ClientDetail } from './ClientDetail';
 import { FiUser, FiPhone, FiMapPin, FiFileText } from 'react-icons/fi';
+import { Pagination } from '@/components/Pagination';
 
 type ClientListProps = {
   clients: Client[];
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+  clientToOpenModal: number | null;
+  setClientToOpenModal: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
-export const ClientList = ({ clients, setClients, isLoading, error }: ClientListProps) => {
+export const ClientList = ({
+  clients,
+  setClients,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  clientToOpenModal,
+  setClientToOpenModal,
+}: ClientListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -139,16 +157,28 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                   </VStack>
 
                   <Box position="absolute" top="0.5rem" right="0.5rem">
-                    <ClientDetail client={client} setClients={setClients} />
+                    <ClientDetail
+                      client={client}
+                      setClients={setClients}
+                      forceOpen={clientToOpenModal === client.id}
+                      onModalClose={() => setClientToOpenModal(null)}
+                    />
                   </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {clients.length} clientes
+              Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={clients.length === pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
           </Box>
         </>
       ) : (
@@ -190,15 +220,29 @@ export const ClientList = ({ clients, setClients, isLoading, error }: ClientList
                     <Td textAlign="center">{client.phone || 'N/A'}</Td>
                     <Td textAlign="center">{client.zone?.name || 'N/A'}</Td>
                     <Td textAlign="center" pr="2rem">
-                      <ClientDetail client={client} setClients={setClients} />
+                      <ClientDetail
+                        client={client}
+                        setClients={setClients}
+                        forceOpen={clientToOpenModal === client.id}
+                        onModalClose={() => setClientToOpenModal(null)}
+                      />
                     </Td>
                   </Tr>
                 ))}
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {clients.length} clientes</Text>
+          <Box mt="0.5rem" display="flex" alignItems="center" justifyContent="space-between">
+            <Text fontSize="sm">
+              Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
+            </Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={clients.length === pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
           </Box>
         </>
       )}

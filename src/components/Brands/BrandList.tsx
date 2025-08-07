@@ -128,7 +128,7 @@ export const BrandList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {brands.length} marcas
+              Mostrando {brands.length} marca{brands.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -180,7 +180,7 @@ export const BrandList = ({
             </Table>
           </TableContainer>
           <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {brands.length} marcas</Text>
+            <Text fontSize="sm">Mostrando {brands.length} marca{brands.length !== 1 ? 's' : ''}</Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

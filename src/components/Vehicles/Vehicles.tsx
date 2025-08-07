@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { VehicleList } from './VehicleList';
 import { VehicleAdd } from './VehicleAdd';
 import { VehicleFilters } from './VehicleFilters';
@@ -11,30 +11,33 @@ import { useGetVehicles } from '@/hooks/vehicle';
 export const Vehicles = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const { data, isLoading, error } = useGetVehicles();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [filterPlate, setFilterPlate] = useState<string>('');
+  const [filterBrand, setFilterBrand] = useState<string>('');
+  const [filterModel, setFilterModel] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+
+  const { data, isLoading, error } = useGetVehicles(page, pageSize, {
+    plate: filterPlate,
+    brand: filterBrand,
+    model: filterModel,
+  });
 
   useEffect(() => {
-    if (data) setVehicles(data);
-  }, [data]);
+    if (data) {
+      setVehicles(data);
+      setHasNextPage(data.length === pageSize);
+      setIsFilterLoading(false);
+    }
+  }, [data, pageSize]);
 
-  const [filterPlate, setFilterPlate] = useState<string>('');
-
-  const availableBrands = useMemo(() => [...new Set(vehicles.map((v) => v.brand))], [vehicles]);
-  const availableModels = useMemo(() => [...new Set(vehicles.map((v) => v.model))], [vehicles]);
-
-  const filteredVehicles = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-
-    return vehicles.filter((v) => {
-      const matchPlate = filterPlate ? normalize(v.plate).includes(normalize(filterPlate)) : true;
-      return matchPlate;
-    });
-  }, [vehicles, filterPlate]);
+  useEffect(() => {
+    setPage(1);
+    setIsFilterLoading(true);
+  }, [filterPlate, filterBrand, filterModel]);
 
   return (
     <>
@@ -52,15 +55,32 @@ export const Vehicles = () => {
           isLoading={isLoading}
           filterPlate={filterPlate}
           setFilterPlate={setFilterPlate}
-          availableBrands={availableBrands}
-          availableModels={availableModels}
+          filterBrand={filterBrand}
+          setFilterBrand={setFilterBrand}
+          filterModel={filterModel}
+          setFilterModel={setFilterModel}
         />
-        {!isMobile && <VehicleAdd isLoading={isLoading} setVehicles={setVehicles} />}
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <VehicleAdd isLoading={isLoading} setVehicles={setVehicles} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
-      <VehicleList vehicles={filteredVehicles} isLoading={isLoading} error={error} setVehicles={setVehicles} />
+      <VehicleList
+        vehicles={isFilterLoading ? [] : vehicles}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
+        setVehicles={setVehicles}
+        currentPage={page}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </>
   );
 };

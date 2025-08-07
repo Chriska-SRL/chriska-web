@@ -10,13 +10,13 @@ import { useGetRoles } from '@/hooks/role';
 
 export const Roles = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [roles, setRoles] = useState<Role[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterName, setFilterName] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const { data, isLoading, error } = useGetRoles(currentPage, pageSize, filterName);
-  const [roles, setRoles] = useState<Role[]>([]);
 
   useEffect(() => {
     if (data) {

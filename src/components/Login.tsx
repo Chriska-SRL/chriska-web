@@ -61,14 +61,15 @@ export const Login = () => {
       isClosable: true,
     });
 
-    const needsPasswordChange = useUserStore.getState().user?.needsPasswordChange;
+    setTimeout(() => {
+      const user = useUserStore.getState().user;
 
-    router.refresh();
-    if (needsPasswordChange) {
-      router.push('/cambiar-contrasena');
-    } else {
-      router.push('/');
-    }
+      if (user?.needsPasswordChange) {
+        router.push('/cambiar-contrasena');
+      } else {
+        router.push('/');
+      }
+    }, 100);
   };
 
   const handleSubmit = async (values: LoginValues) => {

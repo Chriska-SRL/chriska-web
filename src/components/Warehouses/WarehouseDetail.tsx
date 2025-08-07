@@ -90,7 +90,7 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent mx="auto" borderRadius="lg">
           <ModalHeader textAlign="center" fontSize="2rem" pb="0">
@@ -110,7 +110,6 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
             <VStack spacing="0.75rem">
               {detailField('Nombre', warehouse.name)}
               {detailField('Descripción', warehouse.description)}
-              {detailField('Dirección', warehouse.address)}
             </VStack>
           </ModalBody>
 

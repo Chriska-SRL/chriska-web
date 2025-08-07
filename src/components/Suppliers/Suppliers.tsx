@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SupplierFilters } from './SupplierFilters';
 import { SupplierAdd } from './SupplierAdd';
 import { SupplierList } from './SupplierList';
@@ -10,28 +10,36 @@ import { useGetSuppliers } from '@/hooks/supplier';
 
 export const Suppliers = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
-  const { data, isLoading, error } = useGetSuppliers();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [filterName, setFilterName] = useState<string>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+
+  const { data, isLoading, error } = useGetSuppliers(currentPage, pageSize, filterName);
 
   useEffect(() => {
-    if (data) setSuppliers(data);
+    if (data) {
+      setSuppliers(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '') {
+      setIsFilterLoading(true);
+    }
+  }, [filterName]);
 
-  const filteredSuppliers = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    return suppliers.filter((supplier) => {
-      const matchName = filterName ? normalize(supplier.name).includes(normalize(filterName)) : true;
-      return matchName;
-    });
-  }, [suppliers, filterName]);
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -46,12 +54,27 @@ export const Suppliers = () => {
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
         <SupplierFilters isLoading={isLoading} filterName={filterName} setFilterName={setFilterName} />
-        {!isMobile && <SupplierAdd isLoading={isLoading} setSuppliers={setSuppliers} />}
+
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <SupplierAdd isLoading={isLoading} setSuppliers={setSuppliers} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
-      <SupplierList suppliers={filteredSuppliers} isLoading={isLoading} error={error} setSuppliers={setSuppliers} />
+      <SupplierList
+        suppliers={suppliers}
+        isLoading={isLoading || isFilterLoading}
+        error={error}
+        setSuppliers={setSuppliers}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </>
   );
 };

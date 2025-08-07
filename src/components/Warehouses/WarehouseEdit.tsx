@@ -78,18 +78,17 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { id: number; name: string; description: string; address: string }) => {
+  const handleSubmit = (values: { id: number; name: string; description: string }) => {
     const updatedWarehouse = {
       id: values.id,
       name: values.name,
       description: values.description,
-      address: values.address,
     };
     setWarehouseProps(updatedWarehouse);
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="2rem" pb="0">
@@ -101,7 +100,6 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
             id: warehouse.id,
             name: warehouse.name,
             description: warehouse.description,
-            address: warehouse.address,
           }}
           onSubmit={handleSubmit}
           validateOnChange
@@ -149,20 +147,6 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
-                    <FormLabel>Dirección</FormLabel>
-                    <Field
-                      as={Input}
-                      name="address"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.address}</FormErrorMessage>
-                  </FormControl>
                 </VStack>
               </ModalBody>
 

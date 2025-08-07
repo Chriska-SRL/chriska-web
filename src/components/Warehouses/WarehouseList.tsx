@@ -11,10 +11,8 @@ import {
   VStack,
   useColorModeValue,
   useMediaQuery,
-  Icon,
-  HStack,
 } from '@chakra-ui/react';
-import { FiChevronDown, FiChevronRight, FiMapPin } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
 import { ShelveAdd } from '../Shelves/ShelveAdd';
 import { ShelveDetail } from '../Shelves/ShelveDetail';
@@ -53,7 +51,6 @@ export const WarehouseList = ({
   const subEmptyColor = useColorModeValue('gray.500', 'gray.500');
   const noResultsColor = useColorModeValue('gray.500', 'gray.400');
   const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
-  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const toggleExpand = (warehouseId: number) => {
     setExpandedWarehouseIds((prev) =>
@@ -99,7 +96,6 @@ export const WarehouseList = ({
               key={wh.id}
               p="1rem"
               pb="1rem"
-              // pb={expandedWarehouseIds.includes(wh.id) ? "0" : "1rem"}
               border="1px solid"
               borderColor={borderBox}
               borderRadius="0.5rem"
@@ -109,18 +105,12 @@ export const WarehouseList = ({
             >
               <Flex alignItems="flex-start" justifyContent="space-between">
                 <Box flex="1" minW="0">
-                  <Text fontWeight="bold" fontSize="md" mb="0.125rem">
+                  <Text fontWeight="bold" fontSize="md" mb="0.5rem">
                     {wh.name}
                   </Text>
                   <Text fontSize="sm" color={subDescColor} noOfLines={2} wordBreak="break-word" mb="0.25rem">
                     {wh.description}
                   </Text>
-                  <HStack spacing="0.5rem" align="start">
-                    <Icon as={FiMapPin} boxSize="12px" color={iconColor} mt="0.25rem" flexShrink="0" />
-                    <Text fontSize="sm" color={subDescColor} noOfLines={2} wordBreak="break-word">
-                      {wh.address}
-                    </Text>
-                  </HStack>
                 </Box>
 
                 <Flex position="absolute" top="0.25rem" right="1rem" gap="0.5rem" alignItems="center">
@@ -176,7 +166,7 @@ export const WarehouseList = ({
       </Box>
       <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
         <Text fontSize="sm" fontWeight="medium">
-          Mostrando {warehouses.length} depósitos
+          Mostrando {warehouses.length} depósito{warehouses.length !== 1 ? 's' : ''}
         </Text>
         <Pagination
           currentPage={currentPage}

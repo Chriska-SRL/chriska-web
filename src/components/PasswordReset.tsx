@@ -52,6 +52,8 @@ export const PasswordReset = () => {
         isClosable: true,
       });
 
+      // Refresh and navigate to let middleware handle the redirection
+      router.refresh();
       router.push('/iniciar-sesion');
     }
   }, [data, clearTempPassword, logout, toast]);
@@ -72,15 +74,35 @@ export const PasswordReset = () => {
     }
   }, [error, fieldError, toast]);
 
+  useEffect(() => {
+    if (!user?.userId || !tempPassword) {
+      const timer = setTimeout(() => {
+        toast({
+          title: 'Sesión expirada',
+          description: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
+        logout();
+        router.push('/iniciar-sesion');
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user, tempPassword, logout, router, toast]);
+
   const handleSubmit = (values: { newPassword: string; confirmPassword: string }) => {
     if (!user?.userId || !tempPassword) {
       toast({
-        title: 'Error interno',
-        description: 'Ocurrió un error inesperado. Intente iniciar sesión nuevamente.',
-        status: 'error',
+        title: 'Sesión expirada',
+        description: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+        status: 'warning',
         duration: 4000,
         isClosable: true,
       });
+
+      logout();
       router.push('/iniciar-sesion');
       return;
     }

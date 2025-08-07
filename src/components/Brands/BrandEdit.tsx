@@ -26,6 +26,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateBrand } from '@/hooks/brand';
 import { validate } from '@/utils/validations/validate';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type BrandEditProps = {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export const BrandEdit = ({ isOpen, onClose, brand, setBrands }: BrandEditProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
       <ModalOverlay />
       <ModalContent mx="auto" borderRadius="lg">
         <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -124,7 +125,7 @@ export const BrandEdit = ({ isOpen, onClose, brand, setBrands }: BrandEditProps)
                       name="description"
                       bg={inputBg}
                       borderColor={borderColor}
-                      validate={validate}
+                      validate={validateEmpty}
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>

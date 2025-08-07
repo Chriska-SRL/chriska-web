@@ -7,18 +7,19 @@ import {
   useColorModeValue,
   IconButton,
   InputGroup,
-  Icon,
   InputRightElement,
-  Box,
   Button,
-  Collapse,
-  useDisclosure,
-  useMediaQuery,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  VStack,
 } from '@chakra-ui/react';
 import { VscDebugRestart } from 'react-icons/vsc';
-import { FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
-import { Day } from '@/enums/day.enum';
+import { FaFilter } from 'react-icons/fa';
+import { Day, DayOptions } from '@/enums/day.enum';
 import { AiOutlineSearch } from 'react-icons/ai';
+import { useState, useEffect, useCallback } from 'react';
 
 type ZoneFiltersProps = {
   isLoading: boolean;
@@ -39,142 +40,140 @@ export const ZoneFilters = ({
   filterEntregaDay,
   setFilterEntregaDay,
 }: ZoneFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const { isOpen: isFiltersOpen, onToggle: toggleFilters } = useDisclosure();
+  const [inputValue, setInputValue] = useState(filterName);
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
+  const popoverBg = useColorModeValue('white', 'gray.800');
 
-  const dayOptions = Object.values(Day);
+  // No longer needed, we'll use DayOptions directly
 
-  const handleResetFilters = () => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (inputValue.length >= 2 || inputValue.length === 0) {
+      setFilterName(inputValue);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleResetFilters = useCallback(() => {
+    setInputValue('');
     setFilterName('');
     setFilterPedidoDay('');
     setFilterEntregaDay('');
-  };
+  }, [setFilterName, setFilterPedidoDay, setFilterEntregaDay]);
+
+  useEffect(() => {
+    setInputValue(filterName);
+  }, [filterName]);
 
   const hasActiveFilters = filterName !== '' || filterPedidoDay !== '' || filterEntregaDay !== '';
-
-  const activeSelectFilters = [filterPedidoDay, filterEntregaDay].filter((f) => f !== '').length;
+  const activeFiltersCount = [filterPedidoDay, filterEntregaDay].filter((f) => f !== '').length;
 
   return (
-    <Flex gap="1rem" flexDir="column" w="100%">
-      <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap">
-        <InputGroup w={{ base: '100%', md: '15rem' }}>
-          <Input
-            placeholder="Buscar por nombre..."
-            value={filterName}
-            onChange={(e) => setFilterName(e.target.value)}
+    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
+      <InputGroup flex="1">
+        <Input
+          placeholder="Buscar por nombre..."
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          bg={bgInput}
+          borderColor={borderInput}
+          _placeholder={{ color: textColor }}
+          color={textColor}
+        />
+        <InputRightElement>
+          <IconButton
+            aria-label="Buscar"
+            icon={<AiOutlineSearch size="1.25rem" />}
+            size="sm"
+            variant="ghost"
+            onClick={handleSearch}
             disabled={isLoading}
-            bg={bgInput}
-            borderColor={borderInput}
-            _placeholder={{ color: textColor }}
             color={textColor}
+            _hover={{}}
           />
-          <InputRightElement>
-            <Icon boxSize="5" as={AiOutlineSearch} color={textColor} />
-          </InputRightElement>
-        </InputGroup>
+        </InputRightElement>
+      </InputGroup>
 
-        <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center">
+      <Popover placement="bottom-end">
+        <PopoverTrigger>
           <Button
             leftIcon={<FaFilter />}
-            rightIcon={isFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
-            onClick={toggleFilters}
             bg={bgInput}
             _hover={{ bg: hoverResetBg }}
-            size="md"
             variant="outline"
             borderColor={borderInput}
             color={textColor}
             disabled={isLoading}
-            flex={{ base: '1', md: 'none' }}
-            minW={{ base: '0', md: '10rem' }}
-            transition="all 0.2s ease"
+            minW="auto"
           >
-            Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
+            Filtros avanzados{activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Button>
+        </PopoverTrigger>
+        <PopoverContent bg={popoverBg} minW="300px">
+          <PopoverBody>
+            <VStack spacing="0.75rem" align="stretch">
+              <Select
+                placeholder="Día de pedido"
+                value={filterPedidoDay || ''}
+                onChange={(e) => setFilterPedidoDay(e.target.value as Day | '')}
+                disabled={isLoading}
+                bg={bgInput}
+                borderColor={borderInput}
+                color={textColor}
+                size="sm"
+              >
+                {DayOptions.map((option) => (
+                  <option key={`pedido-${option.value}`} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
 
-          {hasActiveFilters && (
-            <IconButton
-              aria-label="Reiniciar filtros"
-              icon={<VscDebugRestart />}
-              bg={bgInput}
-              _hover={{ bg: hoverResetBg }}
-              onClick={handleResetFilters}
-              disabled={isLoading}
-              flexShrink={0}
-              borderColor={borderInput}
-              transition="all 0.2s ease"
-            />
-          )}
-        </Flex>
-      </Flex>
+              <Select
+                placeholder="Día de entrega"
+                value={filterEntregaDay || ''}
+                onChange={(e) => setFilterEntregaDay(e.target.value as Day | '')}
+                disabled={isLoading}
+                bg={bgInput}
+                borderColor={borderInput}
+                color={textColor}
+                size="sm"
+              >
+                {DayOptions.map((option) => (
+                  <option key={`entrega-${option.value}`} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </VStack>
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
 
-      <Collapse
-        in={isFiltersOpen}
-        animateOpacity
-        transition={{
-          enter: { duration: 0.25, ease: 'easeOut' },
-          exit: { duration: 0.25, ease: 'easeIn' },
-        }}
-        style={{
-          overflow: 'hidden',
-        }}
-      >
-        <Box>
-          <Flex
-            gap="1rem"
-            flexDir={{ base: 'column', md: 'row' }}
-            alignItems="center"
-            flexWrap={{ base: 'nowrap', md: 'wrap' }}
-          >
-            <Select
-              placeholder="Día de pedido"
-              value={filterPedidoDay || ''}
-              onChange={(e) => setFilterPedidoDay(e.target.value as Day | '')}
-              disabled={isLoading}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '10rem' }}
-              maxW={{ base: '100%', md: '14rem' }}
-              transition="all 0.2s ease"
-            >
-              {filterPedidoDay === '' && <option value="">Día de pedido</option>}
-              {dayOptions.map((day) => (
-                <option key={`pedido-${day}`} value={day}>
-                  {day}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              placeholder="Día de entrega"
-              value={filterEntregaDay || ''}
-              onChange={(e) => setFilterEntregaDay(e.target.value as Day | '')}
-              disabled={isLoading}
-              bg={bgInput}
-              borderColor={borderInput}
-              color={textColor}
-              w={{ base: '100%', md: 'auto' }}
-              minW={{ base: '100%', md: '10rem' }}
-              maxW={{ base: '100%', md: '14rem' }}
-              transition="all 0.2s ease"
-            >
-              {filterEntregaDay === '' && <option value="">Día de entrega</option>}
-              {dayOptions.map((day) => (
-                <option key={`entrega-${day}`} value={day}>
-                  {day}
-                </option>
-              ))}
-            </Select>
-          </Flex>
-        </Box>
-      </Collapse>
+      {hasActiveFilters && (
+        <IconButton
+          aria-label="Reiniciar filtros"
+          icon={<VscDebugRestart />}
+          bg={bgInput}
+          _hover={{ bg: hoverResetBg }}
+          onClick={handleResetFilters}
+          disabled={isLoading}
+        />
+      )}
     </Flex>
   );
 };

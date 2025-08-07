@@ -21,9 +21,11 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  HStack,
+  IconButton,
 } from '@chakra-ui/react';
-import { Formik, Field } from 'formik';
-import { FaPlus, FaCheck } from 'react-icons/fa';
+import { Formik, Field, FieldArray } from 'formik';
+import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -33,7 +35,8 @@ import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { QualificationSelector } from '@/components/QualificationSelector';
-import { BankAccountsManager } from '@/components/BankAccountsManager';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { Bank, BankOptions } from '@/enums/bank.enum';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -88,7 +91,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
   const handleSubmit = (values: any) => {
     const newClient = {
       ...values,
-      zoneId: values.zoneId,
+      zoneId: Number(values.zoneId),
       bankAccounts: bankAccounts, // Incluir las bank accounts
     };
     setClientProps(newClient);
@@ -108,7 +111,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -129,7 +132,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
               observations: '',
               qualification: '',
               loanedCrates: 0,
-              zoneId: 0,
+              zoneId: '',
             }}
             onSubmit={handleSubmit}
             validateOnChange
@@ -167,7 +170,14 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                       <FormLabel>Razón Social</FormLabel>
-                      <Field as={Input} name="razonSocial" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
+                      <Field
+                        as={Input}
+                        name="razonSocial"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
                       <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                     </FormControl>
 
@@ -186,7 +196,14 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                       <FormLabel>Dirección en Maps</FormLabel>
-                      <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
+                      <Field
+                        as={Input}
+                        name="mapsAddress"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
                       <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                     </FormControl>
 
@@ -231,12 +248,39 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
 
                     <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                       <FormLabel>Correo electrónico</FormLabel>
-                      <Field as={Input} name="email" type="email" bg={inputBg} borderColor={inputBorder} h="2.75rem" />
+                      <Field
+                        as={Input}
+                        name="email"
+                        type="email"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        validate={validateEmpty}
+                      />
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
 
-                    {/* Bank Accounts Manager */}
-                    <BankAccountsManager bankAccounts={bankAccounts} onChange={setBankAccounts} />
+                    <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
+                      <FormLabel>Zona</FormLabel>
+                      <Field
+                        as={Select}
+                        name="zoneId"
+                        placeholder="Seleccionar zona"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        h="2.75rem"
+                        fontSize="0.875rem"
+                        validate={validate}
+                        disabled={isLoadingZones}
+                      >
+                        {zones?.map((zone) => (
+                          <option key={zone.id} value={zone.id}>
+                            {zone.name}
+                          </option>
+                        ))}
+                      </Field>
+                      <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
+                    </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                       <FormLabel>Cajones prestados</FormLabel>
@@ -253,28 +297,6 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                       <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
                     </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
-                      <FormLabel>Zona</FormLabel>
-                      <Field
-                        as={Select}
-                        name="zoneId"
-                        placeholder="Seleccionar zona"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        fontSize="0.875rem"
-                        validate={validate}
-                        disabled={isLoadingZones}
-                      >
-                        {zones?.map((z) => (
-                          <option key={z.id} value={z.id}>
-                            {z.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
-                    </FormControl>
-
                     <FormControl isInvalid={submitCount > 0 && touched.qualification && !!errors.qualification}>
                       <FormLabel>Calificación</FormLabel>
                       <QualificationSelector
@@ -282,6 +304,108 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                         onChange={(value) => setFieldValue('qualification', value)}
                       />
                       <FormErrorMessage>{errors.qualification}</FormErrorMessage>
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Cuentas bancarias</FormLabel>
+                      <FieldArray name="bankAccounts">
+                        {({ push, remove, form }) => (
+                          <VStack spacing="0.75rem" align="stretch">
+                            {bankAccounts.map((account: BankAccount, index: number) => (
+                              <Box
+                                key={index}
+                                p="1rem"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="lg"
+                                position="relative"
+                              >
+                                <VStack spacing="0.5rem">
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
+                                    <Input
+                                      value={account.accountName}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].accountName = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    />
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Banco</FormLabel>
+                                    <Select
+                                      value={account.bank}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].bank = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    >
+                                      <option value="">Seleccionar banco</option>
+                                      {BankOptions.map((bank) => (
+                                        <option key={bank} value={bank}>
+                                          {bank}
+                                        </option>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                  <FormControl>
+                                    <FormLabel fontSize="sm">Número de cuenta</FormLabel>
+                                    <Input
+                                      value={account.accountNumber}
+                                      onChange={(e) => {
+                                        const updatedAccounts = [...bankAccounts];
+                                        updatedAccounts[index].accountNumber = e.target.value;
+                                        setBankAccounts(updatedAccounts);
+                                      }}
+                                      bg={inputBg}
+                                      borderColor={inputBorder}
+                                      h="2.5rem"
+                                      size="sm"
+                                      borderRadius="md"
+                                    />
+                                  </FormControl>
+                                </VStack>
+                                <Button
+                                  position="absolute"
+                                  top="0.5rem"
+                                  right="0.5rem"
+                                  size="xs"
+                                  colorScheme="red"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    const updatedAccounts = bankAccounts.filter((_, i) => i !== index);
+                                    setBankAccounts(updatedAccounts);
+                                  }}
+                                >
+                                  <FaTrash />
+                                </Button>
+                              </Box>
+                            ))}
+                            <Button
+                              type="button"
+                              size="sm"
+                              leftIcon={<FaPlus />}
+                              onClick={() => setBankAccounts([...bankAccounts, { accountName: '', bank: '', accountNumber: '' }])}
+                              variant="ghost"
+                            >
+                              Agregar cuenta bancaria
+                            </Button>
+                          </VStack>
+                        )}
+                      </FieldArray>
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
@@ -293,7 +417,6 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                         borderColor={inputBorder}
                         rows={3}
                         resize="vertical"
-                        validate={validate}
                       />
                       <FormErrorMessage>{errors.observations}</FormErrorMessage>
                     </FormControl>

@@ -12,8 +12,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 
 export const Zones = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filterName, setFilterName] = useState<string>('');
+  const [filterPedidoDay, setFilterPedidoDay] = useState<Day | ''>('');
+  const [filterEntregaDay, setFilterEntregaDay] = useState<Day | ''>('');
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const { data, isLoading, error } = useGetZones();
+  const { data, isLoading, error } = useGetZones(currentPage, pageSize, filterName, filterPedidoDay, filterEntregaDay);
   const [zones, setZones] = useState<Zone[]>([]);
 
   const searchParams = useSearchParams();
@@ -34,34 +40,30 @@ export const Zones = () => {
   }, [zoneToOpen, zones, router]);
 
   useEffect(() => {
-    if (data) setZones(data);
+    if (data) {
+      setZones(data);
+      setIsFilterLoading(false);
+    }
   }, [data]);
 
-  const [filterName, setFilterName] = useState<string>('');
-  const [filterPedidoDay, setFilterPedidoDay] = useState<Day | ''>('');
-  const [filterEntregaDay, setFilterEntregaDay] = useState<Day | ''>('');
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterName !== '' || filterPedidoDay || filterEntregaDay) {
+      setIsFilterLoading(true);
+    }
+  }, [filterName, filterPedidoDay, filterEntregaDay]);
 
-  const filteredZones = useMemo(() => {
-    const normalize = (text: string) =>
-      text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+  // Server-side filtering is now handled by the API
+  const filteredZones = zones;
 
-    return zones.filter((zone) => {
-      const matchName = filterName ? normalize(zone.name).includes(normalize(filterName)) : true;
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-      const matchDiaPedido = filterPedidoDay
-        ? Array.isArray(zone.requestDays) && zone.requestDays.includes(filterPedidoDay)
-        : true;
-
-      const matchDiaEntrega = filterEntregaDay
-        ? Array.isArray(zone.deliveryDays) && zone.deliveryDays.includes(filterEntregaDay)
-        : true;
-
-      return matchName && matchDiaPedido && matchDiaEntrega;
-    });
-  }, [zones, filterName, filterPedidoDay, filterEntregaDay]);
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -84,18 +86,27 @@ export const Zones = () => {
           filterEntregaDay={filterEntregaDay}
           setFilterEntregaDay={setFilterEntregaDay}
         />
-        {!isMobile && <ZoneAdd isLoading={isLoading} setZones={setZones} />}
+        {!isMobile && (
+          <>
+            <Divider orientation="vertical" />
+            <ZoneAdd isLoading={isLoading} setZones={setZones} />
+          </>
+        )}
       </Flex>
 
       {isMobile && <Divider />}
 
       <ZoneList
         zones={filteredZones}
-        isLoading={isLoading}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setZones={setZones}
         zoneToOpenModal={zoneToOpenModal}
         setZoneToOpenModal={setZoneToOpenModal}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );

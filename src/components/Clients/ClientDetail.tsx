@@ -31,13 +31,16 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
 import { QualificationSelector } from '../QualificationSelector';
+import { useEffect } from 'react';
 
 type ClientDetailProps = {
   client: Client;
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
+export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: ClientDetailProps) => {
   const canEditClients = useUserStore((s) => s.hasPermission(Permission.EDIT_CLIENTS));
   const canDeleteClients = useUserStore((s) => s.hasPermission(Permission.DELETE_CLIENTS));
 
@@ -46,10 +49,22 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
 
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const handleClose = () => {
+    onClose();
+    onModalClose?.();
+  };
+
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const accountSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
     <Box w="100%">
@@ -110,52 +125,6 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
     );
   };
 
-  const renderBankAccounts = (bankAccounts?: BankAccount[]) => {
-    const defaultBankAccounts: BankAccount[] = bankAccounts || [
-      { id: 1, bank: 'Banco República', number: '1234567890', name: 'Maria Sanchez' },
-      { id: 2, bank: 'Banco Santander', number: '0987654321', name: 'Pedro Gutiérrez' },
-    ];
-
-    const dividerColor = useColorModeValue('gray.300', 'whiteAlpha.200');
-
-    return (
-      <Box w="100%">
-        <Text color={labelColor} mb="0.5rem">
-          Cuentas bancarias
-        </Text>
-        <Box
-          px="1rem"
-          py={defaultBankAccounts.length === 1 ? '0.75rem' : '0'}
-          bg={inputBg}
-          border="1px solid"
-          borderColor={inputBorder}
-          borderRadius="md"
-          minH="2.75rem"
-        >
-          {defaultBankAccounts.length > 0 ? (
-            <VStack spacing="0" align="stretch" divider={<Box h="1px" bg={dividerColor} />}>
-              {defaultBankAccounts.map((account, index) => (
-                <Flex key={account.id} flexDir="column" py={defaultBankAccounts.length === 1 ? '0' : '0.75rem'}>
-                  <Text fontWeight="semibold" fontSize="sm">
-                    {account.bank}
-                  </Text>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
-                    Nº de cuenta: {account.number}
-                  </Text>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
-                    Nombre: {account.name}
-                  </Text>
-                </Flex>
-              ))}
-            </VStack>
-          ) : (
-            <Text>—</Text>
-          )}
-        </Box>
-      </Box>
-    );
-  };
-
   return (
     <>
       <IconButton
@@ -167,15 +136,18 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90%" overflow="auto">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
             Detalle del cliente
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody
             pb="0"
+            flex="1"
+            maxH="calc(90dvh - 200px)"
+            overflowY="auto"
             sx={{
               '&::-webkit-scrollbar': { display: 'none' },
               scrollbarWidth: 'none',
@@ -192,17 +164,43 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
               {detailField('Teléfono', client.phone)}
               {detailField('Persona de contacto', client.contactName)}
               {detailField('Correo electrónico', client.email)}
-              {renderBankAccounts(client.bankAccounts)}
-              {detailField('Cajones prestados', client.loanedCrates)}
               {detailField('Zona', client.zone.name, () => {
                 router.push(`/zonas?open=${client.zone.id}`);
               })}
+              {detailField('Cajones prestados', client.loanedCrates)}
               {renderQualificationStars(client.qualification)}
+              {client.bankAccounts && client.bankAccounts.length > 0 && (
+                <Box w="100%">
+                  <Text color={labelColor} mb="0.5rem">
+                    Cuentas bancarias
+                  </Text>
+                  <VStack spacing="0.5rem" align="stretch">
+                    {client.bankAccounts.map((account: BankAccount, index: number) => (
+                      <Box
+                        key={index}
+                        px="1rem"
+                        py="0.5rem"
+                        bg={inputBg}
+                        border="1px solid"
+                        borderColor={inputBorder}
+                        borderRadius="md"
+                      >
+                        <Text fontWeight="semibold" fontSize="sm">
+                          {account.accountName}
+                        </Text>
+                        <Text fontSize="sm" color={accountSubtextColor}>
+                          {account.bank} - {account.accountNumber}
+                        </Text>
+                      </Box>
+                    ))}
+                  </VStack>
+                </Box>
+              )}
               {detailField('Observaciones', client.observations)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
+          <ModalFooter py="1.5rem" flexShrink={0}>
             <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
               <Button
                 bg="#4C88D8"
@@ -211,7 +209,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                 width="100%"
                 leftIcon={<FaPlus />}
                 onClick={() => {
-                  onClose();
+                  handleClose();
                   openEdit();
                 }}
               >
@@ -224,7 +222,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                 width="100%"
                 leftIcon={<FaPlus />}
                 onClick={() => {
-                  onClose();
+                  handleClose();
                   openEdit();
                 }}
               >
@@ -238,7 +236,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                   width="100%"
                   leftIcon={<FaEdit />}
                   onClick={() => {
-                    onClose();
+                    handleClose();
                     openEdit();
                   }}
                 >
@@ -250,7 +248,7 @@ export const ClientDetail = ({ client, setClients }: ClientDetailProps) => {
                   item={{ id: client.id, name: client.name }}
                   useDeleteHook={useDeleteClient}
                   setItems={setClients}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
                 />
               )}
             </Box>

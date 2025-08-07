@@ -21,19 +21,35 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { BsCurrencyDollar } from 'react-icons/bs';
-import { FiTruck, FiHash, FiTag, FiPackage } from 'react-icons/fi';
+import { FiTruck, FiTag, FiPackage } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleDetail } from './VehicleDetail';
+import { Pagination } from '@/components/Pagination';
 
 type VehicleListProps = {
   vehicles: Vehicle[];
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: VehicleListProps) => {
+export const VehicleList = ({
+  vehicles,
+  setVehicles,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  hasNextPage,
+  onPageChange,
+  onPageSizeChange,
+}: VehicleListProps) => {
   const router = useRouter();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -151,11 +167,21 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between" px="1rem">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {vehicles.length} vehículos
+              Mostrando {vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}
             </Text>
-          </Box>
+            {!isLoading && (vehicles.length > 0 || currentPage > 1) && (
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={isLoading}
+              />
+            )}
+          </Flex>
         </>
       ) : (
         <>
@@ -212,9 +238,21 @@ export const VehicleList = ({ vehicles, setVehicles, isLoading, error }: Vehicle
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {vehicles.length} vehículos</Text>
-          </Box>
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm">
+              Mostrando {vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}
+            </Text>
+            {!isLoading && (vehicles.length > 0 || currentPage > 1) && (
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={isLoading}
+              />
+            )}
+          </Flex>
         </>
       )}
     </>

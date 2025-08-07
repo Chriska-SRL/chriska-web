@@ -13,20 +13,36 @@ import {
   Spinner,
   Flex,
   VStack,
+  HStack,
   useMediaQuery,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { StockMovement } from '@/entities/stockMovement';
 import { StockMovementDetail } from './StockMovementDetail';
+import { Pagination } from '../Pagination';
+import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
 
 type StockMovementListProps = {
   stockMovements: StockMovement[];
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
   isLoading: boolean;
   error?: string;
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  onPageChange: (page: number) => void;
 };
 
-export const StockMovementList = ({ stockMovements, setStockMovements, isLoading, error }: StockMovementListProps) => {
+export const StockMovementList = ({
+  stockMovements,
+  setStockMovements,
+  isLoading,
+  error,
+  currentPage,
+  pageSize,
+  hasNextPage,
+  onPageChange,
+}: StockMovementListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -67,14 +83,13 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
   return (
     <>
       {isMobile ? (
-        <Flex direction="column" h="32rem" justifyContent="space-between">
-          <Box overflowY="auto">
+        <>
+          <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
               {stockMovements.map((mov) => (
                 <Box
                   key={mov.id}
-                  px="1rem"
-                  py="0.5rem"
+                  p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
                   borderRadius="0.5rem"
@@ -82,36 +97,66 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
                   boxShadow="sm"
                   position="relative"
                 >
-                  <Text fontWeight="bold">{mov.product.name}</Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Cantidad: {mov.quantity}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Tipo: {mov.type}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Razón: {mov.reason}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Estantería: {mov.shelve.name}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Almacén: {mov.shelve.warehouse.name}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Usuario: {mov.user.name}
-                  </Text>
-                  <Text fontSize="sm" color={textColor}>
-                    Fecha: {new Date(mov.date).toLocaleDateString()}
-                  </Text>
+                  <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
+                    <VStack align="start" spacing="0.125rem" flex="1" minW="0">
+                      <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
+                        {mov.product.name}
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <VStack spacing="0.25rem" align="stretch" fontSize="sm">
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Cantidad</Text>
+                      <Text fontWeight="semibold">{mov.quantity}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Tipo</Text>
+                      <Text fontWeight="semibold">{getStockMovementTypeLabel(mov.type)}</Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Razón</Text>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {mov.reason}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Usuario</Text>
+                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
+                        {mov.user.name}
+                      </Text>
+                    </HStack>
+
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Fecha</Text>
+                      <Text fontWeight="semibold">{new Date(mov.date).toLocaleDateString()}</Text>
+                    </HStack>
+                  </VStack>
+
+                  <Box position="absolute" top="0" right="0.25rem">
+                    <StockMovementDetail movement={mov} setMovements={setStockMovements} />
+                  </Box>
                 </Box>
               ))}
             </VStack>
           </Box>
-          <Box py="1rem" textAlign="center">
-            <Text fontSize="sm">Mostrando {stockMovements.length} movimientos</Text>
-          </Box>
-        </Flex>
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}
+            </Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={() => {}}
+              isLoading={isLoading}
+            />
+          </Flex>
+        </>
       ) : (
         <>
           <TableContainer
@@ -138,7 +183,7 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
                     <Td textAlign="center">{new Date(stockMovement.date).toLocaleDateString()}</Td>
                     <Td textAlign="center">{stockMovement.product.name}</Td>
                     <Td textAlign="center">{stockMovement.quantity}</Td>
-                    <Td textAlign="center">{stockMovement.type}</Td>
+                    <Td textAlign="center">{getStockMovementTypeLabel(stockMovement.type)}</Td>
                     <Td textAlign="center">{stockMovement.reason}</Td>
                     <Td textAlign="center" pr="2rem">
                       <StockMovementDetail movement={stockMovement} setMovements={setStockMovements} />
@@ -148,9 +193,19 @@ export const StockMovementList = ({ stockMovements, setStockMovements, isLoading
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {stockMovements.length} movimientos</Text>
-          </Box>
+          <HStack justifyContent="space-between" mt="0.5rem">
+            <Text fontSize="sm" color={textColor}>
+              Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}
+            </Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={() => {}}
+              isLoading={isLoading}
+            />
+          </HStack>
         </>
       )}
     </>

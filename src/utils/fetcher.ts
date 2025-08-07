@@ -11,10 +11,13 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
-const getHeaders = (withAuth: boolean): HeadersInit => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
+const getHeaders = (withAuth: boolean, isFormData: boolean = false): HeadersInit => {
+  const headers: HeadersInit = {};
+
+  // Only set Content-Type for JSON, let browser set it for FormData
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (withAuth) {
     const token = getCookie('auth-token');
@@ -32,6 +35,21 @@ const addLocationToBody = (body: any, method: Method): any => {
     return body;
   }
 
+  // For FormData, add location as separate entries
+  if (body instanceof FormData) {
+    if (!body.has('latitude') && !body.has('longitude')) {
+      if (typeof window !== 'undefined' && navigator.geolocation) {
+        // For FormData, we'll handle location separately in the calling code
+        // since it requires async operation
+      } else {
+        body.append('latitude', '0');
+        body.append('longitude', '0');
+      }
+    }
+    return body;
+  }
+
+  // For JSON bodies
   if (body && body.location) {
     return body;
   }
@@ -51,12 +69,13 @@ const addLocationToBody = (body: any, method: Method): any => {
 };
 
 const request = async <T>(method: Method, url: string, body?: any, withAuth: boolean = true): Promise<T> => {
+  const isFormData = body instanceof FormData;
   const processedBody = addLocationToBody(body, method);
 
   const res = await fetch(url, {
     method,
-    headers: getHeaders(withAuth),
-    body: processedBody ? JSON.stringify(processedBody) : undefined,
+    headers: getHeaders(withAuth, isFormData),
+    body: isFormData ? processedBody : (processedBody ? JSON.stringify(processedBody) : undefined),
   });
 
   if (!res.ok) {
@@ -71,6 +90,10 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth: boo
   const contentType = res.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return await res.json();
+  }
+  
+  if (contentType && contentType.includes('text/plain')) {
+    return await res.text() as T;
   }
 
   return undefined as T;

@@ -119,7 +119,7 @@ export const RoleList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {roles.length} roles
+              Mostrando {roles.length} rol{roles.length !== 1 ? 'es' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -166,7 +166,7 @@ export const RoleList = ({
             </Table>
           </TableContainer>
           <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {roles.length} roles</Text>
+            <Text fontSize="sm">Mostrando {roles.length} rol{roles.length !== 1 ? 'es' : ''}</Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

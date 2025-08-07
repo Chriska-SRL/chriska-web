@@ -29,6 +29,7 @@ import { validate } from '@/utils/validations/validate';
 import { useAddWarehouse } from '@/hooks/warehouse';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type WarehouseAddProps = {
   isLoading: boolean;
@@ -85,11 +86,10 @@ export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: 
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { name: string; description: string; address: string }) => {
+  const handleSubmit = (values: { name: string; description: string }) => {
     setWarehouseProps({
       name: values.name,
       description: values.description,
-      address: values.address,
     });
   };
 
@@ -107,7 +107,7 @@ export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: 
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -115,7 +115,7 @@ export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: 
           </ModalHeader>
           <ModalCloseButton />
           <Formik
-            initialValues={{ name: '', description: '', address: '' }}
+            initialValues={{ name: '', description: '' }}
             onSubmit={handleSubmit}
             validateOnChange
             validateOnBlur={false}
@@ -151,25 +151,10 @@ export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: 
                           bg={inputBg}
                           borderColor={inputBorder}
                           h="5rem"
-                          validate={validate}
+                          validate={validateEmpty}
                           disabled={isLoading}
                         />
                         <FormErrorMessage>{errors.description}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={showError('address')}>
-                        <FormLabel>Dirección</FormLabel>
-                        <Field
-                          as={Input}
-                          name="address"
-                          type="text"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                          validate={validate}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.address}</FormErrorMessage>
                       </FormControl>
                     </VStack>
                   </ModalBody>

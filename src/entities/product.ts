@@ -1,6 +1,7 @@
 import { Brand } from './brand';
 import { SubCategory } from './subcategory';
 import { Supplier } from './supplier';
+import { Shelve } from './shelve';
 
 export type Product = {
   id: number;
@@ -14,9 +15,10 @@ export type Product = {
   unitType: string;
   description: string;
   temperatureCondition: string;
-  observation: string;
+  observations: string;
   subCategory: SubCategory;
   brand: Brand;
   suppliers: Supplier[];
+  shelve: Shelve;
   // discounts: Discount[];
 };

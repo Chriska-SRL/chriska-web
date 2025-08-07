@@ -1,29 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { StockMovement } from '@/entities/stockMovement';
-import {
-  getStockMovements,
-  getStockMovementById,
-  getStockMovementsByShelveId,
-  getStockMovementsByWarehouseId,
-  addStockMovement,
-} from '@/services/stockMovement';
+import { getStockMovements, getStockMovementById, addStockMovement } from '@/services/stockMovement';
 import { Result } from '@/utils/result';
 import { useFetch } from '@/utils/useFetch';
 
-export const useGetStockMovements = (from: string, to: string): Result<StockMovement[]> => {
+type StockMovementFilters = {
+  Type?: string;
+  DateFrom?: string;
+  DateTo?: string;
+  ProductId?: number;
+  CreatedBy?: number;
+};
+
+export const useGetStockMovements = (
+  page: number = 1,
+  pageSize: number = 10,
+  filters: StockMovementFilters,
+): Result<StockMovement[]> => {
   const [data, setData] = useState<StockMovement[]>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
-  useEffect(() => {
-    if (!from || !to) return;
+  // Memoize filters to prevent unnecessary re-renders
+  const memoizedFilters = useMemo(() => filters, [
+    filters.Type,
+    filters.DateFrom,
+    filters.DateTo,
+    filters.ProductId,
+    filters.CreatedBy,
+  ]);
 
+  useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        const result = await getStockMovements({ from, to });
+        const result = await getStockMovements(page, pageSize, memoizedFilters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error al cargar movimientos');
@@ -33,73 +46,7 @@ export const useGetStockMovements = (from: string, to: string): Result<StockMove
     };
 
     fetchData();
-  }, [from, to]);
-
-  return { data, isLoading, error };
-};
-
-export const useGetStockMovementsByShelveId = (shelveId: number, from: string, to: string): Result<StockMovement[]> => {
-  const [data, setData] = useState<StockMovement[]>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (!shelveId || shelveId === -1 || !from || !to) {
-      setData(undefined);
-      return;
-    }
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(undefined);
-
-      try {
-        const result = await getStockMovementsByShelveId({ id: shelveId, from, to });
-        setData(result);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar movimientos por estantería');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [shelveId, from, to]);
-
-  return { data, isLoading, error };
-};
-
-export const useGetStockMovementsByWarehouseId = (
-  warehouseId: number,
-  from: string,
-  to: string,
-): Result<StockMovement[]> => {
-  const [data, setData] = useState<StockMovement[]>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (!warehouseId || warehouseId === -1 || !from || !to) {
-      setData(undefined);
-      return;
-    }
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(undefined);
-
-      try {
-        const result = await getStockMovementsByWarehouseId({ id: warehouseId, from, to });
-        setData(result);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar movimientos por depósito');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [warehouseId, from, to]);
+  }, [page, pageSize, memoizedFilters]);
 
   return { data, isLoading, error };
 };

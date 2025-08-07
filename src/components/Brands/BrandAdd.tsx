@@ -29,6 +29,7 @@ import { useAddBrand } from '@/hooks/brand';
 import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type BrandAddProps = {
   isLoading: boolean;
@@ -92,7 +93,7 @@ export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProp
           Nuevo
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
@@ -132,7 +133,7 @@ export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProp
                         name="description"
                         bg={inputBg}
                         borderColor={inputBorder}
-                        validate={validate}
+                        validate={validateEmpty}
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>

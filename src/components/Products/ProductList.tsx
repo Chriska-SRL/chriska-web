@@ -24,15 +24,29 @@ import { ProductDetail } from './ProductDetail';
 import { getUnitTypeLabel } from '@/enums/unitType.enum';
 import { FiHash, FiDollarSign, FiPackage, FiGrid, FiTag } from 'react-icons/fi';
 import { ImageModal } from '../ImageModal';
+import { Pagination } from '../Pagination';
 
 type ProductListProps = {
   products: Product[];
   isLoading: boolean;
   error?: string;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
-export const ProductList = ({ products, isLoading, error, setProducts }: ProductListProps) => {
+export const ProductList = ({
+  products,
+  isLoading,
+  error,
+  setProducts,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}: ProductListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -43,18 +57,7 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  const temperatureCondition = (condition: string) => {
-    switch (condition) {
-      case 'Cold':
-        return 'Frío';
-      case 'Frozen':
-        return 'Congelado';
-      case 'Ambient':
-        return 'Natural';
-      default:
-        return 'Desconocido';
-    }
-  };
+  const hasNextPage = products.length === pageSize;
 
   const formatPrice = (price: number) => {
     return `$${price.toFixed(2)}`;
@@ -92,9 +95,9 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
         <>
           <Box overflowY="auto" h="calc(100% - 3.5rem)">
             <VStack spacing="1rem" align="stretch">
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <Box
-                  key={product.id}
+                  key={`${product.id}-${index}`}
                   p="1rem"
                   border="1px solid"
                   borderColor={borderColor}
@@ -105,15 +108,16 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
                 >
                   <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
                     <ImageModal
-                      src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                      src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                       alt={product.name}
                     >
                       <Image
-                        src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                        src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                         alt={product.name}
                         boxSize="60px"
                         borderRadius="md"
                         bg="gray.100"
+                        objectFit="cover"
                       />
                     </ImageModal>
                     <VStack align="start" spacing="0.125rem" flex="1" minW="0">
@@ -179,11 +183,19 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="center">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {products.length} productos
+              Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}
             </Text>
-          </Box>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       ) : (
         <>
@@ -197,35 +209,36 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center">Cod. Interno</Th>
-                  <Th textAlign="center">Categoría</Th>
                   <Th textAlign="center">Imagen</Th>
+                  <Th textAlign="center">Cod. Interno</Th>
                   <Th textAlign="center">Nombre</Th>
+                  <Th textAlign="center">Categoría</Th>
                   <Th textAlign="center">Precio</Th>
                   <Th textAlign="center">Stock</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {products.map((product) => (
-                  <Tr key={product.id} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td textAlign="center">{product.internalCode}</Td>
-                    <Td textAlign="center">{product.subCategory.name}</Td>
+                {products.map((product, index) => (
+                  <Tr key={`${product.id}-${index}`} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td display="flex" justifyContent="center" align="center">
                       <ImageModal
-                        src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                        src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                         alt={product.name}
                       >
                         <Image
-                          src={'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                          src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                           alt={product.name}
                           boxSize="4rem"
                           borderRadius="md"
                           bg="gray.100"
+                          objectFit="cover"
                         />
                       </ImageModal>
                     </Td>
+                    <Td textAlign="center">{product.internalCode}</Td>
                     <Td textAlign="center">{product.name}</Td>
+                    <Td textAlign="center">{product.subCategory.name}</Td>
                     <Td textAlign="center">{formatPrice(product.price)}</Td>
                     <Td textAlign="center">{product.stock}</Td>
                     <Td textAlign="center">
@@ -236,9 +249,19 @@ export const ProductList = ({ products, isLoading, error, setProducts }: Product
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem">
-            <Text fontSize="sm">Mostrando {products.length} productos</Text>
-          </Box>
+          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm">
+              Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}
+            </Text>
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
+          </Flex>
         </>
       )}
     </>

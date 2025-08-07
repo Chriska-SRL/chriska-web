@@ -50,7 +50,7 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      size={{ base: 'xs', md: 'md' }}
+      size={{ base: 'xs', md: 'sm' }}
       isCentered
       closeOnOverlayClick={hasCopied}
       closeOnEsc={hasCopied}

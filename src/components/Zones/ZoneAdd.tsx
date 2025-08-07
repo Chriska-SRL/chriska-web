@@ -34,16 +34,17 @@ import { useAddZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { ImageUpload } from '@/components/ImageUpload';
+import { Day, getDayLabel } from '@/enums/day.enum';
+import { ZoneImageUpload } from './ZoneImageUpload';
 
 type ZoneFormValues = {
   name: string;
   description: string;
-  requestDays: string[];
-  deliveryDays: string[];
+  requestDays: Day[];
+  deliveryDays: Day[];
 };
 
-const allDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
 
 type ZoneAddProps = {
   isLoading: boolean;
@@ -148,7 +149,13 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
     handleClose();
   };
 
-  const hasImage = createdZone?.imageUrl;
+  const [hasImage, setHasImage] = useState(false);
+
+  useEffect(() => {
+    if (createdZone?.imageUrl) {
+      setHasImage(true);
+    }
+  }, [createdZone?.imageUrl]);
 
   return (
     <>
@@ -168,7 +175,7 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'xs', md: 'sm' }}
         isCentered
         closeOnOverlayClick={step === 'form'}
       >
@@ -246,7 +253,7 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
                                     mb="0.5rem"
                                     w="100%"
                                   >
-                                    {day}
+                                    {getDayLabel(day)}
                                   </Checkbox>
                                 );
                               })
@@ -270,7 +277,7 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
                                     mb="0.5rem"
                                     w="100%"
                                   >
-                                    {day}
+                                    {getDayLabel(day)}
                                   </Checkbox>
                                 );
                               })
@@ -312,25 +319,16 @@ export const ZoneAdd = ({ isLoading: isLoadingZones, setZones }: ZoneAddProps) =
               <ModalBody pb="0">
                 <VStack spacing="1rem">
                   <Box w="100%" p="1rem" bg={successBg} borderRadius="md" textAlign="center">
-                    <HStack justifyContent="center" mb="0.5rem">
-                      <Icon as={FaCheck} color={successColor} />
-                      <Text color={successColor} fontWeight="medium">
-                        Zona {createdZone?.name} creada exitosamente
-                      </Text>
-                    </HStack>
+                    <Text color={successColor} fontWeight="medium">
+                      Zona creada exitosamente
+                    </Text>
                     <Text fontSize="sm" color={successColor}>
                       {hasImage ? '¡Imagen agregada!' : '¿Quieres agregar una imagen ahora?'}
                     </Text>
                   </Box>
 
                   {createdZone && (
-                    <ImageUpload
-                      entityType="zones"
-                      entityId={createdZone.id}
-                      currentImageUrl={createdZone.imageUrl}
-                      onImageChange={handleImageChange}
-                      editable
-                    />
+                    <ZoneImageUpload zone={createdZone} onImageChange={handleImageChange} editable={!hasImage} />
                   )}
                 </VStack>
               </ModalBody>

@@ -1,3 +1,5 @@
+import { BankAccount } from './bankAccount';
+
 export type Supplier = {
   id: number;
   name: string;
@@ -8,7 +10,6 @@ export type Supplier = {
   phone: string;
   contactName: string;
   email: string;
-  bank: string;
-  bankAccount: string;
   observations: string;
+  bankAccounts: BankAccount[];
 };

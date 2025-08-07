@@ -31,13 +31,13 @@ import { VehicleCostType, VehicleCostTypeLabels } from '@/enums/vehicleCostType.
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
-export const VehicleCostAdd = ({
-  vehicleId,
-  setCosts,
-}: {
+type VehicleCostAddProps = {
+  isLoading: boolean;
   vehicleId: number;
   setCosts: React.Dispatch<React.SetStateAction<VehicleCost[]>>;
-}) => {
+};
+
+export const VehicleCostAdd = ({ isLoading: isLoadingCosts, vehicleId, setCosts }: VehicleCostAddProps) => {
   const canCreateVehicles = useUserStore((s) => s.hasPermission(Permission.CREATE_VEHICLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -89,12 +89,19 @@ export const VehicleCostAdd = ({
   return (
     <>
       {canCreateVehicles && (
-        <Button bg={buttonBg} _hover={{ bg: buttonHover }} leftIcon={<FaPlus />} onClick={onOpen} px="1.5rem">
+        <Button
+          bg={buttonBg}
+          _hover={{ bg: buttonHover }}
+          leftIcon={<FaPlus />}
+          onClick={onOpen}
+          px="1.5rem"
+          disabled={isLoadingCosts}
+        >
           Nuevo
         </Button>
       )}
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
