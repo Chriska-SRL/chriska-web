@@ -14,7 +14,6 @@ export const StockMovements = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const [filters, setFilters] = useState<{
@@ -36,7 +35,6 @@ export const StockMovements = () => {
   useEffect(() => {
     if (data) {
       setStockMovements(data);
-      setHasNextPage(false);
     }
   }, [data]);
 
@@ -84,7 +82,6 @@ export const StockMovements = () => {
         setStockMovements={setStockMovements}
         currentPage={page}
         pageSize={pageSize}
-        hasNextPage={hasNextPage}
         onPageChange={setPage}
       />
     </>

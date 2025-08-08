@@ -29,7 +29,6 @@ type StockMovementListProps = {
   error?: string;
   currentPage: number;
   pageSize: number;
-  hasNextPage: boolean;
   onPageChange: (page: number) => void;
 };
 
@@ -40,7 +39,6 @@ export const StockMovementList = ({
   error,
   currentPage,
   pageSize,
-  hasNextPage,
   onPageChange,
 }: StockMovementListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -50,6 +48,8 @@ export const StockMovementList = ({
   const borderBottomColor = useColorModeValue('#f2f2f2', 'gray.700');
   const cardBg = useColorModeValue('white', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+
+  const hasNextPage = stockMovements.length === pageSize;
 
   if (error) {
     return (
