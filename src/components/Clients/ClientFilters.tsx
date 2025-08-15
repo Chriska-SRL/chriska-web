@@ -10,7 +10,6 @@ import {
   InputRightElement,
   Button,
   Box,
-  useMediaQuery,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -48,7 +47,6 @@ export const ClientFilters = ({
   filterZoneId,
   setFilterZoneId,
 }: ClientFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [inputValue, setInputValue] = useState(filterName);
 
   const { data: zones, isLoading: isLoadingZones } = useGetZones();

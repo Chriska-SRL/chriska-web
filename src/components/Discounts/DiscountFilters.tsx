@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverBody,
   PopoverArrow,
-  useMediaQuery,
 } from '@chakra-ui/react';
 import { useState, useEffect, useCallback } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
@@ -25,7 +24,7 @@ import { useGetBrands } from '@/hooks/brand';
 import { useGetSubCategoriesSimple } from '@/hooks/subcategory';
 import { useGetZones } from '@/hooks/zone';
 import { useGetClients } from '@/hooks/client';
-import { useGetProducts } from '@/hooks/product';
+// import { useGetProducts } from '@/hooks/product';
 
 type DiscountFiltersProps = {
   isLoading: boolean;
@@ -62,7 +61,6 @@ export const DiscountFilters = ({
   filterProduct,
   setFilterProduct,
 }: DiscountFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
   const { data: subCategories, isLoading: isLoadingSubCategories } = useGetSubCategoriesSimple();
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
@@ -76,7 +74,6 @@ export const DiscountFilters = ({
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
-  const dividerColor = useColorModeValue('gray.300', 'gray.600');
   const disabledColor = useColorModeValue('#fafafa', '#202532');
   const popoverBg = useColorModeValue('white', 'gray.800');
   const popoverBorder = useColorModeValue('gray.200', 'gray.600');

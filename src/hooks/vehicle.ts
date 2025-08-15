@@ -8,7 +8,7 @@ import {
   getVehicles,
   updateVehicle,
 } from '@/services/vehicle';
-import { useFetch, useFetchNoParams } from '@/utils/useFetch';
+import { useFetch } from '@/utils/useFetch';
 
 export const useGetVehicles = (
   page: number = 1,

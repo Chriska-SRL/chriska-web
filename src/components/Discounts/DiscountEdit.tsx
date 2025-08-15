@@ -248,7 +248,6 @@ const DiscountEditForm = ({
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const dropdownBg = useColorModeValue('white', 'gray.800');
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');

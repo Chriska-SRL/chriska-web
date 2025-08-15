@@ -130,7 +130,7 @@ export const DiscountList = ({
                       <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3">
                         {discount.description}
                       </Text>
-                      
+
                       <VStack spacing="0.25rem" align="stretch" fontSize="sm">
                         <HStack justify="space-between">
                           <HStack spacing="0.5rem">

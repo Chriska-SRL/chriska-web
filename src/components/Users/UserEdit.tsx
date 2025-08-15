@@ -26,11 +26,10 @@ import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
-import { useDeleteUser, useTemporaryPassword, useUpdateUser } from '@/hooks/user';
+import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { IoReload } from 'react-icons/io5';
-import { GenericDelete } from '../shared/GenericDelete';
 
 type UserEditProps = {
   isOpen: boolean;

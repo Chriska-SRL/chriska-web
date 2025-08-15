@@ -30,7 +30,7 @@ import { BankAccount } from '@/entities/bankAccount';
 import { useAddSupplier } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
-import { Bank, BankOptions } from '@/enums/bank.enum';
+import { BankOptions } from '@/enums/bank.enum';
 import { useUserStore } from '@/stores/useUserStore';
 
 type SupplierAddProps = {

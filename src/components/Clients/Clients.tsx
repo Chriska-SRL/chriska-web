@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ClientFilters } from './ClientFilters';
 import { ClientAdd } from './ClientAdd';
 import { ClientList } from './ClientList';
@@ -21,14 +21,40 @@ export const Clients = () => {
   const [filterZoneId, setFilterZoneId] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const { data, isLoading, error } = useGetClients(
-    currentPage,
-    pageSize,
-    filterName,
-    searchParam,
-    filterQualification,
-    filterZoneId,
-  );
+  const filters = useMemo(() => {
+    const result: {
+      name?: string;
+      rut?: string;
+      razonSocial?: string;
+      contactName?: string;
+      qualification?: string;
+      zoneId?: number;
+    } = {};
+
+    if (filterName) {
+      switch (searchParam) {
+        case 'name':
+          result.name = filterName;
+          break;
+        case 'rut':
+          result.rut = filterName;
+          break;
+        case 'razonSocial':
+          result.razonSocial = filterName;
+          break;
+        case 'contactName':
+          result.contactName = filterName;
+          break;
+      }
+    }
+
+    if (filterQualification) result.qualification = filterQualification;
+    if (filterZoneId) result.zoneId = parseInt(filterZoneId);
+
+    return Object.keys(result).length > 0 ? result : {};
+  }, [filterName, searchParam, filterQualification, filterZoneId]);
+
+  const { data, isLoading, error } = useGetClients(currentPage, pageSize, filters);
   const [clients, setClients] = useState<Client[]>([]);
 
   const searchParams = useSearchParams();

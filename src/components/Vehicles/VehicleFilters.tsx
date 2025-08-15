@@ -5,9 +5,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Icon,
   IconButton,
-  useMediaQuery,
   useColorModeValue,
   Select,
   Box,
@@ -37,7 +35,6 @@ export const VehicleFilters = ({
   filterModel,
   setFilterModel,
 }: VehicleFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [searchParam, setSearchParam] = useState<SearchParam>('plate');
   const [inputValue, setInputValue] = useState('');
 

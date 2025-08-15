@@ -23,8 +23,6 @@ import {
   Text,
   Checkbox,
   SimpleGrid,
-  HStack,
-  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';

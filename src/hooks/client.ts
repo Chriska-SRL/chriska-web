@@ -1,6 +1,6 @@
 import { Client } from '@/entities/client';
 import { getClients, addClient, updateClient, deleteClient } from '@/services/client';
-import { useFetch, useFetchNoParams } from '../utils/useFetch';
+import { useFetch } from '../utils/useFetch';
 import { useState, useEffect } from 'react';
 
 export const useGetClients = (page: number = 1, pageSize: number = 10, filters?: any) => {

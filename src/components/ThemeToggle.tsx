@@ -1,6 +1,6 @@
 'use client';
 
-import { IconButton, useColorMode, Tooltip } from '@chakra-ui/react';
+import { IconButton, useColorMode } from '@chakra-ui/react';
 import { FaMoon, FaSun } from 'react-icons/fa';
 
 export const ThemeToggle = () => {

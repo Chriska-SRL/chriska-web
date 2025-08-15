@@ -7,22 +7,18 @@ import {
   useColorModeValue,
   IconButton,
   InputGroup,
-  Icon,
   InputRightElement,
-  Box,
   Button,
   Popover,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
   PopoverArrow,
-  useDisclosure,
-  useMediaQuery,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
-import { FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa';
 import { useGetRoles } from '@/hooks/role';
 
 type UserFiltersProps = {
@@ -44,8 +40,6 @@ export const UserFilters = ({
   filterName,
   setFilterName,
 }: UserFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const { isOpen: isFiltersOpen, onToggle: toggleFilters } = useDisclosure();
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
   const [inputValue, setInputValue] = useState(filterName);
 

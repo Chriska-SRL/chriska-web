@@ -25,8 +25,6 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
-import { Permission } from '@/enums/permission.enum';
-import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { SubCategory } from '@/entities/subcategory';
 import { useUpdateSubCategory } from '@/hooks/subcategory';

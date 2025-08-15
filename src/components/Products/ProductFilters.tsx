@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverBody,
   PopoverArrow,
-  useMediaQuery,
 } from '@chakra-ui/react';
 import { useState, useEffect, useCallback } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
@@ -58,7 +57,6 @@ export const ProductFilters = ({
   searchParam,
   setSearchParam,
 }: ProductFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const { data: brands, isLoading: isLoadingBrands } = useGetBrands();
   const { data: categories, isLoading: isLoadingCategories } = useGetCategories();
   const [inputValue, setInputValue] = useState(filterName);

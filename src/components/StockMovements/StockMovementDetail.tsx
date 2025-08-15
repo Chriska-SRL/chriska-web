@@ -25,7 +25,7 @@ type StockMovementDetailProps = {
   setMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
 };
 
-export const StockMovementDetail = ({ movement, setMovements }: StockMovementDetailProps) => {
+export const StockMovementDetail = ({ movement /* , setMovements */ }: StockMovementDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const labelColor = useColorModeValue('black', 'white');

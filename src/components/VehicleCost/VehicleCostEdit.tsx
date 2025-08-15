@@ -27,7 +27,6 @@ import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { useUpdateVehicleCost } from '@/hooks/vehicleCost';
 import { VehicleCostType, VehicleCostTypeOptions } from '@/enums/vehicleCostType.enum';
-import { formatDate } from '@/utils/formatters/date';
 
 type VehicleCostEditProps = {
   isOpen: boolean;

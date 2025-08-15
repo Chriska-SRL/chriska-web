@@ -20,8 +20,6 @@ import {
   useColorModeValue,
   FormErrorMessage,
   Textarea,
-  HStack,
-  IconButton,
 } from '@chakra-ui/react';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -34,7 +32,7 @@ import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Zone } from '@/entities/zone';
 import { QualificationSelector } from '@/components/QualificationSelector';
-import { Bank, BankOptions } from '@/enums/bank.enum';
+import { BankOptions } from '@/enums/bank.enum';
 
 type ClientEditProps = {
   isOpen: boolean;
@@ -283,7 +281,7 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                   <FormControl>
                     <FormLabel>Cuentas bancarias</FormLabel>
                     <FieldArray name="bankAccounts">
-                      {({ push, remove, form }) => (
+                      {() => (
                         <VStack spacing="0.75rem" align="stretch">
                           {bankAccounts.map((account: BankAccount, index: number) => (
                             <Box

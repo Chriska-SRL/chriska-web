@@ -21,8 +21,6 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
-  HStack,
-  IconButton,
 } from '@chakra-ui/react';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
@@ -36,7 +34,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { QualificationSelector } from '@/components/QualificationSelector';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
-import { Bank, BankOptions } from '@/enums/bank.enum';
+import { BankOptions } from '@/enums/bank.enum';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -309,7 +307,7 @@ export const ClientAdd = ({ isLoading: isLoadingClients, setClients }: ClientAdd
                     <FormControl>
                       <FormLabel>Cuentas bancarias</FormLabel>
                       <FieldArray name="bankAccounts">
-                        {({ push, remove, form }) => (
+                        {() => (
                           <VStack spacing="0.75rem" align="stretch">
                             {bankAccounts.map((account: BankAccount, index: number) => (
                               <Box

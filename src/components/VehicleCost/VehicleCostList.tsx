@@ -23,7 +23,7 @@ import { VehicleCost } from '@/entities/vehicleCost';
 import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
 import { VehicleCostDetail } from './VehicleCostDetail';
 import { formatDate } from '@/utils/formatters/date';
-import { FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
+import { FiCalendar, FiTag, FiFileText } from 'react-icons/fi';
 
 type VehicleCostListProps = {
   costs: VehicleCost[];

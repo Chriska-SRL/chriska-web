@@ -19,8 +19,6 @@ import {
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
-  HStack,
-  IconButton,
   Select,
 } from '@chakra-ui/react';
 import { Supplier } from '@/entities/supplier';
@@ -28,9 +26,9 @@ import { BankAccount } from '@/entities/bankAccount';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaCheck, FaPlus, FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { useUpdateSupplier, useDeleteSupplier } from '@/hooks/supplier';
+import { useUpdateSupplier } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
-import { Bank, BankOptions } from '@/enums/bank.enum';
+import { BankOptions } from '@/enums/bank.enum';
 
 type SupplierEditProps = {
   isOpen: boolean;

@@ -146,10 +146,6 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
     </Box>
   );
 
-  const handleImageChange = (newImageUrl: string | null) => {
-    setZones((prevZones) => prevZones.map((z) => (z.id === zone.id ? { ...z, imageUrl: newImageUrl } : z)));
-  };
-
   const diasPedidos = convertDaysToEnglish(zone.requestDays || []);
   const diasEntregas = convertDaysToEnglish(zone.deliveryDays || []);
 

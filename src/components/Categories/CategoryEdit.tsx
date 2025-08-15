@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure,
   FormControl,
   FormLabel,
   Input,
@@ -16,25 +15,18 @@ import {
   VStack,
   Progress,
   Box,
-  Text,
-  IconButton,
   Textarea,
-  Flex,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
-import { useDeleteCategory, useUpdateCategory } from '@/hooks/category';
-import { GenericDelete } from '../shared/GenericDelete';
-import { Permission } from '@/enums/permission.enum';
-import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { useUpdateCategory } from '@/hooks/category';
 
 type CategoryEditProps = {
   isOpen: boolean;

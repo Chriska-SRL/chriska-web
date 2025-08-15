@@ -53,7 +53,6 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBorderColor = useColorModeValue('gray.300', 'whiteAlpha.400');
-  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (forceOpen) {

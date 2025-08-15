@@ -30,7 +30,6 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
-import { QualificationSelector } from '../QualificationSelector';
 import { useEffect } from 'react';
 
 type ClientDetailProps = {
@@ -106,7 +105,8 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   const renderQualificationStars = (qualification?: string) => {
     const defaultQualification = qualification || '4/5';
-    const [current, total] = defaultQualification.split('/').map(Number);
+    // const [current, total] = defaultQualification.split('/').map(Number);
+    const [current] = defaultQualification.split('/').map(Number);
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
