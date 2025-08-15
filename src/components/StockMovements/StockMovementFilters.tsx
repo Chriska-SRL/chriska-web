@@ -481,7 +481,6 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
             transition="all 0.2s ease"
           />
         )}
-
       </Flex>
     </Flex>
   );

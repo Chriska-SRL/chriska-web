@@ -17,7 +17,7 @@ import { useMediaQuery, useColorModeValue } from '@chakra-ui/react';
 import { ElementType } from 'react';
 import { FaUserShield, FaBars, FaCar } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
-import { FaCubes, FaTags, FaWarehouse } from 'react-icons/fa';
+import { FaCubes, FaTags, FaWarehouse, FaPercent } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
 import { MdPlace } from 'react-icons/md';
 import { FiBriefcase } from 'react-icons/fi';
@@ -83,7 +83,8 @@ const sidebarItems = [
   { path: 'roles', text: 'Roles', icon: FaUserShield, Permission: Permission.VIEW_ROLES },
   { path: 'usuarios', text: 'Usuarios', icon: BsPeopleFill, Permission: Permission.VIEW_USERS },
   { path: 'productos', text: 'Productos', icon: FaCubes, Permission: Permission.VIEW_PRODUCTS },
-  { path: 'marcas', text: 'Marcas', icon: FaTags, Permission: Permission.VIEW_PRODUCTS },
+  { path: 'descuentos', text: 'Descuentos', icon: FaPercent, Permission: Permission.VIEW_DISCOUNTS },
+  { path: 'marcas', text: 'Marcas', icon: FaTags, Permission: Permission.VIEW_BRANDS },
   { path: 'categorias', text: 'Categorias', icon: BiCategoryAlt, Permission: Permission.VIEW_CATEGORIES },
   { path: 'vehiculos', text: 'Vehiculos', icon: FaCar, Permission: Permission.VIEW_VEHICLES },
   { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, Permission: Permission.VIEW_CLIENTS },

@@ -34,8 +34,8 @@ type BrandDetailProps = {
 };
 
 export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: BrandDetailProps) => {
-  const canEditBrands = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
-  const canDeleteBrands = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
+  const canEditBrands = useUserStore((s) => s.hasPermission(Permission.EDIT_BRANDS));
+  const canDeleteBrands = useUserStore((s) => s.hasPermission(Permission.DELETE_BRANDS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();

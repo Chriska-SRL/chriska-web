@@ -66,13 +66,11 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
   const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>('');
-  
+
   const shelveFilters = useMemo(() => {
-    return selectedWarehouseId && selectedWarehouseId !== '' 
-      ? { warehouseId: Number(selectedWarehouseId) } 
-      : undefined;
+    return selectedWarehouseId && selectedWarehouseId !== '' ? { warehouseId: Number(selectedWarehouseId) } : undefined;
   }, [selectedWarehouseId]);
-  
+
   const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
   const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');

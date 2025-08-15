@@ -43,23 +43,25 @@ const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDA
 
 // Mapeo para convertir días en español a inglés
 const spanishToEnglishDayMap: Record<string, Day> = {
-  'Lunes': Day.MONDAY,
-  'Martes': Day.TUESDAY,
-  'Miércoles': Day.WEDNESDAY,
-  'Jueves': Day.THURSDAY,
-  'Viernes': Day.FRIDAY,
-  'Sábado': Day.SATURDAY,
+  Lunes: Day.MONDAY,
+  Martes: Day.TUESDAY,
+  Miércoles: Day.WEDNESDAY,
+  Jueves: Day.THURSDAY,
+  Viernes: Day.FRIDAY,
+  Sábado: Day.SATURDAY,
 };
 
 const convertDaysToEnglish = (days: string[]): Day[] => {
-  return days.map(day => {
-    // Si ya está en inglés, lo devolvemos tal como está
-    if (Object.values(Day).includes(day as Day)) {
-      return day as Day;
-    }
-    // Si está en español, lo convertimos
-    return spanishToEnglishDayMap[day] || day as Day;
-  }).filter(day => Object.values(Day).includes(day)); // Filtrar valores válidos
+  return days
+    .map((day) => {
+      // Si ya está en inglés, lo devolvemos tal como está
+      if (Object.values(Day).includes(day as Day)) {
+        return day as Day;
+      }
+      // Si está en español, lo convertimos
+      return spanishToEnglishDayMap[day] || (day as Day);
+    })
+    .filter((day) => Object.values(Day).includes(day)); // Filtrar valores válidos
 };
 
 export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => {
@@ -171,7 +173,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                       editable
                     />
                   )}
-                  
+
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                     <FormLabel>Nombre</FormLabel>
                     <Field
@@ -246,7 +248,6 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                       </FieldArray>
                     </Box>
                   </SimpleGrid>
-
                 </VStack>
               </ModalBody>
 

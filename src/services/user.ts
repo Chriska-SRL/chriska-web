@@ -16,19 +16,19 @@ export const getUsers = (page: number = 1, pageSize: number = 10, filters?: User
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
-  
+
   if (filters?.name) {
     params.append('filters[Name]', filters.name);
   }
-  
+
   if (filters?.roleId) {
     params.append('filters[RoleId]', filters.roleId.toString());
   }
-  
+
   if (filters?.isEnabled !== undefined) {
     params.append('filters[IsEnabled]', filters.isEnabled ? 'T' : 'F');
   }
-  
+
   return get<User[]>(`${API_URL}/Users?${params.toString()}`);
 };
 

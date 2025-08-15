@@ -91,7 +91,7 @@ export const VehicleCostFilters = ({
         disabled={isLoading}
         placeholder="Desde"
       />
-      
+
       <Input
         type="date"
         value={to}

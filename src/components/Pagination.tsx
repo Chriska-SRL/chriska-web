@@ -48,11 +48,7 @@ export const Pagination = ({
 
   return (
     <HStack spacing="0.75rem" align="center">
-      <HStack 
-        spacing="0.5rem" 
-        align="center"
-        display={{ base: 'none', md: 'flex' }}
-      >
+      <HStack spacing="0.5rem" align="center" display={{ base: 'none', md: 'flex' }}>
         <Text fontSize="sm" color={textColor} whiteSpace="nowrap">
           Por página:
         </Text>

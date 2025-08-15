@@ -146,7 +146,6 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
-
                 </VStack>
               </ModalBody>
 

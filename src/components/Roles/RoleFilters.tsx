@@ -56,13 +56,7 @@ export const RoleFilters = ({ isLoading, filterName, setFilterName }: RoleFilter
   }, [filterName]);
 
   return (
-    <Flex
-      gap="1rem"
-      flexDir="row"
-      w="100%"
-      alignItems="center"
-      flexWrap="wrap"
-    >
+    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
       <InputGroup flex="1" minW={{ base: '0', md: '15rem' }}>
         <Input
           placeholder="Buscar por nombre..."

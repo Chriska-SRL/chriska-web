@@ -83,14 +83,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
   );
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(
-    product?.shelve?.warehouse?.id ?? null,
-  );
-  
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(product?.shelve?.warehouse?.id ?? null);
+
   const shelveFilters = useMemo(() => {
     return selectedWarehouseId ? { warehouseId: selectedWarehouseId } : undefined;
   }, [selectedWarehouseId]);
-  
+
   const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
   const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
@@ -419,9 +417,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         </option>
                       ))}
                     </Select>
-                    <FormErrorMessage>
-                      {errors.shelveId && 'Depósito es requerido'}
-                    </FormErrorMessage>
+                    <FormErrorMessage>{errors.shelveId && 'Depósito es requerido'}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>

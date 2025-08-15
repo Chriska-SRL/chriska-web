@@ -75,7 +75,7 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth: boo
   const res = await fetch(url, {
     method,
     headers: getHeaders(withAuth, isFormData),
-    body: isFormData ? processedBody : (processedBody ? JSON.stringify(processedBody) : undefined),
+    body: isFormData ? processedBody : processedBody ? JSON.stringify(processedBody) : undefined,
   });
 
   if (!res.ok) {
@@ -91,9 +91,9 @@ const request = async <T>(method: Method, url: string, body?: any, withAuth: boo
   if (contentType && contentType.includes('application/json')) {
     return await res.json();
   }
-  
+
   if (contentType && contentType.includes('text/plain')) {
-    return await res.text() as T;
+    return (await res.text()) as T;
   }
 
   return undefined as T;

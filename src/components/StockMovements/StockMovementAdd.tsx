@@ -66,13 +66,13 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
   const [selectedProduct, setSelectedProduct] = useState<{ id: number; name: string } | null>(null);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
   const searchRef = useRef<HTMLDivElement>(null);
-  
+
   // Usar el hook de debounce
   const debouncedProductSearch = useDebounce(productSearch, 500);
-  
+
   const productFilters = React.useMemo(() => {
     if (!debouncedProductSearch || debouncedProductSearch.length < 2) return undefined;
-    
+
     return {
       ...(productSearchType === 'name' && { name: debouncedProductSearch }),
       ...(productSearchType === 'internalCode' && { internalCode: debouncedProductSearch }),
@@ -81,11 +81,7 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
   }, [debouncedProductSearch, productSearchType]);
 
   // Solo hacer la llamada si tenemos filtros válidos
-  const { data: products, isLoading: isLoadingProducts } = useGetProducts(
-    1, 
-    10, 
-    productFilters
-  );
+  const { data: products, isLoading: isLoadingProducts } = useGetProducts(1, 10, productFilters);
 
   // Actualizar el término de búsqueda cuando se completa la búsqueda
   useEffect(() => {
@@ -117,7 +113,7 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
         setSelectedProduct(null);
       }
     },
-    [selectedProduct]
+    [selectedProduct],
   );
 
   const handleProductSelect = (product: { id: number; name: string }, setFieldValue: any) => {
@@ -185,7 +181,6 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
       });
     }
   }, [error, fieldError]);
-
 
   const handleSubmit = (values: {
     date: string;
@@ -294,7 +289,9 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                         >
                           <Select
                             value={productSearchType}
-                            onChange={(e) => setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')}
+                            onChange={(e) =>
+                              setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
+                            }
                             bg="transparent"
                             border="none"
                             color={textColor}
@@ -352,7 +349,7 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                             </InputRightElement>
                           </InputGroup>
                         </Box>
-                        
+
                         {showProductDropdown && (
                           <Box
                             position="absolute"
@@ -401,12 +398,17 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                                         key={product.id}
                                         cursor="pointer"
                                         _hover={{ bg: hoverBg }}
-                                        onClick={() => handleProductSelect({ id: product.id, name: product.name }, setFieldValue)}
+                                        onClick={() =>
+                                          handleProductSelect({ id: product.id, name: product.name }, setFieldValue)
+                                        }
                                         transition="background-color 0.2s ease"
                                       >
                                         <HStack p={3} spacing={4} align="center">
                                           <Image
-                                            src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
+                                            src={
+                                              product.imageUrl ||
+                                              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                            }
                                             alt={product.name}
                                             w="50px"
                                             h="50px"
@@ -477,7 +479,6 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
                       />
                       <FormErrorMessage>{errors.reason}</FormErrorMessage>
                     </FormControl>
-
                   </VStack>
                 </ModalBody>
 

@@ -7,11 +7,11 @@ export const getBrands = (page: number = 1, pageSize: number = 10, filterName?: 
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
-  
+
   if (filterName) {
     params.append('filters[Name]', filterName);
   }
-  
+
   return get<Brand[]>(`${API_URL}/Brands?${params.toString()}`);
 };
 

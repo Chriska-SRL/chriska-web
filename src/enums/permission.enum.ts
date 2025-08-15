@@ -94,4 +94,19 @@ export enum Permission {
   DELETE_COLLECTIONS = 62,
   EDIT_COLLECTIONS = 63,
   VIEW_COLLECTIONS = 64,
+
+  //Brands
+  CREATE_BRANDS = 65,
+  DELETE_BRANDS = 66,
+  EDIT_BRANDS = 67,
+  VIEW_BRANDS = 68,
+
+  // Additional permissions
+  CREATE_PRODUCT_WITHDATE = 69,
+
+  //Discounts
+  CREATE_DISCOUNTS = 70,
+  DELETE_DISCOUNTS = 71,
+  EDIT_DISCOUNTS = 72,
+  VIEW_DISCOUNTS = 73,
 }

@@ -372,7 +372,9 @@ export const ClientEdit = ({ isOpen, onClose, client, setClients }: ClientEditPr
                             type="button"
                             size="sm"
                             leftIcon={<FaPlus />}
-                            onClick={() => setBankAccounts([...bankAccounts, { accountName: '', bank: '', accountNumber: '' }])}
+                            onClick={() =>
+                              setBankAccounts([...bankAccounts, { accountName: '', bank: '', accountNumber: '' }])
+                            }
                             variant="ghost"
                           >
                             Agregar cuenta bancaria

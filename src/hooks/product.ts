@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Product } from '@/entities/product';
-import { getProducts, addProduct, updateProduct, deleteProduct, uploadProductImage, deleteProductImage } from '@/services/product';
+import {
+  getProducts,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImage,
+  deleteProductImage,
+} from '@/services/product';
 import { useFetch } from '../utils/useFetch';
 
 type ProductFilters = {
@@ -19,15 +26,18 @@ export const useGetProducts = (page: number = 1, pageSize: number = 10, filters?
   const [error, setError] = useState<string>();
 
   // Memoize filters to prevent unnecessary re-renders
-  const memoizedFilters = useMemo(() => filters, [
-    filters?.name,
-    filters?.internalCode, 
-    filters?.barcode,
-    filters?.unitType,
-    filters?.brandId,
-    filters?.categoryId,
-    filters?.subCategoryId
-  ]);
+  const memoizedFilters = useMemo(
+    () => filters,
+    [
+      filters?.name,
+      filters?.internalCode,
+      filters?.barcode,
+      filters?.unitType,
+      filters?.brandId,
+      filters?.categoryId,
+      filters?.subCategoryId,
+    ],
+  );
 
   useEffect(() => {
     // No hacer llamada si filters es undefined
@@ -67,9 +77,6 @@ export const useUpdateProduct = (props?: Partial<Product>) =>
 export const useDeleteProduct = (id?: number) => useFetch<number, Product>(deleteProduct, id);
 
 export const useUploadProductImage = (props?: { id: number; file: File }) =>
-  useFetch<{ id: number; file: File }, string>(
-    ({ id, file }) => uploadProductImage(id, file),
-    props
-  );
+  useFetch<{ id: number; file: File }, string>(({ id, file }) => uploadProductImage(id, file), props);
 
 export const useDeleteProductImage = (id?: number) => useFetch<number, void>(deleteProductImage, id);

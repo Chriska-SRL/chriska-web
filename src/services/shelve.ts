@@ -12,15 +12,15 @@ export const getShelves = (page: number = 1, pageSize: number = 10, filters?: Sh
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
-  
+
   if (filters?.name) {
     params.append('filters[Name]', filters.name);
   }
-  
+
   if (filters?.warehouseId) {
     params.append('filters[WarehouseId]', filters.warehouseId.toString());
   }
-  
+
   return get<Shelve[]>(`${API_URL}/Shelves?${params.toString()}`);
 };
 

@@ -18,11 +18,7 @@ export const useGetUsers = (page: number = 1, pageSize: number = 10, filters?: U
   const [error, setError] = useState<string>();
 
   // Memoize filters to prevent unnecessary re-renders
-  const memoizedFilters = useMemo(() => filters, [
-    filters?.name,
-    filters?.roleId,
-    filters?.isEnabled
-  ]);
+  const memoizedFilters = useMemo(() => filters, [filters?.name, filters?.roleId, filters?.isEnabled]);
 
   useEffect(() => {
     const fetchUsers = async () => {

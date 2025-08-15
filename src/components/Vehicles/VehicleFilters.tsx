@@ -28,14 +28,14 @@ type VehicleFiltersProps = {
   setFilterModel: (value: string) => void;
 };
 
-export const VehicleFilters = ({ 
-  isLoading: isLoadingVehicles, 
-  filterPlate, 
+export const VehicleFilters = ({
+  isLoading: isLoadingVehicles,
+  filterPlate,
   setFilterPlate,
   filterBrand,
   setFilterBrand,
   filterModel,
-  setFilterModel
+  setFilterModel,
 }: VehicleFiltersProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [searchParam, setSearchParam] = useState<SearchParam>('plate');

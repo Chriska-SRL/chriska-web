@@ -37,7 +37,7 @@ type BrandAddProps = {
 };
 
 export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProps) => {
-  const canCreateBrands = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
+  const canCreateBrands = useUserStore((s) => s.hasPermission(Permission.CREATE_BRANDS));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

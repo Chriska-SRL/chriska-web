@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Category } from '@/entities/category';
 import { getCategories, addCategory, updateCategory, deleteCategory } from '@/services/category';
-import { useFetch, useFetchNoParams } from '../utils/useFetch';
+import { useFetch } from '../utils/useFetch';
 
 type CategoryFilters = {
   name?: string;
@@ -32,8 +32,6 @@ export const useGetCategories = (page: number = 1, pageSize: number = 10, filter
 
   return { data, isLoading, error };
 };
-
-export const useGetCategoriesSimple = () => useFetchNoParams<Category[]>(() => getCategories(1, 1000), []);
 
 export const useAddCategory = (props?: Partial<Category>) =>
   useFetch<Partial<Category>, Category>(addCategory, props, { parseFieldError: true });

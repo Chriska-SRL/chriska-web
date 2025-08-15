@@ -7,7 +7,7 @@ export const formatDate = (dateString: string) => {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-        timeZone: 'UTC'
+        timeZone: 'UTC',
       });
     }
     return date.toLocaleDateString('es-UY', {

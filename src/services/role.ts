@@ -7,11 +7,11 @@ export const getRoles = (page: number = 1, pageSize: number = 10, filterName?: s
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
-  
+
   if (filterName) {
     params.append('filters[Name]', filterName);
   }
-  
+
   return get<Role[]>(`${API_URL}/Roles?${params.toString()}`);
 };
 

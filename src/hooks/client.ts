@@ -3,14 +3,7 @@ import { getClients, addClient, updateClient, deleteClient } from '@/services/cl
 import { useFetch, useFetchNoParams } from '../utils/useFetch';
 import { useState, useEffect } from 'react';
 
-export const useGetClients = (
-  page: number = 1, 
-  pageSize: number = 10, 
-  filterName?: string,
-  searchParam?: string,
-  filterQualification?: string,
-  filterZoneId?: string
-) => {
+export const useGetClients = (page: number = 1, pageSize: number = 10, filters?: any) => {
   const [data, setData] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -21,32 +14,7 @@ export const useGetClients = (
       setError(undefined);
 
       try {
-        const filters: any = {};
-        
-        // Handle search by parameter
-        if (filterName && searchParam) {
-          switch (searchParam) {
-            case 'name':
-              filters.name = filterName;
-              break;
-            case 'rut':
-              filters.rut = filterName;
-              break;
-            case 'razonSocial':
-              filters.razonSocial = filterName;
-              break;
-            case 'contactName':
-              filters.contactName = filterName;
-              break;
-          }
-        }
-        
-        // Handle advanced filters
-        if (filterQualification) filters.qualification = filterQualification;
-        if (filterZoneId) filters.zoneId = filterZoneId;
-        
-        const hasFilters = Object.keys(filters).length > 0;
-        const result = await getClients(page, pageSize, hasFilters ? filters : undefined);
+        const result = await getClients(page, pageSize, filters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');
@@ -56,7 +24,7 @@ export const useGetClients = (
     };
 
     fetchClients();
-  }, [page, pageSize, filterName, filterQualification, filterZoneId]);
+  }, [page, pageSize, filters]);
 
   return { data, isLoading, error };
 };

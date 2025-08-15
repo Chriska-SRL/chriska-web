@@ -11,19 +11,22 @@ import { useGetWarehouses } from '@/hooks/warehouse';
 export const Warehouses = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // Filter state
   const [filterName, setFilterName] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
-  
+
   // Filters for API call
-  const filters = useMemo(() => ({
-    name: filterName || undefined,
-  }), [filterName]);
+  const filters = useMemo(
+    () => ({
+      name: filterName || undefined,
+    }),
+    [filterName],
+  );
 
   const { data, isLoading, error } = useGetWarehouses(currentPage, pageSize, filters);
 
