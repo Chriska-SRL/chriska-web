@@ -112,8 +112,8 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const bg = useColorModeValue('white', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const textColor = useColorModeValue('black', 'white');
-  const activeBg = useColorModeValue('gray.100', 'gray.700');
-  const hoverBg = useColorModeValue('gray.200', 'gray.600');
+  const activeBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const hoverBg = useColorModeValue('#e0dede', 'gray.600');
   const activeColor = useColorModeValue('black', 'white');
   const defaultColor = useColorModeValue('gray.600', 'gray.300');
   const hoverColor = useColorModeValue('black', 'white');
