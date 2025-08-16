@@ -165,6 +165,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
+            py="0.75rem"
             textAlign="center"
             fontSize="1.5rem"
             flexShrink={0}
@@ -303,7 +304,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
       <Modal isOpen={isDeleteOpen} onClose={closeDelete} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Confirmar eliminación</ModalHeader>
+          <ModalHeader py="0.75rem">Confirmar eliminación</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>¿Estás seguro de que deseas eliminar el descuento "{discount.description}"?</Text>

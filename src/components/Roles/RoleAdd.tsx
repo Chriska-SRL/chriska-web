@@ -153,6 +153,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
+            py="0.75rem"
             textAlign="center"
             fontSize="1.5rem"
             flexShrink={0}

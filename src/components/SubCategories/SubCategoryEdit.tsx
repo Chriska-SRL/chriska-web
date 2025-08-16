@@ -132,6 +132,7 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
+            py="0.75rem"
             textAlign="center"
             fontSize="1.5rem"
             flexShrink={0}
@@ -206,13 +207,7 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
-              <Button
-                variant="ghost"
-                onClick={handleClose}
-                disabled={isLoading}
-                size="sm"
-                leftIcon={<FaTimes />}
-              >
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
                 Cancelar
               </Button>
               <Button

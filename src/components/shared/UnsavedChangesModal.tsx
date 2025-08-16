@@ -12,9 +12,7 @@ import {
   Text,
   HStack,
   useColorModeValue,
-  Icon,
 } from '@chakra-ui/react';
-import { FiAlertCircle } from 'react-icons/fi';
 
 type UnsavedChangesModalProps = {
   isOpen: boolean;
