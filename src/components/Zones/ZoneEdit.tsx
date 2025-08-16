@@ -13,8 +13,6 @@ import {
   Textarea,
   VStack,
   Button,
-  Progress,
-  Box,
   useToast,
   ModalCloseButton,
   useColorModeValue,
@@ -22,11 +20,15 @@ import {
   Text,
   Checkbox,
   SimpleGrid,
+  HStack,
+  Icon,
+  Box,
 } from '@chakra-ui/react';
 import { Zone } from '@/entities/zone';
 import { ZoneImageUpload } from './ZoneImageUpload';
 import { Formik, Field, FieldArray } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiMapPin, FiFileText, FiCalendar, FiClock } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useUpdateZone } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
@@ -72,7 +74,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
   const { data, isLoading, error, fieldError } = useUpdateZone(zoneProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (zone?.imageUrl) {
@@ -130,10 +132,16 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar zona
         </ModalHeader>
         <ModalCloseButton />
@@ -152,16 +160,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
         >
           {({ handleSubmit, errors, touched, submitCount, values }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody
-                pb="0"
-                maxH="31rem"
-                overflow="auto"
-                sx={{
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
-              >
+              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                 <VStack spacing="0.75rem">
                   {zone && (
                     <ZoneImageUpload
@@ -175,12 +174,18 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                   )}
 
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiMapPin} boxSize="1rem" />
+                        <Text>Nombre</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="name"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       validate={validate}
                     />
@@ -188,20 +193,32 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Descripción</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Textarea}
                       name="description"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       validate={validate}
+                      rows={4}
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
 
                   <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start" w="100%">
                     <Box>
-                      <Text mb="0.5rem">Días de pedidos</Text>
+                      <Text mb="0.5rem" fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiCalendar} boxSize="1rem" />
+                          <Text>Días de pedidos</Text>
+                        </HStack>
+                      </Text>
                       <FieldArray name="requestDays">
                         {({ push, remove }) =>
                           allDays.map((day) => {
@@ -225,7 +242,12 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                     </Box>
 
                     <Box>
-                      <Text mb="0.5rem">Días de entrega</Text>
+                      <Text mb="0.5rem" fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiClock} boxSize="1rem" />
+                          <Text>Días de entrega</Text>
+                        </HStack>
+                      </Text>
                       <FieldArray name="deliveryDays">
                         {({ push, remove }) =>
                           allDays.map((day) => {
@@ -251,28 +273,23 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                 </VStack>
               </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.25rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
+              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                <HStack spacing="0.5rem">
+                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    bg="#4C88D8"
-                    color="white"
-                    disabled={isLoading}
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
+                    colorScheme="blue"
+                    variant="outline"
+                    isLoading={isLoading}
+                    loadingText="Guardando..."
                     leftIcon={<FaCheck />}
-                    fontSize="1rem"
+                    size="sm"
                   >
                     Guardar cambios
                   </Button>
-                </Box>
+                </HStack>
               </ModalFooter>
             </form>
           )}

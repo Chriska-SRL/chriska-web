@@ -7,17 +7,17 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  ModalFooter,
+  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   useToast,
   VStack,
-  Progress,
   Box,
   Text,
-  Textarea,
-  ModalCloseButton,
   Checkbox,
   Accordion,
   AccordionItem,
@@ -25,12 +25,16 @@ import {
   AccordionPanel,
   AccordionIcon,
   Flex,
+  Stack,
   useColorModeValue,
   FormErrorMessage,
   useMediaQuery,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FiUser, FiFileText, FiShield } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Role } from '@/entities/role';
 import { useAddRole } from '@/hooks/role';
@@ -45,22 +49,23 @@ type RoleAddProps = {
   setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 };
 
-export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-  const canCreateRoles = useUserStore((s) => s.hasPermission(Permission.CREATE_ROLES));
+type RoleAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const toast = useToast();
-  const [roleProps, setRoleProps] = useState<Partial<Role>>();
-  const { data, isLoading, error, fieldError } = useAddRole(roleProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
   const textColor = useColorModeValue('gray.600', 'gray.400');
+
+  const [roleProps, setRoleProps] = useState<Partial<Role>>();
+  const { data, isLoading, error, fieldError } = useAddRole(roleProps);
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -71,25 +76,30 @@ export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) =
     {} as Record<string, typeof PERMISSIONS_METADATA>,
   );
 
+  const handleClose = () => {
+    setRoleProps(undefined);
+    onClose();
+  };
+
   useEffect(() => {
     if (data) {
       toast({
         title: 'Rol creado',
-        description: `El rol ha sido creado correctamente.`,
+        description: 'El rol ha sido creado correctamente.',
         status: 'success',
-        duration: 1500,
+        duration: 2000,
         isClosable: true,
       });
-      setRoles((prev) => [...prev, data]);
       setRoleProps(undefined);
+      setRoles((prev) => [...prev, data]);
       onClose();
     }
-  }, [data]);
+  }, [data, setRoles, toast, onClose]);
 
   useEffect(() => {
     if (fieldError) {
       toast({
-        title: `Error`,
+        title: 'Error',
         description: fieldError.error,
         status: 'error',
         duration: 4000,
@@ -104,7 +114,7 @@ export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) =
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   const handleSubmit = (values: { name: string; description: string; permissions: number[] }) => {
     const role = {
@@ -116,146 +126,193 @@ export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) =
   };
 
   return (
-    <>
-      {canCreateRoles && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          px="1.5rem"
-          disabled={isLoadingRoles}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size={{ base: 'xs', md: '3xl' }}
+      isCentered
+      closeOnOverlayClick={false}
+    >
+      <ModalOverlay />
+      <ModalContent maxH="90vh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
         >
-          Nuevo
-        </Button>
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem">
-            Nuevo rol
-          </ModalHeader>
-          <ModalCloseButton />
+          Nuevo rol
+        </ModalHeader>
+        <ModalCloseButton />
+
+        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
           <Formik
-            initialValues={{ name: '', description: '', permissions: [] as number[] }}
+            initialValues={{
+              name: '',
+              description: '',
+              permissions: [] as number[],
+            }}
             onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
+            enableReinitialize
           >
-            {({ handleSubmit, values, setFieldValue, errors, touched, submitCount }) => (
-              <form onSubmit={handleSubmit}>
-                <ModalBody px="2rem" pb="2rem" pt="0">
-                  <Flex direction={{ base: 'column', md: 'row' }} gap="2rem" align="stretch">
-                    <Box flex="1" minW={0}>
-                      <FormControl>
-                        <FormLabel>Permisos</FormLabel>
-                        <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
-                          <Accordion allowMultiple>
-                            {Object.entries(groupedPermissions).map(([group, perms]) => (
-                              <AccordionItem key={group}>
-                                <h2>
-                                  <AccordionButton>
-                                    <Box flex="1" textAlign="left" fontWeight="semibold">
-                                      {group}
-                                    </Box>
-                                    <Text fontSize="sm" color={textColor} mx="1rem">
-                                      {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
-                                      {isMobile ? 'selec.' : 'seleccionados'}
-                                    </Text>
-                                    <AccordionIcon />
-                                  </AccordionButton>
-                                </h2>
-                                <AccordionPanel pb={4}>
-                                  <Flex wrap="wrap" gap="0.75rem">
-                                    {perms.map((perm) => (
-                                      <Checkbox
-                                        key={perm.id}
-                                        isChecked={values.permissions.includes(perm.id)}
-                                        onChange={(e) => {
-                                          const checked = e.target.checked;
-                                          const updated = checked
-                                            ? [...values.permissions, perm.id]
-                                            : values.permissions.filter((p) => p !== perm.id);
-                                          setFieldValue('permissions', updated);
-                                        }}
-                                      >
-                                        {perm.label}
-                                      </Checkbox>
-                                    ))}
-                                  </Flex>
-                                </AccordionPanel>
-                              </AccordionItem>
-                            ))}
-                          </Accordion>
-                        </Box>
-                      </FormControl>
-                    </Box>
-
-                    <Flex flex="1" flexDir="column" minW={0}>
-                      <Box>
-                        <VStack spacing="1rem" align="stretch">
-                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                            <FormLabel>Nombre</FormLabel>
-                            <Field
-                              as={Input}
-                              name="name"
-                              type="text"
-                              bg={inputBg}
-                              borderColor={inputBorder}
-                              h="2.75rem"
-                              validate={validate}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{errors.name}</FormErrorMessage>
-                          </FormControl>
-
-                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                            <FormLabel>Descripción</FormLabel>
-                            <Field
-                              as={Textarea}
-                              name="description"
-                              bg={inputBg}
-                              borderColor={inputBorder}
-                              resize="vertical"
-                              minH="8rem"
-                              validate={validateEmpty}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{errors.description}</FormErrorMessage>
-                          </FormControl>
-                        </VStack>
+            {({ handleSubmit, values, setFieldValue }) => (
+              <form id="role-add-form" onSubmit={handleSubmit}>
+                <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">
+                  <Box flex="1" minW={0}>
+                    <FormControl>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiShield} boxSize="1rem" />
+                          <Text>Permisos</Text>
+                        </HStack>
+                      </FormLabel>
+                      <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
+                        <Accordion allowMultiple>
+                          {Object.entries(groupedPermissions).map(([group, perms]) => (
+                            <AccordionItem key={group}>
+                              <h2>
+                                <AccordionButton>
+                                  <Box flex="1" textAlign="left" fontWeight="semibold">
+                                    {group}
+                                  </Box>
+                                  <Text fontSize="sm" color={textColor} mx="1rem">
+                                    {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
+                                    {isMobile ? 'selec.' : 'seleccionados'}
+                                  </Text>
+                                  <AccordionIcon />
+                                </AccordionButton>
+                              </h2>
+                              <AccordionPanel pb={4}>
+                                <Flex wrap="wrap" gap="0.75rem">
+                                  {perms.map((perm) => (
+                                    <Checkbox
+                                      key={perm.id}
+                                      isChecked={values.permissions.includes(perm.id)}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        const updated = checked
+                                          ? [...values.permissions, perm.id]
+                                          : values.permissions.filter((p) => p !== perm.id);
+                                        setFieldValue('permissions', updated);
+                                      }}
+                                      disabled={isLoading}
+                                    >
+                                      {perm.label}
+                                    </Checkbox>
+                                  ))}
+                                </Flex>
+                              </AccordionPanel>
+                            </AccordionItem>
+                          ))}
+                        </Accordion>
                       </Box>
+                    </FormControl>
+                  </Box>
 
-                      <Box>
-                        <Progress
-                          h={isLoading ? '4px' : '1px'}
-                          my="1.5rem"
-                          size="xs"
-                          isIndeterminate={isLoading}
-                          colorScheme="blue"
-                        />
+                  <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
+                    <Field name="name" validate={validate}>
+                      {({ field, meta }: any) => (
+                        <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiUser} boxSize="1rem" />
+                              <Text>Nombre</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            placeholder="Ingrese el nombre del rol"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                          />
+                          <FormErrorMessage>{meta.error}</FormErrorMessage>
+                        </FormControl>
+                      )}
+                    </Field>
 
-                        <Button
-                          type="submit"
-                          disabled={isLoading}
-                          bg={submitBg}
-                          color="white"
-                          _hover={{ backgroundColor: submitHover }}
-                          w="100%"
-                          leftIcon={<FaCheck />}
-                          py="1.375rem"
-                        >
-                          Confirmar
-                        </Button>
-                      </Box>
-                    </Flex>
-                  </Flex>
-                </ModalBody>
+                    <Field name="description" validate={validateEmpty}>
+                      {({ field, meta }: any) => (
+                        <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiFileText} boxSize="1rem" />
+                              <Text>Descripción</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Textarea
+                            {...field}
+                            placeholder="Ingrese una descripción del rol"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                            resize="vertical"
+                            minH="8rem"
+                            rows={4}
+                          />
+                          <FormErrorMessage>{meta.error}</FormErrorMessage>
+                        </FormControl>
+                      )}
+                    </Field>
+                  </VStack>
+                </Stack>
               </form>
             )}
           </Formik>
-        </ModalContent>
-      </Modal>
+        </ModalBody>
+
+        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+          <HStack spacing="0.5rem">
+            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+              Cancelar
+            </Button>
+            <Button
+              form="role-add-form"
+              type="submit"
+              colorScheme="blue"
+              variant="outline"
+              isLoading={isLoading}
+              loadingText="Creando..."
+              leftIcon={<FaCheck />}
+              size="sm"
+            >
+              Crear rol
+            </Button>
+          </HStack>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const RoleAdd = ({ isLoading: isLoadingRoles, setRoles }: RoleAddProps) => {
+  const canCreateRoles = useUserStore((s) => s.hasPermission(Permission.CREATE_ROLES));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+
+  if (!canCreateRoles) return null;
+
+  return (
+    <>
+      <Button
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        px="1.5rem"
+        disabled={isLoadingRoles}
+      >
+        Nuevo
+      </Button>
+
+      {/* Solo renderizar el formulario cuando el modal está abierto */}
+      {isOpen && <RoleAddModal isOpen={isOpen} onClose={onClose} setRoles={setRoles} />}
     </>
   );
 };

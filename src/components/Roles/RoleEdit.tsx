@@ -16,7 +16,6 @@ import {
   Button,
   Box,
   Text,
-  Progress,
   Flex,
   Accordion,
   AccordionItem,
@@ -28,9 +27,13 @@ import {
   useMediaQuery,
   useColorModeValue,
   FormErrorMessage,
+  ModalFooter,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiShield, FiFileText } from 'react-icons/fi';
 import { PERMISSIONS_METADATA } from '@/utils/permissionMetadata';
 import { Role } from '@/entities/role';
 import { useEffect, useState } from 'react';
@@ -52,7 +55,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const selectedCountColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
@@ -110,10 +113,16 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: '3xl' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textAlign="center" fontSize="2rem">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar rol
         </ModalHeader>
         <ModalCloseButton />
@@ -131,7 +140,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
           >
             {({ handleSubmit, values, setFieldValue, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody px="2rem" pb="2rem" pt="0">
+                <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                   <Flex
                     gap="2rem"
                     align="start"
@@ -140,7 +149,12 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                   >
                     <Box flex="1">
                       <FormControl>
-                        <FormLabel>Permisos</FormLabel>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiShield} boxSize="1rem" />
+                            <Text>Permisos</Text>
+                          </HStack>
+                        </FormLabel>
                         <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto">
                           <Accordion allowMultiple>
                             {Object.entries(groupedPermissions).map(([group, perms]) => (
@@ -189,13 +203,19 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                       <Box>
                         <VStack spacing="1rem" align="stretch">
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                            <FormLabel>Nombre</FormLabel>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiShield} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
                             <Field
                               as={Input}
                               name="name"
                               type="text"
                               bg={inputBg}
-                              borderColor={borderColor}
+                              border="1px solid"
+                              borderColor={inputBorder}
                               fontSize="0.875rem"
                               h="2.75rem"
                               validate={validate}
@@ -204,43 +224,53 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                           </FormControl>
 
                           <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                            <FormLabel>Descripción</FormLabel>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
                             <Field
                               as={Textarea}
                               name="description"
                               bg={inputBg}
-                              borderColor={borderColor}
+                              border="1px solid"
+                              borderColor={inputBorder}
                               fontSize="0.875rem"
                               resize="vertical"
                               minH="8rem"
                               validate={validateEmpty}
+                              rows={4}
                             />
                             <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         </VStack>
                       </Box>
-                      <Box>
-                        <Progress
-                          h={isLoading ? '4px' : '1px'}
-                          my="1.5rem"
-                          size="xs"
-                          isIndeterminate={isLoading}
-                          colorScheme="blue"
-                        />
-
-                        <Button
-                          type="submit"
-                          isLoading={isLoading}
-                          bg="#4C88D8"
-                          color="white"
-                          _hover={{ backgroundColor: '#376bb0' }}
-                          w="100%"
-                          leftIcon={<FaCheck />}
-                          py="1.375rem"
-                        >
-                          Guardar cambios
-                        </Button>
-                      </Box>
+                      <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem" px={0}>
+                        <HStack spacing="0.5rem" w="100%">
+                          <Button
+                            variant="ghost"
+                            onClick={onClose}
+                            disabled={isLoading}
+                            size="sm"
+                            leftIcon={<FaTimes />}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="submit"
+                            colorScheme="blue"
+                            variant="outline"
+                            isLoading={isLoading}
+                            loadingText="Guardando..."
+                            leftIcon={<FaCheck />}
+                            size="sm"
+                            flex="1"
+                          >
+                            Guardar cambios
+                          </Button>
+                        </HStack>
+                      </ModalFooter>
                     </Flex>
                   </Flex>
                 </ModalBody>

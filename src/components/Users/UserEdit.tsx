@@ -13,17 +13,19 @@ import {
   Select,
   VStack,
   Button,
-  Progress,
-  Box,
   useToast,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   useDisclosure,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { User } from '@/entities/user';
 import { Formik, Field } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiUser, FiShield, FiSettings } from 'react-icons/fi';
 import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
 import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
@@ -71,7 +73,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
   };
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -133,10 +135,16 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Editar usuario
           </ModalHeader>
           <ModalCloseButton />
@@ -154,20 +162,26 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
           >
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
+                <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl
                       isInvalid={
                         (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
                       }
                     >
-                      <FormLabel>Nombre de usuario</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiUser} boxSize="1rem" />
+                          <Text>Nombre de usuario</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Input}
                         name="username"
                         type="text"
                         bg={inputBg}
-                        borderColor={borderColor}
+                        border="1px solid"
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
                         disabled={isLoading}
@@ -178,13 +192,19 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                     <FormControl
                       isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
                     >
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiUser} boxSize="1rem" />
+                          <Text>Nombre</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Input}
                         name="name"
                         type="text"
                         bg={inputBg}
-                        borderColor={borderColor}
+                        border="1px solid"
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
                         disabled={isLoading}
@@ -197,13 +217,19 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                         (submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'
                       }
                     >
-                      <FormLabel>Rol</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiShield} boxSize="1rem" />
+                          <Text>Rol</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Select}
                         name="roleId"
                         placeholder="Seleccionar rol"
                         bg={inputBg}
-                        borderColor={borderColor}
+                        border="1px solid"
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
                         disabled={isLoading || isLoadingRoles}
@@ -222,13 +248,19 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                         (submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'
                       }
                     >
-                      <FormLabel>Estado</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiSettings} boxSize="1rem" />
+                          <Text>Estado</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Select}
                         name="estado"
                         placeholder="Seleccionar estado"
                         bg={inputBg}
-                        borderColor={borderColor}
+                        border="1px solid"
+                        borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
                         disabled={isLoading}
@@ -253,30 +285,23 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                   </VStack>
                 </ModalBody>
 
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.25rem" w="100%">
-                    <Progress
-                      h={isLoading ? '4px' : '1px'}
-                      mb="1.25rem"
-                      size="xs"
-                      isIndeterminate={isLoading}
+                <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                  <HStack spacing="0.5rem">
+                    <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
                       colorScheme="blue"
-                    />
-                    <Box display="flex" gap="0.75rem">
-                      <Button
-                        type="submit"
-                        bg="#4C88D8"
-                        color="white"
-                        disabled={isLoading}
-                        _hover={{ backgroundColor: '#376bb0' }}
-                        width="100%"
-                        leftIcon={<FaCheck />}
-                        fontSize="1rem"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </Box>
-                  </Box>
+                      variant="outline"
+                      isLoading={isLoading}
+                      loadingText="Guardando..."
+                      leftIcon={<FaCheck />}
+                      size="sm"
+                    >
+                      Guardar cambios
+                    </Button>
+                  </HStack>
                 </ModalFooter>
               </form>
             )}

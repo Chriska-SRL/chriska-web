@@ -183,8 +183,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
 
   return (
     <Box w="100%">
-      <HStack justifyContent="space-between" alignItems="center" mb="0.5rem">
-        <Text>Imagen</Text>
+      <HStack justifyContent="space-between" alignItems="center">
         {editable && hasImage && (
           <IconButton
             aria-label="Eliminar imagen"
@@ -280,7 +279,15 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
             )}
           </>
         ) : (
-          <Center height="18rem" bg={placeholderBg} flexDirection="column" color={placeholderColor}>
+          <Center
+            bg={placeholderBg}
+            flexDirection="column"
+            color={placeholderColor}
+            w="100%"
+            h="100%"
+            minH="200px"
+            aspectRatio="1"
+          >
             {isLoading ? (
               <VStack spacing="3">
                 <Spinner size="lg" thickness="3px" speed="0.8s" color="blue.400" />

@@ -62,13 +62,13 @@ type DiscountAddProps = {
   setDiscounts: React.Dispatch<React.SetStateAction<Discount[]>>;
 };
 
-type DiscountAddFormProps = {
+type DiscountAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setDiscounts: React.Dispatch<React.SetStateAction<Discount[]>>;
 };
 
-const DiscountAddForm = ({ isOpen, onClose, setDiscounts }: DiscountAddFormProps) => {
+const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -1247,7 +1247,7 @@ export const DiscountAdd = ({ isLoading: isLoadingDiscounts, setDiscounts }: Dis
       )}
 
       {/* Solo renderizar el formulario cuando el modal está abierto */}
-      {isOpen && <DiscountAddForm isOpen={isOpen} onClose={onClose} setDiscounts={setDiscounts} />}
+      {isOpen && <DiscountAddModal isOpen={isOpen} onClose={onClose} setDiscounts={setDiscounts} />}
     </>
   );
 };

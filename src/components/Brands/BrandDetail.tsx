@@ -1,4 +1,4 @@
-'use brand';
+'use client';
 
 import {
   IconButton,
@@ -15,8 +15,10 @@ import {
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  HStack,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Brand } from '@/entities/brand';
 import { BrandEdit } from './BrandEdit';
@@ -24,7 +26,7 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteBrand } from '@/hooks/brand';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 type BrandDetailProps = {
   brand: Brand;
@@ -44,6 +46,12 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  const handleClose = useCallback(() => {
+    onClose();
+    onModalClose?.();
+  }, [onClose, onModalClose]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -51,16 +59,14 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
     }
   }, [forceOpen, onOpen]);
 
-  const handleClose = () => {
-    onClose();
-    onModalClose?.();
-  };
-
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -73,6 +79,7 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -86,65 +93,63 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
         icon={<FiEye />}
         onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle de la marca
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            flex="1"
-            maxH="calc(90dvh - 200px)"
-            overflowY="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
-              {detailField('Nombre', brand.name)}
-              {detailField('Descripción', brand.description)}
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
+              {detailField('Nombre', brand.name, FiTag)}
+              {detailField('Descripción', brand.description, FiFileText)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem" flexShrink={0}>
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditBrands && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    handleClose();
-                    openEdit();
-                  }}
-                >
-                  Editar
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
               {canDeleteBrands && (
                 <GenericDelete
                   item={{ id: brand.id, name: brand.name }}
                   useDeleteHook={useDeleteBrand}
                   setItems={setBrands}
                   onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditBrands && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && <BrandEdit isOpen={isEditOpen} onClose={closeEdit} brand={brand} setBrands={setBrands} />}
+      <BrandEdit isOpen={isEditOpen} onClose={closeEdit} brand={brand} setBrands={setBrands} />
     </>
   );
 };

@@ -1,4 +1,4 @@
-'use role';
+'use client';
 
 import {
   IconButton,
@@ -15,8 +15,19 @@ import {
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  HStack,
+  Checkbox,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Flex,
+  Stack,
+  useMediaQuery,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiUser, FiFileText, FiShield } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Role } from '@/entities/role';
 import { RoleEdit } from './RoleEdit';
@@ -24,15 +35,20 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteRole } from '@/hooks/role';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { useEffect, useCallback } from 'react';
+import { PERMISSIONS_METADATA } from '@/utils/permissionMetadata';
 
 type RoleDetailProps = {
   role: Role;
   setRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
-  const canEditRoles = useUserStore((s) => s.hasPermission(Permission.EDIT_CLIENTS));
-  const canDeleteRoles = useUserStore((s) => s.hasPermission(Permission.DELETE_CLIENTS));
+export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDetailProps) => {
+  const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const canEditRoles = useUserStore((s) => s.hasPermission(Permission.EDIT_ROLES));
+  const canDeleteRoles = useUserStore((s) => s.hasPermission(Permission.DELETE_ROLES));
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -41,12 +57,37 @@ export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const handleClose = useCallback(() => {
+    onClose();
+    onModalClose?.();
+  }, [onClose, onModalClose]);
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const groupedPermissions = PERMISSIONS_METADATA.reduce(
+    (acc, perm) => {
+      if (!acc[perm.group]) acc[perm.group] = [];
+      acc[perm.group].push(perm);
+      return acc;
+    },
+    {} as Record<string, typeof PERMISSIONS_METADATA>,
+  );
+
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -59,6 +100,7 @@ export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -68,59 +110,113 @@ export const RoleDetail = ({ role, setRoles }: RoleDetailProps) => {
   return (
     <>
       <IconButton
-        aria-label="Ver detalle"
+        aria-label="Ver detalles"
         icon={<FiEye />}
-        onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
+        onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: '3xl' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle del rol
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb="0" maxH="31rem" overflow="scroll" overflowX="hidden">
-            <VStack spacing="0.75rem">
-              {detailField('Nombre', role.name)}
-              {detailField('Descripción', role.description)}
-            </VStack>
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">
+              <Box flex="1" minW={0}>
+                <Box>
+                  <HStack mb="0.5rem" spacing="0.5rem">
+                    <Icon as={FiShield} boxSize="1rem" color={iconColor} />
+                    <Text color={labelColor} fontWeight="semibold">
+                      Permisos
+                    </Text>
+                  </HStack>
+                  <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
+                    <Accordion allowMultiple>
+                      {Object.entries(groupedPermissions).map(([group, perms]) => (
+                        <AccordionItem key={group}>
+                          <h2>
+                            <AccordionButton>
+                              <Box flex="1" textAlign="left" fontWeight="semibold">
+                                {group}
+                              </Box>
+                              <Text fontSize="sm" color={textColor} mx="1rem">
+                                {perms.filter((perm) => role.permissions?.includes(perm.id)).length}{' '}
+                                {isMobile ? 'asign.' : 'asignados'}
+                              </Text>
+                              <AccordionIcon />
+                            </AccordionButton>
+                          </h2>
+                          <AccordionPanel pb={4}>
+                            <Flex wrap="wrap" gap="0.75rem">
+                              {perms.map((perm) => (
+                                <Checkbox
+                                  key={perm.id}
+                                  isChecked={role.permissions?.includes(perm.id) || false}
+                                  isDisabled={true}
+                                >
+                                  {perm.label}
+                                </Checkbox>
+                              ))}
+                            </Flex>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </Box>
+                </Box>
+              </Box>
+
+              <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
+                {detailField('Nombre', role.name, FiUser)}
+                {detailField('Descripción', role.description, FiFileText)}
+              </VStack>
+            </Stack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditRoles && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    onClose();
-                    openEdit();
-                  }}
-                >
-                  Editar
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
               {canDeleteRoles && (
                 <GenericDelete
                   item={{ id: role.id, name: role.name }}
                   useDeleteHook={useDeleteRole}
                   setItems={setRoles}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditRoles && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && <RoleEdit isOpen={isEditOpen} onClose={closeEdit} role={role} setRoles={setRoles} />}
+      <RoleEdit isOpen={isEditOpen} onClose={closeEdit} role={role} setRoles={setRoles} />
     </>
   );
 };

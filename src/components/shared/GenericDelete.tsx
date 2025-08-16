@@ -9,6 +9,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalCloseButton,
   Text,
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
@@ -25,9 +26,19 @@ type GenericDeleteProps = {
     isLoading: boolean;
     error?: string;
   };
+  size?: 'sm' | 'md';
+  variant?: 'solid' | 'outline';
 };
 
-export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDeleteHook }: GenericDeleteProps) => {
+export const GenericDelete = ({
+  item,
+  isUpdating,
+  onDeleted,
+  setItems,
+  useDeleteHook,
+  size = 'sm',
+  variant = 'outline',
+}: GenericDeleteProps) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number>();
@@ -68,29 +79,32 @@ export const GenericDelete = ({ item, isUpdating, onDeleted, setItems, useDelete
   return (
     <>
       <Button
-        colorScheme="red"
-        onClick={() => setConfirmOpen(true)}
-        disabled={isUpdating || isLoading}
         leftIcon={<FaTrash />}
+        onClick={() => setConfirmOpen(true)}
+        colorScheme="red"
+        variant={variant}
+        size={size}
+        disabled={isUpdating || isLoading}
       >
         Eliminar
       </Button>
 
-      <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} isCentered size="xs">
+      <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize="1.25rem">¿Confirmar eliminación?</ModalHeader>
+          <ModalHeader>Confirmar eliminación</ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
-            <Text>
-              ¿Seguro que querés eliminar: {item.name}? <br />
+            <Text>¿Estás seguro de que deseas eliminar "{item.name}"?</Text>
+            <Text mt="0.5rem" fontSize="sm" color="gray.500">
               Esta acción no se puede deshacer.
             </Text>
           </ModalBody>
-          <ModalFooter display="flex" gap="0.5rem">
-            <Button onClick={() => setConfirmOpen(false)} variant="outline" disabled={isLoading}>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => setConfirmOpen(false)} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button onClick={handleConfirm} colorScheme="red" isLoading={isLoading}>
+            <Button colorScheme="red" onClick={handleConfirm} isLoading={isLoading} loadingText="Eliminando...">
               Eliminar
             </Button>
           </ModalFooter>

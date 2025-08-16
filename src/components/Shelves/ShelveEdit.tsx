@@ -13,15 +13,17 @@ import {
   Input,
   useToast,
   VStack,
-  Progress,
-  Box,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Textarea,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiBox, FiFileText } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Shelve } from '@/entities/shelve';
 import { validate } from '@/utils/validations/validate';
@@ -41,8 +43,8 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
   const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const { data, isLoading, error, fieldError } = useUpdateShelve(shelveProps);
 
-  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -102,10 +104,16 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Editar estantería
           </ModalHeader>
           <ModalCloseButton />
@@ -121,15 +129,21 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
           >
             {({ handleSubmit, errors, touched, submitCount }) => (
               <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
+                <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                   <VStack spacing="0.75rem">
                     <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiBox} boxSize="1rem" />
+                          <Text>Nombre</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Input}
                         name="name"
                         type="text"
                         bg={inputBg}
+                        border="1px solid"
                         borderColor={inputBorder}
                         h="2.75rem"
                         validate={validate}
@@ -139,44 +153,46 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
                     </FormControl>
 
                     <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                      <FormLabel>Descripción</FormLabel>
+                      <FormLabel fontWeight="semibold">
+                        <HStack spacing="0.5rem">
+                          <Icon as={FiFileText} boxSize="1rem" />
+                          <Text>Descripción</Text>
+                        </HStack>
+                      </FormLabel>
                       <Field
                         as={Textarea}
                         name="description"
                         type="text"
                         bg={inputBg}
+                        border="1px solid"
                         borderColor={inputBorder}
                         h="5rem"
                         validate={validateEmpty}
                         disabled={isLoading}
+                        rows={4}
                       />
                       <FormErrorMessage>{errors.description}</FormErrorMessage>
                     </FormControl>
                   </VStack>
                 </ModalBody>
 
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
-                    <Progress
-                      h={isLoading ? '4px' : '1px'}
-                      mb="1.5rem"
-                      size="xs"
-                      isIndeterminate={isLoading}
-                      colorScheme="blue"
-                    />
+                <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                  <HStack spacing="0.5rem">
+                    <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                      Cancelar
+                    </Button>
                     <Button
                       type="submit"
-                      disabled={isLoading}
-                      bg="#4C88D8"
-                      color="white"
-                      _hover={{ backgroundColor: '#376bb0' }}
-                      width="100%"
+                      colorScheme="blue"
+                      variant="outline"
+                      isLoading={isLoading}
+                      loadingText="Guardando..."
                       leftIcon={<FaCheck />}
-                      py="1.375rem"
+                      size="sm"
                     >
-                      Confirmar
+                      Guardar cambios
                     </Button>
-                  </Box>
+                  </HStack>
                 </ModalFooter>
               </form>
             )}

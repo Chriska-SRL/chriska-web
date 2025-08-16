@@ -17,8 +17,11 @@ import {
   SimpleGrid,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  HStack,
+  Divider,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiMapPin, FiFileText, FiCalendar } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { useEffect } from 'react';
 import { Zone } from '@/entities/zone';
@@ -73,6 +76,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   useEffect(() => {
     if (forceOpen) {
@@ -85,11 +89,14 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
     onModalClose?.();
   };
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -102,6 +109,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -109,41 +117,51 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
   );
 
   const renderDaysCheckboxesGrouped = (diasPedidos: string[], diasEntregas: string[]) => (
-    <Box w="100%">
-      <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start">
-        <Box>
-          <Text mb="0.5rem">Días de pedidos</Text>
-          {allDays.map((day) => (
-            <Checkbox
-              key={`pedido-${day}`}
-              isChecked={diasPedidos.includes(day)}
-              pointerEvents="none"
-              aria-disabled="true"
-              mb="0.5rem"
-              w="100%"
-            >
-              {getDayLabel(day)}
-            </Checkbox>
-          ))}
-        </Box>
+    <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem" w="100%">
+      <Box>
+        <HStack spacing="0.5rem" mb="0.5rem">
+          <Icon as={FiCalendar} boxSize="1rem" color={iconColor} />
+          <Text color={labelColor} fontWeight="semibold">
+            Días de pedidos
+          </Text>
+        </HStack>
+        {allDays.map((day) => (
+          <Checkbox
+            key={`pedido-${day}`}
+            isChecked={diasPedidos.includes(day)}
+            pointerEvents="none"
+            aria-disabled="true"
+            mb="0.5rem"
+            w="100%"
+            pl="1.5rem"
+          >
+            {getDayLabel(day)}
+          </Checkbox>
+        ))}
+      </Box>
 
-        <Box>
-          <Text mb="0.5rem">Días de entrega</Text>
-          {allDays.map((day) => (
-            <Checkbox
-              key={`entrega-${day}`}
-              isChecked={diasEntregas.includes(day)}
-              pointerEvents="none"
-              aria-disabled="true"
-              mb="0.5rem"
-              w="100%"
-            >
-              {getDayLabel(day)}
-            </Checkbox>
-          ))}
-        </Box>
-      </SimpleGrid>
-    </Box>
+      <Box>
+        <HStack spacing="0.5rem" mb="0.5rem">
+          <Icon as={FiCalendar} boxSize="1rem" color={iconColor} />
+          <Text color={labelColor} fontWeight="semibold">
+            Días de entrega
+          </Text>
+        </HStack>
+        {allDays.map((day) => (
+          <Checkbox
+            key={`entrega-${day}`}
+            isChecked={diasEntregas.includes(day)}
+            pointerEvents="none"
+            aria-disabled="true"
+            mb="0.5rem"
+            w="100%"
+            pl="1.5rem"
+          >
+            {getDayLabel(day)}
+          </Checkbox>
+        ))}
+      </Box>
+    </SimpleGrid>
   );
 
   const diasPedidos = convertDaysToEnglish(zone.requestDays || []);
@@ -156,62 +174,66 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
         icon={<FiEye />}
         onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle de la zona
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            flex="1"
-            maxH="calc(90dvh - 200px)"
-            overflowY="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
               <ZoneImageUpload zone={zone} editable={false} />
-              {detailField('Nombre', zone.name)}
-              {detailField('Descripción', zone.description)}
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Nombre', zone.name, FiMapPin)}
+                {detailField('Descripción', zone.description, FiFileText)}
+              </SimpleGrid>
+
+              <Divider />
+
               {renderDaysCheckboxesGrouped(diasPedidos, diasEntregas)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem" flexShrink={0}>
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditZones && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    handleClose();
-                    openEdit();
-                  }}
-                >
-                  Editar
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
               {canDeleteZones && (
                 <GenericDelete
                   item={{ id: zone.id, name: zone.name }}
                   useDeleteHook={useDeleteZone}
                   setItems={setZones}
                   onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditZones && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

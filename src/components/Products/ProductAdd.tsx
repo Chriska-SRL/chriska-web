@@ -1,39 +1,39 @@
 'use client';
 
 import {
+  Button,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalCloseButton,
+  useDisclosure,
   FormControl,
   FormLabel,
   Input,
   Textarea,
-  VStack,
-  Button,
-  Progress,
-  Box,
-  useToast,
   Select,
-  useDisclosure,
-  ModalCloseButton,
+  useToast,
+  VStack,
+  Box,
   useColorModeValue,
   FormErrorMessage,
   Text,
   HStack,
   Icon,
+  Stack,
   Checkbox,
 } from '@chakra-ui/react';
+import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
-import { Field, Formik, FieldArray } from 'formik';
+import { FiTag, FiHash, FiFileText, FiGrid, FiPackage, FiThermometer, FiMapPin, FiTruck } from 'react-icons/fi';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
-import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { useGetBrands } from '@/hooks/brand';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
@@ -48,11 +48,24 @@ type ProductAddProps = {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 };
 
-export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: ProductAddProps) => {
-  const canCreateProducts = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
+type ProductAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps) => {
   const toast = useToast();
+
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const successBg = useColorModeValue('green.50', 'green.900');
+  const successColor = useColorModeValue('green.600', 'green.200');
+  const selectedBg = useColorModeValue('blue.50', 'blue.900');
+  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
+  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
 
   const [step, setStep] = useState<'form' | 'image'>('form');
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
@@ -73,18 +86,14 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
 
   const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
-  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.600');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
-  const successBg = useColorModeValue('green.50', 'green.900');
-  const successColor = useColorModeValue('green.600', 'green.200');
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
-  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
-  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
-  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
+  const handleClose = () => {
+    setStep('form');
+    setCreatedProduct(null);
+    setSelectedCategoryId('');
+    setSelectedWarehouseId('');
+    setProductProps(undefined);
+    onClose();
+  };
 
   useEffect(() => {
     if (data) {
@@ -134,14 +143,6 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
     },
     [createdProduct, setProducts],
   );
-
-  const handleClose = () => {
-    setStep('form');
-    setCreatedProduct(null);
-    setSelectedCategoryId('');
-    setProductProps(undefined);
-    onClose();
-  };
 
   const handleSkipImage = () => {
     toast({
@@ -203,282 +204,361 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
   }, [createdProduct?.imageUrl]);
 
   return (
-    <>
-      {canCreateProducts && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          px="1.5rem"
-          disabled={isLoadingProducts}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size={{ base: 'xs', md: 'xl' }}
+      isCentered
+      closeOnOverlayClick={step === 'form'}
+    >
+      <ModalOverlay />
+      <ModalContent maxH="90vh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
         >
-          Nuevo
-        </Button>
-      )}
-      <Modal
-        isOpen={isOpen}
-        onClose={handleClose}
-        size={{ base: 'xs', md: 'sm' }}
-        isCentered
-        closeOnOverlayClick={step === 'form'}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
-            {step === 'form' ? 'Nuevo producto' : 'Producto creado'}
-          </ModalHeader>
-          <ModalCloseButton />
+          {step === 'form' ? 'Nuevo producto' : 'Producto creado'}
+        </ModalHeader>
+        <ModalCloseButton />
 
-          {step === 'form' ? (
-            <Formik
-              initialValues={{
-                barcode: '',
-                name: '',
-                price: 0,
-                unitType: '',
-                description: '',
-                temperatureCondition: '',
-                observations: '',
-                categoryId: '',
-                subCategoryId: '',
-                brandId: '',
-                supplierIds: [],
-                warehouseId: '',
-                shelveId: '',
-              }}
-              onSubmit={handleSubmit}
-              validateOnChange
-              validateOnBlur={false}
-            >
-              {({ handleSubmit, errors, submitCount, setFieldValue }) => (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pb="0" maxH="70dvh" overflowY="auto">
-                    <VStack spacing="0.75rem">
-                      <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
-                        <FormLabel>Código de barras</FormLabel>
-                        <Field
-                          as={Input}
-                          name="barcode"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={(value: any) => {
-                            if (!value) return undefined;
-                            const barcodeRegex = /^\d{13}$/;
-                            return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
-                          }}
-                        />
-                        <FormErrorMessage>{errors.barcode}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.name}>
-                        <FormLabel>Nombre</FormLabel>
-                        <Field
-                          as={Input}
-                          name="name"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.price}>
-                        <FormLabel>Precio</FormLabel>
-                        <Field
-                          as={Input}
-                          name="price"
-                          type="number"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={(value: any) => {
-                            if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
-                            if (value.length > 21) return 'Máximo 21 dígitos permitidos';
-                            return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
-                          }}
-                        />
-                        <FormErrorMessage>{errors.price}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
-                        <FormLabel>Unidad</FormLabel>
-                        <Field
-                          as={Select}
-                          name="unitType"
-                          placeholder="Seleccionar unidad"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          <option value="Kilo">Kilos</option>
-                          <option value="Unit">Unidades</option>
+        {step === 'form' ? (
+          <>
+            <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+              <Formik
+                initialValues={{
+                  barcode: '',
+                  name: '',
+                  price: 0,
+                  unitType: '',
+                  description: '',
+                  temperatureCondition: '',
+                  observations: '',
+                  categoryId: '',
+                  subCategoryId: '',
+                  brandId: '',
+                  supplierIds: [],
+                  warehouseId: '',
+                  shelveId: '',
+                }}
+                onSubmit={handleSubmit}
+                enableReinitialize
+              >
+                {({ handleSubmit, setFieldValue }) => (
+                  <form id="product-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <Field name="name" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiTag} boxSize="1rem" />
+                                  <Text>Nombre</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el nombre del producto"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.unitType}</FormErrorMessage>
-                      </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.description}>
-                        <FormLabel>Descripción</FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="description"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        />
-                        <FormErrorMessage>{errors.description}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
-                        <FormLabel>Condición de temperatura</FormLabel>
-                        <Field
-                          as={Select}
-                          name="temperatureCondition"
-                          placeholder="Seleccione una opción"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          <option value="Cold">Frío</option>
-                          <option value="Frozen">Congelado</option>
-                          <option value="Ambient">Natural</option>
+                        <Field name="barcode">
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiHash} boxSize="1rem" />
+                                  <Text>Código de barras</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el código de barras"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
-                      </FormControl>
+                      </Stack>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
-                        <FormLabel>Marca</FormLabel>
-                        <Field
-                          as={Select}
-                          name="brandId"
-                          placeholder="Seleccione una marca"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          {brands.map((brand) => (
-                            <option key={brand.id} value={brand.id}>
-                              {brand.name}
-                            </option>
-                          ))}
+                      <Field name="description" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese la descripción del producto"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={3}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <Field name="categoryId">
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiGrid} boxSize="1rem" />
+                                  <Text>Categoría</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                {...field}
+                                placeholder="Seleccionar categoría"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                value={selectedCategoryId}
+                                disabled={isLoading || isLoadingCats}
+                                onChange={(e) => {
+                                  const selectedId = e.target.value;
+                                  setFieldValue('categoryId', selectedId);
+                                  setFieldValue('subCategoryId', '');
+                                  setSelectedCategoryId(selectedId);
+                                }}
+                              >
+                                {categories.map((cat) => (
+                                  <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </Select>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.brandId}</FormErrorMessage>
-                      </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.observations}>
-                        <FormLabel>Observaciones</FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="observations"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.categoryId}>
-                        <FormLabel>Categoría</FormLabel>
-                        <Field
-                          as={Select}
-                          name="categoryId"
-                          placeholder="Seleccionar categoría"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          value={selectedCategoryId}
-                          disabled={isLoading || isLoadingCats}
-                          onChange={(e: any) => {
-                            const selectedId = e.target.value;
-                            setFieldValue('categoryId', selectedId);
-                            setFieldValue('subCategoryId', '');
-                            setSelectedCategoryId(selectedId);
-                          }}
-                          validate={validateEmpty}
-                        >
-                          {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </option>
-                          ))}
+                        <Field name="subCategoryId" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiGrid} boxSize="1rem" />
+                                  <Text>Subcategoría</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                {...field}
+                                placeholder="Seleccionar subcategoría"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading || !selectedCategoryId}
+                              >
+                                {selectedCategory?.subCategories.map((sub: any) => (
+                                  <option key={sub.id} value={sub.id}>
+                                    {sub.name}
+                                  </option>
+                                ))}
+                              </Select>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.categoryId}</FormErrorMessage>
-                      </FormControl>
+                      </Stack>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
-                        <FormLabel>Subcategoría</FormLabel>
-                        <Field
-                          as={Select}
-                          name="subCategoryId"
-                          placeholder="Seleccionar subcategoría"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading || !selectedCategoryId}
-                          validate={validate}
-                        >
-                          {selectedCategory?.subCategories.map((sub: any) => (
-                            <option key={sub.id} value={sub.id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
-                      </FormControl>
+                      <Field name="brandId" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Marca</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccione una marca"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              {brands.map((brand) => (
+                                <option key={brand.id} value={brand.id}>
+                                  {brand.name}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.warehouseId}>
-                        <FormLabel>Depósito</FormLabel>
-                        <Field
-                          as={Select}
-                          name="warehouseId"
-                          placeholder="Seleccionar depósito"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          value={selectedWarehouseId}
-                          disabled={isLoading || isLoadingWarehouses}
-                          onChange={(e: any) => {
-                            const selectedId = e.target.value;
-                            setFieldValue('warehouseId', selectedId);
-                            setFieldValue('shelveId', '');
-                            setSelectedWarehouseId(selectedId);
-                          }}
-                          validate={validate}
-                        >
-                          {warehouses.map((warehouse) => (
-                            <option key={warehouse.id} value={warehouse.id}>
-                              {warehouse.name}
-                            </option>
-                          ))}
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <Field name="unitType" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiPackage} boxSize="1rem" />
+                                  <Text>Unidad</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                {...field}
+                                placeholder="Seleccionar unidad"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              >
+                                <option value="Kilo">Kilos</option>
+                                <option value="Unit">Unidades</option>
+                              </Select>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
-                      </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
-                        <FormLabel>Estantería</FormLabel>
-                        <Field
-                          as={Select}
-                          name="shelveId"
-                          placeholder="Seleccionar estantería"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          disabled={isLoading || !selectedWarehouseId}
-                          validate={validate}
-                        >
-                          {shelves.map((shelve) => (
-                            <option key={shelve.id} value={shelve.id}>
-                              {shelve.name}
-                            </option>
-                          ))}
+                        <Field name="price">
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiTag} boxSize="1rem" />
+                                  <Text>Precio</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                placeholder="Ingrese el precio"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
                         </Field>
-                        <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
-                      </FormControl>
+                      </Stack>
+
+                      <Field name="temperatureCondition" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiThermometer} boxSize="1rem" />
+                                <Text>Condición de temperatura</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccione una opción"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              <option value="Cold">Frío</option>
+                              <option value="Frozen">Congelado</option>
+                              <option value="Ambient">Natural</option>
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <Field name="warehouseId" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiMapPin} boxSize="1rem" />
+                                  <Text>Depósito</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                {...field}
+                                placeholder="Seleccionar depósito"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                value={selectedWarehouseId}
+                                disabled={isLoading || isLoadingWarehouses}
+                                onChange={(e) => {
+                                  const selectedId = e.target.value;
+                                  setFieldValue('warehouseId', selectedId);
+                                  setFieldValue('shelveId', '');
+                                  setSelectedWarehouseId(selectedId);
+                                }}
+                              >
+                                {warehouses.map((warehouse) => (
+                                  <option key={warehouse.id} value={warehouse.id}>
+                                    {warehouse.name}
+                                  </option>
+                                ))}
+                              </Select>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        <Field name="shelveId" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiPackage} boxSize="1rem" />
+                                  <Text>Estantería</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                {...field}
+                                placeholder="Seleccionar estantería"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading || !selectedWarehouseId}
+                              >
+                                {shelves.map((shelve) => (
+                                  <option key={shelve.id} value={shelve.id}>
+                                    {shelve.name}
+                                  </option>
+                                ))}
+                              </Select>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+                      </Stack>
 
                       <FormControl>
-                        <FormLabel>Proveedores</FormLabel>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiTruck} boxSize="1rem" />
+                            <Text>Proveedores</Text>
+                          </HStack>
+                        </FormLabel>
                         <FieldArray name="supplierIds">
                           {({ push, remove, form }) => (
                             <Box>
@@ -536,91 +616,128 @@ export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: Produc
                           )}
                         </FieldArray>
                       </FormControl>
+
+                      <Field name="observations">
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Observaciones</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese observaciones adicionales"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={3}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                )}
+              </Formik>
+            </ModalBody>
 
-                  <ModalFooter pb="1.5rem">
-                    <Box w="100%">
-                      <Progress
-                        h={isLoading ? '4px' : '1px'}
-                        mb="1rem"
-                        size="xs"
-                        isIndeterminate={isLoading}
-                        colorScheme="blue"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        bg={submitBg}
-                        color="white"
-                        _hover={{ backgroundColor: submitHover }}
-                        width="100%"
-                        leftIcon={<FaCheck />}
-                        py="1.375rem"
-                      >
-                        Crear producto
-                      </Button>
-                    </Box>
-                  </ModalFooter>
-                </form>
-              )}
-            </Formik>
-          ) : (
-            <>
-              <ModalBody pb="0">
-                <VStack spacing="1rem">
-                  <Box w="100%" p="1rem" bg={successBg} borderRadius="md" textAlign="center">
-                    <HStack justifyContent="center" mb="0.5rem">
-                      <Icon as={FaCheck} color={successColor} />
-                      <Text color={successColor} fontWeight="medium">
-                        Producto creado exitosamente
-                      </Text>
-                    </HStack>
-                    <Text fontSize="sm" color={successColor}>
-                      {hasImage ? '¡Imagen agregada!' : '¿Quieres agregar una imagen ahora?'}
+            <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+              <HStack spacing="0.5rem">
+                <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                  Cancelar
+                </Button>
+                <Button
+                  form="product-add-form"
+                  type="submit"
+                  colorScheme="blue"
+                  variant="outline"
+                  isLoading={isLoading}
+                  loadingText="Creando..."
+                  leftIcon={<FaCheck />}
+                  size="sm"
+                >
+                  Crear producto
+                </Button>
+              </HStack>
+            </ModalFooter>
+          </>
+        ) : (
+          <>
+            <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+              <VStack spacing="1rem">
+                <Box w="100%" p="1rem" bg={successBg} borderRadius="md" textAlign="center">
+                  <HStack justifyContent="center" mb="0.5rem">
+                    <Icon as={FaCheck} color={successColor} />
+                    <Text color={successColor} fontWeight="medium">
+                      Producto creado exitosamente
                     </Text>
-                  </Box>
+                  </HStack>
+                  <Text fontSize="sm" color={successColor}>
+                    {hasImage ? '¡Imagen agregada!' : '¿Quieres agregar una imagen ahora?'}
+                  </Text>
+                </Box>
 
-                  {createdProduct && (
-                    <ProductImageUpload
-                      product={createdProduct}
-                      onImageChange={handleImageChange}
-                      editable={!hasImage}
-                    />
-                  )}
-                </VStack>
-              </ModalBody>
+                {createdProduct && (
+                  <ProductImageUpload product={createdProduct} onImageChange={handleImageChange} editable={!hasImage} />
+                )}
+              </VStack>
+            </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <VStack w="100%" spacing="0.75rem">
-                  {hasImage ? (
-                    <Button
-                      bg={submitBg}
-                      color="white"
-                      _hover={{ backgroundColor: submitHover }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      onClick={handleFinishWithImage}
-                    >
-                      Finalizar
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="fill"
-                      color="white"
-                      _hover={{ backgroundColor: buttonHover }}
-                      width="100%"
-                      onClick={handleSkipImage}
-                    >
-                      Omitir imagen por ahora
-                    </Button>
-                  )}
-                </VStack>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+            <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+              <HStack spacing="0.5rem">
+                {hasImage ? (
+                  <Button
+                    colorScheme="blue"
+                    variant="outline"
+                    leftIcon={<FaCheck />}
+                    onClick={handleFinishWithImage}
+                    size="sm"
+                  >
+                    Finalizar
+                  </Button>
+                ) : (
+                  <Button variant="ghost" onClick={handleSkipImage} size="sm">
+                    Omitir imagen por ahora
+                  </Button>
+                )}
+              </HStack>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const ProductAdd = ({ isLoading: isLoadingProducts, setProducts }: ProductAddProps) => {
+  const canCreateProducts = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+
+  if (!canCreateProducts) return null;
+
+  return (
+    <>
+      <Button
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        px="1.5rem"
+        disabled={isLoadingProducts}
+      >
+        Nuevo
+      </Button>
+
+      {/* Solo renderizar el formulario cuando el modal está abierto */}
+      {isOpen && <ProductAddModal isOpen={isOpen} onClose={onClose} setProducts={setProducts} />}
     </>
   );
 };

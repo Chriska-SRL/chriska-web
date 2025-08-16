@@ -133,7 +133,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
       </HStack>
       <Box
         px="1rem"
-        py="0.75rem"
+        py="0.5rem"
         bg={inputBg}
         border="1px solid"
         borderColor={inputBorder}
@@ -156,7 +156,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
         aria-label="Ver detalles"
         icon={<FiEye />}
         variant="ghost"
-        size="sm"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
         onClick={onOpen}
       />

@@ -15,22 +15,29 @@ import {
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  SimpleGrid,
+  Divider,
+  HStack,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
-import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteSupplier } from '@/hooks/supplier';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { GenericDelete } from '../shared/GenericDelete';
+import { useEffect, useCallback } from 'react';
 
 type SupplierDetailProps = {
   supplier: Supplier;
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
-export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) => {
+export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose }: SupplierDetailProps) => {
   const canEditSuppliers = useUserStore((s) => s.hasPermission(Permission.EDIT_SUPPLIERS));
   const canDeleteSuppliers = useUserStore((s) => s.hasPermission(Permission.DELETE_SUPPLIERS));
 
@@ -41,12 +48,27 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const handleClose = useCallback(() => {
+    onClose();
+    onModalClose?.();
+  }, [onClose, onModalClose]);
+
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -59,6 +81,7 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -68,118 +91,123 @@ export const SupplierDetail = ({ supplier, setSuppliers }: SupplierDetailProps) 
   return (
     <>
       <IconButton
-        aria-label="Ver detalle"
+        aria-label="Ver detalles"
         icon={<FiEye />}
-        onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
+        onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle del proveedor
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            flex="1"
-            maxH="calc(90dvh - 200px)"
-            overflowY="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
-              {detailField('Nombre', supplier.name)}
-              {detailField('RUT', supplier.rut)}
-              {detailField('Razón Social', supplier.razonSocial)}
-              {detailField('Dirección', supplier.address)}
-              {detailField('Dirección en Maps', supplier.mapsAddress)}
-              {detailField('Teléfono', supplier.phone)}
-              {detailField('Persona de contacto', supplier.contactName)}
-              {detailField('Correo electrónico', supplier.email)}
-              <Box w="100%">
-                <Text color={labelColor} mb="0.5rem">
-                  Cuentas bancarias
-                </Text>
-                {supplier.bankAccounts && supplier.bankAccounts.length > 0 ? (
-                  <VStack spacing="0.5rem" align="stretch">
-                    {supplier.bankAccounts.map((account, index) => (
-                      <Box
-                        key={`bank-account-${index}`}
-                        px="1rem"
-                        py="0.5rem"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        borderRadius="md"
-                      >
-                        <Text fontSize="sm" fontWeight="semibold">
-                          {account.accountName}
-                        </Text>
-                        <Text fontSize="sm">{account.bank}</Text>
-                        <Text fontSize="sm">{account.accountNumber}</Text>
-                      </Box>
-                    ))}
-                  </VStack>
-                ) : (
-                  <Box
-                    px="1rem"
-                    py="0.5rem"
-                    bg={inputBg}
-                    border="1px solid"
-                    borderColor={inputBorder}
-                    borderRadius="md"
-                    textAlign="center"
-                  >
-                    <Text fontSize="sm" color="gray.500">
-                      El proveedor no tiene cuentas bancarias registradas
-                    </Text>
-                  </Box>
-                )}
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Nombre', supplier.name, FiUser)}
+                {detailField('RUT', supplier.rut, FiHash)}
+              </SimpleGrid>
+
+              {detailField('Razón Social', supplier.razonSocial, FiFileText)}
+
+              {detailField('Dirección', supplier.address, FiHome)}
+              {detailField('Dirección Maps', supplier.mapsAddress, FiMapPin)}
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Teléfono', supplier.phone, FiPhone)}
+                {detailField('Persona de contacto', supplier.contactName, FiUser)}
+              </SimpleGrid>
+
+              {detailField('Email', supplier.email, FiMail)}
+
+              <Divider />
+
+              <Box>
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiDollarSign} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Cuentas bancarias
+                  </Text>
+                </HStack>
+                <Box
+                  px="1rem"
+                  py="0.75rem"
+                  bg={inputBg}
+                  border="1px solid"
+                  borderColor={inputBorder}
+                  borderRadius="md"
+                  maxH="200px"
+                  overflowY="auto"
+                >
+                  {supplier.bankAccounts && supplier.bankAccounts.length > 0 ? (
+                    <VStack spacing="0.5rem" align="stretch">
+                      {supplier.bankAccounts.map((account, index) => (
+                        <Box key={`bank-account-${index}`} p="0.5rem" bg="whiteAlpha.50" borderRadius="md">
+                          <Text fontSize="sm" fontWeight="medium">
+                            {account.accountName}
+                          </Text>
+                          <Text fontSize="xs" color={iconColor}>
+                            {account.bank} - {account.accountNumber}
+                          </Text>
+                        </Box>
+                      ))}
+                    </VStack>
+                  ) : (
+                    <Text color={iconColor}>No hay cuentas bancarias registradas</Text>
+                  )}
+                </Box>
               </Box>
-              {detailField('Observaciones', supplier.observations)}
+
+              <Divider />
+
+              {detailField('Observaciones', supplier.observations, FiFileText)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem" flexShrink={0}>
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditSuppliers && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    onClose();
-                    openEdit();
-                  }}
-                >
-                  Editar
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
               {canDeleteSuppliers && (
                 <GenericDelete
                   item={{ id: supplier.id, name: supplier.name }}
                   useDeleteHook={useDeleteSupplier}
                   setItems={setSuppliers}
-                  onDeleted={onClose}
+                  onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditSuppliers && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && (
-        <SupplierEdit isOpen={isEditOpen} onClose={closeEdit} supplier={supplier} setSuppliers={setSuppliers} />
-      )}
+      <SupplierEdit isOpen={isEditOpen} onClose={closeEdit} supplier={supplier} setSuppliers={setSuppliers} />
     </>
   );
 };

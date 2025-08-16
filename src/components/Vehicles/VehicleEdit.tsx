@@ -12,16 +12,18 @@ import {
   Input,
   VStack,
   Button,
-  Progress,
-  Box,
   useToast,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { Vehicle } from '@/entities/vehicle';
 import { Formik, Field } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiTruck, FiTag, FiPackage, FiHash } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { validateVehicle } from '@/utils/validations/validateVehicle';
@@ -40,7 +42,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
   const { data, isLoading, error, fieldError } = useUpdateVehicle(vehicleProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -82,10 +84,16 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar vehículo
         </ModalHeader>
         <ModalCloseButton />
@@ -104,16 +112,22 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
         >
           {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0">
+              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
-                    <FormLabel>Matrícula</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiHash} boxSize="1rem" />
+                        <Text>Matrícula</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="plate"
                       type="text"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       validate={validate}
                       disabled={isLoading}
@@ -122,13 +136,19 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
-                    <FormLabel>Marca</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="1rem" />
+                        <Text>Marca</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="brand"
                       type="text"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       validate={validateVehicle}
                       disabled={isLoading}
@@ -137,13 +157,19 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
-                    <FormLabel>Modelo</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTruck} boxSize="1rem" />
+                        <Text>Modelo</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="model"
                       type="text"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       validate={validateVehicle}
                       disabled={isLoading}
@@ -152,13 +178,19 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
-                    <FormLabel>Capacidad de cajones</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="1rem" />
+                        <Text>Capacidad de cajones</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="crateCapacity"
                       type="number"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       validate={validate}
                       disabled={isLoading}
@@ -168,28 +200,23 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                 </VStack>
               </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.25rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
+              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                <HStack spacing="0.5rem">
+                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    bg="#4C88D8"
-                    color="white"
-                    disabled={isLoading}
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
+                    colorScheme="blue"
+                    variant="outline"
+                    isLoading={isLoading}
+                    loadingText="Guardando..."
                     leftIcon={<FaCheck />}
-                    fontSize="1rem"
+                    size="sm"
                   >
                     Guardar cambios
                   </Button>
-                </Box>
+                </HStack>
               </ModalFooter>
             </form>
           )}

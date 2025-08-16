@@ -13,18 +13,21 @@ import {
   Textarea,
   VStack,
   Button,
-  Progress,
   Box,
   useToast,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Select,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { Supplier } from '@/entities/supplier';
 import { BankAccount } from '@/entities/bankAccount';
 import { Formik, Field, FieldArray } from 'formik';
-import { FaCheck, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaPlus, FaTrash, FaTimes } from 'react-icons/fa';
+import { FiUser, FiHash, FiFileText, FiMapPin, FiPhone, FiMail, FiCreditCard } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useUpdateSupplier } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
@@ -44,7 +47,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   const { data, isLoading, error, fieldError } = useUpdateSupplier(supplierProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -89,10 +92,16 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar proveedor
         </ModalHeader>
         <ModalCloseButton />
@@ -157,69 +166,169 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
         >
           {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
+              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel>Nombre</FormLabel>
-                    <Field as={Input} name="name" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiUser} boxSize="1rem" />
+                        <Text>Nombre</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="name"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.name}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
-                    <FormLabel>RUT</FormLabel>
-                    <Field as={Input} name="rut" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiHash} boxSize="1rem" />
+                        <Text>RUT</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="rut"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.rut}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
-                    <FormLabel>Razón Social</FormLabel>
-                    <Field as={Input} name="razonSocial" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Razón Social</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="razonSocial"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
-                    <FormLabel>Dirección</FormLabel>
-                    <Field as={Input} name="address" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiMapPin} boxSize="1rem" />
+                        <Text>Dirección</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="address"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.address}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
-                    <FormLabel>Dirección Maps</FormLabel>
-                    <Field as={Input} name="mapsAddress" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiMapPin} boxSize="1rem" />
+                        <Text>Dirección Maps</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="mapsAddress"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
-                    <FormLabel>Teléfono</FormLabel>
-                    <Field as={Input} name="phone" bg={inputBg} borderColor={borderColor} h="2.75rem" />
-
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPhone} boxSize="1rem" />
+                        <Text>Teléfono</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="phone"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.phone}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
-                    <FormLabel>Persona de contacto</FormLabel>
-                    <Field as={Input} name="contactName" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiUser} boxSize="1rem" />
+                        <Text>Persona de contacto</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="contactName"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.contactName}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
-                    <FormLabel>Email</FormLabel>
-                    <Field as={Input} name="email" bg={inputBg} borderColor={borderColor} h="2.75rem" />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiMail} boxSize="1rem" />
+                        <Text>Email</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="email"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      h="2.75rem"
+                    />
                     <FormErrorMessage>{errors.email}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Cuentas bancarias</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiCreditCard} boxSize="1rem" />
+                        <Text>Cuentas bancarias</Text>
+                      </HStack>
+                    </FormLabel>
                     <FieldArray name="bankAccounts">
                       {({ push, remove, form }) => (
                         <VStack spacing="0.75rem" align="stretch">
-                          {form.values.bankAccounts.map((account: BankAccount, index: number) => (
+                          {form.values.bankAccounts.map((_account: BankAccount, index: number) => (
                             <Box
                               key={index}
                               p="1rem"
                               bg={inputBg}
                               border="1px solid"
-                              borderColor={borderColor}
+                              borderColor={inputBorder}
                               borderRadius="lg"
                               position="relative"
                             >
@@ -230,7 +339,8 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                                     as={Input}
                                     name={`bankAccounts.${index}.accountName`}
                                     bg={inputBg}
-                                    borderColor={borderColor}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
                                     h="2.5rem"
                                     size="sm"
                                     borderRadius="md"
@@ -243,7 +353,8 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                                     as={Select}
                                     name={`bankAccounts.${index}.bank`}
                                     bg={inputBg}
-                                    borderColor={borderColor}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
                                     h="2.5rem"
                                     size="sm"
                                     borderRadius="md"
@@ -263,7 +374,8 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                                     as={Input}
                                     name={`bankAccounts.${index}.accountNumber`}
                                     bg={inputBg}
-                                    borderColor={borderColor}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
                                     h="2.5rem"
                                     size="sm"
                                     borderRadius="md"
@@ -299,35 +411,42 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
-                    <FormLabel>Observaciones</FormLabel>
-                    <Field as={Textarea} name="observations" bg={inputBg} borderColor={borderColor} />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Observaciones</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Textarea}
+                      name="observations"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      rows={4}
+                    />
                     <FormErrorMessage>{errors.observations}</FormErrorMessage>
                   </FormControl>
                 </VStack>
               </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.25rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
+              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                <HStack spacing="0.5rem">
+                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    bg="#4C88D8"
-                    color="white"
-                    disabled={isLoading}
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
+                    colorScheme="blue"
+                    variant="outline"
+                    isLoading={isLoading}
+                    loadingText="Guardando..."
                     leftIcon={<FaCheck />}
-                    fontSize="1rem"
+                    size="sm"
                   >
                     Guardar cambios
                   </Button>
-                </Box>
+                </HStack>
               </ModalFooter>
             </form>
           )}

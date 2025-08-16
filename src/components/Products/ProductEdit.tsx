@@ -13,7 +13,6 @@ import {
   Textarea,
   VStack,
   Button,
-  Progress,
   Box,
   Select,
   useToast,
@@ -23,10 +22,22 @@ import {
   HStack,
   Checkbox,
   Text,
+  Icon,
 } from '@chakra-ui/react';
 import { Field, Formik, FieldArray } from 'formik';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import {
+  FiPackage,
+  FiHash,
+  FiTag,
+  FiDollarSign,
+  FiFileText,
+  FiThermometer,
+  FiGrid,
+  FiBox,
+  FiTruck,
+} from 'react-icons/fi';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
 import { validate } from '@/utils/validations/validate';
@@ -64,10 +75,8 @@ interface ProductEditFormValues {
 export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEditProps) => {
   const toast = useToast();
 
-  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#4C88D8', 'blue.500');
-  const buttonHover = useColorModeValue('#376bb0', 'blue.600');
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const selectedBg = useColorModeValue('blue.50', 'blue.900');
   const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
   const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
@@ -183,10 +192,16 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const finalImageUrl = currentImageUrl || product.imageUrl;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="1.75rem">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar producto
         </ModalHeader>
         <ModalCloseButton />
@@ -212,7 +227,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
         >
           {({ handleSubmit, errors, submitCount, setFieldValue }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody pb="0" maxH="70dvh" overflowY="auto">
+              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <ProductImageUpload
                     product={{
@@ -224,17 +239,35 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   />
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
-                    <FormLabel>Código interno</FormLabel>
-                    <Field as={Input} name="internalCode" bg={inputBg} borderColor={inputBorder} disabled />
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="1rem" />
+                        <Text>Código interno</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Field
+                      as={Input}
+                      name="internalCode"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      disabled
+                    />
                     <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
-                    <FormLabel>Código de barras</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiHash} boxSize="1rem" />
+                        <Text>Código de barras</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="barcode"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
@@ -247,11 +280,17 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.name}>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="1rem" />
+                        <Text>Nombre</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="name"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={validate}
@@ -260,12 +299,18 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.price}>
-                    <FormLabel>Precio</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiDollarSign} boxSize="1rem" />
+                        <Text>Precio</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="price"
                       type="number"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={(value: any) => {
@@ -280,11 +325,17 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
-                    <FormLabel>Unidad</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="1rem" />
+                        <Text>Unidad</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="unitType"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
@@ -297,24 +348,37 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.description}>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Descripción</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Textarea}
                       name="description"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading}
                       validate={validate}
+                      rows={4}
                     />
                     <FormErrorMessage>{errors.description}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
-                    <FormLabel>Marca</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="1rem" />
+                        <Text>Marca</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="brandId"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       placeholder="Seleccione una marca"
                       disabled={isLoading}
@@ -330,11 +394,17 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
-                    <FormLabel>Condición de temperatura</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiThermometer} boxSize="1rem" />
+                        <Text>Condición de temperatura</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="temperatureCondition"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       placeholder="Seleccione una opción"
                       disabled={isLoading}
@@ -348,22 +418,35 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.observations}>
-                    <FormLabel>Observaciones</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Observaciones</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Textarea}
                       name="observations"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading}
+                      rows={4}
                     />
                     <FormErrorMessage>{errors.observations}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Categoría</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiGrid} boxSize="1rem" />
+                        <Text>Categoría</Text>
+                      </HStack>
+                    </FormLabel>
                     <Select
                       placeholder="Seleccionar categoría"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       value={selectedCategoryId ?? ''}
                       disabled={isLoading || isLoadingCats}
@@ -378,12 +461,18 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
-                    <FormLabel>Subcategoría</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiGrid} boxSize="1rem" />
+                        <Text>Subcategoría</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="subCategoryId"
                       placeholder="Seleccionar subcategoría"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading || isLoadingCats || !selectedCategoryId}
                       validate={validate}
@@ -398,10 +487,16 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
-                    <FormLabel>Depósito</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiBox} boxSize="1rem" />
+                        <Text>Depósito</Text>
+                      </HStack>
+                    </FormLabel>
                     <Select
                       placeholder="Seleccionar depósito"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading || isLoadingWarehouses}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -421,12 +516,18 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
-                    <FormLabel>Estantería</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiBox} boxSize="1rem" />
+                        <Text>Estantería</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="shelveId"
                       placeholder="Seleccionar estantería"
                       bg={inputBg}
+                      border="1px solid"
                       borderColor={inputBorder}
                       disabled={isLoading || !selectedWarehouseId}
                       validate={validate}
@@ -441,7 +542,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Proveedores</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTruck} boxSize="1rem" />
+                        <Text>Proveedores</Text>
+                      </HStack>
+                    </FormLabel>
                     <FieldArray name="supplierIds">
                       {({ push, remove, form }) => (
                         <Box>
@@ -502,29 +608,23 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                 </VStack>
               </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.5rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
-
+              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                <HStack spacing="0.5rem">
+                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    bg={buttonBg}
-                    color="white"
-                    disabled={isLoading}
-                    _hover={{ backgroundColor: buttonHover }}
-                    width="100%"
+                    colorScheme="blue"
+                    variant="outline"
+                    isLoading={isLoading}
+                    loadingText="Guardando..."
                     leftIcon={<FaCheck />}
-                    fontSize="0.95rem"
+                    size="sm"
                   >
                     Guardar cambios
                   </Button>
-                </Box>
+                </HStack>
               </ModalFooter>
             </form>
           )}

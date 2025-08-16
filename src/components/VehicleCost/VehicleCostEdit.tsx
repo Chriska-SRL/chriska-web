@@ -13,17 +13,19 @@ import {
   Textarea,
   VStack,
   Button,
-  Progress,
-  Box,
   useToast,
   ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Select,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { Formik, Field } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiCalendar, FiDollarSign, FiTag, FiFileText } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useUpdateVehicleCost } from '@/hooks/vehicleCost';
 import { VehicleCostType, VehicleCostTypeOptions } from '@/enums/vehicleCostType.enum';
@@ -41,7 +43,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
   const { data, isLoading, error, fieldError } = useUpdateVehicleCost(costProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -92,10 +94,16 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
           Editar costo
         </ModalHeader>
         <ModalCloseButton />
@@ -114,25 +122,22 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
         >
           {({ handleSubmit, errors, touched, submitCount }) => (
             <form onSubmit={handleSubmit}>
-              <ModalBody
-                pb="0"
-                maxH="31rem"
-                overflow="auto"
-                sx={{
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
-              >
+              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
                 <VStack spacing="0.75rem">
                   <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
-                    <FormLabel>Fecha</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiCalendar} boxSize="1rem" />
+                        <Text>Fecha</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="date"
                       type="date"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       disabled={isLoading}
                     />
@@ -140,12 +145,18 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
-                    <FormLabel>Tipo</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiTag} boxSize="1rem" />
+                        <Text>Tipo</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Select}
                       name="type"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       disabled={isLoading}
                     >
@@ -160,7 +171,12 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                   </FormControl>
 
                   <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
-                    <FormLabel>Monto</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiDollarSign} boxSize="1rem" />
+                        <Text>Monto</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Input}
                       name="amount"
@@ -168,7 +184,8 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                       step="0.01"
                       placeholder="0.00"
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       h="2.75rem"
                       disabled={isLoading}
                     />
@@ -176,41 +193,43 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiFileText} boxSize="1rem" />
+                        <Text>Descripción</Text>
+                      </HStack>
+                    </FormLabel>
                     <Field
                       as={Textarea}
                       name="description"
                       placeholder="Descripción opcional del costo..."
                       bg={inputBg}
-                      borderColor={borderColor}
+                      border="1px solid"
+                      borderColor={inputBorder}
                       disabled={isLoading}
+                      rows={4}
                     />
                   </FormControl>
                 </VStack>
               </ModalBody>
 
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.25rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
+              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                <HStack spacing="0.5rem">
+                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
-                    bg="#4C88D8"
-                    color="white"
-                    disabled={isLoading}
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
+                    colorScheme="blue"
+                    variant="outline"
+                    isLoading={isLoading}
+                    loadingText="Guardando..."
                     leftIcon={<FaCheck />}
-                    fontSize="1rem"
+                    size="sm"
                   >
                     Guardar cambios
                   </Button>
-                </Box>
+                </HStack>
               </ModalFooter>
             </form>
           )}

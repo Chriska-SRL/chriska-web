@@ -8,29 +8,31 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   useToast,
   VStack,
-  Progress,
-  Box,
-  Textarea,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Text,
+  HStack,
+  Icon,
   IconButton,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FiTag, FiFileText, FiPackage } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Shelve } from '@/entities/shelve';
 import { Warehouse } from '@/entities/warehouse';
-import { validate } from '@/utils/validations/validate';
 import { useAddShelve } from '@/hooks/shelve';
-import { useUserStore } from '@/stores/useUserStore';
+import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
+import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type ShelveAddProps = {
@@ -38,29 +40,38 @@ type ShelveAddProps = {
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
-  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
+type ShelveAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  warehouse: Warehouse;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAddModalProps) => {
   const toast = useToast();
+
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+
   const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const { data, isLoading, error, fieldError } = useAddShelve(shelveProps);
 
-  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
+  const handleClose = () => {
+    setShelveProps(undefined);
+    onClose();
+  };
 
   useEffect(() => {
     if (data) {
       toast({
         title: 'Estantería creada',
-        description: `La estantería se creó correctamente.`,
+        description: 'La estantería ha sido creada correctamente.',
         status: 'success',
-        duration: 1500,
+        duration: 2000,
         isClosable: true,
       });
+      setShelveProps(undefined);
       setWarehouses((prev) =>
         prev.map((w) => {
           if (w.id === warehouse.id) {
@@ -69,15 +80,14 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
           return w;
         }),
       );
-      setShelveProps(undefined);
       onClose();
     }
-  }, [data]);
+  }, [data, setWarehouses, toast, onClose, warehouse.id]);
 
   useEffect(() => {
     if (fieldError) {
       toast({
-        title: `Error`,
+        title: 'Error',
         description: fieldError.error,
         status: 'error',
         duration: 4000,
@@ -92,111 +102,151 @@ export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { name: string; description: string }) => {
+  const handleSubmit = (values: Partial<Shelve>) => {
     const shelve = {
-      name: values.name,
-      description: values.description,
+      ...values,
       warehouseId: warehouse.id,
     };
     setShelveProps(shelve);
   };
 
   return (
-    <>
-      {canCreateWarehouses && (
-        <IconButton
-          aria-label="Agregar estantería"
-          icon={<FaPlus />}
-          onClick={onOpen}
-          size="md"
-          bg="transparent"
-          _hover={{ bg: iconHoverBg }}
-          disabled={!canCreateWarehouses}
-        />
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
-            Nueva estantería
-          </ModalHeader>
-          <ModalCloseButton />
+    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
+      <ModalOverlay />
+      <ModalContent maxH="90vh" display="flex" flexDirection="column">
+        <ModalHeader
+          textAlign="center"
+          fontSize="1.5rem"
+          flexShrink={0}
+          borderBottom="1px solid"
+          borderColor={inputBorder}
+        >
+          Nueva estantería
+        </ModalHeader>
+        <ModalCloseButton />
+
+        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
           <Formik
-            initialValues={{ name: '', description: '' }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount }) => {
-              const showError = (field: keyof typeof errors) => submitCount > 0 && touched[field] && !!errors[field];
-
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pb="0">
-                    <VStack spacing="0.75rem">
-                      <FormControl isInvalid={showError('name')}>
-                        <FormLabel>Nombre</FormLabel>
-                        <Field
-                          as={Input}
-                          name="name"
-                          type="text"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                          validate={validate}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={showError('description')}>
-                        <FormLabel>Descripción</FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="description"
-                          type="text"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          h="5rem"
-                          validate={validateEmpty}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.description}</FormErrorMessage>
-                      </FormControl>
-                    </VStack>
-                  </ModalBody>
-
-                  <ModalFooter pb="1.5rem">
-                    <Box mt="0.5rem" w="100%">
-                      <Progress
-                        h={isLoading ? '4px' : '1px'}
-                        mb="1.5rem"
-                        size="xs"
-                        isIndeterminate={isLoading}
-                        colorScheme="blue"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        bg={submitBg}
-                        color="white"
-                        _hover={{ backgroundColor: submitHover }}
-                        width="100%"
-                        leftIcon={<FaCheck />}
-                        py="1.375rem"
-                      >
-                        Confirmar
-                      </Button>
-                    </Box>
-                  </ModalFooter>
-                </form>
-              );
+            initialValues={{
+              name: '',
+              description: '',
             }}
+            onSubmit={handleSubmit}
+            enableReinitialize
+          >
+            {({ handleSubmit }) => (
+              <form id="shelve-add-form" onSubmit={handleSubmit}>
+                <VStack spacing="1rem" align="stretch">
+                  <FormControl>
+                    <FormLabel fontWeight="semibold">
+                      <HStack spacing="0.5rem">
+                        <Icon as={FiPackage} boxSize="1rem" />
+                        <Text>Depósito</Text>
+                      </HStack>
+                    </FormLabel>
+                    <Input value={warehouse.name} bg={inputBg} border="1px solid" borderColor={inputBorder} disabled />
+                  </FormControl>
+
+                  <Field name="name" validate={validate}>
+                    {({ field, meta }: any) => (
+                      <FormControl isInvalid={meta.error && meta.touched}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiTag} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Input
+                          {...field}
+                          placeholder="Ingrese el nombre de la estantería"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{meta.error}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+
+                  <Field name="description" validate={validateEmpty}>
+                    {({ field, meta }: any) => (
+                      <FormControl isInvalid={meta.error && meta.touched}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Descripción</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Textarea
+                          {...field}
+                          placeholder="Ingrese una descripción de la estantería"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                          rows={4}
+                        />
+                        <FormErrorMessage>{meta.error}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </VStack>
+              </form>
+            )}
           </Formik>
-        </ModalContent>
-      </Modal>
+        </ModalBody>
+
+        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+          <HStack spacing="0.5rem">
+            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+              Cancelar
+            </Button>
+            <Button
+              form="shelve-add-form"
+              type="submit"
+              colorScheme="blue"
+              variant="outline"
+              isLoading={isLoading}
+              loadingText="Creando..."
+              leftIcon={<FaCheck />}
+              size="sm"
+            >
+              Crear estantería
+            </Button>
+          </HStack>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const ShelveAdd = ({ warehouse, setWarehouses }: ShelveAddProps) => {
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const iconHoverBg = useColorModeValue('#e0dede', 'gray.600');
+
+  if (!canCreateWarehouses) return null;
+
+  return (
+    <>
+      <IconButton
+        aria-label="Agregar estantería"
+        icon={<FaPlus />}
+        onClick={onOpen}
+        size="md"
+        bg="transparent"
+        _hover={{ bg: iconHoverBg }}
+      />
+
+      {/* Solo renderizar el formulario cuando el modal está abierto */}
+      {isOpen && (
+        <ShelveAddModal isOpen={isOpen} onClose={onClose} warehouse={warehouse} setWarehouses={setWarehouses} />
+      )}
     </>
   );
 };
