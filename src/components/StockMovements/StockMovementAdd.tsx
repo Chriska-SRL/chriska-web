@@ -46,6 +46,7 @@ import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
 import { StockMovementTypeOptions } from '@/enums/stockMovementType.enum';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type StockMovementAddProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
@@ -71,6 +72,8 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
   const disabledColor = useColorModeValue('#fafafa', '#202532');
 
   const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps as any);
 
   // Estados para la búsqueda de productos
@@ -149,7 +152,19 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
     setProductSearch('');
     setSelectedProduct(null);
     setShowProductDropdown(false);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -207,350 +222,378 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'lg' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90vh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Nuevo movimiento
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              date: '',
-              quantity: 0,
-              type: '',
-              reason: '',
-              productId: '',
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'lg' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit, setFieldValue }) => (
-              <form id="stockmovement-add-form" onSubmit={handleSubmit}>
-                <VStack spacing="1rem" align="stretch">
-                  <Field name="date" validate={validateEmpty}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiCalendar} boxSize="1rem" />
-                            <Text>Fecha</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          type="date"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
+            Nuevo movimiento
+          </ModalHeader>
+          <ModalCloseButton />
 
-                  <Field name="quantity" validate={(v: any) => (!v || v <= 0 ? 'Debe ser mayor a cero' : undefined)}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiHash} boxSize="1rem" />
-                            <Text>Cantidad</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          type="number"
-                          placeholder="Ingrese la cantidad"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field name="type" validate={validate}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Tipo</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          {...field}
-                          placeholder="Seleccionar un tipo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        >
-                          {StockMovementTypeOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </Select>
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <FormControl>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiPackage} boxSize="1rem" />
-                        <Text>Producto</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Box position="relative" ref={searchRef}>
-                      <Box
-                        display="flex"
-                        bg={isLoading ? disabledColor : inputBg}
-                        borderRadius="md"
-                        overflow="hidden"
-                        borderWidth="1px"
-                        borderColor={isLoading ? disabledColor : inputBorder}
-                      >
-                        <Select
-                          value={productSearchType}
-                          onChange={(e) => setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')}
-                          bg="transparent"
-                          border="none"
-                          color={textColor}
-                          w="auto"
-                          minW="5rem"
-                          maxW="6rem"
-                          borderRadius="none"
-                          _focus={{ boxShadow: 'none' }}
-                          disabled={isLoading}
-                        >
-                          <option value="name">Nombre</option>
-                          <option value="internalCode">Cód. interno</option>
-                          <option value="barcode">Cód. de barras</option>
-                        </Select>
-
-                        <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                        <InputGroup flex="1">
-                          <Input
-                            placeholder="Buscar producto..."
-                            value={productSearch}
-                            onChange={(e) => handleProductSearch(e.target.value)}
-                            bg="transparent"
-                            border="none"
-                            borderRadius="none"
-                            _placeholder={{ color: textColor }}
-                            color={textColor}
-                            _focus={{ boxShadow: 'none' }}
-                            pl="1rem"
-                            disabled={isLoading}
-                            onFocus={() => productSearch && setShowProductDropdown(true)}
-                          />
-                          <InputRightElement>
-                            {selectedProduct ? (
-                              <IconButton
-                                aria-label="Limpiar búsqueda"
-                                icon={<Text fontSize="sm">✕</Text>}
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleClearProductSearch(setFieldValue)}
-                                color={textColor}
-                                _hover={{}}
-                              />
-                            ) : (
-                              <IconButton
-                                aria-label="Buscar"
-                                icon={<AiOutlineSearch size="1.25rem" />}
-                                size="sm"
-                                variant="ghost"
-                                disabled={isLoading}
-                                color={textColor}
-                                _hover={{}}
-                              />
-                            )}
-                          </InputRightElement>
-                        </InputGroup>
-                      </Box>
-
-                      {showProductDropdown && (
-                        <Box
-                          position="absolute"
-                          top="100%"
-                          left={0}
-                          right={0}
-                          mt={1}
-                          bg={dropdownBg}
-                          border="1px solid"
-                          borderColor={dropdownBorder}
-                          borderRadius="md"
-                          boxShadow="lg"
-                          maxH="300px"
-                          overflowY="auto"
-                          zIndex={20}
-                        >
-                          {(() => {
-                            // Estados del dropdown:
-                            // 1. Usuario está escribiendo (debounce en progreso)
-                            const isTyping = productSearch !== debouncedProductSearch && productSearch.length >= 2;
-                            // 2. Esperando resultados de la API
-                            const isSearching = !isTyping && isLoadingProducts && debouncedProductSearch.length >= 2;
-                            // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
-                            const searchCompleted =
-                              !isTyping &&
-                              !isSearching &&
-                              debouncedProductSearch.length >= 2 &&
-                              lastSearchTerm === debouncedProductSearch;
-
-                            if (isTyping || isSearching) {
-                              return (
-                                <Flex p={3} justify="center" align="center" gap={2}>
-                                  <Spinner size="sm" />
-                                  <Text fontSize="sm" color="gray.500">
-                                    Buscando productos...
-                                  </Text>
-                                </Flex>
-                              );
-                            }
-
-                            if (searchCompleted && products?.length > 0) {
-                              return (
-                                <List>
-                                  {products.map((product) => (
-                                    <ListItem
-                                      key={product.id}
-                                      cursor="pointer"
-                                      _hover={{ bg: hoverBg }}
-                                      onClick={() =>
-                                        handleProductSelect({ id: product.id, name: product.name }, setFieldValue)
-                                      }
-                                      transition="background-color 0.2s ease"
-                                    >
-                                      <HStack p={3} spacing={4} align="center">
-                                        <Image
-                                          src={
-                                            product.imageUrl ||
-                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                          }
-                                          alt={product.name}
-                                          w="50px"
-                                          h="50px"
-                                          objectFit="cover"
-                                          borderRadius="md"
-                                          flexShrink={0}
-                                        />
-                                        <VStack align="flex-start" spacing={1} flex="1" minW={0}>
-                                          <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                                            {product.name}
-                                          </Text>
-                                          {product.internalCode && (
-                                            <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                                              Cód. Interno: {product.internalCode}
-                                            </Text>
-                                          )}
-                                          {product.barcode && (
-                                            <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                                              Cód. Barras: {product.barcode}
-                                            </Text>
-                                          )}
-                                        </VStack>
-                                      </HStack>
-                                    </ListItem>
-                                  ))}
-                                </List>
-                              );
-                            }
-
-                            if (searchCompleted && products?.length === 0) {
-                              return (
-                                <Text p={3} fontSize="sm" color="gray.500">
-                                  No se encontraron productos
-                                </Text>
-                              );
-                            }
-
-                            // Mientras esperamos que se complete la búsqueda, mostrar loading
-                            if (debouncedProductSearch.length >= 2 && (!searchCompleted || isLoadingProducts)) {
-                              return (
-                                <Flex p={3} justify="center" align="center" gap={2}>
-                                  <Spinner size="sm" />
-                                  <Text fontSize="sm" color="gray.500">
-                                    Buscando productos...
-                                  </Text>
-                                </Flex>
-                              );
-                            }
-
-                            return null;
-                          })()}
-                        </Box>
-                      )}
-                    </Box>
-                    <Field name="productId" validate={validate} style={{ display: 'none' }} />
-                  </FormControl>
-
-                  <Field name="reason" validate={validateEmpty}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Razón</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Textarea
-                          {...field}
-                          placeholder="Ingrese la razón del movimiento"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          rows={4}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-                </VStack>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
-
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
-              Cancelar
-            </Button>
-            <Button
-              form="stockmovement-add-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Creando..."
-              leftIcon={<FaCheck />}
-              size="sm"
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                date: '',
+                quantity: 0,
+                type: '',
+                reason: '',
+                productId: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
             >
-              Crear movimiento
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="stockmovement-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field name="date" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiCalendar} boxSize="1rem" />
+                                <Text>Fecha</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              type="date"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field
+                        name="quantity"
+                        validate={(v: any) => (!v || v <= 0 ? 'Debe ser mayor a cero' : undefined)}
+                      >
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiHash} boxSize="1rem" />
+                                <Text>Cantidad</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              type="number"
+                              placeholder="Ingrese la cantidad"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="type" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Tipo</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar un tipo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              {StockMovementTypeOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiPackage} boxSize="1rem" />
+                            <Text>Producto</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Box position="relative" ref={searchRef}>
+                          <Box
+                            display="flex"
+                            bg={isLoading ? disabledColor : inputBg}
+                            borderRadius="md"
+                            overflow="hidden"
+                            borderWidth="1px"
+                            borderColor={isLoading ? disabledColor : inputBorder}
+                          >
+                            <Select
+                              value={productSearchType}
+                              onChange={(e) =>
+                                setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
+                              }
+                              bg="transparent"
+                              border="none"
+                              color={textColor}
+                              w="auto"
+                              minW="5rem"
+                              maxW="6rem"
+                              borderRadius="none"
+                              _focus={{ boxShadow: 'none' }}
+                              disabled={isLoading}
+                            >
+                              <option value="name">Nombre</option>
+                              <option value="internalCode">Cód. interno</option>
+                              <option value="barcode">Cód. de barras</option>
+                            </Select>
+
+                            <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                            <InputGroup flex="1">
+                              <Input
+                                placeholder="Buscar producto..."
+                                value={productSearch}
+                                onChange={(e) => handleProductSearch(e.target.value)}
+                                bg="transparent"
+                                border="none"
+                                borderRadius="none"
+                                _placeholder={{ color: textColor }}
+                                color={textColor}
+                                _focus={{ boxShadow: 'none' }}
+                                pl="1rem"
+                                disabled={isLoading}
+                                onFocus={() => productSearch && setShowProductDropdown(true)}
+                              />
+                              <InputRightElement>
+                                {selectedProduct ? (
+                                  <IconButton
+                                    aria-label="Limpiar búsqueda"
+                                    icon={<Text fontSize="sm">✕</Text>}
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleClearProductSearch(setFieldValue)}
+                                    color={textColor}
+                                    _hover={{}}
+                                  />
+                                ) : (
+                                  <IconButton
+                                    aria-label="Buscar"
+                                    icon={<AiOutlineSearch size="1.25rem" />}
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={isLoading}
+                                    color={textColor}
+                                    _hover={{}}
+                                  />
+                                )}
+                              </InputRightElement>
+                            </InputGroup>
+                          </Box>
+
+                          {showProductDropdown && (
+                            <Box
+                              position="absolute"
+                              top="100%"
+                              left={0}
+                              right={0}
+                              mt={1}
+                              bg={dropdownBg}
+                              border="1px solid"
+                              borderColor={dropdownBorder}
+                              borderRadius="md"
+                              boxShadow="lg"
+                              maxH="300px"
+                              overflowY="auto"
+                              zIndex={20}
+                            >
+                              {(() => {
+                                // Estados del dropdown:
+                                // 1. Usuario está escribiendo (debounce en progreso)
+                                const isTyping = productSearch !== debouncedProductSearch && productSearch.length >= 2;
+                                // 2. Esperando resultados de la API
+                                const isSearching =
+                                  !isTyping && isLoadingProducts && debouncedProductSearch.length >= 2;
+                                // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
+                                const searchCompleted =
+                                  !isTyping &&
+                                  !isSearching &&
+                                  debouncedProductSearch.length >= 2 &&
+                                  lastSearchTerm === debouncedProductSearch;
+
+                                if (isTyping || isSearching) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando productos...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
+
+                                if (searchCompleted && products?.length > 0) {
+                                  return (
+                                    <List>
+                                      {products.map((product) => (
+                                        <ListItem
+                                          key={product.id}
+                                          cursor="pointer"
+                                          _hover={{ bg: hoverBg }}
+                                          onClick={() =>
+                                            handleProductSelect({ id: product.id, name: product.name }, setFieldValue)
+                                          }
+                                          transition="background-color 0.2s ease"
+                                        >
+                                          <HStack p={3} spacing={4} align="center">
+                                            <Image
+                                              src={
+                                                product.imageUrl ||
+                                                'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                              }
+                                              alt={product.name}
+                                              w="50px"
+                                              h="50px"
+                                              objectFit="cover"
+                                              borderRadius="md"
+                                              flexShrink={0}
+                                            />
+                                            <VStack align="flex-start" spacing={1} flex="1" minW={0}>
+                                              <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                                                {product.name}
+                                              </Text>
+                                              {product.internalCode && (
+                                                <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                                                  Cód. Interno: {product.internalCode}
+                                                </Text>
+                                              )}
+                                              {product.barcode && (
+                                                <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                                                  Cód. Barras: {product.barcode}
+                                                </Text>
+                                              )}
+                                            </VStack>
+                                          </HStack>
+                                        </ListItem>
+                                      ))}
+                                    </List>
+                                  );
+                                }
+
+                                if (searchCompleted && products?.length === 0) {
+                                  return (
+                                    <Text p={3} fontSize="sm" color="gray.500">
+                                      No se encontraron productos
+                                    </Text>
+                                  );
+                                }
+
+                                // Mientras esperamos que se complete la búsqueda, mostrar loading
+                                if (debouncedProductSearch.length >= 2 && (!searchCompleted || isLoadingProducts)) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando productos...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
+
+                                return null;
+                              })()}
+                            </Box>
+                          )}
+                        </Box>
+                        <Field name="productId" validate={validate} style={{ display: 'none' }} />
+                      </FormControl>
+
+                      <Field name="reason" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Razón</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese la razón del movimiento"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="stockmovement-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear movimiento
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

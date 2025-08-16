@@ -34,6 +34,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type VehicleCostAddProps = {
   isLoading: boolean;
@@ -56,11 +57,25 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error } = useAddVehicleCost(costProps);
 
   const handleClose = () => {
     setCostProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -103,157 +118,179 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90vh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Nuevo costo
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              date: '',
-              type: '',
-              amount: '',
-              description: '',
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit }) => (
-              <form id="vehiclecost-add-form" onSubmit={handleSubmit}>
-                <VStack spacing="1rem" align="stretch">
-                  <Field name="date" validate={validateEmpty}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiCalendar} boxSize="1rem" />
-                            <Text>Fecha</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          type="date"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
+            Nuevo costo
+          </ModalHeader>
+          <ModalCloseButton />
 
-                  <Field name="type" validate={validate}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Tipo</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          {...field}
-                          placeholder="Seleccionar tipo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        >
-                          {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label}
-                            </option>
-                          ))}
-                        </Select>
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field name="amount" validate={validate}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiDollarSign} boxSize="1rem" />
-                            <Text>Monto</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          type="number"
-                          step="0.01"
-                          placeholder="Ingrese el monto del costo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field name="description" validate={validateEmpty}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Descripción</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Textarea
-                          {...field}
-                          placeholder="Ingrese una descripción del costo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          rows={4}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-                </VStack>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
-
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
-              Cancelar
-            </Button>
-            <Button
-              form="vehiclecost-add-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Creando..."
-              leftIcon={<FaCheck />}
-              size="sm"
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                date: '',
+                type: '',
+                amount: '',
+                description: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
             >
-              Crear costo
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="vehiclecost-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field name="date" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiCalendar} boxSize="1rem" />
+                                <Text>Fecha</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              type="date"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="type" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Tipo</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar tipo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              {Object.entries(VehicleCostTypeLabels).map(([key, label]) => (
+                                <option key={key} value={key}>
+                                  {label}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="amount" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiDollarSign} boxSize="1rem" />
+                                <Text>Monto</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              type="number"
+                              step="0.01"
+                              placeholder="Ingrese el monto del costo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="description" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese una descripción del costo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="vehiclecost-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear costo
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

@@ -31,6 +31,7 @@ import { validate } from '@/utils/validations/validate';
 import { validateVehicle } from '@/utils/validations/validateVehicle';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type VehicleAddProps = {
   isLoading: boolean;
@@ -51,11 +52,25 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
 
   const handleClose = () => {
     setVehicleProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -102,155 +117,177 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90vh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Nuevo vehículo
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              plate: '',
-              brand: '',
-              model: '',
-              crateCapacity: 0,
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit }) => (
-              <form id="vehicle-add-form" onSubmit={handleSubmit}>
-                <VStack spacing="1rem" align="stretch">
-                  <Field name="plate" validate={validate}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiHash} boxSize="1rem" />
-                            <Text>Matrícula</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          placeholder="Ingrese la matrícula del vehículo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
+            Nuevo vehículo
+          </ModalHeader>
+          <ModalCloseButton />
 
-                  <Field name="brand" validate={validateVehicle}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Marca</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          placeholder="Ingrese la marca del vehículo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field name="model" validate={validateVehicle}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTruck} boxSize="1rem" />
-                            <Text>Modelo</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          placeholder="Ingrese el modelo del vehículo"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
-                  <Field
-                    name="crateCapacity"
-                    validate={(value: any) => {
-                      if (Number(value) <= 0) return 'Debe ser mayor o igual a 0';
-                      return undefined;
-                    }}
-                  >
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiBox} boxSize="1rem" />
-                            <Text>Capacidad de cajones</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Input
-                          {...field}
-                          type="number"
-                          placeholder="Ingrese la capacidad de cajones"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-                </VStack>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
-
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
-              Cancelar
-            </Button>
-            <Button
-              form="vehicle-add-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Creando..."
-              leftIcon={<FaCheck />}
-              size="sm"
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                plate: '',
+                brand: '',
+                model: '',
+                crateCapacity: 0,
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
             >
-              Crear vehículo
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="vehicle-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field name="plate" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiHash} boxSize="1rem" />
+                                <Text>Matrícula</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese la matrícula del vehículo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="brand" validate={validateVehicle}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Marca</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese la marca del vehículo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="model" validate={validateVehicle}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTruck} boxSize="1rem" />
+                                <Text>Modelo</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el modelo del vehículo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field
+                        name="crateCapacity"
+                        validate={(value: any) => {
+                          if (Number(value) <= 0) return 'Debe ser mayor o igual a 0';
+                          return undefined;
+                        }}
+                      >
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiBox} boxSize="1rem" />
+                                <Text>Capacidad de cajones</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              type="number"
+                              placeholder="Ingrese la capacidad de cajones"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="vehicle-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear vehículo
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

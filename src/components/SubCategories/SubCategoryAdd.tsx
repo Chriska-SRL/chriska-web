@@ -34,6 +34,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Category } from '@/entities/category';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type SubCategoryAddProps = {
   category: Category;
@@ -55,11 +56,25 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddSubCategory(subCategoryProps);
 
   const handleClose = () => {
     setSubCategoryProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -108,113 +123,141 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90vh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Nueva subcategoría
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit }) => (
-              <form id="subcategory-add-form" onSubmit={handleSubmit}>
-                <VStack spacing="1rem" align="stretch">
-                  <FormControl>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiGrid} boxSize="1rem" />
-                        <Text>Categoría</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Input value={category.name} bg={inputBg} border="1px solid" borderColor={inputBorder} disabled />
-                  </FormControl>
+            Nueva subcategoría
+          </ModalHeader>
+          <ModalCloseButton />
 
-                  <Field name="name" validate={validate}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                name: '',
+                description: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
+            >
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="subcategory-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Nombre</Text>
+                            <Icon as={FiGrid} boxSize="1rem" />
+                            <Text>Categoría</Text>
                           </HStack>
                         </FormLabel>
                         <Input
-                          {...field}
-                          placeholder="Ingrese el nombre de la subcategoría"
+                          value={category.name}
                           bg={inputBg}
                           border="1px solid"
                           borderColor={inputBorder}
-                          disabled={isLoading}
+                          disabled
                         />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
                       </FormControl>
-                    )}
-                  </Field>
 
-                  <Field name="description" validate={validateEmpty}>
-                    {({ field, meta }: any) => (
-                      <FormControl isInvalid={meta.error && meta.touched}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Descripción</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Textarea
-                          {...field}
-                          placeholder="Ingrese una descripción de la subcategoría"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          rows={4}
-                        />
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-                </VStack>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
+                      <Field name="name" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre de la subcategoría"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
-              Cancelar
-            </Button>
-            <Button
-              form="subcategory-add-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Creando..."
-              leftIcon={<FaCheck />}
-              size="sm"
-            >
-              Crear subcategoría
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                      <Field name="description" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese una descripción de la subcategoría"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="subcategory-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear subcategoría
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

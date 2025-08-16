@@ -32,6 +32,7 @@ import { useEffect, useState } from 'react';
 import { useUpdateSupplier } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { BankOptions } from '@/enums/bank.enum';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type SupplierEditProps = {
   isOpen: boolean;
@@ -44,6 +45,8 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   const toast = useToast();
 
   const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateSupplier(supplierProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -91,367 +94,412 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
     });
   };
 
+  const handleClose = () => {
+    setSupplierProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Editar proveedor
-        </ModalHeader>
-        <ModalCloseButton />
-        <Formik
-          initialValues={{
-            id: supplier?.id ?? 0,
-            name: supplier?.name ?? '',
-            rut: supplier?.rut ?? '',
-            razonSocial: supplier?.razonSocial ?? '',
-            address: supplier?.address ?? '',
-            mapsAddress: supplier?.mapsAddress ?? '',
-            phone: supplier?.phone ?? '',
-            contactName: supplier?.contactName ?? '',
-            email: supplier?.email ?? '',
-            bankAccounts: supplier?.bankAccounts ?? [],
-            observations: supplier?.observations ?? '',
-          }}
-          onSubmit={handleSubmit}
-          validate={(values) => {
-            const errors: any = {};
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'lg' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
+            Editar proveedor
+          </ModalHeader>
+          <ModalCloseButton />
+          <Formik
+            initialValues={{
+              id: supplier?.id ?? 0,
+              name: supplier?.name ?? '',
+              rut: supplier?.rut ?? '',
+              razonSocial: supplier?.razonSocial ?? '',
+              address: supplier?.address ?? '',
+              mapsAddress: supplier?.mapsAddress ?? '',
+              phone: supplier?.phone ?? '',
+              contactName: supplier?.contactName ?? '',
+              email: supplier?.email ?? '',
+              bankAccounts: supplier?.bankAccounts ?? [],
+              observations: supplier?.observations ?? '',
+            }}
+            onSubmit={handleSubmit}
+            validate={(values) => {
+              const errors: any = {};
 
-            // Validate empty fields
-            const nameError = validateEmpty(values.name);
-            if (nameError) errors.name = nameError;
+              // Validate empty fields
+              const nameError = validateEmpty(values.name);
+              if (nameError) errors.name = nameError;
 
-            const razonSocialError = validateEmpty(values.razonSocial);
-            if (razonSocialError) errors.razonSocial = razonSocialError;
+              const razonSocialError = validateEmpty(values.razonSocial);
+              if (razonSocialError) errors.razonSocial = razonSocialError;
 
-            const addressError = validateEmpty(values.address);
-            if (addressError) errors.address = addressError;
+              const addressError = validateEmpty(values.address);
+              if (addressError) errors.address = addressError;
 
-            const mapsAddressError = validateEmpty(values.mapsAddress);
-            if (mapsAddressError) errors.mapsAddress = mapsAddressError;
+              const mapsAddressError = validateEmpty(values.mapsAddress);
+              if (mapsAddressError) errors.mapsAddress = mapsAddressError;
 
-            const contactNameError = validateEmpty(values.contactName);
-            if (contactNameError) errors.contactName = contactNameError;
+              const contactNameError = validateEmpty(values.contactName);
+              if (contactNameError) errors.contactName = contactNameError;
 
-            if (!values.rut || values.rut.trim() === '') {
-              errors.rut = 'Campo obligatorio';
-            } else if (!/^\d+$/.test(values.rut)) {
-              errors.rut = 'El RUT debe contener solo números';
-            } else if (values.rut.length !== 12) {
-              errors.rut = 'El RUT debe tener exactamente 12 dígitos';
-            }
+              if (!values.rut || values.rut.trim() === '') {
+                errors.rut = 'Campo obligatorio';
+              } else if (!/^\d+$/.test(values.rut)) {
+                errors.rut = 'El RUT debe contener solo números';
+              } else if (values.rut.length !== 12) {
+                errors.rut = 'El RUT debe tener exactamente 12 dígitos';
+              }
 
-            if (!values.phone || values.phone.trim() === '') {
-              errors.phone = 'Campo obligatorio';
-            } else if (!/^\d+$/.test(values.phone)) {
-              errors.phone = 'El teléfono debe contener solo números';
-            }
+              if (!values.phone || values.phone.trim() === '') {
+                errors.phone = 'Campo obligatorio';
+              } else if (!/^\d+$/.test(values.phone)) {
+                errors.phone = 'El teléfono debe contener solo números';
+              }
 
-            if (!values.email || values.email.trim() === '') {
-              errors.email = 'Campo obligatorio';
-            } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
-              errors.email = 'Email inválido';
-            }
+              if (!values.email || values.email.trim() === '') {
+                errors.email = 'Campo obligatorio';
+              } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+                errors.email = 'Email inválido';
+              }
 
-            return errors;
-          }}
-          validateOnChange
-          validateOnBlur={false}
-        >
-          {({ handleSubmit, errors, touched, submitCount }) => (
-            <form onSubmit={handleSubmit}>
-              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-                <VStack spacing="0.75rem">
-                  <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiUser} boxSize="1rem" />
-                        <Text>Nombre</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="name"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                  </FormControl>
+              return errors;
+            }}
+            validateOnChange
+            validateOnBlur={false}
+          >
+            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+              // Actualizar la instancia de formik solo cuando cambie
+              useEffect(() => {
+                setFormikInstance({ dirty, resetForm });
+              }, [dirty, resetForm]);
 
-                  <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiHash} boxSize="1rem" />
-                        <Text>RUT</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="rut"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.rut}</FormErrorMessage>
-                  </FormControl>
+              return (
+                <form onSubmit={handleSubmit}>
+                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                    <VStack spacing="0.75rem">
+                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiUser} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiFileText} boxSize="1rem" />
-                        <Text>Razón Social</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="razonSocial"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiHash} boxSize="1rem" />
+                            <Text>RUT</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="rut"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.rut}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiMapPin} boxSize="1rem" />
-                        <Text>Dirección</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="address"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.address}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Razón Social</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="razonSocial"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiMapPin} boxSize="1rem" />
-                        <Text>Dirección Maps</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="mapsAddress"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMapPin} boxSize="1rem" />
+                            <Text>Dirección</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="address"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.address}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiPhone} boxSize="1rem" />
-                        <Text>Teléfono</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="phone"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.phone}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMapPin} boxSize="1rem" />
+                            <Text>Dirección Maps</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="mapsAddress"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiUser} boxSize="1rem" />
-                        <Text>Persona de contacto</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="contactName"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.contactName}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiPhone} boxSize="1rem" />
+                            <Text>Teléfono</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="phone"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiMail} boxSize="1rem" />
-                        <Text>Email</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="email"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                    />
-                    <FormErrorMessage>{errors.email}</FormErrorMessage>
-                  </FormControl>
+                      <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiUser} boxSize="1rem" />
+                            <Text>Persona de contacto</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="contactName"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.contactName}</FormErrorMessage>
+                      </FormControl>
 
-                  <FormControl>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiCreditCard} boxSize="1rem" />
-                        <Text>Cuentas bancarias</Text>
-                      </HStack>
-                    </FormLabel>
-                    <FieldArray name="bankAccounts">
-                      {({ push, remove, form }) => (
-                        <VStack spacing="0.75rem" align="stretch">
-                          {form.values.bankAccounts.map((_account: BankAccount, index: number) => (
-                            <Box
-                              key={index}
-                              p="1rem"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              borderRadius="lg"
-                              position="relative"
-                            >
-                              <VStack spacing="0.5rem">
-                                <FormControl>
-                                  <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
-                                  <Field
-                                    as={Input}
-                                    name={`bankAccounts.${index}.accountName`}
-                                    bg={inputBg}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    h="2.5rem"
-                                    size="sm"
-                                    borderRadius="md"
-                                    required
-                                  />
-                                </FormControl>
-                                <FormControl>
-                                  <FormLabel fontSize="sm">Banco</FormLabel>
-                                  <Field
-                                    as={Select}
-                                    name={`bankAccounts.${index}.bank`}
-                                    bg={inputBg}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    h="2.5rem"
-                                    size="sm"
-                                    borderRadius="md"
-                                    required
+                      <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMail} boxSize="1rem" />
+                            <Text>Email</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="email"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                        />
+                        <FormErrorMessage>{errors.email}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiCreditCard} boxSize="1rem" />
+                            <Text>Cuentas bancarias</Text>
+                          </HStack>
+                        </FormLabel>
+                        <FieldArray name="bankAccounts">
+                          {({ push, remove, form }) => (
+                            <VStack spacing="0.75rem" align="stretch">
+                              {form.values.bankAccounts.map((_account: BankAccount, index: number) => (
+                                <Box
+                                  key={index}
+                                  p="1rem"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  borderRadius="lg"
+                                  position="relative"
+                                >
+                                  <VStack spacing="0.5rem">
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
+                                      <Field
+                                        as={Input}
+                                        name={`bankAccounts.${index}.accountName`}
+                                        bg={inputBg}
+                                        border="1px solid"
+                                        borderColor={inputBorder}
+                                        h="2.5rem"
+                                        size="sm"
+                                        borderRadius="md"
+                                        required
+                                      />
+                                    </FormControl>
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">Banco</FormLabel>
+                                      <Field
+                                        as={Select}
+                                        name={`bankAccounts.${index}.bank`}
+                                        bg={inputBg}
+                                        border="1px solid"
+                                        borderColor={inputBorder}
+                                        h="2.5rem"
+                                        size="sm"
+                                        borderRadius="md"
+                                        required
+                                      >
+                                        <option value="">Seleccionar banco</option>
+                                        {BankOptions.map((bank) => (
+                                          <option key={bank} value={bank}>
+                                            {bank}
+                                          </option>
+                                        ))}
+                                      </Field>
+                                    </FormControl>
+                                    <FormControl>
+                                      <FormLabel fontSize="sm">Número de cuenta</FormLabel>
+                                      <Field
+                                        as={Input}
+                                        name={`bankAccounts.${index}.accountNumber`}
+                                        bg={inputBg}
+                                        border="1px solid"
+                                        borderColor={inputBorder}
+                                        h="2.5rem"
+                                        size="sm"
+                                        borderRadius="md"
+                                        required
+                                      />
+                                    </FormControl>
+                                  </VStack>
+                                  <Button
+                                    position="absolute"
+                                    top="0.5rem"
+                                    right="0.5rem"
+                                    size="xs"
+                                    colorScheme="red"
+                                    variant="ghost"
+                                    onClick={() => remove(index)}
                                   >
-                                    <option value="">Seleccionar banco</option>
-                                    {BankOptions.map((bank) => (
-                                      <option key={bank} value={bank}>
-                                        {bank}
-                                      </option>
-                                    ))}
-                                  </Field>
-                                </FormControl>
-                                <FormControl>
-                                  <FormLabel fontSize="sm">Número de cuenta</FormLabel>
-                                  <Field
-                                    as={Input}
-                                    name={`bankAccounts.${index}.accountNumber`}
-                                    bg={inputBg}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    h="2.5rem"
-                                    size="sm"
-                                    borderRadius="md"
-                                    required
-                                  />
-                                </FormControl>
-                              </VStack>
+                                    <FaTrash />
+                                  </Button>
+                                </Box>
+                              ))}
                               <Button
-                                position="absolute"
-                                top="0.5rem"
-                                right="0.5rem"
-                                size="xs"
-                                colorScheme="red"
+                                type="button"
+                                size="sm"
+                                leftIcon={<FaPlus />}
+                                onClick={() => push({ accountName: '', bank: '', accountNumber: '' })}
                                 variant="ghost"
-                                onClick={() => remove(index)}
                               >
-                                <FaTrash />
+                                Agregar cuenta bancaria
                               </Button>
-                            </Box>
-                          ))}
-                          <Button
-                            type="button"
-                            size="sm"
-                            leftIcon={<FaPlus />}
-                            onClick={() => push({ accountName: '', bank: '', accountNumber: '' })}
-                            variant="ghost"
-                          >
-                            Agregar cuenta bancaria
-                          </Button>
-                        </VStack>
-                      )}
-                    </FieldArray>
-                  </FormControl>
+                            </VStack>
+                          )}
+                        </FieldArray>
+                      </FormControl>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiFileText} boxSize="1rem" />
-                        <Text>Observaciones</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="observations"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      rows={4}
-                    />
-                    <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                  </FormControl>
-                </VStack>
-              </ModalBody>
+                      <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Observaciones</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="observations"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          rows={4}
+                        />
+                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
+                      </FormControl>
+                    </VStack>
+                  </ModalBody>
 
-              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                <HStack spacing="0.5rem">
-                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    colorScheme="blue"
-                    variant="outline"
-                    isLoading={isLoading}
-                    loadingText="Guardando..."
-                    leftIcon={<FaCheck />}
-                    size="sm"
-                  >
-                    Guardar cambios
-                  </Button>
-                </HStack>
-              </ModalFooter>
-            </form>
-          )}
-        </Formik>
-      </ModalContent>
-    </Modal>
+                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                    <HStack spacing="0.5rem">
+                      <Button
+                        variant="ghost"
+                        onClick={handleClose}
+                        disabled={isLoading}
+                        size="sm"
+                        leftIcon={<FaTimes />}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        colorScheme="blue"
+                        variant="outline"
+                        isLoading={isLoading}
+                        loadingText="Guardando..."
+                        leftIcon={<FaCheck />}
+                        size="sm"
+                      >
+                        Guardar cambios
+                      </Button>
+                    </HStack>
+                  </ModalFooter>
+                </form>
+              );
+            }}
+          </Formik>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };

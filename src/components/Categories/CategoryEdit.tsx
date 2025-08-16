@@ -30,6 +30,7 @@ import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { useUpdateCategory } from '@/hooks/category';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type CategoryEditProps = {
   isOpen: boolean;
@@ -52,10 +53,29 @@ const CategoryEditForm = ({
 }) => {
   const toast = useToast();
   const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateCategory(categoryProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+
+  const handleClose = () => {
+    setCategoryProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
 
   useEffect(() => {
     if (data) {
@@ -68,7 +88,7 @@ const CategoryEditForm = ({
       });
       setCategories((prev) => prev.map((c) => (c.id === data.id ? data : c)));
       setCategoryProps(undefined);
-      onClose();
+      handleClose();
     }
   }, [data, setCategories, toast, onClose]);
 
@@ -102,106 +122,128 @@ const CategoryEditForm = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Editar categoría
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              id: category.id,
-              name: category.name,
-              description: category.description,
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit }) => (
-              <form id="category-edit-form" onSubmit={handleSubmit}>
-                <Box>
-                  <VStack spacing="1rem" align="stretch">
-                    <Field name="name" validate={validate}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
-                              <Text>Nombre</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder="Ingrese el nombre de la categoría"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          />
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
+            Editar categoría
+          </ModalHeader>
+          <ModalCloseButton />
 
-                    <Field name="description" validate={validateEmpty}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiFileText} boxSize="1rem" />
-                              <Text>Descripción</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Textarea
-                            {...field}
-                            placeholder="Ingrese la descripción de la categoría"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                            rows={4}
-                          />
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
-                  </VStack>
-                </Box>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
-
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
-              Cancelar
-            </Button>
-            <Button
-              form="category-edit-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Actualizando..."
-              leftIcon={<FaCheck />}
-              size="sm"
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                id: category.id,
+                name: category.name,
+                description: category.description,
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
             >
-              Actualizar categoría
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="category-edit-form" onSubmit={handleSubmit}>
+                    <Box>
+                      <VStack spacing="1rem" align="stretch">
+                        <Field name="name" validate={validate}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiGrid} boxSize="1rem" />
+                                  <Text>Nombre</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el nombre de la categoría"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción de la categoría"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                                rows={4}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+                      </VStack>
+                    </Box>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                Cancelar
+              </Button>
+              <Button
+                form="category-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Actualizando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Actualizar categoría
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

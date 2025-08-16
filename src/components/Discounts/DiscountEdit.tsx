@@ -54,6 +54,7 @@ import { DiscountStatusOptions } from '@/enums/discountStatus.enum';
 import { format } from 'date-fns';
 import { useGetCategories } from '@/hooks/category';
 import { useGetSubCategories } from '@/hooks/subcategory';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type DiscountEditProps = {
   isOpen: boolean;
@@ -126,6 +127,9 @@ const DiscountEditForm = ({
   >([]);
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
   const clientSearchRef = useRef<HTMLDivElement>(null);
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
 
   // Simple debounce implementation
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
@@ -339,7 +343,19 @@ const DiscountEditForm = ({
     setShowProductDropdown(false);
     setShowClientDropdown(false);
     setUpdateProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   // Success useEffect following ProductEdit pattern
@@ -355,7 +371,7 @@ const DiscountEditForm = ({
 
       setUpdateProps(undefined);
       setDiscounts((prev) => prev.map((d) => (d.id === data.id ? data : d)));
-      onClose();
+      handleClose();
     }
   }, [data, setDiscounts, toast, onClose]);
 
@@ -464,824 +480,852 @@ const DiscountEditForm = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Editar descuento
-        </ModalHeader>
-        <ModalCloseButton />
-
-        <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-          <Formik
-            initialValues={{
-              description: discount.description,
-              expirationDate: formatDateForInput(discount.expirationDate),
-              productQuantity: discount.productQuantity,
-              percentage: discount.percentage,
-              status: discount.status,
-            }}
-            onSubmit={handleSubmit}
-            enableReinitialize
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'xl' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
           >
-            {({ handleSubmit, setFieldValue }) => (
-              <form id="discount-edit-form" onSubmit={handleSubmit}>
-                <Box>
-                  <VStack spacing="1rem" align="stretch">
-                    <Field name="description" validate={validateEmpty}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiFileText} boxSize="1rem" />
-                              <Text>Descripción</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Textarea
-                            {...field}
-                            placeholder="Ingrese la descripción del descuento"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          />
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
+            Editar descuento
+          </ModalHeader>
+          <ModalCloseButton />
 
-                    <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
-                      <Field name="percentage" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched} flex="1">
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiPercent} boxSize="1rem" />
-                                <Text>Porcentaje (%)</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              type="number"
-                              min={0}
-                              max={100}
-                              step={0.01}
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              placeholder="0.00"
-                              disabled={isLoading}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                // Permitir valores vacíos para poder escribir
-                                if (value === '') {
-                                  setFieldValue('percentage', '');
-                                  return;
-                                }
-                                // Convertir a número y validar rango
-                                const numValue = parseFloat(value);
-                                if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-                                  setFieldValue('percentage', numValue);
-                                } else if (!isNaN(numValue)) {
-                                  // Si está fuera del rango, limitar
-                                  setFieldValue('percentage', Math.max(0, Math.min(100, numValue)));
-                                }
-                              }}
-                            />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                description: discount.description,
+                expirationDate: formatDateForInput(discount.expirationDate),
+                productQuantity: discount.productQuantity,
+                percentage: discount.percentage,
+                status: discount.status,
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
+            >
+              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-                      <Field name="productQuantity" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched} flex="1">
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiPackage} boxSize="1rem" />
-                                <Text>Cantidad mínima</Text>
-                              </HStack>
-                            </FormLabel>
-                            <NumberInput
-                              value={field.value}
-                              onChange={(valueString) => setFieldValue('productQuantity', Number(valueString))}
-                              min={1}
-                              isDisabled={isLoading}
-                            >
-                              <NumberInputField
+                return (
+                  <form id="discount-edit-form" onSubmit={handleSubmit}>
+                    <Box>
+                      <VStack spacing="1rem" align="stretch">
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
-                                placeholder="1"
+                                disabled={isLoading}
                               />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-                    </Stack>
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
 
-                    <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
-                      <Field name="expirationDate" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched} flex="1">
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiCalendar} boxSize="1rem" />
-                                <Text>Fecha de vencimiento</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              type="date"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
+                        <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
+                          <Field name="percentage" validate={validateEmpty}>
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiPercent} boxSize="1rem" />
+                                    <Text>Porcentaje (%)</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  step={0.01}
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  placeholder="0.00"
+                                  disabled={isLoading}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Permitir valores vacíos para poder escribir
+                                    if (value === '') {
+                                      setFieldValue('percentage', '');
+                                      return;
+                                    }
+                                    // Convertir a número y validar rango
+                                    const numValue = parseFloat(value);
+                                    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
+                                      setFieldValue('percentage', numValue);
+                                    } else if (!isNaN(numValue)) {
+                                      // Si está fuera del rango, limitar
+                                      setFieldValue('percentage', Math.max(0, Math.min(100, numValue)));
+                                    }
+                                  }}
+                                />
+                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                      <Field name="status" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched} flex="1">
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiCheckCircle} boxSize="1rem" />
-                                <Text>Estado</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Select
-                              {...field}
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            >
-                              {statusOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-                    </Stack>
+                          <Field name="productQuantity" validate={validateEmpty}>
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiPackage} boxSize="1rem" />
+                                    <Text>Cantidad mínima</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <NumberInput
+                                  value={field.value}
+                                  onChange={(valueString) => setFieldValue('productQuantity', Number(valueString))}
+                                  min={1}
+                                  isDisabled={isLoading}
+                                >
+                                  <NumberInputField
+                                    bg={inputBg}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
+                                    placeholder="1"
+                                  />
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </Stack>
 
-                    {/* Selector de tipo de productos */}
-                    <FormControl>
-                      <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
-                      <Select
-                        value={productType}
-                        onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        disabled={isLoading}
-                      >
-                        <option value="all">Todos los productos</option>
-                        <option value="brand">Por marca</option>
-                        <option value="subcategory">Por subcategoría</option>
-                        <option value="list">Lista personalizada</option>
-                      </Select>
-                    </FormControl>
+                        <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
+                          <Field name="expirationDate" validate={validateEmpty}>
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiCalendar} boxSize="1rem" />
+                                    <Text>Fecha de vencimiento</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="date"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                    {/* Selector de marca */}
-                    {productType === 'brand' && (
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Seleccionar marca</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          value={selectedBrandId}
-                          onChange={(e) => setSelectedBrandId(e.target.value)}
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          placeholder="Seleccionar marca"
-                        >
-                          {brands.map((brand) => (
-                            <option key={brand.id} value={brand.id.toString()}>
-                              {brand.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
+                          <Field name="status" validate={validateEmpty}>
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiCheckCircle} boxSize="1rem" />
+                                    <Text>Estado</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Select
+                                  {...field}
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                >
+                                  {statusOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </Select>
+                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </Stack>
 
-                    {/* Selector de categoría y subcategoría */}
-                    {productType === 'subcategory' && (
-                      <VStack spacing="1rem" align="stretch">
+                        {/* Selector de tipo de productos */}
                         <FormControl>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
-                              <Text>Seleccionar categoría</Text>
-                            </HStack>
-                          </FormLabel>
+                          <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
                           <Select
-                            value={selectedCategoryId}
-                            onChange={(e) => {
-                              setSelectedCategoryId(e.target.value);
-                              setSelectedSubCategoryId(''); // Reset subcategory cuando cambia category
-                            }}
+                            value={productType}
+                            onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
-                            placeholder="Seleccionar categoría"
                           >
-                            {categories.map((category) => (
-                              <option key={category.id} value={category.id.toString()}>
-                                {category.name}
-                              </option>
-                            ))}
+                            <option value="all">Todos los productos</option>
+                            <option value="brand">Por marca</option>
+                            <option value="subcategory">Por subcategoría</option>
+                            <option value="list">Lista personalizada</option>
                           </Select>
                         </FormControl>
 
-                        {selectedCategoryId && (
+                        {/* Selector de marca */}
+                        {productType === 'brand' && (
                           <FormControl>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiGrid} boxSize="1rem" />
-                                <Text>Seleccionar subcategoría</Text>
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Seleccionar marca</Text>
                               </HStack>
                             </FormLabel>
                             <Select
-                              value={selectedSubCategoryId}
-                              onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                              value={selectedBrandId}
+                              onChange={(e) => setSelectedBrandId(e.target.value)}
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}
                               disabled={isLoading}
-                              placeholder="Seleccionar subcategoría"
+                              placeholder="Seleccionar marca"
                             >
-                              {filteredSubCategories.map((subCategory) => (
-                                <option key={subCategory.id} value={subCategory.id.toString()}>
-                                  {subCategory.name}
+                              {brands.map((brand) => (
+                                <option key={brand.id} value={brand.id.toString()}>
+                                  {brand.name}
                                 </option>
                               ))}
                             </Select>
                           </FormControl>
                         )}
-                      </VStack>
-                    )}
 
-                    {/* Buscador de productos para lista personalizada */}
-                    {productType === 'list' && (
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">Lista de productos</FormLabel>
-
-                        {/* Buscador de productos */}
-                        <Box position="relative" ref={searchRef}>
-                          <Box
-                            display="flex"
-                            bg={inputBg}
-                            borderRadius="md"
-                            overflow="hidden"
-                            borderWidth="1px"
-                            borderColor={inputBorder}
-                          >
-                            <Select
-                              value={productSearchType}
-                              onChange={(e) =>
-                                setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
-                              }
-                              bg="transparent"
-                              border="none"
-                              color={textColor}
-                              w="auto"
-                              minW={{ base: '5rem', md: '7rem' }}
-                              maxW={{ base: '6rem', md: '8rem' }}
-                              borderRadius="none"
-                              _focus={{ boxShadow: 'none' }}
-                              disabled={isLoading}
-                            >
-                              <option value="name">Nombre</option>
-                              <option value="internalCode">Cód. interno</option>
-                              <option value="barcode">Cód. de barras</option>
-                            </Select>
-
-                            <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                            <InputGroup flex="1">
-                              <Input
-                                placeholder="Buscar producto..."
-                                value={productSearch}
-                                onChange={(e) => handleProductSearch(e.target.value)}
-                                bg="transparent"
-                                border="none"
-                                borderRadius="none"
-                                _placeholder={{ color: textColor }}
-                                color={textColor}
-                                _focus={{ boxShadow: 'none' }}
-                                pl="1rem"
+                        {/* Selector de categoría y subcategoría */}
+                        {productType === 'subcategory' && (
+                          <VStack spacing="1rem" align="stretch">
+                            <FormControl>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiGrid} boxSize="1rem" />
+                                  <Text>Seleccionar categoría</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Select
+                                value={selectedCategoryId}
+                                onChange={(e) => {
+                                  setSelectedCategoryId(e.target.value);
+                                  setSelectedSubCategoryId(''); // Reset subcategory cuando cambia category
+                                }}
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
                                 disabled={isLoading}
-                                onFocus={() => productSearch && setShowProductDropdown(true)}
-                              />
-                              <InputRightElement>
-                                <IconButton
-                                  aria-label="Buscar"
-                                  icon={<AiOutlineSearch size="1.25rem" />}
-                                  size="sm"
-                                  variant="ghost"
+                                placeholder="Seleccionar categoría"
+                              >
+                                {categories.map((category) => (
+                                  <option key={category.id} value={category.id.toString()}>
+                                    {category.name}
+                                  </option>
+                                ))}
+                              </Select>
+                            </FormControl>
+
+                            {selectedCategoryId && (
+                              <FormControl>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiGrid} boxSize="1rem" />
+                                    <Text>Seleccionar subcategoría</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Select
+                                  value={selectedSubCategoryId}
+                                  onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
                                   disabled={isLoading}
+                                  placeholder="Seleccionar subcategoría"
+                                >
+                                  {filteredSubCategories.map((subCategory) => (
+                                    <option key={subCategory.id} value={subCategory.id.toString()}>
+                                      {subCategory.name}
+                                    </option>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            )}
+                          </VStack>
+                        )}
+
+                        {/* Buscador de productos para lista personalizada */}
+                        {productType === 'list' && (
+                          <FormControl>
+                            <FormLabel fontWeight="semibold">Lista de productos</FormLabel>
+
+                            {/* Buscador de productos */}
+                            <Box position="relative" ref={searchRef}>
+                              <Box
+                                display="flex"
+                                bg={inputBg}
+                                borderRadius="md"
+                                overflow="hidden"
+                                borderWidth="1px"
+                                borderColor={inputBorder}
+                              >
+                                <Select
+                                  value={productSearchType}
+                                  onChange={(e) =>
+                                    setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
+                                  }
+                                  bg="transparent"
+                                  border="none"
                                   color={textColor}
-                                  _hover={{}}
-                                  onClick={handleClearProductSearch}
-                                />
-                              </InputRightElement>
-                            </InputGroup>
-                          </Box>
+                                  w="auto"
+                                  minW={{ base: '5rem', md: '7rem' }}
+                                  maxW={{ base: '6rem', md: '8rem' }}
+                                  borderRadius="none"
+                                  _focus={{ boxShadow: 'none' }}
+                                  disabled={isLoading}
+                                >
+                                  <option value="name">Nombre</option>
+                                  <option value="internalCode">Cód. interno</option>
+                                  <option value="barcode">Cód. de barras</option>
+                                </Select>
 
-                          {/* Dropdown de resultados */}
-                          {showProductDropdown && (
-                            <Box
-                              position="absolute"
-                              top="100%"
-                              left={0}
-                              right={0}
-                              mt={1}
-                              bg={dropdownBg}
+                                <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                <InputGroup flex="1">
+                                  <Input
+                                    placeholder="Buscar producto..."
+                                    value={productSearch}
+                                    onChange={(e) => handleProductSearch(e.target.value)}
+                                    bg="transparent"
+                                    border="none"
+                                    borderRadius="none"
+                                    _placeholder={{ color: textColor }}
+                                    color={textColor}
+                                    _focus={{ boxShadow: 'none' }}
+                                    pl="1rem"
+                                    disabled={isLoading}
+                                    onFocus={() => productSearch && setShowProductDropdown(true)}
+                                  />
+                                  <InputRightElement>
+                                    <IconButton
+                                      aria-label="Buscar"
+                                      icon={<AiOutlineSearch size="1.25rem" />}
+                                      size="sm"
+                                      variant="ghost"
+                                      disabled={isLoading}
+                                      color={textColor}
+                                      _hover={{}}
+                                      onClick={handleClearProductSearch}
+                                    />
+                                  </InputRightElement>
+                                </InputGroup>
+                              </Box>
+
+                              {/* Dropdown de resultados */}
+                              {showProductDropdown && (
+                                <Box
+                                  position="absolute"
+                                  top="100%"
+                                  left={0}
+                                  right={0}
+                                  mt={1}
+                                  bg={dropdownBg}
+                                  border="1px solid"
+                                  borderColor={dropdownBorder}
+                                  borderRadius="md"
+                                  boxShadow="lg"
+                                  maxH="300px"
+                                  overflowY="auto"
+                                  zIndex={20}
+                                >
+                                  {(() => {
+                                    // Estados del dropdown:
+                                    // 1. Usuario está escribiendo (debounce en progreso)
+                                    const isTyping =
+                                      productSearch !== debouncedProductSearch && productSearch.length >= 2;
+                                    // 2. Esperando resultados de la API
+                                    const isSearching =
+                                      !isTyping && isLoadingProducts && debouncedProductSearch.length >= 2;
+                                    // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
+                                    const searchCompleted =
+                                      !isTyping &&
+                                      !isSearching &&
+                                      debouncedProductSearch.length >= 2 &&
+                                      lastProductSearchTerm === debouncedProductSearch;
+
+                                    if (isTyping || isSearching) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando productos...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    if (searchCompleted && products?.length > 0) {
+                                      return (
+                                        <List spacing={0}>
+                                          {products.map((product: any, index: number) => {
+                                            const isSelected = selectedProducts.some((p) => p.id === product.id);
+                                            return (
+                                              <Fragment key={product.id}>
+                                                <ListItem
+                                                  p="0.75rem"
+                                                  cursor="pointer"
+                                                  _hover={{ bg: hoverBg }}
+                                                  transition="background-color 0.2s ease"
+                                                  opacity={isSelected ? 0.5 : 1}
+                                                  onClick={() => !isSelected && handleProductSelect(product)}
+                                                >
+                                                  <Flex align="center" gap="0.75rem">
+                                                    <Image
+                                                      src={
+                                                        product.imageUrl ||
+                                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                                      }
+                                                      alt={product.name}
+                                                      boxSize="40px"
+                                                      objectFit="cover"
+                                                      borderRadius="md"
+                                                      flexShrink={0}
+                                                    />
+                                                    <Box flex="1">
+                                                      <Text fontSize="sm" fontWeight="medium">
+                                                        {product.name}
+                                                      </Text>
+                                                      {product.internalCode && (
+                                                        <Text fontSize="xs" color={textColor}>
+                                                          Código: {product.internalCode}
+                                                        </Text>
+                                                      )}
+                                                    </Box>
+                                                    {isSelected && (
+                                                      <Text fontSize="xs" color="green.500">
+                                                        Seleccionado
+                                                      </Text>
+                                                    )}
+                                                  </Flex>
+                                                </ListItem>
+                                                {index < products.length - 1 && <Divider />}
+                                              </Fragment>
+                                            );
+                                          })}
+                                        </List>
+                                      );
+                                    }
+
+                                    if (searchCompleted && products?.length === 0) {
+                                      return (
+                                        <Text p={3} fontSize="sm" color="gray.500">
+                                          No se encontraron productos
+                                        </Text>
+                                      );
+                                    }
+
+                                    // Mientras esperamos que se complete la búsqueda, mostrar loading
+                                    if (debouncedProductSearch.length >= 2 && (!searchCompleted || isLoadingProducts)) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando productos...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    return null;
+                                  })()}
+                                </Box>
+                              )}
+                            </Box>
+
+                            {/* Lista de productos seleccionados */}
+                            {selectedProducts.length > 0 && (
+                              <Box mt="1rem">
+                                <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                  Productos seleccionados ({selectedProducts.length}):
+                                </Text>
+                                <Box
+                                  maxH="150px"
+                                  overflowY="auto"
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  borderRadius="md"
+                                  p="0.5rem"
+                                >
+                                  <Stack spacing="0.5rem">
+                                    {selectedProducts.map((product) => (
+                                      <Flex
+                                        key={product.id}
+                                        align="center"
+                                        justify="space-between"
+                                        p="0.5rem"
+                                        bg={buttonBg}
+                                        borderRadius="md"
+                                      >
+                                        <Flex align="center" gap="0.5rem">
+                                          <Image
+                                            src={
+                                              product.imageUrl ||
+                                              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                            }
+                                            alt={product.name}
+                                            boxSize="30px"
+                                            objectFit="cover"
+                                            borderRadius="sm"
+                                            flexShrink={0}
+                                          />
+                                          <Text fontSize="sm">{product.name}</Text>
+                                        </Flex>
+                                        <IconButton
+                                          aria-label="Remover producto"
+                                          icon={<FaTimes />}
+                                          size="xs"
+                                          variant="ghost"
+                                          color="red.500"
+                                          onClick={() => handleRemoveProduct(product.id)}
+                                        />
+                                      </Flex>
+                                    ))}
+                                  </Stack>
+                                </Box>
+                              </Box>
+                            )}
+                          </FormControl>
+                        )}
+
+                        {/* Selector de tipo de clientes */}
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
+                          <Select
+                            value={clientType}
+                            onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                          >
+                            <option value="all">Todos los clientes</option>
+                            <option value="zone">Por zona</option>
+                            <option value="list">Lista personalizada</option>
+                          </Select>
+                        </FormControl>
+
+                        {/* Selector de zona */}
+                        {clientType === 'zone' && (
+                          <FormControl>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiMapPin} boxSize="1rem" />
+                                <Text>Seleccionar zona</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              value={selectedZoneId}
+                              onChange={(e) => setSelectedZoneId(e.target.value)}
+                              bg={inputBg}
                               border="1px solid"
-                              borderColor={dropdownBorder}
-                              borderRadius="md"
-                              boxShadow="lg"
-                              maxH="300px"
-                              overflowY="auto"
-                              zIndex={20}
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              placeholder="Seleccionar zona"
                             >
-                              {(() => {
-                                // Estados del dropdown:
-                                // 1. Usuario está escribiendo (debounce en progreso)
-                                const isTyping = productSearch !== debouncedProductSearch && productSearch.length >= 2;
-                                // 2. Esperando resultados de la API
-                                const isSearching =
-                                  !isTyping && isLoadingProducts && debouncedProductSearch.length >= 2;
-                                // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
-                                const searchCompleted =
-                                  !isTyping &&
-                                  !isSearching &&
-                                  debouncedProductSearch.length >= 2 &&
-                                  lastProductSearchTerm === debouncedProductSearch;
+                              {zones.map((zone) => (
+                                <option key={zone.id} value={zone.id.toString()}>
+                                  {zone.name}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
 
-                                if (isTyping || isSearching) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando productos...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
+                        {/* Buscador de clientes para lista personalizada */}
+                        {clientType === 'list' && (
+                          <FormControl>
+                            <FormLabel fontWeight="semibold">Lista de clientes</FormLabel>
 
-                                if (searchCompleted && products?.length > 0) {
-                                  return (
-                                    <List spacing={0}>
-                                      {products.map((product: any, index: number) => {
-                                        const isSelected = selectedProducts.some((p) => p.id === product.id);
-                                        return (
-                                          <Fragment key={product.id}>
-                                            <ListItem
-                                              p="0.75rem"
-                                              cursor="pointer"
-                                              _hover={{ bg: hoverBg }}
-                                              transition="background-color 0.2s ease"
-                                              opacity={isSelected ? 0.5 : 1}
-                                              onClick={() => !isSelected && handleProductSelect(product)}
-                                            >
-                                              <Flex align="center" gap="0.75rem">
-                                                <Image
-                                                  src={
-                                                    product.imageUrl ||
-                                                    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                                  }
-                                                  alt={product.name}
-                                                  boxSize="40px"
-                                                  objectFit="cover"
-                                                  borderRadius="md"
-                                                  flexShrink={0}
-                                                />
-                                                <Box flex="1">
-                                                  <Text fontSize="sm" fontWeight="medium">
-                                                    {product.name}
-                                                  </Text>
-                                                  {product.internalCode && (
-                                                    <Text fontSize="xs" color={textColor}>
-                                                      Código: {product.internalCode}
+                            {/* Buscador de clientes */}
+                            <Box position="relative" ref={clientSearchRef}>
+                              <Box
+                                display="flex"
+                                bg={inputBg}
+                                borderRadius="md"
+                                overflow="hidden"
+                                borderWidth="1px"
+                                borderColor={inputBorder}
+                              >
+                                <Select
+                                  value={clientSearchType}
+                                  onChange={(e) =>
+                                    setClientSearchType(
+                                      e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName',
+                                    )
+                                  }
+                                  bg="transparent"
+                                  border="none"
+                                  color={textColor}
+                                  w="auto"
+                                  minW="7rem"
+                                  maxW="8rem"
+                                  borderRadius="none"
+                                  _focus={{ boxShadow: 'none' }}
+                                  disabled={isLoading}
+                                >
+                                  <option value="name">Nombre</option>
+                                  <option value="rut">RUT</option>
+                                  <option value="razonSocial">Razón social</option>
+                                  <option value="contactName">Contacto</option>
+                                </Select>
+
+                                <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                <InputGroup flex="1">
+                                  <Input
+                                    placeholder="Buscar cliente..."
+                                    value={clientSearch}
+                                    onChange={(e) => handleClientSearch(e.target.value)}
+                                    bg="transparent"
+                                    border="none"
+                                    borderRadius="none"
+                                    _placeholder={{ color: textColor }}
+                                    color={textColor}
+                                    _focus={{ boxShadow: 'none' }}
+                                    pl="1rem"
+                                    disabled={isLoading}
+                                    onFocus={() => clientSearch && setShowClientDropdown(true)}
+                                  />
+                                  <InputRightElement>
+                                    <IconButton
+                                      aria-label="Buscar"
+                                      icon={<AiOutlineSearch size="1.25rem" />}
+                                      size="sm"
+                                      variant="ghost"
+                                      disabled={isLoading}
+                                      color={textColor}
+                                      _hover={{}}
+                                      onClick={handleClearClientSearch}
+                                    />
+                                  </InputRightElement>
+                                </InputGroup>
+                              </Box>
+
+                              {/* Dropdown de resultados de clientes */}
+                              {showClientDropdown && (
+                                <Box
+                                  position="absolute"
+                                  top="100%"
+                                  left={0}
+                                  right={0}
+                                  mt={1}
+                                  bg={dropdownBg}
+                                  border="1px solid"
+                                  borderColor={dropdownBorder}
+                                  borderRadius="md"
+                                  boxShadow="lg"
+                                  maxH="300px"
+                                  overflowY="auto"
+                                  zIndex={20}
+                                >
+                                  {(() => {
+                                    // Estados del dropdown:
+                                    // 1. Usuario está escribiendo (debounce en progreso)
+                                    const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
+                                    // 2. Esperando resultados de la API
+                                    const isSearching =
+                                      !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                    // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
+                                    const searchCompleted =
+                                      !isTyping &&
+                                      !isSearching &&
+                                      debouncedClientSearch.length >= 2 &&
+                                      lastClientSearchTerm === debouncedClientSearch;
+
+                                    if (isTyping || isSearching) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando clientes...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    if (searchCompleted && clientsSearch?.length > 0) {
+                                      return (
+                                        <List spacing={0}>
+                                          {clientsSearch.map((client: any, index: number) => {
+                                            const isSelected = selectedClients.some((c) => c.id === client.id);
+                                            return (
+                                              <Fragment key={client.id}>
+                                                <ListItem
+                                                  p="0.75rem"
+                                                  cursor="pointer"
+                                                  _hover={{ bg: hoverBg }}
+                                                  transition="background-color 0.2s ease"
+                                                  opacity={isSelected ? 0.5 : 1}
+                                                  onClick={() => !isSelected && handleClientSelect(client)}
+                                                >
+                                                  <Box>
+                                                    <Text fontSize="sm" fontWeight="medium">
+                                                      {client.name}
                                                     </Text>
-                                                  )}
-                                                </Box>
-                                                {isSelected && (
-                                                  <Text fontSize="xs" color="green.500">
-                                                    Seleccionado
-                                                  </Text>
-                                                )}
-                                              </Flex>
-                                            </ListItem>
-                                            {index < products.length - 1 && <Divider />}
-                                          </Fragment>
-                                        );
-                                      })}
-                                    </List>
-                                  );
-                                }
+                                                    <Text fontSize="xs" color={textColor}>
+                                                      {client.rut && `RUT: ${client.rut}`}
+                                                      {client.contactName && ` - Contacto: ${client.contactName}`}
+                                                    </Text>
+                                                    {isSelected && (
+                                                      <Text fontSize="xs" color="green.500">
+                                                        Seleccionado
+                                                      </Text>
+                                                    )}
+                                                  </Box>
+                                                </ListItem>
+                                                {index < clientsSearch.length - 1 && <Divider />}
+                                              </Fragment>
+                                            );
+                                          })}
+                                        </List>
+                                      );
+                                    }
 
-                                if (searchCompleted && products?.length === 0) {
-                                  return (
-                                    <Text p={3} fontSize="sm" color="gray.500">
-                                      No se encontraron productos
-                                    </Text>
-                                  );
-                                }
+                                    if (searchCompleted && clientsSearch?.length === 0) {
+                                      return (
+                                        <Text p={3} fontSize="sm" color="gray.500">
+                                          No se encontraron clientes
+                                        </Text>
+                                      );
+                                    }
 
-                                // Mientras esperamos que se complete la búsqueda, mostrar loading
-                                if (debouncedProductSearch.length >= 2 && (!searchCompleted || isLoadingProducts)) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando productos...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
+                                    // Mientras esperamos que se complete la búsqueda, mostrar loading
+                                    if (
+                                      debouncedClientSearch.length >= 2 &&
+                                      (!searchCompleted || isLoadingClientsSearch)
+                                    ) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando clientes...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
 
-                                return null;
-                              })()}
+                                    return null;
+                                  })()}
+                                </Box>
+                              )}
                             </Box>
-                          )}
-                        </Box>
 
-                        {/* Lista de productos seleccionados */}
-                        {selectedProducts.length > 0 && (
-                          <Box mt="1rem">
-                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                              Productos seleccionados ({selectedProducts.length}):
-                            </Text>
-                            <Box
-                              maxH="150px"
-                              overflowY="auto"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              borderRadius="md"
-                              p="0.5rem"
-                            >
-                              <Stack spacing="0.5rem">
-                                {selectedProducts.map((product) => (
-                                  <Flex
-                                    key={product.id}
-                                    align="center"
-                                    justify="space-between"
-                                    p="0.5rem"
-                                    bg={buttonBg}
-                                    borderRadius="md"
-                                  >
-                                    <Flex align="center" gap="0.5rem">
-                                      <Image
-                                        src={
-                                          product.imageUrl ||
-                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                        }
-                                        alt={product.name}
-                                        boxSize="30px"
-                                        objectFit="cover"
-                                        borderRadius="sm"
-                                        flexShrink={0}
-                                      />
-                                      <Text fontSize="sm">{product.name}</Text>
-                                    </Flex>
-                                    <IconButton
-                                      aria-label="Remover producto"
-                                      icon={<FaTimes />}
-                                      size="xs"
-                                      variant="ghost"
-                                      color="red.500"
-                                      onClick={() => handleRemoveProduct(product.id)}
-                                    />
-                                  </Flex>
-                                ))}
-                              </Stack>
-                            </Box>
-                          </Box>
+                            {/* Lista de clientes seleccionados */}
+                            {selectedClients.length > 0 && (
+                              <Box mt="1rem">
+                                <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                  Clientes seleccionados ({selectedClients.length}):
+                                </Text>
+                                <Box
+                                  maxH="150px"
+                                  overflowY="auto"
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  borderRadius="md"
+                                  p="0.5rem"
+                                >
+                                  <Stack spacing="0.5rem">
+                                    {selectedClients.map((client) => (
+                                      <Flex
+                                        key={client.id}
+                                        align="center"
+                                        justify="space-between"
+                                        p="0.5rem"
+                                        bg={buttonBg}
+                                        borderRadius="md"
+                                      >
+                                        <Box>
+                                          <Text fontSize="sm" fontWeight="medium">
+                                            {client.name}
+                                          </Text>
+                                          <Text fontSize="xs" color={textColor}>
+                                            {client.rut && `RUT: ${client.rut}`}
+                                            {client.contactName && ` - Contacto: ${client.contactName}`}
+                                          </Text>
+                                        </Box>
+                                        <IconButton
+                                          aria-label="Remover cliente"
+                                          icon={<FaTimes />}
+                                          size="xs"
+                                          variant="ghost"
+                                          color="red.500"
+                                          onClick={() => handleRemoveClient(client.id)}
+                                        />
+                                      </Flex>
+                                    ))}
+                                  </Stack>
+                                </Box>
+                              </Box>
+                            )}
+                          </FormControl>
                         )}
-                      </FormControl>
-                    )}
+                      </VStack>
+                    </Box>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                    {/* Selector de tipo de clientes */}
-                    <FormControl>
-                      <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
-                      <Select
-                        value={clientType}
-                        onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        disabled={isLoading}
-                      >
-                        <option value="all">Todos los clientes</option>
-                        <option value="zone">Por zona</option>
-                        <option value="list">Lista personalizada</option>
-                      </Select>
-                    </FormControl>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="discount-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Actualizando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Actualizar descuento
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-                    {/* Selector de zona */}
-                    {clientType === 'zone' && (
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiMapPin} boxSize="1rem" />
-                            <Text>Seleccionar zona</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          value={selectedZoneId}
-                          onChange={(e) => setSelectedZoneId(e.target.value)}
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          placeholder="Seleccionar zona"
-                        >
-                          {zones.map((zone) => (
-                            <option key={zone.id} value={zone.id.toString()}>
-                              {zone.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
-
-                    {/* Buscador de clientes para lista personalizada */}
-                    {clientType === 'list' && (
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">Lista de clientes</FormLabel>
-
-                        {/* Buscador de clientes */}
-                        <Box position="relative" ref={clientSearchRef}>
-                          <Box
-                            display="flex"
-                            bg={inputBg}
-                            borderRadius="md"
-                            overflow="hidden"
-                            borderWidth="1px"
-                            borderColor={inputBorder}
-                          >
-                            <Select
-                              value={clientSearchType}
-                              onChange={(e) =>
-                                setClientSearchType(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')
-                              }
-                              bg="transparent"
-                              border="none"
-                              color={textColor}
-                              w="auto"
-                              minW="7rem"
-                              maxW="8rem"
-                              borderRadius="none"
-                              _focus={{ boxShadow: 'none' }}
-                              disabled={isLoading}
-                            >
-                              <option value="name">Nombre</option>
-                              <option value="rut">RUT</option>
-                              <option value="razonSocial">Razón social</option>
-                              <option value="contactName">Contacto</option>
-                            </Select>
-
-                            <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                            <InputGroup flex="1">
-                              <Input
-                                placeholder="Buscar cliente..."
-                                value={clientSearch}
-                                onChange={(e) => handleClientSearch(e.target.value)}
-                                bg="transparent"
-                                border="none"
-                                borderRadius="none"
-                                _placeholder={{ color: textColor }}
-                                color={textColor}
-                                _focus={{ boxShadow: 'none' }}
-                                pl="1rem"
-                                disabled={isLoading}
-                                onFocus={() => clientSearch && setShowClientDropdown(true)}
-                              />
-                              <InputRightElement>
-                                <IconButton
-                                  aria-label="Buscar"
-                                  icon={<AiOutlineSearch size="1.25rem" />}
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled={isLoading}
-                                  color={textColor}
-                                  _hover={{}}
-                                  onClick={handleClearClientSearch}
-                                />
-                              </InputRightElement>
-                            </InputGroup>
-                          </Box>
-
-                          {/* Dropdown de resultados de clientes */}
-                          {showClientDropdown && (
-                            <Box
-                              position="absolute"
-                              top="100%"
-                              left={0}
-                              right={0}
-                              mt={1}
-                              bg={dropdownBg}
-                              border="1px solid"
-                              borderColor={dropdownBorder}
-                              borderRadius="md"
-                              boxShadow="lg"
-                              maxH="300px"
-                              overflowY="auto"
-                              zIndex={20}
-                            >
-                              {(() => {
-                                // Estados del dropdown:
-                                // 1. Usuario está escribiendo (debounce en progreso)
-                                const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
-                                // 2. Esperando resultados de la API
-                                const isSearching =
-                                  !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
-                                // 3. Mostrar resultados o mensaje de no encontrado (solo si la búsqueda está completa)
-                                const searchCompleted =
-                                  !isTyping &&
-                                  !isSearching &&
-                                  debouncedClientSearch.length >= 2 &&
-                                  lastClientSearchTerm === debouncedClientSearch;
-
-                                if (isTyping || isSearching) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando clientes...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
-
-                                if (searchCompleted && clientsSearch?.length > 0) {
-                                  return (
-                                    <List spacing={0}>
-                                      {clientsSearch.map((client: any, index: number) => {
-                                        const isSelected = selectedClients.some((c) => c.id === client.id);
-                                        return (
-                                          <Fragment key={client.id}>
-                                            <ListItem
-                                              p="0.75rem"
-                                              cursor="pointer"
-                                              _hover={{ bg: hoverBg }}
-                                              transition="background-color 0.2s ease"
-                                              opacity={isSelected ? 0.5 : 1}
-                                              onClick={() => !isSelected && handleClientSelect(client)}
-                                            >
-                                              <Box>
-                                                <Text fontSize="sm" fontWeight="medium">
-                                                  {client.name}
-                                                </Text>
-                                                <Text fontSize="xs" color={textColor}>
-                                                  {client.rut && `RUT: ${client.rut}`}
-                                                  {client.contactName && ` - Contacto: ${client.contactName}`}
-                                                </Text>
-                                                {isSelected && (
-                                                  <Text fontSize="xs" color="green.500">
-                                                    Seleccionado
-                                                  </Text>
-                                                )}
-                                              </Box>
-                                            </ListItem>
-                                            {index < clientsSearch.length - 1 && <Divider />}
-                                          </Fragment>
-                                        );
-                                      })}
-                                    </List>
-                                  );
-                                }
-
-                                if (searchCompleted && clientsSearch?.length === 0) {
-                                  return (
-                                    <Text p={3} fontSize="sm" color="gray.500">
-                                      No se encontraron clientes
-                                    </Text>
-                                  );
-                                }
-
-                                // Mientras esperamos que se complete la búsqueda, mostrar loading
-                                if (debouncedClientSearch.length >= 2 && (!searchCompleted || isLoadingClientsSearch)) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando clientes...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
-
-                                return null;
-                              })()}
-                            </Box>
-                          )}
-                        </Box>
-
-                        {/* Lista de clientes seleccionados */}
-                        {selectedClients.length > 0 && (
-                          <Box mt="1rem">
-                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                              Clientes seleccionados ({selectedClients.length}):
-                            </Text>
-                            <Box
-                              maxH="150px"
-                              overflowY="auto"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              borderRadius="md"
-                              p="0.5rem"
-                            >
-                              <Stack spacing="0.5rem">
-                                {selectedClients.map((client) => (
-                                  <Flex
-                                    key={client.id}
-                                    align="center"
-                                    justify="space-between"
-                                    p="0.5rem"
-                                    bg={buttonBg}
-                                    borderRadius="md"
-                                  >
-                                    <Box>
-                                      <Text fontSize="sm" fontWeight="medium">
-                                        {client.name}
-                                      </Text>
-                                      <Text fontSize="xs" color={textColor}>
-                                        {client.rut && `RUT: ${client.rut}`}
-                                        {client.contactName && ` - Contacto: ${client.contactName}`}
-                                      </Text>
-                                    </Box>
-                                    <IconButton
-                                      aria-label="Remover cliente"
-                                      icon={<FaTimes />}
-                                      size="xs"
-                                      variant="ghost"
-                                      color="red.500"
-                                      onClick={() => handleRemoveClient(client.id)}
-                                    />
-                                  </Flex>
-                                ))}
-                              </Stack>
-                            </Box>
-                          </Box>
-                        )}
-                      </FormControl>
-                    )}
-                  </VStack>
-                </Box>
-              </form>
-            )}
-          </Formik>
-        </ModalBody>
-
-        <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-          <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
-              Cancelar
-            </Button>
-            <Button
-              form="discount-edit-form"
-              type="submit"
-              colorScheme="blue"
-              variant="outline"
-              isLoading={isLoading}
-              loadingText="Actualizando..."
-              leftIcon={<FaCheck />}
-              size="sm"
-            >
-              Actualizar descuento
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };
 

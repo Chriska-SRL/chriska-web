@@ -29,6 +29,7 @@ import { Warehouse } from '@/entities/warehouse';
 import { validate } from '@/utils/validations/validate';
 import { useUpdateWarehouse } from '@/hooks/warehouse';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type WarehouseEditProps = {
   isOpen: boolean;
@@ -40,6 +41,8 @@ type WarehouseEditProps = {
 export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: WarehouseEditProps) => {
   const toast = useToast();
   const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateWarehouse(warehouseProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -89,100 +92,145 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
     setWarehouseProps(updatedWarehouse);
   };
 
+  const handleClose = () => {
+    setWarehouseProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
-      <ModalOverlay />
-      <ModalContent maxH="90dvh" display="flex" flexDirection="column">
-        <ModalHeader
-          textAlign="center"
-          fontSize="1.5rem"
-          flexShrink={0}
-          borderBottom="1px solid"
-          borderColor={inputBorder}
-        >
-          Editar depósito
-        </ModalHeader>
-        <ModalCloseButton />
-        <Formik
-          initialValues={{
-            id: warehouse.id,
-            name: warehouse.name,
-            description: warehouse.description,
-          }}
-          onSubmit={handleSubmit}
-          validateOnChange
-          validateOnBlur={false}
-        >
-          {({ handleSubmit, errors, touched, submitCount }) => (
-            <form onSubmit={handleSubmit}>
-              <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-                <VStack spacing="0.75rem">
-                  <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiBox} boxSize="1rem" />
-                        <Text>Nombre</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Input}
-                      name="name"
-                      type="text"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                  </FormControl>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
+            Editar depósito
+          </ModalHeader>
+          <ModalCloseButton />
+          <Formik
+            initialValues={{
+              id: warehouse.id,
+              name: warehouse.name,
+              description: warehouse.description,
+            }}
+            onSubmit={handleSubmit}
+            validateOnChange
+            validateOnBlur={false}
+          >
+            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+              // Actualizar la instancia de formik solo cuando cambie
+              useEffect(() => {
+                setFormikInstance({ dirty, resetForm });
+              }, [dirty, resetForm]);
 
-                  <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                    <FormLabel fontWeight="semibold">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiFileText} boxSize="1rem" />
-                        <Text>Descripción</Text>
-                      </HStack>
-                    </FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="description"
-                      type="text"
-                      bg={inputBg}
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      validate={validateEmpty}
-                      disabled={isLoading}
-                      rows={4}
-                    />
-                    <FormErrorMessage>{errors.description}</FormErrorMessage>
-                  </FormControl>
-                </VStack>
-              </ModalBody>
+              return (
+                <form onSubmit={handleSubmit}>
+                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                    <VStack spacing="0.75rem">
+                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiBox} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
 
-              <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                <HStack spacing="0.5rem">
-                  <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    colorScheme="blue"
-                    variant="outline"
-                    isLoading={isLoading}
-                    loadingText="Guardando..."
-                    leftIcon={<FaCheck />}
-                    size="sm"
-                  >
-                    Guardar cambios
-                  </Button>
-                </HStack>
-              </ModalFooter>
-            </form>
-          )}
-        </Formik>
-      </ModalContent>
-    </Modal>
+                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Descripción</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="description"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          validate={validateEmpty}
+                          disabled={isLoading}
+                          rows={4}
+                        />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
+                      </FormControl>
+                    </VStack>
+                  </ModalBody>
+
+                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                    <HStack spacing="0.5rem">
+                      <Button
+                        variant="ghost"
+                        onClick={handleClose}
+                        disabled={isLoading}
+                        size="sm"
+                        leftIcon={<FaTimes />}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        colorScheme="blue"
+                        variant="outline"
+                        isLoading={isLoading}
+                        loadingText="Guardando..."
+                        leftIcon={<FaCheck />}
+                        size="sm"
+                      >
+                        Guardar cambios
+                      </Button>
+                    </HStack>
+                  </ModalFooter>
+                </form>
+              );
+            }}
+          </Formik>
+        </ModalContent>
+      </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };

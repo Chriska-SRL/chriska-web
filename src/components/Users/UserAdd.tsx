@@ -33,6 +33,7 @@ import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type UserAddProps = {
   isLoading: boolean;
@@ -53,6 +54,8 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const [userProps, setUserProps] = useState<Partial<User>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
 
   const [newUserId, setNewUserId] = useState<number>();
@@ -65,7 +68,19 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
 
   const handleClose = () => {
     setUserProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
     onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
   };
 
   useEffect(() => {
@@ -142,6 +157,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
         size={{ base: 'xs', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
       >
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
@@ -167,116 +183,123 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
               onSubmit={handleSubmit}
               enableReinitialize
             >
-              {({ handleSubmit }) => (
-                <form id="user-add-form" onSubmit={handleSubmit}>
-                  <VStack spacing="1rem" align="stretch">
-                    <Field
-                      name="username"
-                      validate={(value: string) => {
-                        const emptyError = validate(value);
-                        if (emptyError) return emptyError;
-                        if (!/^[a-z]+$/.test(value)) return 'Debe ser una sola palabra en minúsculas';
-                        return undefined;
-                      }}
-                    >
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiMail} boxSize="1rem" />
-                              <Text>Nombre de usuario</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder="Ingrese el nombre de usuario"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          />
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-                    <Field name="name" validate={validate}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiUser} boxSize="1rem" />
-                              <Text>Nombre completo</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder="Ingrese el nombre completo"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          />
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
+                return (
+                  <form id="user-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field
+                        name="username"
+                        validate={(value: string) => {
+                          const emptyError = validate(value);
+                          if (emptyError) return emptyError;
+                          if (!/^[a-z]+$/.test(value)) return 'Debe ser una sola palabra en minúsculas';
+                          return undefined;
+                        }}
+                      >
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiMail} boxSize="1rem" />
+                                <Text>Nombre de usuario</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre de usuario"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                    <Field name="roleId" validate={validate}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiShield} boxSize="1rem" />
-                              <Text>Rol</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Select
-                            {...field}
-                            placeholder="Seleccionar rol"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoadingRoles || isLoading}
-                          >
-                            {roles?.map((role) => (
-                              <option key={role.id} value={role.id}>
-                                {role.name}
-                              </option>
-                            ))}
-                          </Select>
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
+                      <Field name="name" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiUser} boxSize="1rem" />
+                                <Text>Nombre completo</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre completo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                    <Field name="estado" validate={validate}>
-                      {({ field, meta }: any) => (
-                        <FormControl isInvalid={meta.error && meta.touched}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiActivity} boxSize="1rem" />
-                              <Text>Estado</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Select
-                            {...field}
-                            placeholder="Seleccionar estado"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          >
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                          </Select>
-                          <FormErrorMessage>{meta.error}</FormErrorMessage>
-                        </FormControl>
-                      )}
-                    </Field>
-                  </VStack>
-                </form>
-              )}
+                      <Field name="roleId" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiShield} boxSize="1rem" />
+                                <Text>Rol</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar rol"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoadingRoles || isLoading}
+                            >
+                              {roles?.map((role) => (
+                                <option key={role.id} value={role.id}>
+                                  {role.name}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="estado" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiActivity} boxSize="1rem" />
+                                <Text>Estado</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar estado"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              <option value="Activo">Activo</option>
+                              <option value="Inactivo">Inactivo</option>
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
             </Formik>
           </ModalBody>
 
@@ -306,6 +329,12 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         password={tempPassword}
+      />
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
       />
     </>
   );

@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleDetail } from './VehicleDetail';
 import { Pagination } from '@/components/Pagination';
+import { useState } from 'react';
 
 type VehicleListProps = {
   vehicles: Vehicle[];
@@ -52,6 +53,7 @@ export const VehicleList = ({
 }: VehicleListProps) => {
   const router = useRouter();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [navigatingVehicleId, setNavigatingVehicleId] = useState<number | null>(null);
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
   const tableHeadBg = useColorModeValue('#f2f2f2', 'gray.700');
@@ -62,8 +64,14 @@ export const VehicleList = ({
   const iconColor = useColorModeValue('gray.500', 'gray.400');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
 
-  const handleViewClick = (vehicleId: number) => {
-    router.push(`/vehiculos/${vehicleId}`);
+  const handleViewClick = async (vehicleId: number) => {
+    setNavigatingVehicleId(vehicleId);
+    try {
+      await router.push(`/vehiculos/${vehicleId}`);
+    } catch (error) {
+      // En caso de error, reset el estado
+      setNavigatingVehicleId(null);
+    }
   };
 
   if (error) {
@@ -154,11 +162,13 @@ export const VehicleList = ({
                     <Tooltip label="Ver costo del vehículo">
                       <IconButton
                         aria-label="Ver vehículo"
-                        icon={<BsCurrencyDollar />}
+                        icon={navigatingVehicleId === vehicle.id ? <Spinner size="sm" /> : <BsCurrencyDollar />}
                         onClick={() => handleViewClick(vehicle.id)}
                         variant="ghost"
                         size="md"
                         _hover={{ bg: hoverBgIcon }}
+                        isLoading={navigatingVehicleId === vehicle.id}
+                        isDisabled={navigatingVehicleId !== null}
                       />
                     </Tooltip>
                     <VehicleDetail vehicle={vehicle} setVehicles={setVehicles} />
@@ -222,11 +232,13 @@ export const VehicleList = ({
                       <Tooltip label="Ver costo del vehículo">
                         <IconButton
                           aria-label="Ver vehículo"
-                          icon={<BsCurrencyDollar />}
+                          icon={navigatingVehicleId === vehicle.id ? <Spinner size="sm" /> : <BsCurrencyDollar />}
                           onClick={() => handleViewClick(vehicle.id)}
                           variant="ghost"
                           size="lg"
                           _hover={{ bg: hoverBgIcon }}
+                          isLoading={navigatingVehicleId === vehicle.id}
+                          isDisabled={navigatingVehicleId !== null}
                         />
                       </Tooltip>
                     </Td>

@@ -32,6 +32,7 @@ import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { IoReload } from 'react-icons/io5';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type UserEditProps = {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const [userProps, setUserProps] = useState<Partial<User>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
 
   const {
@@ -133,9 +136,33 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
     setUserProps(user);
   };
 
+  const handleClose = () => {
+    setUserProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered closeOnOverlayClick={false}>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -160,151 +187,164 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount }) => (
-              <form onSubmit={handleSubmit}>
-                <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-                  <VStack spacing="0.75rem">
-                    <FormControl
-                      isInvalid={
-                        (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
-                      }
-                    >
-                      <FormLabel fontWeight="semibold">
-                        <HStack spacing="0.5rem">
-                          <Icon as={FiUser} boxSize="1rem" />
-                          <Text>Nombre de usuario</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Field
-                        as={Input}
-                        name="username"
-                        type="text"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.username}</FormErrorMessage>
-                    </FormControl>
+            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+              // Actualizar la instancia de formik solo cuando cambie
+              useEffect(() => {
+                setFormikInstance({ dirty, resetForm });
+              }, [dirty, resetForm]);
 
-                    <FormControl
-                      isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
-                    >
-                      <FormLabel fontWeight="semibold">
-                        <HStack spacing="0.5rem">
-                          <Icon as={FiUser} boxSize="1rem" />
-                          <Text>Nombre</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        type="text"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoading}
-                      />
-                      <FormErrorMessage>{errors.name}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl
-                      isInvalid={
-                        (submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'
-                      }
-                    >
-                      <FormLabel fontWeight="semibold">
-                        <HStack spacing="0.5rem">
-                          <Icon as={FiShield} boxSize="1rem" />
-                          <Text>Rol</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Field
-                        as={Select}
-                        name="roleId"
-                        placeholder="Seleccionar rol"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoading || isLoadingRoles}
+              return (
+                <form onSubmit={handleSubmit}>
+                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                    <VStack spacing="0.75rem">
+                      <FormControl
+                        isInvalid={
+                          (submitCount > 0 && touched.username && !!errors.username) || fieldError?.campo === 'Username'
+                        }
                       >
-                        {roles?.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <FormErrorMessage>{errors.roleId}</FormErrorMessage>
-                    </FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiUser} boxSize="1rem" />
+                            <Text>Nombre de usuario</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="username"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{errors.username}</FormErrorMessage>
+                      </FormControl>
 
-                    <FormControl
-                      isInvalid={
-                        (submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'
-                      }
-                    >
-                      <FormLabel fontWeight="semibold">
-                        <HStack spacing="0.5rem">
-                          <Icon as={FiSettings} boxSize="1rem" />
-                          <Text>Estado</Text>
-                        </HStack>
-                      </FormLabel>
-                      <Field
-                        as={Select}
-                        name="estado"
-                        placeholder="Seleccionar estado"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoading}
+                      <FormControl
+                        isInvalid={(submitCount > 0 && touched.name && !!errors.name) || fieldError?.campo === 'Name'}
                       >
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                      </Field>
-                      <FormErrorMessage>{errors.estado}</FormErrorMessage>
-                    </FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiUser} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
 
-                    <Button
-                      onClick={handleResetPassword}
-                      isLoading={isLoadingReset}
-                      variant="outline"
-                      colorScheme="blue"
-                      w="100%"
-                      leftIcon={<IoReload />}
-                      mt="0.625rem"
-                    >
-                      Restablecer contraseña
-                    </Button>
-                  </VStack>
-                </ModalBody>
+                      <FormControl
+                        isInvalid={
+                          (submitCount > 0 && touched.roleId && !!errors.roleId) || fieldError?.campo === 'RoleId'
+                        }
+                      >
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiShield} boxSize="1rem" />
+                            <Text>Rol</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Select}
+                          name="roleId"
+                          placeholder="Seleccionar rol"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading || isLoadingRoles}
+                        >
+                          {roles?.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <FormErrorMessage>{errors.roleId}</FormErrorMessage>
+                      </FormControl>
 
-                <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                  <HStack spacing="0.5rem">
-                    <Button variant="ghost" onClick={onClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
-                      Cancelar
-                    </Button>
-                    <Button
-                      type="submit"
-                      colorScheme="blue"
-                      variant="outline"
-                      isLoading={isLoading}
-                      loadingText="Guardando..."
-                      leftIcon={<FaCheck />}
-                      size="sm"
-                    >
-                      Guardar cambios
-                    </Button>
-                  </HStack>
-                </ModalFooter>
-              </form>
-            )}
+                      <FormControl
+                        isInvalid={
+                          (submitCount > 0 && touched.estado && !!errors.estado) || fieldError?.campo === 'Estado'
+                        }
+                      >
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiSettings} boxSize="1rem" />
+                            <Text>Estado</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Select}
+                          name="estado"
+                          placeholder="Seleccionar estado"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading}
+                        >
+                          <option value="Activo">Activo</option>
+                          <option value="Inactivo">Inactivo</option>
+                        </Field>
+                        <FormErrorMessage>{errors.estado}</FormErrorMessage>
+                      </FormControl>
+
+                      <Button
+                        onClick={handleResetPassword}
+                        isLoading={isLoadingReset}
+                        variant="outline"
+                        colorScheme="blue"
+                        w="100%"
+                        leftIcon={<IoReload />}
+                        mt="0.625rem"
+                      >
+                        Restablecer contraseña
+                      </Button>
+                    </VStack>
+                  </ModalBody>
+
+                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+                    <HStack spacing="0.5rem">
+                      <Button
+                        variant="ghost"
+                        onClick={handleClose}
+                        disabled={isLoading}
+                        size="sm"
+                        leftIcon={<FaTimes />}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        colorScheme="blue"
+                        variant="outline"
+                        isLoading={isLoading}
+                        loadingText="Guardando..."
+                        leftIcon={<FaCheck />}
+                        size="sm"
+                      >
+                        Guardar cambios
+                      </Button>
+                    </HStack>
+                  </ModalFooter>
+                </form>
+              );
+            }}
           </Formik>
         </ModalContent>
       </Modal>
@@ -313,6 +353,12 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
         isOpen={isTempPasswordModalOpen}
         onClose={handleCloseTempPasswordModal}
         password={resetData?.password ?? ''}
+      />
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
       />
     </>
   );
