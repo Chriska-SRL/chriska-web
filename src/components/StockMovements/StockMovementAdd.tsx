@@ -74,12 +74,10 @@ const StockMovementAddModal = ({
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
   const dropdownBg = useColorModeValue('white', 'gray.800');
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
-  const dividerColor = useColorModeValue('gray.300', 'gray.600');
-  const disabledColor = useColorModeValue('#fafafa', '#202532');
+  const dividerColor = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   // Hook para obtener el producto preseleccionado
   const { data: preselectedProduct } = useGetProductById(preselectedProductId);
@@ -87,7 +85,7 @@ const StockMovementAddModal = ({
   const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps as any);
+  const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps);
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -372,13 +370,16 @@ const StockMovementAddModal = ({
                           </HStack>
                         </FormLabel>
                         <Box position="relative" ref={searchRef}>
-                          <Box
+                          <Input
+                            as={Box}
                             display="flex"
-                            bg={isLoading ? disabledColor : inputBg}
+                            bg={inputBg}
                             borderRadius="md"
                             overflow="hidden"
                             borderWidth="1px"
-                            borderColor={isLoading ? disabledColor : inputBorder}
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                            p={0}
                           >
                             <Select
                               value={productSearchType}
@@ -387,13 +388,13 @@ const StockMovementAddModal = ({
                               }
                               bg="transparent"
                               border="none"
-                              color={textColor}
                               w="auto"
-                              minW="5rem"
-                              maxW="6rem"
+                              minW={{ base: '4.5rem', md: '7.5rem' }}
+                              maxW={{ base: '5rem', md: '8.5rem' }}
                               borderRadius="none"
                               _focus={{ boxShadow: 'none' }}
                               disabled={isLoading}
+                              fontSize={{ base: 'sm', md: 'md' }}
                             >
                               <option value="name">Nombre</option>
                               <option value="internalCode">Cód. interno</option>
@@ -410,8 +411,6 @@ const StockMovementAddModal = ({
                                 bg="transparent"
                                 border="none"
                                 borderRadius="none"
-                                _placeholder={{ color: textColor }}
-                                color={textColor}
                                 _focus={{ boxShadow: 'none' }}
                                 pl="1rem"
                                 disabled={isLoading}
@@ -425,7 +424,6 @@ const StockMovementAddModal = ({
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleClearProductSearch(setFieldValue)}
-                                    color={textColor}
                                     _hover={{}}
                                   />
                                 ) : (
@@ -435,13 +433,12 @@ const StockMovementAddModal = ({
                                     size="sm"
                                     variant="ghost"
                                     disabled={isLoading}
-                                    color={textColor}
                                     _hover={{}}
                                   />
                                 )}
                               </InputRightElement>
                             </InputGroup>
-                          </Box>
+                          </Input>
 
                           {showProductDropdown && (
                             <Box

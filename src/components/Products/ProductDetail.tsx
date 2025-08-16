@@ -43,7 +43,7 @@ import { useDeleteProduct } from '@/hooks/product';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { getUnitTypeLabel } from '@/enums/unitType.enum';
 import { getTemperatureConditionLabel } from '@/enums/temperatureCondition';
 
@@ -57,6 +57,7 @@ type ProductDetailProps = {
 export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }: ProductDetailProps) => {
   const canEditProducts = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS));
   const canDeleteProducts = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS));
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const router = useRouter();
 
@@ -279,16 +280,20 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
             <VStack spacing="0.5rem" w="100%">
               <Button
                 w="100%"
-                leftIcon={<FiBox />}
+                leftIcon={!isNavigating ? <FiBox /> : undefined}
                 onClick={() => {
+                  setIsNavigating(true);
                   handleClose();
                   router.push(`/movimientos-de-stock?product=${product.id}`);
                 }}
                 colorScheme="green"
                 variant="outline"
                 size="sm"
+                isLoading={isNavigating}
+                loadingText="Redirigiendo..."
+                disabled={isNavigating}
               >
-                Registrar movimiento
+                Registrar movimiento de stock
               </Button>
               <HStack spacing="0.5rem" w="100%">
                 {canDeleteProducts && (
