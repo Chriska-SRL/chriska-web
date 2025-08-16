@@ -154,27 +154,27 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
             Editar rol
           </ModalHeader>
           <ModalCloseButton />
-          {role && (
-            <Formik
-              initialValues={{
-                id: role.id,
-                name: role.name ?? '',
-                description: role.description ?? '',
-                permissions: role.permissions ?? [],
-              }}
-              onSubmit={handleSubmit}
-              validateOnChange
-              validateOnBlur={false}
-            >
-              {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, dirty, resetForm }) => {
-                // Actualizar la instancia de formik solo cuando cambie
-                useEffect(() => {
-                  setFormikInstance({ dirty, resetForm });
-                }, [dirty, resetForm]);
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            {role && (
+              <Formik
+                initialValues={{
+                  id: role.id,
+                  name: role.name ?? '',
+                  description: role.description ?? '',
+                  permissions: role.permissions ?? [],
+                }}
+                onSubmit={handleSubmit}
+                validateOnChange
+                validateOnBlur={false}
+              >
+                {({ handleSubmit, values, setFieldValue, errors, touched, submitCount, dirty, resetForm }) => {
+                  // Actualizar la instancia de formik solo cuando cambie
+                  useEffect(() => {
+                    setFormikInstance({ dirty, resetForm });
+                  }, [dirty, resetForm]);
 
-                return (
-                  <form onSubmit={handleSubmit}>
-                    <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                  return (
+                    <form id="role-edit-form" onSubmit={handleSubmit}>
                       <Flex
                         gap="2rem"
                         align="start"
@@ -292,6 +292,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                 Cancelar
                               </Button>
                               <Button
+                                form="role-edit-form"
                                 type="submit"
                                 colorScheme="blue"
                                 variant="outline"
@@ -307,12 +308,12 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                           </ModalFooter>
                         </Flex>
                       </Flex>
-                    </ModalBody>
-                  </form>
-                );
-              }}
-            </Formik>
-          )}
+                    </form>
+                  );
+                }}
+              </Formik>
+            )}
+          </ModalBody>
         </ModalContent>
       </Modal>
 

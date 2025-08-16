@@ -2,6 +2,7 @@
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { StockMovementList } from './StockMovementList';
 import { StockMovement } from '@/entities/stockMovement';
 import { useGetStockMovements } from '@/hooks/stockMovement';
@@ -10,6 +11,16 @@ import { StockMovementFilters } from './StockMovementFilters';
 
 export const StockMovements = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const preselectedProductId = searchParams.get('product') ? Number(searchParams.get('product')) : undefined;
+
+  // Función para limpiar el parámetro de URL
+  const clearProductParam = useCallback(() => {
+    if (preselectedProductId) {
+      router.replace('/movimientos-de-stock');
+    }
+  }, [preselectedProductId, router]);
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -57,7 +68,13 @@ export const StockMovements = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           {isMobile ? 'Mov.' : 'Movimientos'} de stock
         </Text>
-        {isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
+        {isMobile && (
+          <StockMovementAdd
+            setStockMovements={setStockMovements}
+            preselectedProductId={preselectedProductId}
+            onModalClose={clearProductParam}
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -68,7 +85,11 @@ export const StockMovements = () => {
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <StockMovementAdd setStockMovements={setStockMovements} />
+            <StockMovementAdd
+              setStockMovements={setStockMovements}
+              preselectedProductId={preselectedProductId}
+              onModalClose={clearProductParam}
+            />
           </>
         )}
       </Flex>

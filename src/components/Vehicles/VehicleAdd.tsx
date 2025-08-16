@@ -127,7 +127,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
         onOverlayClick={handleOverlayClick}
       >
         <ModalOverlay />
-        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
             textAlign="center"
             fontSize="1.5rem"

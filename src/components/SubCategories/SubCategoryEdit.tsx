@@ -141,20 +141,20 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
             Editar subcategoría
           </ModalHeader>
           <ModalCloseButton />
-          <Formik
-            initialValues={{ id: subcategory.id, name: subcategory.name, description: subcategory.description }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
-              useEffect(() => {
-                setFormikInstance({ dirty, resetForm });
-              }, [dirty, resetForm]);
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{ id: subcategory.id, name: subcategory.name, description: subcategory.description }}
+              onSubmit={handleSubmit}
+              validateOnChange
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                return (
+                  <form id="subcategory-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="0.75rem">
                       <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                         <FormLabel fontWeight="semibold">
@@ -198,36 +198,37 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
                         <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                    <HStack spacing="0.5rem">
-                      <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        size="sm"
-                        leftIcon={<FaTimes />}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorScheme="blue"
-                        variant="outline"
-                        isLoading={isLoading}
-                        loadingText="Guardando..."
-                        leftIcon={<FaCheck />}
-                        size="sm"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </HStack>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isLoading}
+                size="sm"
+                leftIcon={<FaTimes />}
+              >
+                Cancelar
+              </Button>
+              <Button
+                form="subcategory-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

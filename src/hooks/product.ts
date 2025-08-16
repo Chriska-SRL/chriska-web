@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Product } from '@/entities/product';
 import {
   getProducts,
+  getProductById,
   addProduct,
   updateProduct,
   deleteProduct,
@@ -64,6 +65,39 @@ export const useGetProducts = (page: number = 1, pageSize: number = 10, filters?
 
     fetchProducts();
   }, [page, pageSize, memoizedFilters, filters]);
+
+  return { data, isLoading, error };
+};
+
+export const useGetProductById = (id?: number) => {
+  const [data, setData] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    if (!id) {
+      setData(null);
+      setIsLoading(false);
+      setError(undefined);
+      return;
+    }
+
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      setError(undefined);
+
+      try {
+        const result = await getProductById(id);
+        setData(result);
+      } catch (err: any) {
+        setError(err.message || 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   return { data, isLoading, error };
 };

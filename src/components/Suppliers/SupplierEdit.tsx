@@ -133,74 +133,74 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
             Editar proveedor
           </ModalHeader>
           <ModalCloseButton />
-          <Formik
-            initialValues={{
-              id: supplier?.id ?? 0,
-              name: supplier?.name ?? '',
-              rut: supplier?.rut ?? '',
-              razonSocial: supplier?.razonSocial ?? '',
-              address: supplier?.address ?? '',
-              mapsAddress: supplier?.mapsAddress ?? '',
-              phone: supplier?.phone ?? '',
-              contactName: supplier?.contactName ?? '',
-              email: supplier?.email ?? '',
-              bankAccounts: supplier?.bankAccounts ?? [],
-              observations: supplier?.observations ?? '',
-            }}
-            onSubmit={handleSubmit}
-            validate={(values) => {
-              const errors: any = {};
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                id: supplier?.id ?? 0,
+                name: supplier?.name ?? '',
+                rut: supplier?.rut ?? '',
+                razonSocial: supplier?.razonSocial ?? '',
+                address: supplier?.address ?? '',
+                mapsAddress: supplier?.mapsAddress ?? '',
+                phone: supplier?.phone ?? '',
+                contactName: supplier?.contactName ?? '',
+                email: supplier?.email ?? '',
+                bankAccounts: supplier?.bankAccounts ?? [],
+                observations: supplier?.observations ?? '',
+              }}
+              onSubmit={handleSubmit}
+              validate={(values) => {
+                const errors: any = {};
 
-              // Validate empty fields
-              const nameError = validateEmpty(values.name);
-              if (nameError) errors.name = nameError;
+                // Validate empty fields
+                const nameError = validateEmpty(values.name);
+                if (nameError) errors.name = nameError;
 
-              const razonSocialError = validateEmpty(values.razonSocial);
-              if (razonSocialError) errors.razonSocial = razonSocialError;
+                const razonSocialError = validateEmpty(values.razonSocial);
+                if (razonSocialError) errors.razonSocial = razonSocialError;
 
-              const addressError = validateEmpty(values.address);
-              if (addressError) errors.address = addressError;
+                const addressError = validateEmpty(values.address);
+                if (addressError) errors.address = addressError;
 
-              const mapsAddressError = validateEmpty(values.mapsAddress);
-              if (mapsAddressError) errors.mapsAddress = mapsAddressError;
+                const mapsAddressError = validateEmpty(values.mapsAddress);
+                if (mapsAddressError) errors.mapsAddress = mapsAddressError;
 
-              const contactNameError = validateEmpty(values.contactName);
-              if (contactNameError) errors.contactName = contactNameError;
+                const contactNameError = validateEmpty(values.contactName);
+                if (contactNameError) errors.contactName = contactNameError;
 
-              if (!values.rut || values.rut.trim() === '') {
-                errors.rut = 'Campo obligatorio';
-              } else if (!/^\d+$/.test(values.rut)) {
-                errors.rut = 'El RUT debe contener solo números';
-              } else if (values.rut.length !== 12) {
-                errors.rut = 'El RUT debe tener exactamente 12 dígitos';
-              }
+                if (!values.rut || values.rut.trim() === '') {
+                  errors.rut = 'Campo obligatorio';
+                } else if (!/^\d+$/.test(values.rut)) {
+                  errors.rut = 'El RUT debe contener solo números';
+                } else if (values.rut.length !== 12) {
+                  errors.rut = 'El RUT debe tener exactamente 12 dígitos';
+                }
 
-              if (!values.phone || values.phone.trim() === '') {
-                errors.phone = 'Campo obligatorio';
-              } else if (!/^\d+$/.test(values.phone)) {
-                errors.phone = 'El teléfono debe contener solo números';
-              }
+                if (!values.phone || values.phone.trim() === '') {
+                  errors.phone = 'Campo obligatorio';
+                } else if (!/^\d+$/.test(values.phone)) {
+                  errors.phone = 'El teléfono debe contener solo números';
+                }
 
-              if (!values.email || values.email.trim() === '') {
-                errors.email = 'Campo obligatorio';
-              } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
-                errors.email = 'Email inválido';
-              }
+                if (!values.email || values.email.trim() === '') {
+                  errors.email = 'Campo obligatorio';
+                } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+                  errors.email = 'Email inválido';
+                }
 
-              return errors;
-            }}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
-              // Actualizar la instancia de formik solo cuando cambie
-              useEffect(() => {
-                setFormikInstance({ dirty, resetForm });
-              }, [dirty, resetForm]);
+                return errors;
+              }}
+              validateOnChange
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                return (
+                  <form id="supplier-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="0.75rem">
                       <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                         <FormLabel fontWeight="semibold">
@@ -462,36 +462,37 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                         <FormErrorMessage>{errors.observations}</FormErrorMessage>
                       </FormControl>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                    <HStack spacing="0.5rem">
-                      <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        size="sm"
-                        leftIcon={<FaTimes />}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorScheme="blue"
-                        variant="outline"
-                        isLoading={isLoading}
-                        loadingText="Guardando..."
-                        leftIcon={<FaCheck />}
-                        size="sm"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </HStack>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isLoading}
+                size="sm"
+                leftIcon={<FaTimes />}
+              >
+                Cancelar
+              </Button>
+              <Button
+                form="supplier-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

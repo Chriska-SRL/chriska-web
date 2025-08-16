@@ -23,6 +23,7 @@ import {
   Checkbox,
   Text,
   Icon,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { Field, Formik, FieldArray } from 'formik';
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -37,6 +38,7 @@ import {
   FiGrid,
   FiBox,
   FiTruck,
+  FiImage,
 } from 'react-icons/fi';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
@@ -219,7 +221,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'lg' }}
+        size={{ base: 'xs', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -236,153 +238,116 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
             Editar producto
           </ModalHeader>
           <ModalCloseButton />
-          <Formik<ProductEditFormValues>
-            initialValues={{
-              id: product?.id ?? 0,
-              internalCode: product?.internalCode ?? '',
-              barcode: product?.barcode ?? '',
-              name: product?.name ?? '',
-              price: product?.price ?? 0,
-              unitType: product?.unitType ?? '',
-              description: product?.description ?? '',
-              temperatureCondition: product?.temperatureCondition ?? '',
-              observations: product?.observations ?? '',
-              subCategoryId: product?.subCategory.id ?? 0,
-              brandId: product?.brand.id ?? 0,
-              supplierIds: product?.suppliers?.map((s) => s.id) ?? [],
-              shelveId: product?.shelve?.id ?? 0,
-            }}
-            onSubmit={handleSubmit}
-            validateOnChange={true}
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, submitCount, setFieldValue, dirty, resetForm }) => {
-              // Actualizar la instancia de formik solo cuando cambie
-              useEffect(() => {
-                setFormikInstance({ dirty, resetForm });
-              }, [dirty, resetForm]);
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik<ProductEditFormValues>
+              initialValues={{
+                id: product?.id ?? 0,
+                internalCode: product?.internalCode ?? '',
+                barcode: product?.barcode ?? '',
+                name: product?.name ?? '',
+                price: product?.price ?? 0,
+                unitType: product?.unitType ?? '',
+                description: product?.description ?? '',
+                temperatureCondition: product?.temperatureCondition ?? '',
+                observations: product?.observations ?? '',
+                subCategoryId: product?.subCategory.id ?? 0,
+                brandId: product?.brand.id ?? 0,
+                supplierIds: product?.suppliers?.map((s) => s.id) ?? [],
+                shelveId: product?.shelve?.id ?? 0,
+              }}
+              onSubmit={handleSubmit}
+              validateOnChange={true}
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, submitCount, setFieldValue, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-                    <VStack spacing="0.75rem">
-                      <ProductImageUpload
-                        product={{
-                          ...product,
-                          imageUrl: finalImageUrl,
-                        }}
-                        onImageChange={handleImageChange}
-                        editable
-                      />
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiPackage} boxSize="1rem" />
-                            <Text>Código interno</Text>
+                return (
+                  <form id="product-edit-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                        <Box>
+                          <HStack mb="0.5rem" spacing="0.5rem">
+                            <Icon as={FiImage} boxSize="1rem" />
+                            <Text fontWeight="semibold">Imagen del producto</Text>
                           </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="internalCode"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled
-                        />
-                        <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
-                      </FormControl>
+                          <ProductImageUpload
+                            product={{
+                              ...product,
+                              imageUrl: finalImageUrl,
+                            }}
+                            onImageChange={handleImageChange}
+                            editable
+                          />
+                        </Box>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiHash} boxSize="1rem" />
-                            <Text>Código de barras</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="barcode"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={(value: any) => {
-                            if (!value) return undefined;
-                            const barcodeRegex = /^\d{13}$/;
-                            return barcodeRegex.test(value) ? undefined : 'Debe tener exactamente 13 dígitos numéricos';
-                          }}
-                        />
-                        <FormErrorMessage>{errors.barcode}</FormErrorMessage>
-                      </FormControl>
+                        <VStack spacing="2.25rem" align="stretch">
+                          <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiPackage} boxSize="1rem" />
+                                <Text>Código interno</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Field
+                              as={Input}
+                              name="internalCode"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled
+                            />
+                            <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
+                          </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.name}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Nombre</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="name"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                        />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
+                          <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiHash} boxSize="1rem" />
+                                <Text>Código de barras</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Field
+                              as={Input}
+                              name="barcode"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              validate={(value: any) => {
+                                if (!value) return undefined;
+                                const barcodeRegex = /^\d{13}$/;
+                                return barcodeRegex.test(value)
+                                  ? undefined
+                                  : 'Debe tener exactamente 13 dígitos numéricos';
+                              }}
+                            />
+                            <FormErrorMessage>{errors.barcode}</FormErrorMessage>
+                          </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.price}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiDollarSign} boxSize="1rem" />
-                            <Text>Precio</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="price"
-                          type="number"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={(value: any) => {
-                            const emptyError = validate(value);
-                            if (emptyError) return emptyError;
-                            if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
-                            if (value.length > 21) return 'Máximo 21 dígitos permitidos';
-                            return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
-                          }}
-                        />
-                        <FormErrorMessage>{errors.price}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiPackage} boxSize="1rem" />
-                            <Text>Unidad</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="unitType"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          placeholder="Seleccione una opción"
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          <option value="Kilo">Kilos</option>
-                          <option value="Unit">Unidades</option>
-                        </Field>
-                        <FormErrorMessage>{errors.unitType}</FormErrorMessage>
-                      </FormControl>
+                          <FormControl isInvalid={submitCount > 0 && !!errors.name}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Field
+                              as={Input}
+                              name="name"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              validate={validate}
+                            />
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
+                          </FormControl>
+                        </VStack>
+                      </SimpleGrid>
 
                       <FormControl isInvalid={submitCount > 0 && !!errors.description}>
                         <FormLabel fontWeight="semibold">
@@ -399,10 +364,113 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           borderColor={inputBorder}
                           disabled={isLoading}
                           validate={validate}
-                          rows={4}
+                          rows={2}
                         />
                         <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
+
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                        <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiPackage} boxSize="1rem" />
+                              <Text>Unidad</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="unitType"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una opción"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            <option value="Kilo">Kilos</option>
+                            <option value="Unit">Unidades</option>
+                          </Field>
+                          <FormErrorMessage>{errors.unitType}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && !!errors.price}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiDollarSign} boxSize="1rem" />
+                              <Text>Precio</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="price"
+                            type="number"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                            validate={(value: any) => {
+                              const emptyError = validate(value);
+                              if (emptyError) return emptyError;
+                              if (!/^\d+$/.test(value)) return 'Debe ser un número válido';
+                              if (value.length > 21) return 'Máximo 21 dígitos permitidos';
+                              return Number(value) > 0 ? undefined : 'El precio debe ser mayor a 0';
+                            }}
+                          />
+                          <FormErrorMessage>{errors.price}</FormErrorMessage>
+                        </FormControl>
+                      </SimpleGrid>
+
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Text>Categoría</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Select
+                            placeholder="Seleccionar categoría"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            value={selectedCategoryId ?? ''}
+                            disabled={isLoading || isLoadingCats}
+                            onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
+                          >
+                            {categories?.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </Select>
+                        </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Text>Subcategoría</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="subCategoryId"
+                            placeholder="Seleccionar subcategoría"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading || isLoadingCats || !selectedCategoryId}
+                            validate={validate}
+                          >
+                            {filteredSubCategories.map((sub) => (
+                              <option key={sub.id} value={sub.id}>
+                                {sub.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
+                        </FormControl>
+                      </SimpleGrid>
 
                       <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
                         <FormLabel fontWeight="semibold">
@@ -468,115 +536,67 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           border="1px solid"
                           borderColor={inputBorder}
                           disabled={isLoading}
-                          rows={4}
+                          rows={2}
                         />
                         <FormErrorMessage>{errors.observations}</FormErrorMessage>
                       </FormControl>
 
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiGrid} boxSize="1rem" />
-                            <Text>Categoría</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          placeholder="Seleccionar categoría"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          value={selectedCategoryId ?? ''}
-                          disabled={isLoading || isLoadingCats}
-                          onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
-                        >
-                          {categories?.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiBox} boxSize="1rem" />
+                              <Text>Depósito</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Select
+                            placeholder="Seleccionar depósito"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading || isLoadingWarehouses}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                              const selectedId = Number(e.target.value);
+                              setFieldValue('shelveId', '');
+                              setSelectedWarehouseId(selectedId || null);
+                            }}
+                            value={selectedWarehouseId || ''}
+                          >
+                            {warehouses.map((warehouse) => (
+                              <option key={warehouse.id} value={warehouse.id}>
+                                {warehouse.name}
+                              </option>
+                            ))}
+                          </Select>
+                          <FormErrorMessage>{errors.shelveId && 'Depósito es requerido'}</FormErrorMessage>
+                        </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiGrid} boxSize="1rem" />
-                            <Text>Subcategoría</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="subCategoryId"
-                          placeholder="Seleccionar subcategoría"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading || isLoadingCats || !selectedCategoryId}
-                          validate={validate}
-                        >
-                          {filteredSubCategories.map((sub) => (
-                            <option key={sub.id} value={sub.id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiBox} boxSize="1rem" />
-                            <Text>Depósito</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Select
-                          placeholder="Seleccionar depósito"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading || isLoadingWarehouses}
-                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                            const selectedId = Number(e.target.value);
-                            setFieldValue('shelveId', '');
-                            setSelectedWarehouseId(selectedId || null);
-                          }}
-                          value={selectedWarehouseId || ''}
-                        >
-                          {warehouses.map((warehouse) => (
-                            <option key={warehouse.id} value={warehouse.id}>
-                              {warehouse.name}
-                            </option>
-                          ))}
-                        </Select>
-                        <FormErrorMessage>{errors.shelveId && 'Depósito es requerido'}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiBox} boxSize="1rem" />
-                            <Text>Estantería</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="shelveId"
-                          placeholder="Seleccionar estantería"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading || !selectedWarehouseId}
-                          validate={validate}
-                        >
-                          {shelves.map((shelve) => (
-                            <option key={shelve.id} value={shelve.id}>
-                              {shelve.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
-                      </FormControl>
+                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiBox} boxSize="1rem" />
+                              <Text>Estantería</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="shelveId"
+                            placeholder="Seleccionar estantería"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading || !selectedWarehouseId}
+                            validate={validate}
+                          >
+                            {shelves.map((shelve) => (
+                              <option key={shelve.id} value={shelve.id}>
+                                {shelve.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
+                        </FormControl>
+                      </SimpleGrid>
 
                       <FormControl>
                         <FormLabel fontWeight="semibold">
@@ -643,36 +663,31 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         </FieldArray>
                       </FormControl>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                    <HStack spacing="0.5rem">
-                      <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        size="sm"
-                        leftIcon={<FaTimes />}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorScheme="blue"
-                        variant="outline"
-                        isLoading={isLoading}
-                        loadingText="Guardando..."
-                        leftIcon={<FaCheck />}
-                        size="sm"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </HStack>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                Cancelar
+              </Button>
+              <Button
+                form="product-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

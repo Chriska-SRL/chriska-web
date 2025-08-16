@@ -40,7 +40,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { StockMovement } from '@/entities/stockMovement';
 import { useAddStockMovement } from '@/hooks/stockMovement';
-import { useGetProducts } from '@/hooks/product';
+import { useGetProducts, useGetProductById } from '@/hooks/product';
 import { useUserStore } from '@/stores/useUserStore';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
@@ -50,16 +50,26 @@ import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type StockMovementAddProps = {
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
+  preselectedProductId?: number;
+  onModalClose?: () => void;
 };
 
 type StockMovementAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setStockMovements: React.Dispatch<React.SetStateAction<StockMovement[]>>;
+  preselectedProductId?: number;
+  onModalClose?: () => void;
 };
 
 // Componente interno que contiene todos los hooks y lógica del formulario
-const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMovementAddModalProps) => {
+const StockMovementAddModal = ({
+  isOpen,
+  onClose,
+  setStockMovements,
+  preselectedProductId,
+  onModalClose,
+}: StockMovementAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -70,6 +80,9 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
   const disabledColor = useColorModeValue('#fafafa', '#202532');
+
+  // Hook para obtener el producto preseleccionado
+  const { data: preselectedProduct } = useGetProductById(preselectedProductId);
 
   const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -106,6 +119,14 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
       setLastSearchTerm(debouncedProductSearch);
     }
   }, [isLoadingProducts, debouncedProductSearch]);
+
+  // Efecto para preseleccionar el producto cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && preselectedProduct) {
+      setSelectedProduct({ id: preselectedProduct.id, name: preselectedProduct.name });
+      setProductSearch(preselectedProduct.name);
+    }
+  }, [isOpen, preselectedProduct]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -157,6 +178,7 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
       formikInstance.resetForm();
     }
     onClose();
+    onModalClose?.();
   };
 
   const handleOverlayClick = () => {
@@ -182,6 +204,7 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
       setSelectedProduct(null);
       setShowProductDropdown(false);
       onClose();
+      onModalClose?.();
     }
   }, [data, setStockMovements, toast, onClose]);
 
@@ -232,7 +255,7 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
         onOverlayClick={handleOverlayClick}
       >
         <ModalOverlay />
-        <ModalContent maxH="90vh" display="flex" flexDirection="column">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
             textAlign="center"
             fontSize="1.5rem"
@@ -251,7 +274,7 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
                 quantity: 0,
                 type: '',
                 reason: '',
-                productId: '',
+                productId: preselectedProductId ? preselectedProductId.toString() : '',
               }}
               onSubmit={handleSubmit}
               enableReinitialize
@@ -598,9 +621,16 @@ const StockMovementAddModal = ({ isOpen, onClose, setStockMovements }: StockMove
 };
 
 // Componente principal que controla la apertura del modal
-export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) => {
+export const StockMovementAdd = ({ setStockMovements, preselectedProductId, onModalClose }: StockMovementAddProps) => {
   const canCreateStockMovements = useUserStore((s) => s.hasPermission(Permission.CREATE_STOCK_MOVEMENTS));
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Abrir automáticamente el modal si hay un producto preseleccionado
+  useEffect(() => {
+    if (preselectedProductId && canCreateStockMovements) {
+      onOpen();
+    }
+  }, [preselectedProductId, canCreateStockMovements, onOpen]);
 
   const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const buttonHover = useColorModeValue('#e0dede', 'gray.500');
@@ -614,7 +644,15 @@ export const StockMovementAdd = ({ setStockMovements }: StockMovementAddProps) =
       </Button>
 
       {/* Solo renderizar el formulario cuando el modal está abierto */}
-      {isOpen && <StockMovementAddModal isOpen={isOpen} onClose={onClose} setStockMovements={setStockMovements} />}
+      {isOpen && (
+        <StockMovementAddModal
+          isOpen={isOpen}
+          onClose={onClose}
+          setStockMovements={setStockMovements}
+          preselectedProductId={preselectedProductId}
+          onModalClose={onModalClose}
+        />
+      )}
     </>
   );
 };

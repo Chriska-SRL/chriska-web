@@ -173,28 +173,28 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
             Editar zona
           </ModalHeader>
           <ModalCloseButton />
-          <Formik
-            initialValues={{
-              id: zone?.id ?? 0,
-              name: zone?.name ?? '',
-              description: zone?.description ?? '',
-              requestDays: convertDaysToEnglish(zone?.requestDays ?? []),
-              deliveryDays: convertDaysToEnglish(zone?.deliveryDays ?? []),
-              imageUrl: zone?.imageUrl ?? null,
-            }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount, values, dirty, resetForm }) => {
-              // Actualizar la instancia de formik solo cuando cambie
-              useEffect(() => {
-                setFormikInstance({ dirty, resetForm });
-              }, [dirty, resetForm]);
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                id: zone?.id ?? 0,
+                name: zone?.name ?? '',
+                description: zone?.description ?? '',
+                requestDays: convertDaysToEnglish(zone?.requestDays ?? []),
+                deliveryDays: convertDaysToEnglish(zone?.deliveryDays ?? []),
+                imageUrl: zone?.imageUrl ?? null,
+              }}
+              onSubmit={handleSubmit}
+              validateOnChange
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, touched, submitCount, values, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                return (
+                  <form id="zone-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="0.75rem">
                       {zone && (
                         <ZoneImageUpload
@@ -305,36 +305,31 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                         </Box>
                       </SimpleGrid>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                    <HStack spacing="0.5rem">
-                      <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        size="sm"
-                        leftIcon={<FaTimes />}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorScheme="blue"
-                        variant="outline"
-                        isLoading={isLoading}
-                        loadingText="Guardando..."
-                        leftIcon={<FaCheck />}
-                        size="sm"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </HStack>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                Cancelar
+              </Button>
+              <Button
+                form="zone-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

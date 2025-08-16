@@ -97,7 +97,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         border="1px solid"
         borderColor={inputBorder}
         borderRadius="md"
-        minH="2.75rem"
+        minH="2.5rem"
         maxH="10rem"
         overflowY="auto"
         whiteSpace="pre-wrap"
@@ -163,7 +163,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                   </Box>
                 </Box>
 
-                <VStack spacing="1.813rem" align="stretch">
+                <VStack spacing="2rem" align="stretch">
                   {detailField('Código interno', product.internalCode, FiHash)}
                   {detailField('Código de barras', product.barcode, FiBarChart2)}
                   {detailField('Nombre', product.name, FiPackage)}
@@ -282,6 +282,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 leftIcon={<FiBox />}
                 onClick={() => {
                   handleClose();
+                  router.push(`/movimientos-de-stock?product=${product.id}`);
                 }}
                 colorScheme="green"
                 variant="outline"

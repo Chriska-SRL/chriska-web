@@ -175,27 +175,27 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
             Editar usuario
           </ModalHeader>
           <ModalCloseButton />
-          <Formik
-            initialValues={{
-              id: user?.id ?? 0,
-              username: user?.username ?? '',
-              name: user?.name ?? '',
-              roleId: user?.role.id ?? 0,
-              estado: user?.isEnabled ? 'Activo' : 'Inactivo',
-            }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
-              // Actualizar la instancia de formik solo cuando cambie
-              useEffect(() => {
-                setFormikInstance({ dirty, resetForm });
-              }, [dirty, resetForm]);
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                id: user?.id ?? 0,
+                username: user?.username ?? '',
+                name: user?.name ?? '',
+                roleId: user?.role.id ?? 0,
+                estado: user?.isEnabled ? 'Activo' : 'Inactivo',
+              }}
+              onSubmit={handleSubmit}
+              validateOnChange
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+                return (
+                  <form id="user-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="0.75rem">
                       <FormControl
                         isInvalid={
@@ -316,36 +316,37 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                         Restablecer contraseña
                       </Button>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-                    <HStack spacing="0.5rem">
-                      <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        disabled={isLoading}
-                        size="sm"
-                        leftIcon={<FaTimes />}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        colorScheme="blue"
-                        variant="outline"
-                        isLoading={isLoading}
-                        loadingText="Guardando..."
-                        leftIcon={<FaCheck />}
-                        size="sm"
-                      >
-                        Guardar cambios
-                      </Button>
-                    </HStack>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isLoading}
+                size="sm"
+                leftIcon={<FaTimes />}
+              >
+                Cancelar
+              </Button>
+              <Button
+                form="user-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 
