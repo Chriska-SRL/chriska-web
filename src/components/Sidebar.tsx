@@ -20,7 +20,7 @@ import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes, FaTags, FaWarehouse, FaPercent } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
 import { MdPlace } from 'react-icons/md';
-import { FiBriefcase } from 'react-icons/fi';
+import { FiBriefcase, FiPackage } from 'react-icons/fi';
 import { LuArrowDownUp } from 'react-icons/lu';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
@@ -90,6 +90,7 @@ const sidebarItems = [
   { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, Permission: Permission.VIEW_CLIENTS },
   { path: 'zonas', text: 'Zonas', icon: MdPlace, Permission: Permission.VIEW_ZONES },
   { path: 'proveedores', text: 'Proveedores', icon: FiBriefcase, Permission: Permission.VIEW_SUPPLIERS },
+  { path: 'pedidos', text: 'Pedidos', icon: FiPackage, Permission: Permission.VIEW_ORDER_REQUESTS },
   {
     path: 'movimientos-de-stock',
     text: 'Movimientos de stock',

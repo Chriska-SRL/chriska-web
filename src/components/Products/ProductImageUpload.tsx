@@ -6,7 +6,6 @@ import {
   Image,
   Input,
   VStack,
-  HStack,
   IconButton,
   useColorModeValue,
   useToast,

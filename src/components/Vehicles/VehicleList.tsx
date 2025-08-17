@@ -69,7 +69,7 @@ export const VehicleList = ({
     try {
       await router.push(`/vehiculos/${vehicleId}`);
     } catch (error) {
-      // En caso de error, reset el estado
+      console.log(error);
       setNavigatingVehicleId(null);
     }
   };

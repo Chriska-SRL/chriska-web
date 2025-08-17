@@ -1,6 +1,6 @@
 'use client';
 
-import { Divider, Flex, IconButton, Text, useMediaQuery, Box, Skeleton, Spinner } from '@chakra-ui/react';
+import { Divider, Flex, IconButton, Text, useMediaQuery, Box, Spinner } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetVehicleCosts } from '@/hooks/vehicleCost';
