@@ -391,7 +391,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                         </FormLabel>
 
                         {/* Búsqueda de clientes */}
-                        <Box position="relative" ref={clientSearchRef}>
+                        <Box position="relative" ref={clientSearchRef} minW="18.75rem">
                           {selectedClient ? (
                             <HStack
                               p="0.75rem"
@@ -400,6 +400,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                               border="1px solid"
                               borderColor={inputBorder}
                               spacing="0.5rem"
+                              w="100%"
                             >
                               <Text fontSize="md" flex="1" noOfLines={1} fontWeight="medium">
                                 {selectedClient.name}

@@ -81,7 +81,7 @@ export const OrderRequests = () => {
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <OrderRequestFilters onFilterChange={handleFilterChange} />
+        <OrderRequestFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
 
         {!isMobile && (
           <>

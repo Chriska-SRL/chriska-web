@@ -38,9 +38,10 @@ type OrderRequestFiltersProps = {
     fromDate?: string;
     toDate?: string;
   }) => void;
+  disabled?: boolean;
 };
 
-export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps) => {
+export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderRequestFiltersProps) => {
   // Búsqueda principal de clientes
   const [clientSearch, setClientSearch] = useState('');
   const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
@@ -192,7 +193,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
       {/* Búsqueda principal de clientes */}
-      <Box position="relative" ref={clientSearchRef} flex="1">
+      <Box position="relative" ref={clientSearchRef} flex="1" minW="18.75rem">
         {selectedClient ? (
           <HStack
             p="0.75rem"
@@ -213,6 +214,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
               onClick={handleClearClientSearch}
               color={textColor}
               _hover={{}}
+              disabled={disabled}
             />
           </HStack>
         ) : (
@@ -236,6 +238,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                 borderRadius="none"
                 _focus={{ boxShadow: 'none' }}
                 maxW={{ base: '5rem', md: '100%' }}
+                disabled={disabled}
               >
                 <option value="name">Nombre</option>
                 <option value="rut">RUT</option>
@@ -258,6 +261,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                   _focus={{ boxShadow: 'none' }}
                   pl="1rem"
                   onFocus={() => clientSearch && setShowClientDropdown(true)}
+                  disabled={disabled}
                 />
                 <InputRightElement>
                   <IconButton
@@ -267,6 +271,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                     variant="ghost"
                     color={textColor}
                     _hover={{}}
+                    disabled={disabled}
                   />
                 </InputRightElement>
               </InputGroup>
@@ -380,6 +385,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
               flex={{ base: '1', md: 'none' }}
               minW={{ base: '0', md: '10rem' }}
               transition="all 0.2s ease"
+              disabled={disabled}
             >
               Filtros avanzados {activeSelectFilters > 0 && `(${activeSelectFilters})`}
             </Button>
@@ -409,6 +415,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                     borderColor: useColorModeValue('blue.400', 'blue.300'),
                     boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
                   }}
+                  disabled={disabled}
                 >
                   {StatusOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -430,6 +437,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                     borderColor: useColorModeValue('blue.400', 'blue.300'),
                     boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
                   }}
+                  disabled={disabled}
                 >
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
@@ -452,6 +460,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                     borderColor: useColorModeValue('blue.400', 'blue.300'),
                     boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
                   }}
+                  disabled={disabled}
                 />
 
                 <Input
@@ -468,6 +477,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
                     borderColor: useColorModeValue('blue.400', 'blue.300'),
                     boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
                   }}
+                  disabled={disabled}
                 />
               </Flex>
             </PopoverBody>
@@ -484,6 +494,7 @@ export const OrderRequestFilters = ({ onFilterChange }: OrderRequestFiltersProps
             flexShrink={0}
             borderColor={borderInput}
             transition="all 0.2s ease"
+            disabled={disabled}
           />
         )}
       </Flex>

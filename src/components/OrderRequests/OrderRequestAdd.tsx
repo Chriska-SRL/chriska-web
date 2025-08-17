@@ -407,7 +407,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                         </FormLabel>
 
                         {/* Búsqueda de clientes */}
-                        <Box position="relative" ref={clientSearchRef}>
+                        <Box position="relative" ref={clientSearchRef} minW="18.75rem">
                           {selectedClient ? (
                             <HStack
                               p="0.75rem"
@@ -416,6 +416,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                               border="1px solid"
                               borderColor={inputBorder}
                               spacing="0.5rem"
+                              w="100%"
                             >
                               <Text fontSize="md" flex="1" noOfLines={1} fontWeight="medium">
                                 {selectedClient.name}
