@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -171,7 +170,6 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
           >
             Nuevo usuario
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

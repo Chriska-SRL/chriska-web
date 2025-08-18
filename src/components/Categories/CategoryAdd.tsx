@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -135,7 +134,6 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
           >
             Nueva categoría
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

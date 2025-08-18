@@ -5,7 +5,6 @@ import {
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalCloseButton,
   ModalBody,
   FormControl,
   FormLabel,
@@ -154,7 +153,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
           >
             Editar rol
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             {role && (
               <Formik

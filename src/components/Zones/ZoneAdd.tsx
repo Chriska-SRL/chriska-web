@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -196,7 +195,6 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
           >
             {step === 'form' ? 'Nueva zona' : 'Zona creada'}
           </ModalHeader>
-          <ModalCloseButton />
 
           {step === 'form' ? (
             <>

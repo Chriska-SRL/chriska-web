@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -183,7 +182,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
           >
             Nuevo proveedor
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

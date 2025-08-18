@@ -1,7 +1,7 @@
 export enum Status {
   PENDING = 'Pending',
   CONFIRMED = 'Confirmed',
-  CANCELLED = 'Cancelled',
+  CANCELLED = 'Canceled',
 }
 
 export const StatusLabels: Record<Status, string> = {

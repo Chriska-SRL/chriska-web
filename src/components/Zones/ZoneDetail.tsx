@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -191,7 +190,6 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
           >
             Detalle de la zona
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">

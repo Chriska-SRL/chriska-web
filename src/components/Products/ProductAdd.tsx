@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -241,7 +240,6 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
           >
             {step === 'form' ? 'Nuevo producto' : 'Producto creado'}
           </ModalHeader>
-          <ModalCloseButton />
 
           {step === 'form' ? (
             <>

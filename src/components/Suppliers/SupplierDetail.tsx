@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -112,7 +111,6 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
           >
             Detalle del proveedor
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">

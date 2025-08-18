@@ -19,9 +19,6 @@ type CreateOrderRequestData = {
   productItems?: {
     productId: number;
     quantity: number;
-    weight: number;
-    unitPrice: number;
-    discount: number;
   }[];
 };
 
@@ -75,8 +72,46 @@ export const useUpdateOrderRequest = (props?: Partial<OrderRequest>) =>
 
 export const useDeleteOrderRequest = (id?: number) => useFetch<number, void>(deleteOrderRequest, id);
 
-export const useChangeOrderRequestStatus = (props?: { id: number; status: string }) =>
-  useFetch<{ id: number; status: string }, OrderRequest>(
-    ({ id, status }) => changeOrderRequestStatus(id, status),
-    props,
-  );
+export const useChangeOrderRequestStatus = (props?: { id: number; status: string }) => {
+  const [data, setData] = useState<OrderRequest>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<any>();
+  const [hasExecuted, setHasExecuted] = useState(false);
+
+  useEffect(() => {
+    if (!props || hasExecuted) return;
+
+    const executeRequest = async () => {
+      setHasExecuted(true);
+      setIsLoading(true);
+      setFieldError(undefined);
+
+      try {
+        const result = await changeOrderRequestStatus(props.id, props.status);
+        setData(result);
+      } catch (err: any) {
+        try {
+          const parsed = JSON.parse(err.message);
+          setFieldError(parsed);
+        } catch {
+          setFieldError({ error: err.message || 'Error desconocido' });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    executeRequest();
+  }, [props?.id, props?.status, hasExecuted]);
+
+  // Reset cuando props cambie a undefined
+  useEffect(() => {
+    if (!props) {
+      setHasExecuted(false);
+      setData(undefined);
+      setFieldError(undefined);
+    }
+  }, [props]);
+
+  return { data, isLoading, fieldError };
+};

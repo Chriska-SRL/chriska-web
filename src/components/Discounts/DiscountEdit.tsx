@@ -16,7 +16,6 @@ import {
   Box,
   useToast,
   Select,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Text,
@@ -501,7 +500,6 @@ const DiscountEditForm = ({
           >
             Editar descuento
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

@@ -9,7 +9,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   Text,
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
@@ -93,7 +92,7 @@ export const GenericDelete = ({
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Confirmar eliminación</ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody>
             <Text>¿Estás seguro de que deseas eliminar "{item.name}"?</Text>
             <Text mt="0.5rem" fontSize="sm" color="gray.500">

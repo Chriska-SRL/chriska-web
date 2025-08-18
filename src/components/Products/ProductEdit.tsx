@@ -16,7 +16,6 @@ import {
   Box,
   Select,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   HStack,
@@ -238,7 +237,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
           >
             Editar producto
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik<ProductEditFormValues>
               initialValues={{

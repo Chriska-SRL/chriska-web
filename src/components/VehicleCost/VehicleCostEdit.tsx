@@ -14,7 +14,6 @@ import {
   VStack,
   Button,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Select,
@@ -135,7 +134,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
           >
             Editar costo
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik<VehicleCost>
               initialValues={{

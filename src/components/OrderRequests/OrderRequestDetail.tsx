@@ -7,12 +7,12 @@ import {
   ModalHeader,
   ModalFooter,
   ModalBody,
-  ModalCloseButton,
   Button,
   useDisclosure,
   Text,
   VStack,
   HStack,
+  Stack,
   Divider,
   Box,
   IconButton,
@@ -20,6 +20,12 @@ import {
   Icon,
   Image,
   Flex,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from '@chakra-ui/react';
 import { OrderRequest } from '@/entities/orderRequest';
 import {
@@ -32,13 +38,13 @@ import {
   FiFileText,
   FiPackage,
   FiDollarSign,
+  FiX,
 } from 'react-icons/fi';
 import { OrderRequestEdit } from './OrderRequestEdit';
-import { GenericDelete } from '@/components/shared/GenericDelete';
-import { useDeleteOrderRequest, useChangeOrderRequestStatus } from '@/hooks/orderRequest';
+import { useChangeOrderRequestStatus } from '@/hooks/orderRequest';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
@@ -51,16 +57,19 @@ type OrderRequestDetailProps = {
 
 export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequestDetailProps) => {
   const canEditOrderRequests = useUserStore((s) => s.hasPermission(Permission.EDIT_ORDER_REQUESTS));
-  const canDeleteOrderRequests = useUserStore((s) => s.hasPermission(Permission.DELETE_ORDER_REQUESTS));
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+  const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
+  const { isOpen: isCancelDialogOpen, onOpen: openCancelDialog, onClose: closeCancelDialog } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
+  const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
   const {
     data: statusData,
     isLoading: statusLoading,
     fieldError: statusError,
   } = useChangeOrderRequestStatus(statusProps);
   const toast = useToast();
+  const cancelRef = useRef(null);
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -125,23 +134,42 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     </Box>
   );
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = useCallback(() => {
+    if (statusLoading || statusProps) return;
+    closeConfirmDialog();
+    setActionType('confirm');
     setStatusProps({ id: orderRequest.id, status: Status.CONFIRMED });
-  };
+  }, [statusLoading, statusProps, orderRequest.id, closeConfirmDialog]);
+
+  const handleCancelOrder = useCallback(() => {
+    if (statusLoading || statusProps) return;
+    closeCancelDialog();
+    setActionType('cancel');
+    setStatusProps({ id: orderRequest.id, status: 'Canceled' });
+  }, [statusLoading, statusProps, orderRequest.id, closeCancelDialog]);
 
   useEffect(() => {
     if (statusData) {
       setOrderRequests((prev) => prev.map((or) => (or.id === orderRequest.id ? statusData : or)));
+      const isConfirmed = statusData.status?.toLowerCase() === Status.CONFIRMED.toLowerCase();
+      const isCancelled = statusData.status?.toLowerCase() === 'canceled';
+
       toast({
-        title: 'Pedido confirmado',
-        description: 'El pedido ha sido confirmado exitosamente',
+        title: isConfirmed ? 'Pedido confirmado' : isCancelled ? 'Pedido cancelado' : 'Estado actualizado',
+        description: isConfirmed
+          ? 'El pedido ha sido confirmado exitosamente'
+          : isCancelled
+            ? 'El pedido ha sido cancelado exitosamente'
+            : 'El estado del pedido ha sido actualizado',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
       setStatusProps(undefined);
+      setActionType(null);
+      onClose(); // Cerrar el modal de detail
     }
-  }, [statusData, setOrderRequests, toast, orderRequest.id]);
+  }, [statusData, setOrderRequests, toast, orderRequest.id, onClose]);
 
   useEffect(() => {
     if (statusError) {
@@ -179,27 +207,39 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           >
             Detalle del Pedido #{orderRequest.id}
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              <HStack spacing="1rem" align="flex-start">
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="1rem"
+                align={{ base: 'stretch', md: 'flex-start' }}
+              >
                 {detailField('Cliente', orderRequest.client?.name, FiUsers)}
                 {detailField('Usuario', orderRequest.user?.name, FiUser)}
-              </HStack>
+              </Stack>
 
-              <HStack spacing="1rem" align="flex-start">
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="1rem"
+                align={{ base: 'stretch', md: 'flex-start' }}
+              >
                 {detailField('Fecha del pedido', formatDate(orderRequest.date), FiCalendar)}
                 {detailField('Estado', getStatusLabel(orderRequest.status), FiPackage)}
-              </HStack>
+              </Stack>
 
-              <HStack spacing="1rem" align="flex-start">
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="1rem"
+                align={{ base: 'stretch', md: 'flex-start' }}
+              >
                 {detailField(
                   'Fecha de confirmación',
                   orderRequest.confirmedDate ? formatDate(orderRequest.confirmedDate) : 'No confirmado',
                   FiCalendar,
                 )}
                 {detailField('Total', `$${calculateTotal().toFixed(2)}`, FiDollarSign)}
-              </HStack>
+              </Stack>
 
               {orderRequest.observations && detailField('Observaciones', orderRequest.observations, FiFileText)}
 
@@ -222,66 +262,97 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                       return (
                         <Box
                           key={index}
-                          p="0.75rem 1.5rem"
+                          p={{ base: '0.75rem', md: '0.75rem 1.5rem' }}
                           border="1px solid"
                           borderColor={inputBorder}
                           borderRadius="md"
                           bg={inputBg}
                         >
-                          <Flex align="center" gap="1rem">
-                            <Image
-                              src={
-                                item.product?.imageUrl ||
-                                'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                              }
-                              alt={item.product?.name || 'Producto'}
-                              boxSize="50px"
-                              objectFit="cover"
-                              borderRadius="md"
-                              flexShrink={0}
-                            />
-                            <Box flex="1">
-                              <Text fontSize="sm" fontWeight="medium">
-                                {item.product?.name || '-'}
-                              </Text>
-                              <Text fontSize="xs" color={textColor}>
-                                Precio: ${item.unitPrice.toFixed(2)}
-                              </Text>
-                            </Box>
-                            <VStack spacing="0.25rem" align="center" minW="80px">
-                              <Text fontSize="xs" color={textColor}>
-                                Cantidad
-                              </Text>
-                              <Text fontSize="sm" fontWeight="medium">
-                                {item.quantity}
-                              </Text>
-                            </VStack>
-                            <VStack spacing="0.25rem" align="center" minW="80px">
-                              <Text fontSize="xs" color={textColor}>
-                                Peso (kg)
-                              </Text>
-                              <Text fontSize="sm" fontWeight="medium">
-                                {item.weight}
-                              </Text>
-                            </VStack>
-                            {item.discount > 0 && (
+                          <Flex direction={{ base: 'column', md: 'row' }} gap={{ base: '0.75rem', md: '1rem' }}>
+                            {/* Imagen y nombre del producto */}
+                            <Flex align="center" gap="0.75rem" flex={{ base: 'auto', md: '1' }}>
+                              <Image
+                                src={
+                                  item.product?.imageUrl ||
+                                  'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                }
+                                alt={item.product?.name || 'Producto'}
+                                boxSize="50px"
+                                objectFit="cover"
+                                borderRadius="md"
+                                flexShrink={0}
+                              />
+                              <Box flex="1">
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {item.product?.name || '-'}
+                                </Text>
+                                <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                  ${item.unitPrice.toFixed(2)}
+                                </Text>
+                              </Box>
+                            </Flex>
+
+                            {/* Desktop: Cantidad, descuento y subtotal en línea */}
+                            <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="2rem">
                               <VStack spacing="0.25rem" align="center" minW="80px">
                                 <Text fontSize="xs" color={textColor}>
-                                  Descuento
+                                  Cantidad
                                 </Text>
-                                <Text fontSize="sm" fontWeight="medium" color="orange.500">
-                                  {item.discount}%
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {item.quantity}
                                 </Text>
                               </VStack>
-                            )}
-                            <VStack spacing="0.25rem" align="center" minW="80px">
-                              <Text fontSize="xs" color={textColor}>
-                                Subtotal
-                              </Text>
-                              <Text fontSize="sm" fontWeight="bold">
-                                ${total.toFixed(2)}
-                              </Text>
-                            </VStack>
+                              {item.discount > 0 && (
+                                <VStack spacing="0.25rem" align="center" minW="80px">
+                                  <Text fontSize="xs" color={textColor}>
+                                    Descuento
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="medium" color="orange.500">
+                                    {item.discount}%
+                                  </Text>
+                                </VStack>
+                              )}
+                              <VStack spacing="0.25rem" align="center" minW="80px">
+                                <Text fontSize="xs" color={textColor}>
+                                  Subtotal
+                                </Text>
+                                <Text fontSize="sm" fontWeight="bold">
+                                  ${total.toFixed(2)}
+                                </Text>
+                              </VStack>
+                            </Flex>
+
+                            {/* Mobile: Cantidad y subtotal en fila horizontal */}
+                            <Flex display={{ base: 'flex', md: 'none' }} justify="space-between" align="center">
+                              <HStack spacing="0.5rem">
+                                <Text fontSize="xs" color={textColor}>
+                                  Cantidad:
+                                </Text>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {item.quantity}
+                                </Text>
+                              </HStack>
+
+                              {item.discount > 0 && (
+                                <HStack spacing="0.5rem">
+                                  <Text fontSize="xs" color={textColor}>
+                                    Desc:
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="medium" color="orange.500">
+                                    {item.discount}%
+                                  </Text>
+                                </HStack>
+                              )}
+
+                              <HStack spacing="0.5rem">
+                                <Text fontSize="xs" color={textColor}>
+                                  Subt.:
+                                </Text>
+                                <Text fontSize="sm" fontWeight="bold">
+                                  ${total.toFixed(2)}
+                                </Text>
+                              </HStack>
+                            </Flex>
                           </Flex>
                         </Box>
                       );
@@ -306,46 +377,71 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
-              {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() && (
-                <>
+            {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="0.5rem"
+                w="100%"
+                align="stretch"
+                justify={{ base: 'stretch', md: 'flex-end' }}
+              >
+                {/* Botón Confirmar - único */}
+                <Button
+                  leftIcon={<FiCheckCircle />}
+                  colorScheme="green"
+                  variant="outline"
+                  size="sm"
+                  onClick={openConfirmDialog}
+                  isLoading={statusLoading && actionType === 'confirm'}
+                  disabled={statusLoading || !!statusProps}
+                  w={{ base: '100%', md: 'auto' }}
+                  order={{ base: 1, md: 2 }}
+                >
+                  Confirmar
+                </Button>
+
+                {/* Botón Cancelar - único */}
+                <Button
+                  leftIcon={<FiX />}
+                  colorScheme="red"
+                  variant="outline"
+                  size="sm"
+                  onClick={openCancelDialog}
+                  isLoading={statusLoading && actionType === 'cancel'}
+                  disabled={statusLoading || !!statusProps}
+                  w={{ base: '100%', md: 'auto' }}
+                  order={{ base: 2, md: 1 }}
+                >
+                  Cancelar
+                </Button>
+
+                {/* Botón Editar - único */}
+                {canEditOrderRequests && (
                   <Button
-                    leftIcon={<FiCheckCircle />}
-                    colorScheme="green"
+                    leftIcon={<FiEdit />}
+                    onClick={() => {
+                      openEdit();
+                      onClose();
+                    }}
+                    colorScheme="blue"
                     variant="outline"
                     size="sm"
-                    onClick={handleConfirmOrder}
-                    isLoading={statusLoading}
+                    disabled={statusLoading || !!statusProps}
+                    w={{ base: '100%', md: 'auto' }}
+                    order={{ base: 3, md: 3 }}
                   >
-                    Confirmar
+                    Editar
                   </Button>
-                  {canDeleteOrderRequests && (
-                    <GenericDelete
-                      item={{ id: orderRequest.id, name: `Pedido #${orderRequest.id}` }}
-                      setItems={setOrderRequests}
-                      useDeleteHook={useDeleteOrderRequest}
-                      onDeleted={onClose}
-                      size="sm"
-                      variant="outline"
-                    />
-                  )}
-                  {canEditOrderRequests && (
-                    <Button
-                      leftIcon={<FiEdit />}
-                      onClick={() => {
-                        openEdit();
-                        onClose();
-                      }}
-                      colorScheme="blue"
-                      variant="outline"
-                      size="sm"
-                    >
-                      Editar
-                    </Button>
-                  )}
-                </>
-              )}
-            </HStack>
+                )}
+              </Stack>
+            ) : (
+              // Botón Cerrar para pedidos confirmados/cancelados
+              <HStack justify="flex-end" w="100%">
+                <Button variant="ghost" onClick={onClose} size="sm">
+                  Cerrar
+                </Button>
+              </HStack>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -358,6 +454,68 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           setOrderRequests={setOrderRequests}
         />
       )}
+
+      {/* Modal de confirmación para confirmar pedido */}
+      <AlertDialog isOpen={isConfirmDialogOpen} leastDestructiveRef={cancelRef} onClose={closeConfirmDialog} isCentered>
+        <AlertDialogOverlay />
+        <AlertDialogContent mx="1rem">
+          <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
+            Confirmar pedido
+          </AlertDialogHeader>
+
+          <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
+            ¿Estás seguro de que deseas confirmar el pedido #{orderRequest.id}?
+            <br />
+            Esta acción no se puede deshacer.
+          </AlertDialogBody>
+
+          <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
+            <Button ref={cancelRef} onClick={closeConfirmDialog} variant="ghost" size="sm">
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="green"
+              onClick={handleConfirmOrder}
+              isLoading={statusLoading && actionType === 'confirm'}
+              variant="outline"
+              size="sm"
+            >
+              Confirmar
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de confirmación para cancelar pedido */}
+      <AlertDialog isOpen={isCancelDialogOpen} leastDestructiveRef={cancelRef} onClose={closeCancelDialog} isCentered>
+        <AlertDialogOverlay />
+        <AlertDialogContent mx="1rem">
+          <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
+            Cancelar pedido
+          </AlertDialogHeader>
+
+          <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
+            ¿Estás seguro de que deseas cancelar el pedido #{orderRequest.id}?
+            <br />
+            Esta acción no se puede deshacer.
+          </AlertDialogBody>
+
+          <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
+            <Button ref={cancelRef} onClick={closeCancelDialog} variant="ghost" size="sm">
+              No cancelar
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={handleCancelOrder}
+              isLoading={statusLoading && actionType === 'cancel'}
+              variant="outline"
+              size="sm"
+            >
+              Sí, cancelar
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

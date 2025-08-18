@@ -14,7 +14,6 @@ import {
   VStack,
   Button,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Text,
@@ -173,7 +172,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
           >
             Editar zona
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{

@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   Button,
   Text,
   HStack,
@@ -42,7 +41,6 @@ export const UnsavedChangesModal = ({
         <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
           <Text>{title}</Text>
         </ModalHeader>
-        <ModalCloseButton />
 
         <ModalBody py="1.5rem">
           <Text fontSize="0.95rem" color="gray.600" _dark={{ color: 'gray.400' }}>

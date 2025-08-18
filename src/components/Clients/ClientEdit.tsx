@@ -15,7 +15,6 @@ import {
   Button,
   Box,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Textarea,
@@ -166,7 +165,6 @@ const ClientEditForm = ({
           >
             Editar cliente
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -111,7 +110,6 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
           >
             Detalle del movimiento
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">

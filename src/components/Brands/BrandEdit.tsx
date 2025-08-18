@@ -15,7 +15,6 @@ import {
   Button,
   Box,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Text,
@@ -139,7 +138,6 @@ const BrandEditForm = ({
           >
             Editar marca
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

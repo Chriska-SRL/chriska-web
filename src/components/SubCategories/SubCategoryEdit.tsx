@@ -14,7 +14,6 @@ import {
   useToast,
   VStack,
   Textarea,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   HStack,
@@ -141,7 +140,7 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
           >
             Editar subcategoría
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{ id: subcategory.id, name: subcategory.name, description: subcategory.description }}

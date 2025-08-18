@@ -15,7 +15,6 @@ import {
   Button,
   Box,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Select,
@@ -133,7 +132,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
           >
             Editar proveedor
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{

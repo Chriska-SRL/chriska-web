@@ -15,7 +15,6 @@ import {
   VStack,
   Box,
   Textarea,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Text,
@@ -143,7 +142,6 @@ const CategoryEditForm = ({
           >
             Editar categoría
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

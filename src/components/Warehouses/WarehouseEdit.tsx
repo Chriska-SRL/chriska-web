@@ -13,7 +13,6 @@ import {
   Input,
   useToast,
   VStack,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   Textarea,
@@ -131,7 +130,7 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
           >
             Editar depósito
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{

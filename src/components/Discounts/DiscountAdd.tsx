@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   FormControl,
   FormLabel,
   Input,
@@ -445,7 +444,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
           >
             Nuevo descuento
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik

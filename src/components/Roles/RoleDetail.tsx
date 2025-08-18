@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -131,7 +130,6 @@ export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDeta
           >
             Detalle del rol
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">

@@ -14,7 +14,6 @@ import {
   VStack,
   Button,
   useToast,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
   useDisclosure,
@@ -175,7 +174,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
           >
             Editar usuario
           </ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{

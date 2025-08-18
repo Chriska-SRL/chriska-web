@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   useDisclosure,
   FormControl,
   FormLabel,
@@ -24,11 +23,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   InputGroup,
   InputRightElement,
   List,
@@ -84,9 +78,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
     productItems?: {
       productId: number;
       quantity: number;
-      weight: number;
-      unitPrice: number;
-      discount: number;
     }[];
   }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -106,8 +97,9 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const [productSearchType, setProductSearchType] = useState<'name' | 'internalCode' | 'barcode'>('name');
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<
-    Array<{ id: number; name: string; price: number; imageUrl?: string; quantity: number; weight: number }>
+    Array<{ id: number; name: string; price: number; imageUrl?: string; quantity: number }>
   >([]);
+  const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
@@ -235,8 +227,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
           name: product.name,
           price: product.price || 0,
           imageUrl: product.imageUrl,
-          quantity: 1,
-          weight: 0,
+          quantity: 1.0,
         },
       ]);
     }
@@ -250,10 +241,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
   const handleProductQuantityChange = (productId: number, quantity: number) => {
     setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, quantity } : p)));
-  };
-
-  const handleProductWeightChange = (productId: number, weight: number) => {
-    setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, weight } : p)));
   };
 
   const handleClose = () => {
@@ -339,7 +326,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        weight: item.weight,
       })),
     } as any;
 
@@ -369,7 +355,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
           >
             Nuevo pedido
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
@@ -388,12 +373,21 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
                 return errors;
               }}
+              validateOnChange={true}
+              validateOnBlur={true}
             >
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty: formik.dirty, resetForm: formik.resetForm });
                 }, [formik.dirty, formik.resetForm]);
+
+                // Revalidar cuando cambian los productos seleccionados o el cliente
+                useEffect(() => {
+                  if (formik.submitCount > 0) {
+                    formik.validateForm();
+                  }
+                }, [selectedProducts.length, selectedClient?.id, formik.submitCount]);
 
                 return (
                   <form id="order-request-form" onSubmit={formik.handleSubmit}>
@@ -407,7 +401,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                         </FormLabel>
 
                         {/* Búsqueda de clientes */}
-                        <Box position="relative" ref={clientSearchRef} minW="18.75rem">
+                        <Box position="relative" ref={clientSearchRef} minW={{ base: '100%', md: '18.75rem' }}>
                           {selectedClient ? (
                             <HStack
                               p="0.75rem"
@@ -450,11 +444,11 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                   bg="transparent"
                                   border="none"
                                   color={textColor}
-                                  w="auto"
-                                  minW="7rem"
+                                  w={{ base: '6rem', md: 'auto' }}
+                                  minW={{ base: '6rem', md: '7rem' }}
                                   borderRadius="none"
                                   _focus={{ boxShadow: 'none' }}
-                                  maxW={{ base: '5rem', md: '100%' }}
+                                  fontSize={{ base: 'xs', md: 'sm' }}
                                 >
                                   <option value="name">Nombre</option>
                                   <option value="rut">RUT</option>
@@ -593,29 +587,17 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                         )}
                       </FormControl>
 
-                      <FormControl>
-                        <FormLabel>
-                          <HStack spacing={1}>
-                            <Icon as={FiFileText} />
-                            <Text>Observaciones</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Textarea
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          {...formik.getFieldProps('observations')}
-                          placeholder="Observaciones del pedido..."
-                          rows={3}
-                        />
-                      </FormControl>
-
-                      <Box>
-                        <Text fontWeight="bold" fontSize="lg" mb={3}>
+                      <FormControl
+                        isInvalid={
+                          !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
+                        }
+                      >
+                        <FormLabel fontWeight="bold" fontSize="lg">
                           Productos
-                        </Text>
+                        </FormLabel>
 
                         {/* Buscador de productos */}
-                        <Box position="relative" ref={productSearchRef} mb={4}>
+                        <Box position="relative" ref={productSearchRef}>
                           <Flex
                             bg={inputBg}
                             borderRadius="md"
@@ -631,11 +613,11 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                               bg="transparent"
                               border="none"
                               color={textColor}
-                              w="auto"
-                              minW="7rem"
+                              w={{ base: '6rem', md: 'auto' }}
+                              minW={{ base: '6rem', md: '7rem' }}
                               borderRadius="none"
                               _focus={{ boxShadow: 'none' }}
-                              maxW={{ base: '5rem', md: '100%' }}
+                              fontSize={{ base: 'xs', md: 'sm' }}
                             >
                               <option value="name">Nombre</option>
                               <option value="internalCode">Cód. interno</option>
@@ -788,15 +770,11 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                           )}
                         </Box>
 
-                        {formik.errors.productItems && (
-                          <Text color="red.500" fontSize="sm" mb={2}>
-                            {formik.errors.productItems}
-                          </Text>
-                        )}
+                        <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
 
                         {/* Lista de productos seleccionados */}
                         {selectedProducts.length > 0 && (
-                          <Box>
+                          <Box mt="1rem">
                             <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
                               Productos seleccionados ({selectedProducts.length}):
                             </Text>
@@ -806,89 +784,136 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                 return (
                                   <Box
                                     key={product.id}
-                                    p="0.75rem 1.5rem"
+                                    position="relative"
+                                    p="0.75rem"
                                     border="1px solid"
                                     borderColor={inputBorder}
                                     borderRadius="md"
                                     bg={inputBg}
                                   >
-                                    <Flex align="center" gap="1rem">
-                                      <Image
-                                        src={
-                                          product.imageUrl ||
-                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                        }
-                                        alt={product.name}
-                                        boxSize="50px"
-                                        objectFit="cover"
-                                        borderRadius="md"
-                                        flexShrink={0}
-                                      />
-                                      <Box flex="1">
-                                        <Text fontSize="sm" fontWeight="medium">
-                                          {product.name}
-                                        </Text>
-                                        <Text fontSize="xs" color={textColor}>
-                                          Precio: ${product.price.toFixed(2)}
-                                        </Text>
-                                      </Box>
-                                      <VStack spacing="0.5rem" align="flex-end" minW="120px">
-                                        <HStack spacing="0.5rem">
-                                          <Text fontSize="xs" color={textColor} minW="50px">
-                                            Cantidad:
+                                    {/* Botón eliminar en la esquina superior derecha */}
+                                    <IconButton
+                                      aria-label="Eliminar producto"
+                                      icon={<FaTrash size="10px" />}
+                                      size="xs"
+                                      position="absolute"
+                                      top="0.5rem"
+                                      right="0.5rem"
+                                      colorScheme="red"
+                                      variant="ghost"
+                                      onClick={() => handleRemoveProduct(product.id)}
+                                    />
+
+                                    <VStack align="stretch" spacing="0.75rem">
+                                      {/* Primera fila: imagen y datos del producto */}
+                                      <Flex gap="0.75rem">
+                                        <Image
+                                          src={
+                                            product.imageUrl ||
+                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                          }
+                                          alt={product.name}
+                                          boxSize="50px"
+                                          objectFit="cover"
+                                          borderRadius="md"
+                                          flexShrink={0}
+                                        />
+                                        <Box flex="1">
+                                          <Text fontSize="sm" fontWeight="medium" pr="2rem">
+                                            {product.name}
                                           </Text>
-                                          <NumberInput
+                                          <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                            ${product.price.toFixed(2)}
+                                          </Text>
+                                        </Box>
+                                      </Flex>
+
+                                      {/* Segunda fila: cantidad y subtotal */}
+                                      <Flex justify="space-between" align="center">
+                                        <HStack spacing={0}>
+                                          <IconButton
+                                            aria-label="Disminuir cantidad"
+                                            icon={<Text fontSize="md">−</Text>}
                                             size="sm"
-                                            min={1}
-                                            value={product.quantity}
-                                            onChange={(_, value) => handleProductQuantityChange(product.id, value || 1)}
-                                            w="80px"
-                                          >
-                                            <NumberInputField textAlign="right" />
-                                            <NumberInputStepper>
-                                              <NumberIncrementStepper />
-                                              <NumberDecrementStepper />
-                                            </NumberInputStepper>
-                                          </NumberInput>
-                                        </HStack>
-                                        <HStack spacing="0.5rem">
-                                          <Text fontSize="xs" color={textColor} minW="50px">
-                                            Peso (kg):
-                                          </Text>
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = Math.max(0.1, product.quantity - 0.1);
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleProductQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderRightRadius={0}
+                                          />
                                           <Input
                                             size="sm"
-                                            type="number"
-                                            min={0}
-                                            step={0.01}
-                                            value={product.weight}
-                                            onChange={(e) =>
-                                              handleProductWeightChange(product.id, parseFloat(e.target.value) || 0)
-                                            }
-                                            w="80px"
-                                            bg={inputBg}
-                                            border="1px solid"
-                                            borderColor={inputBorder}
-                                            textAlign="right"
+                                            value={quantityInputs[product.id] ?? product.quantity}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+
+                                              // Permitir solo números y punto decimal
+                                              const regex = /^\d*\.?\d*$/;
+                                              if (regex.test(value) || value === '') {
+                                                // Guardar el valor como string para mantener el punto
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+
+                                                // Si es un número válido, actualizar la cantidad
+                                                const numValue = parseFloat(value);
+                                                if (!isNaN(numValue) && numValue >= 0) {
+                                                  handleProductQuantityChange(product.id, numValue);
+                                                } else if (value === '' || value === '.') {
+                                                  handleProductQuantityChange(product.id, 0);
+                                                }
+                                              }
+                                            }}
+                                            onBlur={(e) => {
+                                              const value = parseFloat(e.target.value);
+                                              if (isNaN(value) || value <= 0) {
+                                                handleProductQuantityChange(product.id, 1);
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                              } else {
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: value.toString(),
+                                                }));
+                                              }
+                                            }}
+                                            w="50px"
+                                            textAlign="center"
+                                            borderRadius={0}
+                                            borderLeft="none"
+                                            borderRight="none"
+                                          />
+                                          <IconButton
+                                            aria-label="Aumentar cantidad"
+                                            icon={<Text fontSize="md">+</Text>}
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = product.quantity + 0.1;
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleProductQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderLeftRadius={0}
                                           />
                                         </HStack>
-                                      </VStack>
-                                      <VStack spacing="0.25rem" align="flex-end" minW="80px">
-                                        <Text fontSize="xs" color={textColor}>
-                                          Subtotal:
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="bold">
-                                          ${subtotal.toFixed(2)}
-                                        </Text>
-                                      </VStack>
-                                      <IconButton
-                                        aria-label="Eliminar producto"
-                                        icon={<FaTrash />}
-                                        size="sm"
-                                        colorScheme="red"
-                                        variant="ghost"
-                                        onClick={() => handleRemoveProduct(product.id)}
-                                      />
-                                    </Flex>
+
+                                        <HStack spacing="0.5rem">
+                                          <Text fontSize="xs" color={textColor}>
+                                            Subt.:
+                                          </Text>
+                                          <Text fontSize="sm" fontWeight="bold">
+                                            ${subtotal.toFixed(2)}
+                                          </Text>
+                                        </HStack>
+                                      </Flex>
+                                    </VStack>
                                   </Box>
                                 );
                               })}
@@ -903,7 +928,23 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                             </HStack>
                           </Box>
                         )}
-                      </Box>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>
+                          <HStack spacing={1}>
+                            <Icon as={FiFileText} />
+                            <Text>Observaciones</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Textarea
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          {...formik.getFieldProps('observations')}
+                          placeholder="Observaciones del pedido..."
+                          rows={3}
+                        />
+                      </FormControl>
                     </VStack>
                   </form>
                 );

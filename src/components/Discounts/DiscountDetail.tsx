@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -174,7 +173,6 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
           >
             Detalle del descuento
           </ModalHeader>
-          <ModalCloseButton />
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
@@ -305,7 +303,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
         <ModalOverlay />
         <ModalContent>
           <ModalHeader py="0.75rem">Confirmar eliminación</ModalHeader>
-          <ModalCloseButton />
+
           <ModalBody>
             <Text>¿Estás seguro de que deseas eliminar el descuento "{discount.description}"?</Text>
             <Text mt="0.5rem" fontSize="sm" color="gray.500">
