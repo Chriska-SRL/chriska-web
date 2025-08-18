@@ -221,7 +221,7 @@ export const ProductList = ({
               <Tbody>
                 {products.map((product, index) => (
                   <Tr key={`${product.id}-${index}`} borderBottom="1px solid" borderBottomColor={borderBottomColor}>
-                    <Td display="flex" justifyContent="center" align="center">
+                    <Td display="flex" justifyContent="center" align="center" py="0.75rem">
                       <ImageModal
                         src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                         alt={product.name}
@@ -229,7 +229,7 @@ export const ProductList = ({
                         <Image
                           src={product.imageUrl || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
                           alt={product.name}
-                          boxSize="4rem"
+                          boxSize="3rem"
                           borderRadius="md"
                           bg="gray.100"
                           objectFit="cover"
@@ -249,8 +249,8 @@ export const ProductList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {products.length} producto{products.length !== 1 ? 's' : ''}
             </Text>
             <Pagination

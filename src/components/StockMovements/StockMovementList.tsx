@@ -179,7 +179,7 @@ export const StockMovementList = ({
               </Thead>
               <Tbody>
                 {stockMovements.map((stockMovement) => (
-                  <Tr key={stockMovement.id} h="5rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
+                  <Tr key={stockMovement.id} h="3rem" borderBottom="1px solid" borderBottomColor={borderBottomColor}>
                     <Td textAlign="center">{new Date(stockMovement.date).toLocaleDateString()}</Td>
                     <Td textAlign="center">{stockMovement.product.name}</Td>
                     <Td textAlign="center">{stockMovement.quantity}</Td>
@@ -193,8 +193,8 @@ export const StockMovementList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <HStack justifyContent="space-between" mt="0.5rem">
-            <Text fontSize="sm" color={textColor}>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {stockMovements.length} movimiento{stockMovements.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
@@ -205,7 +205,7 @@ export const StockMovementList = ({
               onPageSizeChange={() => {}}
               isLoading={isLoading}
             />
-          </HStack>
+          </Flex>
         </>
       )}
     </>

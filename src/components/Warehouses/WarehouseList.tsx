@@ -151,7 +151,7 @@ export const WarehouseList = ({
           ))}
         </VStack>
       </Box>
-      <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+      <Flex alignItems="center" justifyContent="space-between">
         <Text fontSize="sm" fontWeight="medium">
           Mostrando {warehouses.length} depósito{warehouses.length !== 1 ? 's' : ''}
         </Text>

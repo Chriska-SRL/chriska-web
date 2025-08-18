@@ -12,9 +12,11 @@ import {
   useDisclosure,
   IconButton,
   Box,
+  Spinner,
 } from '@chakra-ui/react';
 import { useMediaQuery, useColorModeValue } from '@chakra-ui/react';
-import { ElementType } from 'react';
+import { ElementType, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FaUserShield, FaBars, FaCar } from 'react-icons/fa6';
 import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes, FaTags, FaWarehouse, FaPercent } from 'react-icons/fa';
@@ -37,6 +39,8 @@ type SidebarButtonProps = {
   activeColor: string;
   defaultColor: string;
   hoverColor: string;
+  loadingPage: string | null;
+  onNavigate: (path: string) => void;
 };
 
 const SidebarButton = ({
@@ -49,8 +53,11 @@ const SidebarButton = ({
   activeColor,
   defaultColor,
   hoverColor,
+  loadingPage,
+  onNavigate,
 }: SidebarButtonProps) => {
   const isActive = currentPage === path;
+  const isLoading = loadingPage === path;
 
   return (
     <Link
@@ -63,14 +70,21 @@ const SidebarButton = ({
       fontWeight="medium"
       fontSize="0.875rem"
       w="100%"
-      justifyContent="start"
+      justifyContent="space-between"
       gap="0.75rem"
       _hover={{ color: hoverColor, bg: hoverBg }}
       py="0.375rem"
       px="0.75rem"
+      onClick={(e) => {
+        e.preventDefault();
+        onNavigate(path);
+      }}
     >
-      <Icon as={icon} boxSize={5} />
-      {text}
+      <Flex alignItems="center" gap="0.75rem">
+        <Icon as={icon} boxSize={5} />
+        {text}
+      </Flex>
+      {isLoading && <Spinner size="sm" />}
     </Link>
   );
 };
@@ -108,7 +122,9 @@ const sidebarItems = [
 export const SideBar = ({ currentPage }: SideBarProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const [loadingPage, setLoadingPage] = useState<string | null>(null);
   const hasPermission = useUserStore((s) => s.hasPermission);
+  const router = useRouter();
 
   const bg = useColorModeValue('white', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -120,6 +136,11 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const hoverColor = useColorModeValue('black', 'white');
 
   const visibleItems = sidebarItems.filter((item) => hasPermission(item.Permission));
+
+  const handleNavigate = (path: string) => {
+    setLoadingPage(path);
+    router.push(`/${path}`);
+  };
 
   const renderSidebarContent = () => (
     <Flex
@@ -169,6 +190,8 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
               text={item.text}
               icon={item.icon}
               currentPage={currentPage}
+              loadingPage={loadingPage}
+              onNavigate={handleNavigate}
               {...{ activeBg, hoverBg, activeColor, defaultColor, hoverColor }}
             />
           ))}

@@ -165,8 +165,8 @@ export const RoleList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {roles.length} rol{roles.length !== 1 ? 'es' : ''}
             </Text>
             <Pagination

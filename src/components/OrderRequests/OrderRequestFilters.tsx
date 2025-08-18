@@ -67,6 +67,7 @@ export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderR
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
+  const disabledColor = useColorModeValue('#fafafa', '#202532');
 
   // Debounce para búsqueda de clientes
   useEffect(() => {
@@ -219,14 +220,7 @@ export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderR
           </HStack>
         ) : (
           <Box>
-            <Box
-              display="flex"
-              bg={bgInput}
-              borderRadius="md"
-              overflow="hidden"
-              borderWidth="1px"
-              borderColor={borderInput}
-            >
+            <Flex bg={disabled ? disabledColor : bgInput} borderRadius="md" overflow="hidden">
               <Select
                 value={clientSearchType}
                 onChange={(e) => setClientSearchType(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')}
@@ -259,6 +253,11 @@ export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderR
                   _placeholder={{ color: textColor }}
                   color={textColor}
                   _focus={{ boxShadow: 'none' }}
+                  _disabled={{
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                    color: textColor,
+                  }}
                   pl="1rem"
                   onFocus={() => clientSearch && setShowClientDropdown(true)}
                   disabled={disabled}
@@ -275,7 +274,7 @@ export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderR
                   />
                 </InputRightElement>
               </InputGroup>
-            </Box>
+            </Flex>
 
             {/* Dropdown de resultados de clientes */}
             {showClientDropdown && (

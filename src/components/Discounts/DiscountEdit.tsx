@@ -783,8 +783,7 @@ const DiscountEditForm = ({
 
                             {/* Buscador de productos */}
                             <Box position="relative" ref={searchRef}>
-                              <Box
-                                display="flex"
+                              <Flex
                                 bg={inputBg}
                                 borderRadius="md"
                                 overflow="hidden"
@@ -841,7 +840,7 @@ const DiscountEditForm = ({
                                     />
                                   </InputRightElement>
                                 </InputGroup>
-                              </Box>
+                              </Flex>
 
                               {/* Dropdown de resultados */}
                               {showProductDropdown && (
@@ -1070,8 +1069,7 @@ const DiscountEditForm = ({
 
                             {/* Buscador de clientes */}
                             <Box position="relative" ref={clientSearchRef}>
-                              <Box
-                                display="flex"
+                              <Flex
                                 bg={inputBg}
                                 borderRadius="md"
                                 overflow="hidden"
@@ -1131,7 +1129,7 @@ const DiscountEditForm = ({
                                     />
                                   </InputRightElement>
                                 </InputGroup>
-                              </Box>
+                              </Flex>
 
                               {/* Dropdown de resultados de clientes */}
                               {showClientDropdown && (

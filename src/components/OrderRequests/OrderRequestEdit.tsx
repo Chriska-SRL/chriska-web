@@ -417,8 +417,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                             </HStack>
                           ) : (
                             <Box>
-                              <Box
-                                display="flex"
+                              <Flex
                                 bg={inputBg}
                                 borderRadius="md"
                                 overflow="hidden"
@@ -474,7 +473,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                     />
                                   </InputRightElement>
                                 </InputGroup>
-                              </Box>
+                              </Flex>
 
                               {/* Dropdown de resultados de clientes */}
                               {showClientDropdown && (
@@ -603,8 +602,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
                         {/* Buscador de productos */}
                         <Box position="relative" ref={productSearchRef} mb={4}>
-                          <Box
-                            display="flex"
+                          <Flex
                             bg={inputBg}
                             borderRadius="md"
                             overflow="hidden"
@@ -657,7 +655,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                 />
                               </InputRightElement>
                             </InputGroup>
-                          </Box>
+                          </Flex>
 
                           {/* Dropdown de resultados de productos */}
                           {showProductDropdown && (

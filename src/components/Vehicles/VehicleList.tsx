@@ -250,20 +250,18 @@ export const VehicleList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}
             </Text>
-            {!isLoading && (vehicles.length > 0 || currentPage > 1) && (
-              <Pagination
-                currentPage={currentPage}
-                pageSize={pageSize}
-                hasNextPage={hasNextPage}
-                onPageChange={onPageChange}
-                onPageSizeChange={onPageSizeChange}
-                isLoading={isLoading}
-              />
-            )}
+            <Pagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              hasNextPage={hasNextPage}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
+            />
           </Flex>
         </>
       )}

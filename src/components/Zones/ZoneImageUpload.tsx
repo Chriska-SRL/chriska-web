@@ -13,6 +13,7 @@ import {
   Spinner,
   Center,
   Icon,
+  Flex,
 } from '@chakra-ui/react';
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect, useCallback } from 'react';
@@ -225,16 +226,15 @@ export const ZoneImageUpload = ({ zone, onImageChange, editable = false }: ZoneI
             />
 
             {previewUrl && (
-              <Box
+              <Flex
                 position="absolute"
                 top="0"
                 left="0"
                 right="0"
                 bottom="0"
                 bg="blackAlpha.800"
-                display="flex"
-                alignItems="center"
                 justifyContent="center"
+                alignItems="center"
                 backdropFilter="blur(2px)"
               >
                 <VStack spacing="3" color="white">
@@ -243,11 +243,11 @@ export const ZoneImageUpload = ({ zone, onImageChange, editable = false }: ZoneI
                     Subiendo nueva imagen...
                   </Text>
                 </VStack>
-              </Box>
+              </Flex>
             )}
 
             {editable && !previewUrl && (
-              <Box
+              <Flex
                 position="absolute"
                 top="0"
                 left="0"
@@ -255,9 +255,8 @@ export const ZoneImageUpload = ({ zone, onImageChange, editable = false }: ZoneI
                 bottom="0"
                 bg={overlayBg}
                 opacity="0"
-                display="flex"
-                alignItems="center"
                 justifyContent="center"
+                alignItems="center"
                 transition="opacity 0.2s"
                 _hover={{ opacity: 1 }}
               >
@@ -276,7 +275,7 @@ export const ZoneImageUpload = ({ zone, onImageChange, editable = false }: ZoneI
                     </Text>
                   </VStack>
                 )}
-              </Box>
+              </Flex>
             )}
           </>
         ) : (

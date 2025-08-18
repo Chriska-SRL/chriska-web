@@ -119,8 +119,7 @@ export const VehicleFilters = ({
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
-      <Box
-        display="flex"
+      <Flex
         bg={isLoadingVehicles ? disabledColor : bgInput}
         borderRadius="md"
         overflow="hidden"
@@ -179,7 +178,7 @@ export const VehicleFilters = ({
             />
           </InputRightElement>
         </InputGroup>
-      </Box>
+      </Flex>
 
       {hasActiveFilters && (
         <IconButton

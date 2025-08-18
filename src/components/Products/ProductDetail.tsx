@@ -19,6 +19,7 @@ import {
   HStack,
   SimpleGrid,
   Divider,
+  Flex,
 } from '@chakra-ui/react';
 import {
   FiEye,
@@ -160,9 +161,9 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                       Imagen del producto
                     </Text>
                   </HStack>
-                  <Box aspectRatio="1" borderRadius="md" display="flex" alignItems="center" justifyContent="center">
+                  <Flex justifyContent="center" alignItems="center" aspectRatio="1" borderRadius="md">
                     <ProductImageUpload product={product} editable={false} />
-                  </Box>
+                  </Flex>
                 </Box>
 
                 <VStack spacing="2rem" align="stretch">

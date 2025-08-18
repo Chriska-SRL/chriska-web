@@ -12,6 +12,7 @@ import {
   Spinner,
   Center,
   Icon,
+  Flex,
 } from '@chakra-ui/react';
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect, useCallback } from 'react';
@@ -209,16 +210,15 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
             />
 
             {previewUrl && (
-              <Box
+              <Flex
                 position="absolute"
                 top="0"
                 left="0"
                 right="0"
                 bottom="0"
                 bg="blackAlpha.800"
-                display="flex"
-                alignItems="center"
                 justifyContent="center"
+                alignItems="center"
                 backdropFilter="blur(2px)"
               >
                 <VStack spacing="3" color="white">
@@ -227,13 +227,13 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                     Subiendo nueva imagen...
                   </Text>
                 </VStack>
-              </Box>
+              </Flex>
             )}
 
             {editable && !previewUrl && (
               <>
                 {/* Overlay para cambiar imagen */}
-                <Box
+                <Flex
                   position="absolute"
                   top="0"
                   left="0"
@@ -241,9 +241,8 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                   bottom="0"
                   bg={overlayBg}
                   opacity="0"
-                  display="flex"
-                  alignItems="center"
                   justifyContent="center"
+                  alignItems="center"
                   transition="opacity 0.2s"
                   _groupHover={{ opacity: 1 }}
                 >
@@ -262,7 +261,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                       </Text>
                     </VStack>
                   )}
-                </Box>
+                </Flex>
 
                 {/* Botón de eliminar en la esquina superior derecha */}
                 <IconButton

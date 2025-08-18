@@ -433,8 +433,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                             </HStack>
                           ) : (
                             <Box>
-                              <Box
-                                display="flex"
+                              <Flex
                                 bg={inputBg}
                                 borderRadius="md"
                                 overflow="hidden"
@@ -490,7 +489,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                     />
                                   </InputRightElement>
                                 </InputGroup>
-                              </Box>
+                              </Flex>
 
                               {/* Dropdown de resultados de clientes */}
                               {showClientDropdown && (
@@ -617,8 +616,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
                         {/* Buscador de productos */}
                         <Box position="relative" ref={productSearchRef} mb={4}>
-                          <Box
-                            display="flex"
+                          <Flex
                             bg={inputBg}
                             borderRadius="md"
                             overflow="hidden"
@@ -671,7 +669,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                 />
                               </InputRightElement>
                             </InputGroup>
-                          </Box>
+                          </Flex>
 
                           {/* Dropdown de resultados de productos */}
                           {showProductDropdown && (

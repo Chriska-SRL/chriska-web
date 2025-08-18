@@ -197,8 +197,7 @@ export const DiscountFilters = ({
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
-      <Box
-        display="flex"
+      <Flex
         bg={isLoading ? disabledColor : bgInput}
         borderRadius="md"
         overflow="hidden"
@@ -235,7 +234,7 @@ export const DiscountFilters = ({
             />
           </InputRightElement>
         </InputGroup>
-      </Box>
+      </Flex>
 
       <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center" flexShrink={0}>
         <Popover placement="bottom-end">

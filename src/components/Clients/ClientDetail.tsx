@@ -19,6 +19,7 @@ import {
   Icon,
   SimpleGrid,
   Divider,
+  Flex,
 } from '@chakra-ui/react';
 import {
   FiEye,
@@ -138,7 +139,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
             Calificación
           </Text>
         </HStack>
-        <Box
+        <Flex
           px="1rem"
           py="0.5rem"
           bg={inputBg}
@@ -146,13 +147,12 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
           borderColor={inputBorder}
           borderRadius="md"
           minH="2.75rem"
-          display="flex"
           justifyContent="center"
           alignItems="center"
           transition="all 0.2s"
         >
           <HStack spacing="0.25rem">{stars}</HStack>
-        </Box>
+        </Flex>
       </Box>
     );
   };

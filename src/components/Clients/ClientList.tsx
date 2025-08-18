@@ -232,8 +232,8 @@ export const ClientList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem" display="flex" alignItems="center" justifyContent="space-between">
-            <Text fontSize="sm">
+          <Flex alignItems="center" justifyContent="space-between">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
@@ -244,7 +244,7 @@ export const ClientList = ({
               onPageSizeChange={onPageSizeChange}
               isLoading={isLoading}
             />
-          </Box>
+          </Flex>
         </>
       )}
     </>
