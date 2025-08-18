@@ -8,7 +8,6 @@ import {
   IconButton,
   InputGroup,
   InputRightElement,
-  Box,
   Button,
   Popover,
   PopoverTrigger,

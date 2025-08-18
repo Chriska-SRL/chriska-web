@@ -847,7 +847,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             type="number"
                                             min={0}
                                             step={0.01}
-                                            value={product.weight}
+                                            value={product.weight || ''}
                                             onChange={(e) =>
                                               handleProductWeightChange(product.id, parseFloat(e.target.value) || 0)
                                             }
