@@ -145,14 +145,14 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     if (statusLoading || statusProps) return;
     closeCancelDialog();
     setActionType('cancel');
-    setStatusProps({ id: orderRequest.id, status: 'Canceled' });
+    setStatusProps({ id: orderRequest.id, status: 'Cancelled' });
   }, [statusLoading, statusProps, orderRequest.id, closeCancelDialog]);
 
   useEffect(() => {
     if (statusData) {
       setOrderRequests((prev) => prev.map((or) => (or.id === orderRequest.id ? statusData : or)));
       const isConfirmed = statusData.status?.toLowerCase() === Status.CONFIRMED.toLowerCase();
-      const isCancelled = statusData.status?.toLowerCase() === 'canceled';
+      const isCancelled = statusData.status?.toLowerCase() === 'Cancelled';
 
       toast({
         title: isConfirmed ? 'Pedido confirmado' : isCancelled ? 'Pedido cancelado' : 'Estado actualizado',

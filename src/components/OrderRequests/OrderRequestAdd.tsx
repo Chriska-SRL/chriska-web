@@ -205,6 +205,9 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
     setSelectedClient(null);
     setClientSearch('');
     setShowClientDropdown(false);
+    // Limpiar productos seleccionados cuando se deselecciona el cliente
+    setSelectedProducts([]);
+    setQuantityInputs({});
   };
 
   // Funciones para manejar búsqueda de productos
@@ -401,30 +404,32 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                         </FormLabel>
 
                         {/* Búsqueda de clientes */}
-                        <Box position="relative" ref={clientSearchRef} minW={{ base: '100%', md: '18.75rem' }}>
+                        <Box position="relative" ref={clientSearchRef}>
                           {selectedClient ? (
-                            <HStack
-                              p="0.75rem"
+                            <Flex
+                              h="40px"
+                              px="0.75rem"
                               bg={inputBg}
                               borderRadius="md"
                               border="1px solid"
                               borderColor={inputBorder}
-                              spacing="0.5rem"
-                              w="100%"
+                              align="center"
+                              justify="space-between"
                             >
-                              <Text fontSize="md" flex="1" noOfLines={1} fontWeight="medium">
+                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
                                 {selectedClient.name}
                               </Text>
                               <IconButton
                                 aria-label="Limpiar cliente"
                                 icon={<Text fontSize="sm">✕</Text>}
-                                size="sm"
+                                size="xs"
                                 variant="ghost"
                                 onClick={handleClearClientSearch}
                                 color={textColor}
                                 _hover={{}}
+                                ml="0.5rem"
                               />
-                            </HStack>
+                            </Flex>
                           ) : (
                             <Box>
                               <Flex
@@ -596,244 +601,276 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                           Productos
                         </FormLabel>
 
-                        {/* Buscador de productos */}
-                        <Box position="relative" ref={productSearchRef}>
+                        {/* Mostrar mensaje si no hay cliente seleccionado */}
+                        {!selectedClient ? (
                           <Flex
+                            justifyContent="center"
+                            alignItems="center"
+                            h="2.5rem"
                             bg={inputBg}
                             borderRadius="md"
-                            overflow="hidden"
-                            borderWidth="1px"
+                            border="1px solid"
                             borderColor={inputBorder}
                           >
-                            <Select
-                              value={productSearchType}
-                              onChange={(e) =>
-                                setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
-                              }
-                              bg="transparent"
-                              border="none"
-                              color={textColor}
-                              w={{ base: '6rem', md: 'auto' }}
-                              minW={{ base: '6rem', md: '7rem' }}
-                              borderRadius="none"
-                              _focus={{ boxShadow: 'none' }}
-                              fontSize={{ base: 'xs', md: 'sm' }}
-                            >
-                              <option value="name">Nombre</option>
-                              <option value="internalCode">Cód. interno</option>
-                              <option value="barcode">Cód. de barras</option>
-                            </Select>
-
-                            <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                            <InputGroup flex="1">
-                              <Input
-                                placeholder="Buscar producto..."
-                                value={productSearch}
-                                onChange={(e) => handleProductSearch(e.target.value)}
-                                bg="transparent"
-                                border="none"
-                                borderRadius="none"
-                                _placeholder={{ color: textColor }}
-                                color={textColor}
-                                _focus={{ boxShadow: 'none' }}
-                                pl="1rem"
-                                onFocus={() => productSearch && setShowProductDropdown(true)}
-                              />
-                              <InputRightElement>
-                                <IconButton
-                                  aria-label="Buscar"
-                                  icon={<AiOutlineSearch size="1.25rem" />}
-                                  size="sm"
-                                  variant="ghost"
-                                  color={textColor}
-                                  _hover={{}}
-                                />
-                              </InputRightElement>
-                            </InputGroup>
-                          </Flex>
-
-                          {/* Dropdown de resultados de productos */}
-                          {showProductDropdown && (
-                            <Box
-                              position="absolute"
-                              top="100%"
-                              left={0}
-                              right={0}
-                              mt={1}
-                              bg={dropdownBg}
-                              border="1px solid"
-                              borderColor={dropdownBorder}
-                              borderRadius="md"
-                              boxShadow="lg"
-                              maxH="400px"
-                              overflowY="auto"
-                              zIndex={20}
-                            >
-                              {(() => {
-                                const isTyping = productSearch !== debouncedProductSearch && productSearch.length >= 2;
-                                const isSearching =
-                                  !isTyping && isLoadingProductsSearch && debouncedProductSearch.length >= 2;
-                                const searchCompleted =
-                                  !isTyping &&
-                                  !isSearching &&
-                                  debouncedProductSearch.length >= 2 &&
-                                  lastProductSearchTerm === debouncedProductSearch;
-
-                                if (isTyping || isSearching) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando productos...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
-
-                                if (searchCompleted && productsSearch?.length > 0) {
-                                  return (
-                                    <List spacing={0}>
-                                      {productsSearch.map((product: any, index: number) => {
-                                        const isSelected = selectedProducts.some((p) => p.id === product.id);
-                                        return (
-                                          <Fragment key={product.id}>
-                                            <ListItem
-                                              p="0.75rem"
-                                              cursor="pointer"
-                                              _hover={{ bg: hoverBg }}
-                                              transition="background-color 0.2s ease"
-                                              opacity={isSelected ? 0.5 : 1}
-                                              onClick={() => !isSelected && handleProductSelect(product)}
-                                            >
-                                              <Flex align="center" gap="0.75rem">
-                                                <Image
-                                                  src={
-                                                    product.imageUrl ||
-                                                    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                                  }
-                                                  alt={product.name}
-                                                  boxSize="40px"
-                                                  objectFit="cover"
-                                                  borderRadius="md"
-                                                  flexShrink={0}
-                                                />
-                                                <Box flex="1">
-                                                  <Text fontSize="sm" fontWeight="medium">
-                                                    {product.name}
-                                                  </Text>
-                                                  <Text fontSize="xs" color={textColor}>
-                                                    Precio: ${product.price || 0}
-                                                    {product.internalCode && ` - Cód: ${product.internalCode}`}
-                                                  </Text>
-                                                </Box>
-                                                {isSelected && (
-                                                  <Text fontSize="xs" color="green.500">
-                                                    Seleccionado
-                                                  </Text>
-                                                )}
-                                              </Flex>
-                                            </ListItem>
-                                            {index < productsSearch.length - 1 && <Divider />}
-                                          </Fragment>
-                                        );
-                                      })}
-                                    </List>
-                                  );
-                                }
-
-                                if (searchCompleted && productsSearch?.length === 0) {
-                                  return (
-                                    <Text p={3} fontSize="sm" color="gray.500">
-                                      No se encontraron productos
-                                    </Text>
-                                  );
-                                }
-
-                                if (
-                                  debouncedProductSearch.length >= 2 &&
-                                  (!searchCompleted || isLoadingProductsSearch)
-                                ) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando productos...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
-
-                                return null;
-                              })()}
-                            </Box>
-                          )}
-                        </Box>
-
-                        <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
-
-                        {/* Lista de productos seleccionados */}
-                        {selectedProducts.length > 0 && (
-                          <Box mt="1rem">
-                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                              Productos seleccionados ({selectedProducts.length}):
+                            <Text fontSize="sm" color={textColor}>
+                              Seleccione un cliente primero para agregar productos
                             </Text>
-                            <VStack spacing="0.5rem" align="stretch">
-                              {selectedProducts.map((product) => {
-                                const subtotal = product.quantity * product.price;
-                                return (
-                                  <Box
-                                    key={product.id}
-                                    position="relative"
-                                    p="0.75rem"
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    borderRadius="md"
-                                    bg={inputBg}
-                                  >
-                                    {/* Botón eliminar en la esquina superior derecha */}
-                                    <IconButton
-                                      aria-label="Eliminar producto"
-                                      icon={<FaTrash size="10px" />}
-                                      size="xs"
-                                      position="absolute"
-                                      top="0.5rem"
-                                      right="0.5rem"
-                                      colorScheme="red"
-                                      variant="ghost"
-                                      onClick={() => handleRemoveProduct(product.id)}
-                                    />
+                          </Flex>
+                        ) : (
+                          <>
+                            {/* Buscador de productos */}
+                            <Box position="relative" ref={productSearchRef}>
+                              <Flex
+                                bg={inputBg}
+                                borderRadius="md"
+                                overflow="hidden"
+                                borderWidth="1px"
+                                borderColor={inputBorder}
+                              >
+                                <Select
+                                  value={productSearchType}
+                                  onChange={(e) =>
+                                    setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
+                                  }
+                                  bg="transparent"
+                                  border="none"
+                                  color={textColor}
+                                  w={{ base: '6rem', md: 'auto' }}
+                                  minW={{ base: '6rem', md: '7rem' }}
+                                  borderRadius="none"
+                                  _focus={{ boxShadow: 'none' }}
+                                  fontSize={{ base: 'xs', md: 'sm' }}
+                                >
+                                  <option value="name">Nombre</option>
+                                  <option value="internalCode">Cód. interno</option>
+                                  <option value="barcode">Cód. de barras</option>
+                                </Select>
 
-                                    <VStack align="stretch" spacing="0.75rem">
-                                      {/* Primera fila: imagen y datos del producto */}
-                                      <Flex gap="0.75rem">
+                                <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                <InputGroup flex="1">
+                                  <Input
+                                    placeholder="Buscar producto..."
+                                    value={productSearch}
+                                    onChange={(e) => handleProductSearch(e.target.value)}
+                                    bg="transparent"
+                                    border="none"
+                                    borderRadius="none"
+                                    _placeholder={{ color: textColor }}
+                                    color={textColor}
+                                    _focus={{ boxShadow: 'none' }}
+                                    pl="1rem"
+                                    onFocus={() => productSearch && setShowProductDropdown(true)}
+                                  />
+                                  <InputRightElement>
+                                    <IconButton
+                                      aria-label="Buscar"
+                                      icon={<AiOutlineSearch size="1.25rem" />}
+                                      size="sm"
+                                      variant="ghost"
+                                      color={textColor}
+                                      _hover={{}}
+                                    />
+                                  </InputRightElement>
+                                </InputGroup>
+                              </Flex>
+
+                              {/* Dropdown de resultados de productos */}
+                              {showProductDropdown && (
+                                <Box
+                                  position="absolute"
+                                  top="100%"
+                                  left={0}
+                                  right={0}
+                                  mt={1}
+                                  bg={dropdownBg}
+                                  border="1px solid"
+                                  borderColor={dropdownBorder}
+                                  borderRadius="md"
+                                  boxShadow="lg"
+                                  maxH="400px"
+                                  overflowY="auto"
+                                  zIndex={20}
+                                >
+                                  {(() => {
+                                    const isTyping =
+                                      productSearch !== debouncedProductSearch && productSearch.length >= 2;
+                                    const isSearching =
+                                      !isTyping && isLoadingProductsSearch && debouncedProductSearch.length >= 2;
+                                    const searchCompleted =
+                                      !isTyping &&
+                                      !isSearching &&
+                                      debouncedProductSearch.length >= 2 &&
+                                      lastProductSearchTerm === debouncedProductSearch;
+
+                                    if (isTyping || isSearching) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando productos...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    if (searchCompleted && productsSearch?.length > 0) {
+                                      return (
+                                        <List spacing={0}>
+                                          {productsSearch.map((product: any, index: number) => {
+                                            const isSelected = selectedProducts.some((p) => p.id === product.id);
+                                            return (
+                                              <Fragment key={product.id}>
+                                                <ListItem
+                                                  p="0.75rem"
+                                                  cursor="pointer"
+                                                  _hover={{ bg: hoverBg }}
+                                                  transition="background-color 0.2s ease"
+                                                  opacity={isSelected ? 0.5 : 1}
+                                                  onClick={() => !isSelected && handleProductSelect(product)}
+                                                >
+                                                  <Flex align="center" gap="0.75rem">
+                                                    <Image
+                                                      src={
+                                                        product.imageUrl ||
+                                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                                      }
+                                                      alt={product.name}
+                                                      boxSize="40px"
+                                                      objectFit="cover"
+                                                      borderRadius="md"
+                                                      flexShrink={0}
+                                                    />
+                                                    <Box flex="1">
+                                                      <Text fontSize="sm" fontWeight="medium">
+                                                        {product.name}
+                                                      </Text>
+                                                      <Text fontSize="xs" color={textColor}>
+                                                        Precio: ${product.price || 0}
+                                                        {product.internalCode && ` - Cód: ${product.internalCode}`}
+                                                      </Text>
+                                                    </Box>
+                                                    {isSelected && (
+                                                      <Text fontSize="xs" color="green.500">
+                                                        Seleccionado
+                                                      </Text>
+                                                    )}
+                                                  </Flex>
+                                                </ListItem>
+                                                {index < productsSearch.length - 1 && <Divider />}
+                                              </Fragment>
+                                            );
+                                          })}
+                                        </List>
+                                      );
+                                    }
+
+                                    if (searchCompleted && productsSearch?.length === 0) {
+                                      return (
+                                        <Text p={3} fontSize="sm" color="gray.500">
+                                          No se encontraron productos
+                                        </Text>
+                                      );
+                                    }
+
+                                    if (
+                                      debouncedProductSearch.length >= 2 &&
+                                      (!searchCompleted || isLoadingProductsSearch)
+                                    ) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando productos...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    return null;
+                                  })()}
+                                </Box>
+                              )}
+                            </Box>
+
+                            <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
+
+                            {/* Lista de productos seleccionados */}
+                            {selectedProducts.length > 0 && (
+                              <Box mt="1rem">
+                                <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                  Productos seleccionados ({selectedProducts.length}):
+                                </Text>
+                                <VStack spacing="0.5rem" align="stretch">
+                                  {selectedProducts.map((product) => {
+                                    // Hardcoded: simular descuento del 15% para el primer producto
+                                    const effectivePrice =
+                                      product === selectedProducts[0] ? product.price * 0.85 : product.price;
+                                    const subtotal = product.quantity * effectivePrice;
+                                    return (
+                                      <Flex
+                                        key={product.id}
+                                        p="0.75rem"
+                                        border="1px solid"
+                                        borderColor={inputBorder}
+                                        borderRadius="md"
+                                        bg={inputBg}
+                                        align="center"
+                                        gap="0.75rem"
+                                      >
+                                        {/* Imagen */}
                                         <Image
                                           src={
                                             product.imageUrl ||
                                             'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
                                           }
                                           alt={product.name}
-                                          boxSize="50px"
+                                          boxSize="40px"
                                           objectFit="cover"
                                           borderRadius="md"
                                           flexShrink={0}
                                         />
-                                        <Box flex="1">
-                                          <Text fontSize="sm" fontWeight="medium" pr="2rem">
+
+                                        {/* Nombre y precio */}
+                                        <Box flex="1" minW="0">
+                                          <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                             {product.name}
                                           </Text>
-                                          <Text fontSize="xs" color={textColor} mt="0.25rem">
-                                            ${product.price.toFixed(2)}
-                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            {/* Hardcoded para ver cómo se ve con descuento - solo para el primer producto */}
+                                            {product === selectedProducts[0] ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                  ${product.price.toFixed(2)}
+                                                </Text>
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  ${(product.price * 0.85).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -15%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                            )}
+                                          </HStack>
                                         </Box>
-                                      </Flex>
 
-                                      {/* Segunda fila: cantidad y subtotal */}
-                                      <Flex justify="space-between" align="center">
-                                        <HStack spacing={0}>
+                                        {/* Cantidad */}
+                                        <HStack spacing={0} flexShrink={0}>
                                           <IconButton
                                             aria-label="Disminuir cantidad"
-                                            icon={<Text fontSize="md">−</Text>}
+                                            icon={<Text fontSize="sm">−</Text>}
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
@@ -880,7 +917,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                 }));
                                               }
                                             }}
-                                            w="50px"
+                                            w="3rem"
                                             textAlign="center"
                                             borderRadius={0}
                                             borderLeft="none"
@@ -888,7 +925,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                           />
                                           <IconButton
                                             aria-label="Aumentar cantidad"
-                                            icon={<Text fontSize="md">+</Text>}
+                                            icon={<Text fontSize="sm">+</Text>}
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
@@ -904,29 +941,43 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                           />
                                         </HStack>
 
-                                        <HStack spacing="0.5rem">
-                                          <Text fontSize="xs" color={textColor}>
-                                            Subt.:
-                                          </Text>
-                                          <Text fontSize="sm" fontWeight="bold">
+                                        {/* Subtotal */}
+                                        <Box minW="90px" textAlign="right" flexShrink={0} mr="1rem">
+                                          <Text fontSize="md" fontWeight="bold">
                                             ${subtotal.toFixed(2)}
                                           </Text>
-                                        </HStack>
+                                        </Box>
+
+                                        {/* Botón eliminar */}
+                                        <IconButton
+                                          aria-label="Eliminar producto"
+                                          icon={<FaTrash size="14px" />}
+                                          size="sm"
+                                          colorScheme="red"
+                                          variant="ghost"
+                                          onClick={() => handleRemoveProduct(product.id)}
+                                          flexShrink={0}
+                                        />
                                       </Flex>
-                                    </VStack>
-                                  </Box>
-                                );
-                              })}
-                            </VStack>
-                            <HStack justify="flex-end" mt={4}>
-                              <Text fontWeight="bold" fontSize="lg">
-                                Total: $
-                                {selectedProducts
-                                  .reduce((total, product) => total + product.quantity * product.price, 0)
-                                  .toFixed(2)}
-                              </Text>
-                            </HStack>
-                          </Box>
+                                    );
+                                  })}
+                                </VStack>
+                                <HStack justify="flex-end" mt={4}>
+                                  <Text fontWeight="bold" fontSize="lg">
+                                    Total: $
+                                    {selectedProducts
+                                      .reduce((total, product) => {
+                                        // Hardcoded: aplicar descuento del 15% al primer producto
+                                        const effectivePrice =
+                                          product === selectedProducts[0] ? product.price * 0.85 : product.price;
+                                        return total + product.quantity * effectivePrice;
+                                      }, 0)
+                                      .toFixed(2)}
+                                  </Text>
+                                </HStack>
+                              </Box>
+                            )}
+                          </>
                         )}
                       </FormControl>
 
