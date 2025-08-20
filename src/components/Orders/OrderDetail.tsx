@@ -29,17 +29,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { Order } from '@/entities/order';
-import {
-  FiEye,
-  FiCheckCircle,
-  FiUsers,
-  FiUser,
-  FiCalendar,
-  FiFileText,
-  FiPackage,
-  FiDollarSign,
-  FiX,
-} from 'react-icons/fi';
+import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
 import { OrderPrepare } from './OrderPrepare';
 import { useChangeOrderStatus } from '@/hooks/order';
 import { getBestDiscount } from '@/services/discount';
@@ -48,6 +38,7 @@ import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { getStatusLabel, Status } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderDetailProps = {
   order: Order;
@@ -57,9 +48,10 @@ type OrderDetailProps = {
 export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isStatusDialogOpen, onOpen: openStatusDialog, onClose: closeStatusDialog } = useDisclosure();
+  const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
   const { isOpen: isPrepareOpen, onOpen: openPrepare, onClose: closePrepare } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
-  const [actionType, setActionType] = useState<'cancel' | null>(null);
+  const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
   const [productDiscounts, setProductDiscounts] = useState<{
     [productId: number]: { discount: number; loading: boolean };
   }>({});
@@ -132,6 +124,12 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     openPrepare();
   }, [onClose, openPrepare]);
 
+  const handleConfirmOrder = useCallback(() => {
+    if (statusLoading || statusProps) return;
+    setActionType('confirm');
+    openConfirmDialog();
+  }, [statusLoading, statusProps, openConfirmDialog]);
+
   const handleCancelOrder = useCallback(() => {
     if (statusLoading || statusProps) return;
     setActionType('cancel');
@@ -145,17 +143,27 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     closeStatusDialog();
   }, [actionType, order.id, closeStatusDialog]);
 
+  const confirmOrderConfirmation = useCallback(() => {
+    if (actionType === 'confirm') {
+      setStatusProps({ id: order.id, status: Status.CONFIRMED });
+    }
+    closeConfirmDialog();
+  }, [actionType, order.id, closeConfirmDialog]);
+
   useEffect(() => {
     if (statusData) {
       setOrders((prev) => prev.map((o) => (o.id === statusData.id ? statusData : o)));
 
+      const isConfirmed = statusData.status?.toLowerCase() === Status.CONFIRMED.toLowerCase();
       const isCancelled = statusData.status?.toLowerCase() === Status.CANCELLED.toLowerCase();
 
       toast({
-        title: isCancelled ? 'Orden cancelada' : 'Estado actualizado',
-        description: isCancelled
-          ? 'La orden ha sido cancelada exitosamente.'
-          : 'El estado de la orden ha sido actualizado correctamente.',
+        title: isConfirmed ? 'Orden confirmada' : isCancelled ? 'Orden cancelada' : 'Estado actualizado',
+        description: isConfirmed
+          ? 'La orden ha sido confirmada exitosamente.'
+          : isCancelled
+            ? 'La orden ha sido cancelada exitosamente.'
+            : 'El estado de la orden ha sido actualizado correctamente.',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -164,8 +172,8 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
       setStatusProps(undefined);
       setActionType(null);
 
-      // Cerrar el modal después de cancelar
-      if (isCancelled) {
+      // Cerrar el modal después de confirmar o cancelar
+      if (isConfirmed || isCancelled) {
         onClose();
       }
     }
@@ -267,7 +275,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader
@@ -311,25 +319,24 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   isValidDate(order.confirmedDate) ? formatDate(order.confirmedDate) : 'No confirmado',
                   FiCheckCircle,
                 )}
-                {detailField('Total', `$${calculateTotal().toFixed(2)}`, FiDollarSign)}
+                {detailField(
+                  'Cajones utilizados',
+                  order.crates && order.crates > 0 ? order.crates.toString() : 'No definido',
+                  FiPackage,
+                )}
               </Stack>
 
-              {order.crates > 0 && (
+              {order.orderRequest && (
                 <Stack
                   direction={{ base: 'column', md: 'row' }}
                   spacing="1rem"
                   align={{ base: 'stretch', md: 'flex-start' }}
                 >
-                  {detailField('Cajones', order.crates.toString(), FiPackage)}
-                  {order.orderRequest && detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
+                  {detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
                 </Stack>
               )}
 
-              {!order.crates &&
-                order.orderRequest &&
-                detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
-
-              {order.observation && detailField('Observaciones', order.observation, FiFileText)}
+              {detailField('Observaciones', order.observation || 'Sin observaciones', FiFileText)}
 
               <Divider />
 
@@ -341,181 +348,308 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   </Text>
                 </HStack>
                 {order.productItems && order.productItems.length > 0 ? (
-                  <VStack spacing="0.5rem" align="stretch" maxH="300px" overflowY="auto">
-                    {order.productItems.map((item, index) => {
-                      const productDiscount = productDiscounts[item.product.id];
-
-                      let effectivePrice = item.unitPrice;
-                      let total = item.quantity * item.unitPrice;
-
-                      if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                        // Para pending: usar descuentos actuales
+                  <>
+                    <VStack spacing="0.5rem" align="stretch" maxH="400px" overflowY="auto">
+                      {order.productItems.map((item, index) => {
+                        const productDiscount = productDiscounts[item.product.id];
                         const discountPercentage = productDiscount?.discount || 0;
-                        effectivePrice = item.unitPrice * (1 - discountPercentage / 100);
-                        total = item.quantity * effectivePrice;
-                      } else {
-                        // Para confirmados/cancelados: el unitPrice ya tiene el descuento aplicado
-                        total = item.quantity * item.unitPrice;
-                      }
+                        const isLoadingDiscount = productDiscount?.loading || false;
 
-                      return (
-                        <Box
-                          key={index}
-                          p={{ base: '0.75rem', md: '0.75rem 1.5rem' }}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          borderRadius="md"
-                          bg={inputBg}
-                        >
-                          <Flex direction={{ base: 'column', md: 'row' }} gap={{ base: '0.75rem', md: '1rem' }}>
-                            {/* Imagen y nombre del producto */}
-                            <Flex align="center" gap="0.75rem" flex={{ base: 'auto', md: '1' }}>
-                              <Image
-                                src={
-                                  item.product?.imageUrl ||
-                                  'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                }
-                                alt={item.product?.name || 'Producto'}
-                                boxSize="50px"
-                                objectFit="cover"
-                                borderRadius="md"
-                                flexShrink={0}
-                              />
-                              <Box flex="1">
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {item.product?.name || '-'}
-                                </Text>
-                                <HStack spacing="0.5rem" align="center" mt="0.25rem">
-                                  {(() => {
-                                    const productDiscount = productDiscounts[item.product.id];
-                                    const discountPercentage = productDiscount?.discount || 0;
-                                    const isLoadingDiscount = productDiscount?.loading || false;
+                        // Por ahora, cantidad real = cantidad solicitada
+                        // TODO: Cuando la API traiga el pedido, usar item.requestedQuantity vs item.actualQuantity
+                        const requestedQuantity = item.quantity;
+                        const actualQuantity = item.quantity;
+                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity : null;
 
-                                    if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                                      // Para pending: usar descuentos actuales del endpoint
-                                      if (isLoadingDiscount) {
-                                        return (
-                                          <>
-                                            <Text fontSize="xs" color={textColor}>
-                                              ${item.unitPrice.toFixed(2)}
-                                            </Text>
-                                            <Spinner size="xs" />
-                                            <Text fontSize="xs" color="gray.500">
-                                              Cargando...
-                                            </Text>
-                                          </>
-                                        );
-                                      } else if (discountPercentage > 0) {
-                                        return (
-                                          <>
-                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                              ${item.unitPrice.toFixed(2)}
-                                            </Text>
-                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                              ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
-                                            </Text>
-                                            <Box
-                                              bg="green.500"
-                                              color="white"
-                                              px="0.4rem"
-                                              py="0.1rem"
-                                              borderRadius="md"
-                                              fontSize="xs"
-                                              fontWeight="bold"
-                                            >
-                                              -{discountPercentage}%
-                                            </Box>
-                                          </>
-                                        );
-                                      } else {
-                                        return (
+                        let effectivePrice = item.unitPrice;
+                        let total = actualQuantity * item.unitPrice;
+
+                        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                          // Para pending: usar descuentos actuales
+                          effectivePrice = item.unitPrice * (1 - discountPercentage / 100);
+                          total = actualQuantity * effectivePrice;
+                        } else {
+                          // Para confirmados/cancelados: el unitPrice ya tiene el descuento aplicado
+                          total = actualQuantity * item.unitPrice;
+                        }
+
+                        return (
+                          <Box
+                            key={index}
+                            p={{ base: '0.75rem', md: '0.75rem' }}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            bg={inputBg}
+                          >
+                            {/* Desktop Layout */}
+                            <Box display={{ base: 'none', md: 'block' }}>
+                              {/* Primera fila desktop: Imagen + Nombre + Precio */}
+                              <Flex gap="0.75rem" mb="0.75rem">
+                                <Image
+                                  src={
+                                    item.product?.imageUrl ||
+                                    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                  }
+                                  alt={item.product?.name || 'Producto'}
+                                  boxSize="50px"
+                                  objectFit="cover"
+                                  borderRadius="md"
+                                  flexShrink={0}
+                                />
+                                <Box flex="1" alignSelf="center">
+                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                    {item.product?.name || '-'}
+                                  </Text>
+                                  <HStack spacing="0.5rem" align="center">
+                                    {order.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+                                      isLoadingDiscount ? (
+                                        <>
                                           <Text fontSize="xs" color={textColor}>
                                             ${item.unitPrice.toFixed(2)}
                                           </Text>
-                                        );
-                                      }
-                                    } else {
-                                      // Para confirmados/cancelados: usar descuentos históricos del item
-                                      if (item.discount > 0) {
-                                        return (
-                                          <>
-                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                              ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
-                                            </Text>
-                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                              ${item.unitPrice.toFixed(2)}
-                                            </Text>
-                                            <Box
-                                              bg="green.500"
-                                              color="white"
-                                              px="0.4rem"
-                                              py="0.1rem"
-                                              borderRadius="md"
-                                              fontSize="xs"
-                                              fontWeight="bold"
-                                            >
-                                              -{item.discount}%
-                                            </Box>
-                                          </>
-                                        );
-                                      } else {
-                                        return (
+                                          <Spinner size="xs" />
+                                          <Text fontSize="xs" color="gray.500">
+                                            Cargando...
+                                          </Text>
+                                        </>
+                                      ) : discountPercentage > 0 ? (
+                                        <>
+                                          <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                            ${item.unitPrice.toFixed(2)}
+                                          </Text>
+                                          <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                            ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
+                                          </Text>
+                                          <Box
+                                            bg="green.500"
+                                            color="white"
+                                            px="0.4rem"
+                                            py="0.1rem"
+                                            borderRadius="md"
+                                            fontSize="xs"
+                                            fontWeight="bold"
+                                          >
+                                            -{discountPercentage}%
+                                          </Box>
+                                        </>
+                                      ) : (
+                                        <Text fontSize="xs" color={textColor}>
+                                          ${item.unitPrice.toFixed(2)}
+                                        </Text>
+                                      )
+                                    ) : item.discount > 0 ? (
+                                      <>
+                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                        </Text>
+                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                          ${item.unitPrice.toFixed(2)}
+                                        </Text>
+                                        <Box
+                                          bg="green.500"
+                                          color="white"
+                                          px="0.4rem"
+                                          py="0.1rem"
+                                          borderRadius="md"
+                                          fontSize="xs"
+                                          fontWeight="bold"
+                                        >
+                                          -{item.discount}%
+                                        </Box>
+                                      </>
+                                    ) : (
+                                      <Text fontSize="xs" color={textColor}>
+                                        ${item.unitPrice.toFixed(2)}
+                                      </Text>
+                                    )}
+                                  </HStack>
+                                </Box>
+                              </Flex>
+
+                              {/* Segunda fila desktop: Cantidad solicitada + Cantidad real + Peso + Subtotal */}
+                              <Flex justify="space-around" align="center">
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Cant. solicitada
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {requestedQuantity}
+                                  </Text>
+                                </VStack>
+
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Cant. real
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {actualQuantity}
+                                  </Text>
+                                </VStack>
+
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Peso (kg)
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                  </Text>
+                                </VStack>
+
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Subtotal
+                                  </Text>
+                                  <Text fontSize="md" fontWeight="bold">
+                                    ${total.toFixed(2)}
+                                  </Text>
+                                </VStack>
+                              </Flex>
+                            </Box>
+
+                            {/* Mobile Layout */}
+                            <Box display={{ base: 'block', md: 'none' }}>
+                              {/* Fila superior: Imagen + Nombre + Precio */}
+                              <Flex align="flex-start" gap="0.75rem" mb="0.75rem">
+                                <Image
+                                  src={
+                                    item.product?.imageUrl ||
+                                    'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                  }
+                                  alt={item.product?.name || 'Producto'}
+                                  boxSize="50px"
+                                  objectFit="cover"
+                                  borderRadius="md"
+                                  flexShrink={0}
+                                />
+                                <Box flex="1">
+                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                    {item.product?.name || '-'}
+                                  </Text>
+                                  <HStack spacing="0.5rem" align="center">
+                                    {order.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+                                      isLoadingDiscount ? (
+                                        <>
                                           <Text fontSize="xs" color={textColor}>
                                             ${item.unitPrice.toFixed(2)}
                                           </Text>
-                                        );
-                                      }
-                                    }
-                                  })()}
-                                </HStack>
-                              </Box>
-                            </Flex>
+                                          <Spinner size="xs" />
+                                          <Text fontSize="xs" color="gray.500">
+                                            Cargando...
+                                          </Text>
+                                        </>
+                                      ) : discountPercentage > 0 ? (
+                                        <>
+                                          <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                            ${item.unitPrice.toFixed(2)}
+                                          </Text>
+                                          <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                            ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
+                                          </Text>
+                                          <Box
+                                            bg="green.500"
+                                            color="white"
+                                            px="0.4rem"
+                                            py="0.1rem"
+                                            borderRadius="md"
+                                            fontSize="xs"
+                                            fontWeight="bold"
+                                          >
+                                            -{discountPercentage}%
+                                          </Box>
+                                        </>
+                                      ) : (
+                                        <Text fontSize="xs" color={textColor}>
+                                          ${item.unitPrice.toFixed(2)}
+                                        </Text>
+                                      )
+                                    ) : item.discount > 0 ? (
+                                      <>
+                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                        </Text>
+                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                          ${item.unitPrice.toFixed(2)}
+                                        </Text>
+                                        <Box
+                                          bg="green.500"
+                                          color="white"
+                                          px="0.4rem"
+                                          py="0.1rem"
+                                          borderRadius="md"
+                                          fontSize="xs"
+                                          fontWeight="bold"
+                                        >
+                                          -{item.discount}%
+                                        </Box>
+                                      </>
+                                    ) : (
+                                      <Text fontSize="xs" color={textColor}>
+                                        ${item.unitPrice.toFixed(2)}
+                                      </Text>
+                                    )}
+                                  </HStack>
+                                </Box>
+                              </Flex>
 
-                            {/* Desktop: Cantidad y subtotal en línea */}
-                            <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="2rem">
-                              <VStack spacing="0.25rem" align="center" minW="80px">
-                                <Text fontSize="xs" color={textColor}>
-                                  Cantidad
-                                </Text>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {item.quantity}
-                                </Text>
-                              </VStack>
-                              <VStack spacing="0.25rem" align="center" minW="80px">
-                                <Text fontSize="xs" color={textColor}>
-                                  Subtotal
-                                </Text>
-                                <Text fontSize="sm" fontWeight="bold">
-                                  ${total.toFixed(2)}
-                                </Text>
-                              </VStack>
-                            </Flex>
+                              {/* Fila media: Cantidad solicitada vs Cantidad real */}
+                              <Flex justify="space-between" align="center" mb="0.75rem">
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Cant. solicitada
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {requestedQuantity}
+                                  </Text>
+                                </VStack>
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Cant. real
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {actualQuantity}
+                                  </Text>
+                                </VStack>
+                              </Flex>
 
-                            {/* Mobile: Cantidad y subtotal en fila horizontal */}
-                            <Flex display={{ base: 'flex', md: 'none' }} justify="space-between" align="center">
-                              <HStack spacing="0.5rem">
-                                <Text fontSize="xs" color={textColor}>
-                                  Cantidad:
-                                </Text>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {item.quantity}
-                                </Text>
-                              </HStack>
+                              {/* Fila inferior: Peso + Subtotal */}
+                              <Flex justify="space-between" align="center">
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Peso (kg)
+                                  </Text>
+                                  <Text fontSize="sm" fontWeight="semibold">
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                  </Text>
+                                </VStack>
+                                <VStack spacing="0.25rem" align="center">
+                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                    Subtotal
+                                  </Text>
+                                  <Text fontSize="md" fontWeight="bold">
+                                    ${total.toFixed(2)}
+                                  </Text>
+                                </VStack>
+                              </Flex>
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </VStack>
 
-                              <HStack spacing="0.5rem">
-                                <Text fontSize="xs" color={textColor}>
-                                  Subt.:
-                                </Text>
-                                <Text fontSize="sm" fontWeight="bold">
-                                  ${total.toFixed(2)}
-                                </Text>
-                              </HStack>
-                            </Flex>
-                          </Flex>
-                        </Box>
-                      );
-                    })}
-                  </VStack>
+                    {/* Total */}
+                    <Box>
+                      <Divider mt="1rem" mb="0.5rem" />
+                      <HStack justify="space-between">
+                        <Text fontSize="md" fontWeight="semibold">
+                          Total:
+                        </Text>
+                        <Text fontSize="md" fontWeight="semibold">
+                          ${calculateTotal().toFixed(2)}
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </>
                 ) : (
                   <Box
                     p="2rem"
@@ -562,12 +696,27 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   variant="outline"
                   size="sm"
                   onClick={handleCancelOrder}
-                  isLoading={statusLoading}
+                  isLoading={statusLoading && actionType === 'cancel'}
                   disabled={statusLoading || !!statusProps}
                   w={{ base: '100%', md: 'auto' }}
                   order={{ base: 2, md: 2 }}
                 >
-                  Cancelar orden
+                  Cancelar
+                </Button>
+
+                {/* Botón Confirmar */}
+                <Button
+                  leftIcon={<FiCheckCircle />}
+                  colorScheme="green"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleConfirmOrder}
+                  isLoading={statusLoading && actionType === 'confirm'}
+                  disabled={statusLoading || !!statusProps}
+                  w={{ base: '100%', md: 'auto' }}
+                  order={{ base: 3, md: 3 }}
+                >
+                  Confirmar
                 </Button>
 
                 {/* Botón Preparar */}
@@ -579,9 +728,9 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   onClick={handlePrepareOrder}
                   disabled={statusLoading}
                   w={{ base: '100%', md: 'auto' }}
-                  order={{ base: 3, md: 3 }}
+                  order={{ base: 4, md: 4 }}
                 >
-                  Preparar orden
+                  Preparar
                 </Button>
               </Stack>
             ) : (
@@ -628,11 +777,42 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
             <Button
               colorScheme="red"
               onClick={confirmStatusChange}
-              isLoading={statusLoading}
+              isLoading={statusLoading && actionType === 'cancel'}
               variant="outline"
               size="sm"
             >
               Sí, cancelar
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de confirmación para confirmar orden */}
+      <AlertDialog isOpen={isConfirmDialogOpen} leastDestructiveRef={cancelRef} onClose={closeConfirmDialog} isCentered>
+        <AlertDialogOverlay />
+        <AlertDialogContent mx="1rem">
+          <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
+            Confirmar orden
+          </AlertDialogHeader>
+
+          <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
+            ¿Estás seguro de que deseas confirmar la orden #{order.id}?
+            <br />
+            Esta acción no se puede deshacer.
+          </AlertDialogBody>
+
+          <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
+            <Button ref={cancelRef} onClick={closeConfirmDialog} variant="ghost" size="sm">
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="green"
+              onClick={confirmOrderConfirmation}
+              isLoading={statusLoading && actionType === 'confirm'}
+              variant="outline"
+              size="sm"
+            >
+              Sí, confirmar
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

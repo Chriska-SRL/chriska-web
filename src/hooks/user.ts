@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/entities/user';
 import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporaryPassword } from '@/services/user';
 import { PasswordReset } from '@/entities/password-reset/password-reset';
-import { TemporaryPasswordResponse } from '@/entities/password-reset/temporary-password-response';
 import { useFetch } from '../utils/useFetch';
 import { PasswordResetResponse } from '@/entities/password-reset/password-reset-response';
 
@@ -50,7 +49,7 @@ export const useUpdateUser = (props?: Partial<User>) =>
 export const useDeleteUser = (id?: number) => useFetch<number, User>(deleteUser, id);
 
 export const useTemporaryPassword = (userId?: number) =>
-  useFetch<number, TemporaryPasswordResponse>(temporaryPassword, userId);
+  useFetch<number, PasswordResetResponse>(temporaryPassword, userId);
 
 export const usePasswordReset = (props?: PasswordReset) =>
   useFetch<PasswordReset, PasswordResetResponse>(passwordReset, props, { parseFieldError: true });

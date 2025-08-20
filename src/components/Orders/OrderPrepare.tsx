@@ -45,6 +45,7 @@ import { useUpdateOrder } from '@/hooks/order';
 import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderPrepareProps = {
   order: Order;
@@ -80,8 +81,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
       name: string;
       price: number;
       imageUrl?: string;
+      unitType?: string;
       requestedQuantity: number;
       actualQuantity: number;
+      weight?: number;
       discount?: number;
       discountId?: string;
       isLoadingDiscount?: boolean;
@@ -90,6 +93,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
+  const [weightInputs, setWeightInputs] = useState<{ [key: number]: string }>({});
   const productSearchRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, fieldError } = useUpdateOrder(orderProps);
@@ -170,8 +174,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
           name: item.product.name,
           price: item.unitPrice,
           imageUrl: item.product.imageUrl,
+          unitType: item.product.unitType,
           requestedQuantity: item.quantity,
           actualQuantity: item.quantity,
+          weight: item.product.unitType === UnitType.KILO ? item.quantity : undefined,
           discount: 0,
           isLoadingDiscount: true,
         }));
@@ -254,8 +260,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
           name: product.name,
           price: product.price,
           imageUrl: product.imageUrl,
+          unitType: product.unitType,
           requestedQuantity: 0,
           actualQuantity: 1,
+          weight: product.unitType === UnitType.KILO ? 1 : undefined,
           discount: 0,
           isLoadingDiscount: true,
         },
@@ -310,6 +318,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
     setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, actualQuantity } : p)));
   };
 
+  const handleWeightChange = (productId: number, weight: number) => {
+    setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, weight } : p)));
+  };
+
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -355,12 +367,11 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
   };
 
   const handleSubmit = async (values: typeof initialValues) => {
-    // Preparar los datos del producto con las cantidades reales y descuentos
+    // Preparar los datos del producto con las cantidades reales
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
       quantity: product.actualQuantity,
-      discount: product.discount || 0,
-      discountId: product.discountId,
+      weight: product.unitType === UnitType.KILO ? product.weight : undefined,
     }));
 
     const orderData: any = {
@@ -379,7 +390,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '2xl' }}
+        size={{ base: 'xs', md: 'lg' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -601,175 +612,445 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
                               {selectedProducts.map((product) => (
                                 <Box
                                   key={product.id}
-                                  p="1rem"
+                                  p={{ base: '1rem', md: '0.75rem' }}
                                   border="1px solid"
                                   borderColor={inputBorder}
                                   borderRadius="md"
                                   bg={inputBg}
                                 >
-                                  {/* Fila superior: Imagen + Nombre + Precio */}
-                                  <Flex align="center" gap="0.75rem" mb="0.75rem">
-                                    <Image
-                                      src={
-                                        product.imageUrl ||
-                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                      }
-                                      alt={product.name}
-                                      boxSize="50px"
-                                      objectFit="cover"
-                                      borderRadius="md"
-                                      flexShrink={0}
-                                    />
-                                    <Box flex="1">
-                                      <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
-                                        {product.name}
-                                      </Text>
-                                      <HStack spacing="0.5rem" align="center">
-                                        {product.isLoadingDiscount ? (
-                                          <>
+                                  {/* Desktop Layout */}
+                                  <Box display={{ base: 'none', md: 'block' }}>
+                                    {/* Primera fila desktop: Imagen + Nombre + Precio + Botón eliminar */}
+                                    <Flex gap="0.75rem" mb="0.75rem">
+                                      <Image
+                                        src={
+                                          product.imageUrl ||
+                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                        }
+                                        alt={product.name}
+                                        boxSize="50px"
+                                        objectFit="cover"
+                                        borderRadius="md"
+                                        flexShrink={0}
+                                      />
+                                      <Box flex="1" alignSelf="center">
+                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                          {product.name}
+                                        </Text>
+                                        <HStack spacing="0.5rem" align="center">
+                                          {product.isLoadingDiscount ? (
+                                            <>
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                              <Spinner size="xs" />
+                                              <Text fontSize="xs" color="gray.500">
+                                                Cargando...
+                                              </Text>
+                                            </>
+                                          ) : product.discount && product.discount > 0 ? (
+                                            <>
+                                              <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                                              </Text>
+                                              <Box
+                                                bg="green.500"
+                                                color="white"
+                                                px="0.4rem"
+                                                py="0.1rem"
+                                                borderRadius="md"
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                              >
+                                                -{product.discount}%
+                                              </Box>
+                                            </>
+                                          ) : (
                                             <Text fontSize="xs" color={textColor}>
                                               ${product.price.toFixed(2)}
                                             </Text>
-                                            <Spinner size="xs" />
-                                            <Text fontSize="xs" color="gray.500">
-                                              Cargando...
-                                            </Text>
-                                          </>
-                                        ) : product.discount && product.discount > 0 ? (
-                                          <>
-                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                              ${product.price.toFixed(2)}
-                                            </Text>
-                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                              ${(product.price * (1 - product.discount / 100)).toFixed(2)}
-                                            </Text>
-                                            <Box
-                                              bg="green.500"
-                                              color="white"
-                                              px="0.4rem"
-                                              py="0.1rem"
-                                              borderRadius="md"
-                                              fontSize="xs"
-                                              fontWeight="bold"
-                                            >
-                                              -{product.discount}%
-                                            </Box>
-                                          </>
-                                        ) : (
-                                          <Text fontSize="xs" color={textColor}>
-                                            ${product.price.toFixed(2)}
-                                          </Text>
-                                        )}
-                                      </HStack>
-                                    </Box>
-                                  </Flex>
+                                          )}
+                                        </HStack>
+                                      </Box>
+                                      <IconButton
+                                        aria-label="Eliminar producto"
+                                        icon={<FaTrash />}
+                                        size="sm"
+                                        colorScheme="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveProduct(product.id)}
+                                      />
+                                    </Flex>
 
-                                  {/* Fila media: Cantidad solicitada vs Cantidad real */}
-                                  <Flex justify="space-between" align="center" mb="0.75rem">
-                                    <VStack spacing="0.25rem" align="center">
-                                      <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                        Cant. solicitada
-                                      </Text>
-                                      <Text fontSize="sm" fontWeight="semibold">
-                                        {product.requestedQuantity}
-                                      </Text>
-                                    </VStack>
-                                    <VStack spacing="0.25rem" align="center">
-                                      <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                        Cant. real
-                                      </Text>
-                                      <HStack spacing={0}>
-                                        <IconButton
-                                          aria-label="Disminuir cantidad"
-                                          icon={<Text fontSize="sm">−</Text>}
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            const newValue = Math.max(0.1, product.actualQuantity - 0.1);
-                                            const rounded = parseFloat(newValue.toFixed(1));
-                                            handleQuantityChange(product.id, rounded);
-                                            setQuantityInputs((prev) => ({
-                                              ...prev,
-                                              [product.id]: rounded.toString(),
-                                            }));
-                                          }}
-                                          borderRightRadius={0}
-                                        />
+                                    {/* Segunda fila desktop: Cantidad solicitada + Cantidad real + Peso + Subtotal */}
+                                    <Flex justify="space-around" align="center">
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Cant. solicitada
+                                        </Text>
+                                        <Text fontSize="sm" fontWeight="semibold">
+                                          {product.requestedQuantity}
+                                        </Text>
+                                      </VStack>
+
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Cant. real
+                                        </Text>
+                                        <HStack spacing={0}>
+                                          <IconButton
+                                            aria-label="Disminuir cantidad"
+                                            icon={<Text fontSize="sm">−</Text>}
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderRightRadius={0}
+                                          />
+                                          <Input
+                                            size="sm"
+                                            value={quantityInputs[product.id] ?? product.actualQuantity}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const regex = /^\d*\.?\d*$/;
+                                              if (regex.test(value) || value === '') {
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                const numValue = parseFloat(value);
+                                                if (!isNaN(numValue) && numValue >= 0) {
+                                                  handleQuantityChange(product.id, numValue);
+                                                } else if (value === '' || value === '.') {
+                                                  handleQuantityChange(product.id, 0);
+                                                }
+                                              }
+                                            }}
+                                            onBlur={(e) => {
+                                              const value = parseFloat(e.target.value);
+                                              if (isNaN(value) || value <= 0) {
+                                                handleQuantityChange(product.id, 1);
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                              } else {
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: value.toString(),
+                                                }));
+                                              }
+                                            }}
+                                            w="4rem"
+                                            textAlign="center"
+                                            borderRadius={0}
+                                            borderLeft="none"
+                                            borderRight="none"
+                                          />
+                                          <IconButton
+                                            aria-label="Aumentar cantidad"
+                                            icon={<Text fontSize="sm">+</Text>}
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = product.actualQuantity + 0.1;
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderLeftRadius={0}
+                                          />
+                                        </HStack>
+                                      </VStack>
+
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Peso (kg)
+                                        </Text>
                                         <Input
                                           size="sm"
-                                          value={quantityInputs[product.id] ?? product.actualQuantity}
+                                          value={
+                                            product.unitType === UnitType.KILO
+                                              ? (weightInputs[product.id] ?? product.weight ?? '')
+                                              : 'N/A'
+                                          }
                                           onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^\d*\.?\d*$/;
-                                            if (regex.test(value) || value === '') {
-                                              setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                              const numValue = parseFloat(value);
-                                              if (!isNaN(numValue) && numValue >= 0) {
-                                                handleQuantityChange(product.id, numValue);
-                                              } else if (value === '' || value === '.') {
-                                                handleQuantityChange(product.id, 0);
+                                            if (product.unitType === UnitType.KILO) {
+                                              const value = e.target.value;
+                                              const regex = /^\d*\.?\d*$/;
+                                              if (regex.test(value) || value === '') {
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                const numValue = parseFloat(value);
+                                                if (!isNaN(numValue) && numValue >= 0) {
+                                                  handleWeightChange(product.id, numValue);
+                                                } else if (value === '' || value === '.') {
+                                                  handleWeightChange(product.id, 0);
+                                                }
                                               }
                                             }
                                           }}
                                           onBlur={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            if (isNaN(value) || value <= 0) {
-                                              handleQuantityChange(product.id, 1);
-                                              setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                            } else {
-                                              setQuantityInputs((prev) => ({
-                                                ...prev,
-                                                [product.id]: value.toString(),
-                                              }));
+                                            if (product.unitType === UnitType.KILO) {
+                                              const value = parseFloat(e.target.value);
+                                              if (isNaN(value) || value <= 0) {
+                                                handleWeightChange(product.id, 1);
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                              } else {
+                                                setWeightInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: value.toString(),
+                                                }));
+                                              }
                                             }
                                           }}
-                                          w="3rem"
+                                          isDisabled={product.unitType !== UnitType.KILO}
+                                          w="4rem"
                                           textAlign="center"
-                                          borderRadius={0}
-                                          borderLeft="none"
-                                          borderRight="none"
+                                          borderRadius="md"
+                                          bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}
                                         />
-                                        <IconButton
-                                          aria-label="Aumentar cantidad"
-                                          icon={<Text fontSize="sm">+</Text>}
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            const newValue = product.actualQuantity + 0.1;
-                                            const rounded = parseFloat(newValue.toFixed(1));
-                                            handleQuantityChange(product.id, rounded);
-                                            setQuantityInputs((prev) => ({
-                                              ...prev,
-                                              [product.id]: rounded.toString(),
-                                            }));
-                                          }}
-                                          borderLeftRadius={0}
-                                        />
-                                      </HStack>
-                                    </VStack>
-                                  </Flex>
+                                      </VStack>
 
-                                  {/* Fila inferior: Botón eliminar + Subtotal */}
-                                  <Flex justify="space-between" align="center">
-                                    <IconButton
-                                      aria-label="Eliminar producto"
-                                      icon={<FaTrash />}
-                                      size="sm"
-                                      colorScheme="red"
-                                      variant="ghost"
-                                      onClick={() => handleRemoveProduct(product.id)}
-                                    />
-                                    <Box textAlign="right">
-                                      <Text fontSize="md" fontWeight="bold">
-                                        $
-                                        {(
-                                          product.actualQuantity *
-                                          product.price *
-                                          (1 - (product.discount || 0) / 100)
-                                        ).toFixed(2)}
-                                      </Text>
-                                    </Box>
-                                  </Flex>
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Subtotal
+                                        </Text>
+                                        <Text fontSize="md" fontWeight="bold">
+                                          $
+                                          {(
+                                            product.actualQuantity *
+                                            product.price *
+                                            (1 - (product.discount || 0) / 100)
+                                          ).toFixed(2)}
+                                        </Text>
+                                      </VStack>
+                                    </Flex>
+                                  </Box>
+
+                                  {/* Mobile Layout */}
+                                  <Box display={{ base: 'block', md: 'none' }}>
+                                    {/* Fila superior: Imagen + Nombre + Precio + Botón eliminar */}
+                                    <Flex align="flex-start" gap="0.75rem" mb="0.75rem">
+                                      <Image
+                                        src={
+                                          product.imageUrl ||
+                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                        }
+                                        alt={product.name}
+                                        boxSize="50px"
+                                        objectFit="cover"
+                                        borderRadius="md"
+                                        flexShrink={0}
+                                      />
+                                      <Box flex="1">
+                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                          {product.name}
+                                        </Text>
+                                        <HStack spacing="0.5rem" align="center">
+                                          {product.isLoadingDiscount ? (
+                                            <>
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                              <Spinner size="xs" />
+                                              <Text fontSize="xs" color="gray.500">
+                                                Cargando...
+                                              </Text>
+                                            </>
+                                          ) : product.discount && product.discount > 0 ? (
+                                            <>
+                                              <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                                              </Text>
+                                              <Box
+                                                bg="green.500"
+                                                color="white"
+                                                px="0.4rem"
+                                                py="0.1rem"
+                                                borderRadius="md"
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                              >
+                                                -{product.discount}%
+                                              </Box>
+                                            </>
+                                          ) : (
+                                            <Text fontSize="xs" color={textColor}>
+                                              ${product.price.toFixed(2)}
+                                            </Text>
+                                          )}
+                                        </HStack>
+                                      </Box>
+                                      <IconButton
+                                        aria-label="Eliminar producto"
+                                        icon={<FaTrash />}
+                                        size="xs"
+                                        colorScheme="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveProduct(product.id)}
+                                        flexShrink={0}
+                                      />
+                                    </Flex>
+
+                                    {/* Fila media: Cantidad solicitada vs Cantidad real */}
+                                    <Flex justify="space-between" align="center" mb="0.75rem">
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Cant. solicitada
+                                        </Text>
+                                        <Text fontSize="sm" fontWeight="semibold">
+                                          {product.requestedQuantity}
+                                        </Text>
+                                      </VStack>
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Cant. real
+                                        </Text>
+                                        <HStack spacing={0}>
+                                          <IconButton
+                                            aria-label="Disminuir cantidad"
+                                            icon={<Text fontSize="sm">−</Text>}
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderRightRadius={0}
+                                          />
+                                          <Input
+                                            size="sm"
+                                            value={quantityInputs[product.id] ?? product.actualQuantity}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const regex = /^\d*\.?\d*$/;
+                                              if (regex.test(value) || value === '') {
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                const numValue = parseFloat(value);
+                                                if (!isNaN(numValue) && numValue >= 0) {
+                                                  handleQuantityChange(product.id, numValue);
+                                                } else if (value === '' || value === '.') {
+                                                  handleQuantityChange(product.id, 0);
+                                                }
+                                              }
+                                            }}
+                                            onBlur={(e) => {
+                                              const value = parseFloat(e.target.value);
+                                              if (isNaN(value) || value <= 0) {
+                                                handleQuantityChange(product.id, 1);
+                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                              } else {
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: value.toString(),
+                                                }));
+                                              }
+                                            }}
+                                            w="3rem"
+                                            textAlign="center"
+                                            borderRadius={0}
+                                            borderLeft="none"
+                                            borderRight="none"
+                                          />
+                                          <IconButton
+                                            aria-label="Aumentar cantidad"
+                                            icon={<Text fontSize="sm">+</Text>}
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              const newValue = product.actualQuantity + 0.1;
+                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              handleQuantityChange(product.id, rounded);
+                                              setQuantityInputs((prev) => ({
+                                                ...prev,
+                                                [product.id]: rounded.toString(),
+                                              }));
+                                            }}
+                                            borderLeftRadius={0}
+                                          />
+                                        </HStack>
+                                      </VStack>
+                                    </Flex>
+
+                                    {/* Fila inferior: Peso + Subtotal */}
+                                    <Flex justify="space-between" align="center">
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Peso (kg)
+                                        </Text>
+                                        <Input
+                                          size="sm"
+                                          value={
+                                            product.unitType === UnitType.KILO
+                                              ? (weightInputs[product.id] ?? product.weight ?? '')
+                                              : 'N/A'
+                                          }
+                                          onChange={(e) => {
+                                            if (product.unitType === UnitType.KILO) {
+                                              const value = e.target.value;
+                                              const regex = /^\d*\.?\d*$/;
+                                              if (regex.test(value) || value === '') {
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                const numValue = parseFloat(value);
+                                                if (!isNaN(numValue) && numValue >= 0) {
+                                                  handleWeightChange(product.id, numValue);
+                                                } else if (value === '' || value === '.') {
+                                                  handleWeightChange(product.id, 0);
+                                                }
+                                              }
+                                            }
+                                          }}
+                                          onBlur={(e) => {
+                                            if (product.unitType === UnitType.KILO) {
+                                              const value = parseFloat(e.target.value);
+                                              if (isNaN(value) || value <= 0) {
+                                                handleWeightChange(product.id, 1);
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                              } else {
+                                                setWeightInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: value.toString(),
+                                                }));
+                                              }
+                                            }
+                                          }}
+                                          isDisabled={product.unitType !== UnitType.KILO}
+                                          w="5rem"
+                                          textAlign="center"
+                                          borderRadius="md"
+                                          bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}
+                                        />
+                                      </VStack>
+                                      <VStack spacing="0.25rem" align="center">
+                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                          Subtotal
+                                        </Text>
+                                        <Text fontSize="md" fontWeight="bold">
+                                          $
+                                          {(
+                                            product.actualQuantity *
+                                            product.price *
+                                            (1 - (product.discount || 0) / 100)
+                                          ).toFixed(2)}
+                                        </Text>
+                                      </VStack>
+                                    </Flex>
+                                  </Box>
                                 </Box>
                               ))}
                             </VStack>
