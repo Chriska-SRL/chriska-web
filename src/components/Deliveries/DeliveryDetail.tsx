@@ -28,10 +28,11 @@ import {
   AlertDialogOverlay,
   Spinner,
 } from '@chakra-ui/react';
-import { Order } from '@/entities/order';
-import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
-import { OrderPrepare } from './OrderPrepare';
-import { useChangeOrderStatus } from '@/hooks/order';
+import { Delivery } from '@/entities/delivery';
+import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX, FiEdit } from 'react-icons/fi';
+import { useChangeDeliveryStatus } from '@/hooks/delivery';
+import { DeliveryEdit } from './DeliveryEdit';
+import { DeliveryConfirm } from './DeliveryConfirm';
 import { getBestDiscount } from '@/services/discount';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -40,24 +41,22 @@ import { useToast } from '@chakra-ui/react';
 import { getStatusLabel, Status } from '@/enums/status.enum';
 import { UnitType } from '@/enums/unitType.enum';
 
-type OrderDetailProps = {
-  order: Order;
-  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+type DeliveryDetailProps = {
+  delivery: Delivery;
+  setDeliveries: React.Dispatch<React.SetStateAction<Delivery[]>>;
 };
 
-export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
+export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isStatusDialogOpen, onOpen: openStatusDialog, onClose: closeStatusDialog } = useDisclosure();
   const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
-  const { isOpen: isPrepareOpen, onOpen: openPrepare, onClose: closePrepare } = useDisclosure();
-  const { isOpen: isConfirmPreparedOpen, onOpen: openConfirmPrepared, onClose: closeConfirmPrepared } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
-  const [preparedOrderData, setPreparedOrderData] = useState<Order | null>(null);
   const [productDiscounts, setProductDiscounts] = useState<{
     [productId: number]: { discount: number; loading: boolean };
   }>({});
-  const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeOrderStatus(statusProps);
+  const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeDeliveryStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
 
@@ -86,8 +85,8 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
 
   const calculateSubtotal = () => {
     return (
-      order.productItems?.reduce((total, item) => {
-        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+      delivery.productItems?.reduce((total, item) => {
+        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
           // Para pending: usar precios actuales
           return total + item.quantity * item.unitPrice;
         } else {
@@ -101,8 +100,8 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
 
   const calculateDiscount = () => {
     return (
-      order.productItems?.reduce((total, item) => {
-        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+      delivery.productItems?.reduce((total, item) => {
+        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
           // Para pending: usar descuentos actuales del endpoint
           const productDiscount = productDiscounts[item.product.id];
           const discountPercentage = productDiscount?.discount || 0;
@@ -121,18 +120,13 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     return calculateSubtotal() - calculateDiscount();
   };
 
-  const handlePrepareOrder = useCallback(() => {
-    onClose(); // Close OrderDetail modal first
-    openPrepare();
-  }, [onClose, openPrepare]);
-
-  const handleConfirmOrder = useCallback(() => {
+  const handleConfirmDelivery = useCallback(() => {
     if (statusLoading || statusProps) return;
     setActionType('confirm');
     openConfirmDialog();
   }, [statusLoading, statusProps, openConfirmDialog]);
 
-  const handleCancelOrder = useCallback(() => {
+  const handleCancelDelivery = useCallback(() => {
     if (statusLoading || statusProps) return;
     setActionType('cancel');
     openStatusDialog();
@@ -140,51 +134,34 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
 
   const confirmStatusChange = useCallback(() => {
     if (actionType === 'cancel') {
-      setStatusProps({ id: order.id, status: Status.CANCELLED });
+      setStatusProps({ id: delivery.id, status: Status.CANCELLED });
     }
     closeStatusDialog();
-  }, [actionType, order.id, closeStatusDialog]);
+  }, [actionType, delivery.id, closeStatusDialog]);
 
-  const confirmOrderConfirmation = useCallback(() => {
-    if (actionType === 'confirm') {
-      setStatusProps({ id: order.id, status: Status.CONFIRMED });
-    }
-    closeConfirmDialog();
-  }, [actionType, order.id, closeConfirmDialog]);
-
-  const handleOrderPrepared = useCallback(
-    (preparedOrder: Order) => {
-      setPreparedOrderData(preparedOrder);
-      openConfirmPrepared();
+  const handleDeliveryUpdated = useCallback(
+    (updatedDelivery: Delivery) => {
+      setDeliveries((prev) => prev.map((d) => (d.id === updatedDelivery.id ? updatedDelivery : d)));
+      closeConfirmDialog();
+      onClose(); // Cerrar modal principal
     },
-    [openConfirmPrepared],
+    [setDeliveries, closeConfirmDialog, onClose],
   );
-
-  const handleConfirmPreparedOrder = useCallback(() => {
-    if (preparedOrderData) {
-      setStatusProps({ id: preparedOrderData.id, status: Status.CONFIRMED });
-    }
-    closeConfirmPrepared();
-  }, [preparedOrderData, closeConfirmPrepared]);
-
-  const handleContinueEditing = useCallback(() => {
-    closeConfirmPrepared();
-  }, [closeConfirmPrepared]);
 
   useEffect(() => {
     if (statusData) {
-      setOrders((prev) => prev.map((o) => (o.id === statusData.id ? statusData : o)));
+      setDeliveries((prev) => prev.map((d) => (d.id === statusData.id ? statusData : d)));
 
       const isConfirmed = statusData.status?.toLowerCase() === Status.CONFIRMED.toLowerCase();
       const isCancelled = statusData.status?.toLowerCase() === Status.CANCELLED.toLowerCase();
 
       toast({
-        title: isConfirmed ? 'Orden confirmada' : isCancelled ? 'Orden cancelada' : 'Estado actualizado',
+        title: isConfirmed ? 'Entrega confirmada' : isCancelled ? 'Entrega cancelada' : 'Estado actualizado',
         description: isConfirmed
-          ? 'La orden ha sido confirmada exitosamente.'
+          ? 'La entrega ha sido confirmada exitosamente.'
           : isCancelled
-            ? 'La orden ha sido cancelada exitosamente.'
-            : 'El estado de la orden ha sido actualizado correctamente.',
+            ? 'La entrega ha sido cancelada exitosamente.'
+            : 'El estado de la entrega ha sido actualizado correctamente.',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -193,12 +170,14 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
       setStatusProps(undefined);
       setActionType(null);
 
-      // Cerrar el modal después de confirmar o cancelar
+      // Cerrar los modales después de confirmar o cancelar
       if (isConfirmed || isCancelled) {
-        onClose();
+        closeConfirmDialog(); // Cerrar modal de confirmación
+        closeStatusDialog(); // Cerrar modal de cancelación
+        onClose(); // Cerrar modal principal
       }
     }
-  }, [statusData, setOrders, toast, onClose]);
+  }, [statusData, setDeliveries, toast, onClose, closeConfirmDialog, closeStatusDialog]);
 
   useEffect(() => {
     if (statusError) {
@@ -215,24 +194,24 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   // Obtener descuentos reales cuando se abre el modal (solo si está pending)
   useEffect(() => {
     const fetchDiscounts = async () => {
-      // Solo obtener descuentos si la orden está pending
+      // Solo obtener descuentos si la entrega está pending
       if (
         isOpen &&
-        order.productItems &&
-        order.client &&
-        order.status?.toLowerCase() === Status.PENDING.toLowerCase()
+        delivery.productItems &&
+        delivery.client &&
+        delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()
       ) {
         // Marcar todos los productos como cargando
         const loadingState: { [productId: number]: { discount: number; loading: boolean } } = {};
-        order.productItems.forEach((item) => {
+        delivery.productItems.forEach((item) => {
           loadingState[item.product.id] = { discount: 0, loading: true };
         });
         setProductDiscounts(loadingState);
 
         // Obtener descuentos para cada producto
-        for (const item of order.productItems) {
+        for (const item of delivery.productItems) {
           try {
-            const bestDiscount = await getBestDiscount(item.product.id, order.client.id);
+            const bestDiscount = await getBestDiscount(item.product.id, delivery.client.id);
             setProductDiscounts((prev) => ({
               ...prev,
               [item.product.id]: {
@@ -255,7 +234,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     };
 
     fetchDiscounts();
-  }, [isOpen, order.productItems, order.client, order.status]);
+  }, [isOpen, delivery.productItems, delivery.client, delivery.status]);
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
     <Box w="100%">
@@ -307,7 +286,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Detalle de la Orden #{order.id}
+            Detalle de la Entrega #{delivery.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -317,8 +296,8 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Cliente', order.client?.name, FiUsers)}
-                {detailField('Usuario', order.user?.name, FiUser)}
+                {detailField('Cliente', delivery.client?.name, FiUsers)}
+                {detailField('Usuario', delivery.user?.name, FiUser)}
               </Stack>
 
               <Stack
@@ -326,8 +305,8 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Fecha de la orden', formatDate(order.date), FiCalendar)}
-                {detailField('Estado', getStatusLabel(order.status), FiPackage)}
+                {detailField('Fecha de la entrega', formatDate(delivery.date), FiCalendar)}
+                {detailField('Estado', getStatusLabel(delivery.status), FiPackage)}
               </Stack>
 
               <Stack
@@ -337,27 +316,17 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
               >
                 {detailField(
                   'Fecha de confirmación',
-                  isValidDate(order.confirmedDate) ? formatDate(order.confirmedDate) : 'No confirmado',
+                  isValidDate(delivery.confirmedDate) ? formatDate(delivery.confirmedDate) : 'No confirmado',
                   FiCheckCircle,
                 )}
                 {detailField(
                   'Cajones utilizados',
-                  order.crates && order.crates > 0 ? order.crates.toString() : 'No definido',
+                  delivery.crates && delivery.crates > 0 ? delivery.crates.toString() : 'No definido',
                   FiPackage,
                 )}
               </Stack>
 
-              {order.orderRequest && (
-                <Stack
-                  direction={{ base: 'column', md: 'row' }}
-                  spacing="1rem"
-                  align={{ base: 'stretch', md: 'flex-start' }}
-                >
-                  {detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
-                </Stack>
-              )}
-
-              {detailField('Observaciones', order.observations || 'Sin observaciones', FiFileText)}
+              {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
 
               <Divider />
 
@@ -365,19 +334,18 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                 <HStack mb="0.5rem" spacing="0.5rem">
                   <Icon as={FiPackage} boxSize="1rem" color={iconColor} />
                   <Text color={labelColor} fontWeight="semibold">
-                    Productos ({order.productItems?.length || 0})
+                    Productos ({delivery.productItems?.length || 0})
                   </Text>
                 </HStack>
-                {order.productItems && order.productItems.length > 0 ? (
+                {delivery.productItems && delivery.productItems.length > 0 ? (
                   <>
                     <VStack spacing="0.5rem" align="stretch" maxH="400px" overflowY="auto">
-                      {order.productItems.map((item, index) => {
+                      {delivery.productItems.map((item, index) => {
                         const productDiscount = productDiscounts[item.product.id];
                         const discountPercentage = productDiscount?.discount || 0;
                         const isLoadingDiscount = productDiscount?.loading || false;
 
                         // Por ahora, cantidad real = cantidad solicitada
-                        // TODO: Cuando la API traiga el pedido, usar item.requestedQuantity vs item.actualQuantity
                         const requestedQuantity = item.quantity;
                         const actualQuantity = item.quantity;
                         const weight = item.product?.unitType === UnitType.KILO ? actualQuantity : null;
@@ -385,7 +353,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                         let effectivePrice = item.unitPrice;
                         let total = actualQuantity * item.unitPrice;
 
-                        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
                           // Para pending: usar descuentos actuales
                           effectivePrice = item.unitPrice * (1 - discountPercentage / 100);
                           total = actualQuantity * effectivePrice;
@@ -423,7 +391,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {order.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+                                    {delivery.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
                                       isLoadingDiscount ? (
                                         <>
                                           <Text fontSize="xs" color={textColor}>
@@ -548,7 +516,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {order.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+                                    {delivery.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
                                       isLoadingDiscount ? (
                                         <>
                                           <Text fontSize="xs" color={textColor}>
@@ -681,7 +649,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                     textAlign="center"
                   >
                     <Text color={textColor} fontSize="sm">
-                      No hay productos en esta orden
+                      No hay productos en esta entrega
                     </Text>
                   </Box>
                 )}
@@ -690,7 +658,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            {order.status === Status.PENDING ? (
+            {delivery.status === Status.PENDING ? (
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="0.5rem"
@@ -710,13 +678,13 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   Cerrar
                 </Button>
 
-                {/* Botón Cancelar - siempre disponible */}
+                {/* Botón Cancelar */}
                 <Button
                   leftIcon={<FiX />}
                   colorScheme="red"
                   variant="outline"
                   size="sm"
-                  onClick={handleCancelOrder}
+                  onClick={handleCancelDelivery}
                   isLoading={statusLoading && actionType === 'cancel'}
                   disabled={statusLoading || !!statusProps}
                   w={{ base: '100%', md: 'auto' }}
@@ -725,35 +693,33 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   Cancelar
                 </Button>
 
-                {/* Botón Confirmar - solo si ya está preparada */}
-                {order.crates && order.crates > 0 && (
-                  <Button
-                    leftIcon={<FiCheckCircle />}
-                    colorScheme="green"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleConfirmOrder}
-                    isLoading={statusLoading && actionType === 'confirm'}
-                    disabled={statusLoading || !!statusProps}
-                    w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 3, md: 3 }}
-                  >
-                    Confirmar
-                  </Button>
-                )}
-
-                {/* Botón Preparar - siempre disponible, al final */}
+                {/* Botón Confirmar */}
                 <Button
                   leftIcon={<FiCheckCircle />}
+                  colorScheme="green"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleConfirmDelivery}
+                  isLoading={statusLoading && actionType === 'confirm'}
+                  disabled={statusLoading || !!statusProps}
+                  w={{ base: '100%', md: 'auto' }}
+                  order={{ base: 3, md: 3 }}
+                >
+                  Confirmar
+                </Button>
+
+                {/* Botón Editar */}
+                <Button
+                  leftIcon={<FiEdit />}
                   colorScheme="blue"
                   variant="outline"
                   size="sm"
-                  onClick={handlePrepareOrder}
+                  onClick={openEdit}
                   disabled={statusLoading}
                   w={{ base: '100%', md: 'auto' }}
                   order={{ base: 4, md: 4 }}
                 >
-                  Preparar
+                  Editar
                 </Button>
               </Stack>
             ) : (
@@ -764,9 +730,21 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                 align="stretch"
                 justify={{ base: 'stretch', md: 'flex-end' }}
               >
-                {/* Solo botón Cerrar para órdenes confirmadas/canceladas */}
+                {/* Botón Cerrar para entregas confirmadas/canceladas */}
                 <Button variant="ghost" size="sm" onClick={onClose} w={{ base: '100%', md: 'auto' }}>
                   Cerrar
+                </Button>
+
+                {/* Botón Editar para entregas confirmadas/canceladas */}
+                <Button
+                  leftIcon={<FiEdit />}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                  onClick={openEdit}
+                  w={{ base: '100%', md: 'auto' }}
+                >
+                  Editar
                 </Button>
               </Stack>
             )}
@@ -774,27 +752,16 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         </ModalContent>
       </Modal>
 
-      {/* Prepare Modal */}
-      {isPrepareOpen && (
-        <OrderPrepare
-          isOpen={isPrepareOpen}
-          onClose={closePrepare}
-          order={order}
-          setOrders={setOrders}
-          onOrderPrepared={handleOrderPrepared}
-        />
-      )}
-
-      {/* Modal de confirmación para cancelar orden */}
+      {/* Modal de confirmación para cancelar entrega */}
       <AlertDialog isOpen={isStatusDialogOpen} leastDestructiveRef={cancelRef} onClose={closeStatusDialog} isCentered>
         <AlertDialogOverlay />
         <AlertDialogContent mx="1rem">
           <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
-            Cancelar orden
+            Cancelar entrega
           </AlertDialogHeader>
 
           <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
-            ¿Estás seguro de que deseas cancelar la orden #{order.id}?
+            ¿Estás seguro de que deseas cancelar la entrega #{delivery.id}?
             <br />
             Esta acción no se puede deshacer.
           </AlertDialogBody>
@@ -816,71 +783,16 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Modal de confirmación para confirmar orden */}
-      <AlertDialog isOpen={isConfirmDialogOpen} leastDestructiveRef={cancelRef} onClose={closeConfirmDialog} isCentered>
-        <AlertDialogOverlay />
-        <AlertDialogContent mx="1rem">
-          <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
-            Confirmar orden
-          </AlertDialogHeader>
+      {/* Modal de confirmación para confirmar entrega */}
+      <DeliveryConfirm
+        isOpen={isConfirmDialogOpen}
+        onClose={closeConfirmDialog}
+        delivery={delivery}
+        onDeliveryUpdated={handleDeliveryUpdated}
+      />
 
-          <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
-            ¿Estás seguro de que deseas confirmar la orden #{order.id}?
-            <br />
-            Esta acción no se puede deshacer.
-          </AlertDialogBody>
-
-          <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
-            <Button ref={cancelRef} onClick={closeConfirmDialog} variant="ghost" size="sm">
-              Cancelar
-            </Button>
-            <Button
-              colorScheme="green"
-              onClick={confirmOrderConfirmation}
-              isLoading={statusLoading && actionType === 'confirm'}
-              variant="outline"
-              size="sm"
-            >
-              Sí, confirmar
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Modal de confirmación post-preparación */}
-      <Modal isOpen={isConfirmPreparedOpen} onClose={handleContinueEditing} size="sm" isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
-            <Text>¡Orden preparada exitosamente!</Text>
-          </ModalHeader>
-
-          <ModalBody py="1.5rem">
-            <Text fontSize="0.95rem" color="gray.600" _dark={{ color: 'gray.400' }}>
-              ¿Deseas confirmar la orden directamente?
-            </Text>
-          </ModalBody>
-
-          <ModalFooter borderTop="1px solid" borderColor={inputBorder} pt="0.75rem">
-            <HStack spacing="0.5rem">
-              <Button variant="ghost" onClick={handleContinueEditing} size="sm">
-                Más tarde
-              </Button>
-              <Button
-                leftIcon={<FiCheckCircle />}
-                colorScheme="green"
-                variant="outline"
-                onClick={handleConfirmPreparedOrder}
-                size="sm"
-                isLoading={statusLoading}
-                loadingText="Confirmando..."
-              >
-                Confirmar orden
-              </Button>
-            </HStack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Modal de edición */}
+      <DeliveryEdit isOpen={isEditOpen} onClose={closeEdit} delivery={delivery} setDeliveries={setDeliveries} />
     </>
   );
 };

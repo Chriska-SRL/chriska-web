@@ -6,7 +6,7 @@ import { User } from './user';
 export type Order = {
   id: number;
   client: Client;
-  observation: string;
+  observations: string;
   status: string;
   date: string;
   confirmedDate: string;

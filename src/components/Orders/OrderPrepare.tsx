@@ -10,6 +10,7 @@ import {
   ModalFooter,
   FormControl,
   FormLabel,
+  FormErrorMessage,
   Input,
   Textarea,
   NumberInput,
@@ -52,9 +53,10 @@ type OrderPrepareProps = {
   isOpen: boolean;
   onClose: () => void;
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  onOrderPrepared?: (order: Order) => void;
 };
 
-export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepareProps) => {
+export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepared }: OrderPrepareProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -346,8 +348,12 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
       setOrderProps(undefined);
       setOrders((prev) => prev.map((o) => (o.id === data.id ? data : o)));
       onClose();
+      // Notificar al padre que la orden fue preparada
+      if (onOrderPrepared) {
+        onOrderPrepared(data);
+      }
     }
-  }, [data, setOrders, toast, onClose]);
+  }, [data, setOrders, toast, onClose, onOrderPrepared]);
 
   useEffect(() => {
     if (fieldError) {
@@ -363,10 +369,31 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
 
   const initialValues = {
     crates: order.crates || 0,
-    observations: order.observation || '',
+    observations: order.observations || '',
+  };
+
+  const validateForm = (values: typeof initialValues) => {
+    const errors: { crates?: string; products?: string } = {};
+
+    if (!values.crates || values.crates <= 0) {
+      errors.crates = 'Los cajones deben ser mayor a 0';
+    }
+
+    if (selectedProducts.length === 0) {
+      errors.products = 'Debe tener al menos un producto en la lista';
+    }
+
+    return errors;
   };
 
   const handleSubmit = async (values: typeof initialValues) => {
+    // Validación manual adicional para asegurar que funcione
+    const validationErrors = validateForm(values);
+    if (Object.keys(validationErrors).length > 0) {
+      // No continuar si hay errores
+      return;
+    }
+
     // Preparar los datos del producto con las cantidades reales
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
@@ -410,7 +437,13 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-            <Formik initialValues={initialValues} onSubmit={handleSubmit} validateOnChange={true} validateOnBlur={true}>
+            <Formik
+              initialValues={initialValues}
+              validate={validateForm}
+              onSubmit={handleSubmit}
+              validateOnChange={true}
+              validateOnBlur={true}
+            >
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
@@ -598,13 +631,16 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
                       <Divider />
 
                       {/* Lista de productos */}
-                      <FormControl>
+                      <FormControl isInvalid={!!(formik.errors as any).products}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Productos a preparar ({selectedProducts.length})</Text>
                           </HStack>
                         </FormLabel>
+                        {(formik.errors as any).products && (
+                          <FormErrorMessage mb="0.5rem">{(formik.errors as any).products}</FormErrorMessage>
+                        )}
 
                         {selectedProducts.length > 0 ? (
                           <>
@@ -1089,7 +1125,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
                       </FormControl>
 
                       {/* Cajones */}
-                      <FormControl>
+                      <FormControl isInvalid={!!formik.errors.crates && formik.touched.crates}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
@@ -1099,9 +1135,12 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
                         <NumberInput
                           value={formik.values.crates}
                           onChange={(_, valueAsNumber) => {
-                            formik.setFieldValue('crates', isNaN(valueAsNumber) ? 0 : valueAsNumber);
+                            const newValue = isNaN(valueAsNumber) ? 0 : valueAsNumber;
+                            formik.setFieldValue('crates', newValue);
+                            formik.setFieldTouched('crates', true);
                           }}
-                          min={0}
+                          onBlur={() => formik.setFieldTouched('crates', true)}
+                          min={1}
                         >
                           <NumberInputField placeholder="Número de cajones" bg={inputBg} borderColor={inputBorder} />
                           <NumberInputStepper>
@@ -1109,6 +1148,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepare
                             <NumberDecrementStepper />
                           </NumberInputStepper>
                         </NumberInput>
+                        <FormErrorMessage>{formik.errors.crates}</FormErrorMessage>
                       </FormControl>
 
                       {/* Observaciones */}
