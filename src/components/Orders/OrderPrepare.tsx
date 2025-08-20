@@ -11,13 +11,16 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
   Textarea,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
   useToast,
   VStack,
   Box,
   useColorModeValue,
-  FormErrorMessage,
   Text,
   HStack,
   Icon,
@@ -30,27 +33,27 @@ import {
   Flex,
   Divider,
   Image,
+  Select,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
 import { FaCheck, FaTrash } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { FiFileText, FiUsers } from 'react-icons/fi';
+import { FiPackage, FiUsers, FiFileText } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
-import { OrderRequest } from '@/entities/orderRequest';
-import { useUpdateOrderRequest } from '@/hooks/orderRequest';
-import { useGetClients } from '@/hooks/client';
+import { Order } from '@/entities/order';
+import { useUpdateOrder } from '@/hooks/order';
 import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
-type OrderRequestEditProps = {
-  orderRequest: OrderRequest;
+type OrderPrepareProps = {
+  order: Order;
   isOpen: boolean;
   onClose: () => void;
-  setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
 };
 
-export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderRequests }: OrderRequestEditProps) => {
+export const OrderPrepare = ({ order, isOpen, onClose, setOrders }: OrderPrepareProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -60,21 +63,12 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
+  const labelColor = useColorModeValue('black', 'white');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [orderRequestProps, setOrderRequestProps] = useState<Partial<OrderRequest>>();
-
-  // Estados para la búsqueda de clientes
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
-  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
-  const clientSearchRef = useRef<HTMLDivElement>(null);
-
-  const { data, isLoading, fieldError } = useUpdateOrderRequest(orderRequestProps);
+  const [orderProps, setOrderProps] = useState<Partial<Order>>();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -86,51 +80,107 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       name: string;
       price: number;
       imageUrl?: string;
-      quantity: number;
+      requestedQuantity: number;
+      actualQuantity: number;
       discount?: number;
       discountId?: string;
       isLoadingDiscount?: boolean;
     }>
   >([]);
-  const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
+  const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  // Inicializar cliente seleccionado con el cliente actual del pedido
-  useEffect(() => {
-    if (orderRequest.client) {
-      setSelectedClient({ id: orderRequest.client.id, name: orderRequest.client.name });
-    }
-  }, [orderRequest.client]);
+  const { data, isLoading, fieldError } = useUpdateOrder(orderProps);
 
-  // Limpiar productos cuando el componente se cierra
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedProducts([]);
-    }
-  }, [isOpen]);
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
+    <Box w="100%">
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
+      <Box
+        px="1rem"
+        py="0.5rem"
+        bg={inputBg}
+        border="1px solid"
+        borderColor={inputBorder}
+        borderRadius="md"
+        minH="2.75rem"
+        maxH="10rem"
+        overflowY="auto"
+        whiteSpace="pre-wrap"
+        wordBreak="break-word"
+        transition="all 0.2s"
+        color={textColor}
+      >
+        {value ?? '—'}
+      </Box>
+    </Box>
+  );
 
-  // Inicializar productos seleccionados con los productos del pedido
+  // Filtros de búsqueda de productos
+  const productFilters = useMemo(() => {
+    if (!debouncedProductSearch || debouncedProductSearch.length < 2) return undefined;
+    const filters: any = {};
+    switch (productSearchType) {
+      case 'name':
+        filters.name = debouncedProductSearch;
+        break;
+      case 'internalCode':
+        filters.internalCode = debouncedProductSearch;
+        break;
+      case 'barcode':
+        filters.barcode = debouncedProductSearch;
+        break;
+    }
+    return filters;
+  }, [debouncedProductSearch, productSearchType]);
+
+  const actualProductFilters =
+    debouncedProductSearch && debouncedProductSearch.length >= 2 ? productFilters : undefined;
+  const { data: productsSearch = [], isLoading: isLoadingProductsSearch } = useGetProducts(1, 10, actualProductFilters);
+
+  // Debounce para búsqueda de productos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedProductSearch(productSearch);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [productSearch]);
+
+  // Actualizar el término de búsqueda cuando se completa la búsqueda
+  useEffect(() => {
+    if (!isLoadingProductsSearch && debouncedProductSearch && debouncedProductSearch.length >= 2) {
+      setLastProductSearchTerm(debouncedProductSearch);
+    }
+  }, [isLoadingProductsSearch, debouncedProductSearch]);
+
+  // Inicializar productos seleccionados con los productos de la orden
   useEffect(() => {
     const initializeProducts = async () => {
-      if (orderRequest.productItems && selectedClient) {
+      if (order.productItems && selectedProducts.length === 0 && order.client) {
         // Primero agregar productos con estado de carga
-        const initialProducts = orderRequest.productItems.map((item) => ({
+        const initialProducts = order.productItems.map((item) => ({
           id: item.product.id,
           name: item.product.name,
           price: item.unitPrice,
           imageUrl: item.product.imageUrl,
-          quantity: item.quantity,
+          requestedQuantity: item.quantity,
+          actualQuantity: item.quantity,
           discount: 0,
           isLoadingDiscount: true,
         }));
         setSelectedProducts(initialProducts);
 
         // Luego obtener descuentos reales para cada producto
-        for (const item of orderRequest.productItems) {
+        for (const item of order.productItems) {
           try {
-            const bestDiscount = await getBestDiscount(item.product.id, selectedClient.id);
+            const bestDiscount = await getBestDiscount(item.product.id, order.client.id);
             setSelectedProducts((prev) =>
               prev.map((p) =>
                 p.id === item.product.id
@@ -161,91 +211,29 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       }
     };
 
-    if (orderRequest.productItems && selectedClient && selectedProducts.length === 0) {
+    if (order.productItems && selectedProducts.length === 0) {
       initializeProducts();
     }
-  }, [orderRequest.productItems, selectedClient, selectedProducts.length]);
+  }, [order.productItems, selectedProducts.length, order.client]);
 
-  // Debounce para búsqueda de clientes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedClientSearch(clientSearch);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [clientSearch]);
-
-  // Debounce para búsqueda de productos
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedProductSearch(productSearch);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [productSearch]);
-
-  // Filtros de búsqueda de clientes
-  const clientFilters = useMemo(() => {
-    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
-    const filters: any = {};
-    switch (clientSearchType) {
-      case 'name':
-        filters.name = debouncedClientSearch;
-        break;
-      case 'rut':
-        filters.rut = debouncedClientSearch;
-        break;
-      case 'razonSocial':
-        filters.razonSocial = debouncedClientSearch;
-        break;
-      case 'contactName':
-        filters.contactName = debouncedClientSearch;
-        break;
+  const handleClose = () => {
+    setOrderProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
     }
-    return filters;
-  }, [debouncedClientSearch, clientSearchType]);
+    onClose();
+  };
 
-  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
-
-  const { isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
-
-  // Filtros de búsqueda de productos
-  const productFilters = useMemo(() => {
-    if (!debouncedProductSearch || debouncedProductSearch.length < 2) return undefined;
-    const filters: any = {};
-    switch (productSearchType) {
-      case 'name':
-        filters.name = debouncedProductSearch;
-        break;
-      case 'internalCode':
-        filters.internalCode = debouncedProductSearch;
-        break;
-      case 'barcode':
-        filters.barcode = debouncedProductSearch;
-        break;
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
     }
-    return filters;
-  }, [debouncedProductSearch, productSearchType]);
+  };
 
-  const actualProductFilters =
-    debouncedProductSearch && debouncedProductSearch.length >= 2 ? productFilters : undefined;
-
-  const { data: productsSearch = [], isLoading: isLoadingProductsSearch } = useGetProducts(1, 10, actualProductFilters);
-
-  // Actualizar el término de búsqueda cuando se completa la búsqueda
-  useEffect(() => {
-    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
-      setLastClientSearchTerm(debouncedClientSearch);
-    }
-  }, [isLoadingClientsSearch, debouncedClientSearch]);
-
-  useEffect(() => {
-    if (!isLoadingProductsSearch && debouncedProductSearch && debouncedProductSearch.length >= 2) {
-      setLastProductSearchTerm(debouncedProductSearch);
-    }
-  }, [isLoadingProductsSearch, debouncedProductSearch]);
-
-  // Funciones para manejar búsqueda de productos
+  // Función para manejar búsqueda de productos
   const handleProductSearch = (value: string) => {
     setProductSearch(value);
     if (value.length >= 2) {
@@ -256,17 +244,18 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   };
 
   const handleProductSelect = async (product: any) => {
-    const isAlreadySelected = selectedProducts.some((p) => p.id === product.id);
-    if (!isAlreadySelected && selectedClient) {
+    const exists = selectedProducts.find((p) => p.id === product.id);
+    if (!exists && order.client) {
       // Agregar inmediatamente el producto con estado de carga
       setSelectedProducts((prev) => [
         ...prev,
         {
           id: product.id,
           name: product.name,
-          price: product.price || 0,
+          price: product.price,
           imageUrl: product.imageUrl,
-          quantity: 1.0,
+          requestedQuantity: 0,
+          actualQuantity: 1,
           discount: 0,
           isLoadingDiscount: true,
         },
@@ -277,7 +266,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
       try {
         // Obtener el mejor descuento para este producto y cliente
-        const bestDiscount = await getBestDiscount(product.id, selectedClient.id);
+        const bestDiscount = await getBestDiscount(product.id, order.client.id);
 
         // Actualizar el producto con el descuento obtenido
         setSelectedProducts((prev) =>
@@ -317,16 +306,13 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     setSelectedProducts((prev) => prev.filter((p) => p.id !== productId));
   };
 
-  const handleProductQuantityChange = (productId: number, quantity: number) => {
-    setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, quantity } : p)));
+  const handleQuantityChange = (productId: number, actualQuantity: number) => {
+    setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, actualQuantity } : p)));
   };
 
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
-      }
       if (productSearchRef.current && !productSearchRef.current.contains(event.target as Node)) {
         setShowProductDropdown(false);
       }
@@ -338,18 +324,18 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   useEffect(() => {
     if (data) {
-      setOrderRequests((prev) => prev.map((or) => (or.id === orderRequest.id ? data : or)));
       toast({
-        title: 'Pedido actualizado',
-        description: 'El pedido ha sido actualizado exitosamente.',
+        title: 'Orden preparada',
+        description: 'La orden ha sido preparada exitosamente.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
+      setOrderProps(undefined);
+      setOrders((prev) => prev.map((o) => (o.id === data.id ? data : o)));
       onClose();
     }
-  }, [data, setOrderRequests, toast, onClose, orderRequest.id]);
+  }, [data, setOrders, toast, onClose]);
 
   useEffect(() => {
     if (fieldError) {
@@ -363,38 +349,29 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     }
   }, [fieldError, toast]);
 
-  const initialValues: Partial<OrderRequest> = {
-    ...orderRequest,
-    productItems: orderRequest.productItems || [],
+  const initialValues = {
+    crates: order.crates || 0,
+    observations: order.observation || '',
   };
 
-  const handleSubmit = async (values: Partial<OrderRequest>) => {
-    const orderRequestData = {
-      id: orderRequest.id,
+  const handleSubmit = async (values: typeof initialValues) => {
+    // Preparar los datos del producto con las cantidades reales y descuentos
+    const productItems = selectedProducts.map((product) => ({
+      productId: product.id,
+      quantity: product.actualQuantity,
+      discount: product.discount || 0,
+      discountId: product.discountId,
+    }));
+
+    const orderData: any = {
+      id: order.id,
+      crates: values.crates,
       observations: values.observations,
-      clientId: selectedClient?.id,
-      productItems: selectedProducts.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        discount: item.discount || 0,
-        discountId: item.discountId,
-      })),
-    } as any;
+      productItems,
+      // Aquí podrías cambiar el status a "PROCESSING" o similar
+    };
 
-    setOrderRequestProps(orderRequestData);
-  };
-
-  const handleClose = () => {
-    if (formikInstance && formikInstance.dirty) {
-      setShowConfirmDialog(true);
-    } else {
-      onClose();
-    }
-  };
-
-  const handleConfirmClose = () => {
-    setShowConfirmDialog(false);
-    onClose();
+    setOrderProps(orderData);
   };
 
   return (
@@ -405,7 +382,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
         size={{ base: 'xs', md: '2xl' }}
         isCentered
         closeOnOverlayClick={false}
-        onOverlayClick={handleClose}
+        onOverlayClick={handleOverlayClick}
         scrollBehavior="inside"
       >
         <ModalOverlay />
@@ -418,84 +395,33 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Editar pedido #{orderRequest.id}
+            Preparar Orden #{order.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-            <Formik
-              initialValues={initialValues}
-              onSubmit={handleSubmit}
-              validate={() => {
-                const errors: any = {};
-
-                if (!selectedClient?.id) {
-                  errors.client = 'El cliente es requerido';
-                }
-
-                if (!selectedProducts || selectedProducts.length === 0) {
-                  errors.productItems = 'Debe agregar al menos un producto';
-                }
-
-                return errors;
-              }}
-              validateOnChange={true}
-              validateOnBlur={true}
-            >
+            <Formik initialValues={initialValues} onSubmit={handleSubmit} validateOnChange={true} validateOnBlur={true}>
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty: formik.dirty, resetForm: formik.resetForm });
                 }, [formik.dirty, formik.resetForm]);
 
-                // Revalidar cuando cambian los productos seleccionados o el cliente
-                useEffect(() => {
-                  if (formik.submitCount > 0) {
-                    formik.validateForm();
-                  }
-                }, [selectedProducts.length, selectedClient?.id, formik.submitCount]);
-
                 return (
-                  <form id="order-request-edit-form" onSubmit={formik.handleSubmit}>
+                  <form id="order-prepare-form" onSubmit={formik.handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
+                      {/* Información de la orden */}
+                      <Box>{detailField('Cliente', order.client?.name, FiUsers)}</Box>
+
+                      <Divider />
+
+                      {/* Agregar productos */}
+                      <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiUsers} boxSize="1rem" />
-                            <Text>Cliente</Text>
+                            <Icon as={FiPackage} boxSize="1rem" />
+                            <Text>Agregar productos adicionales</Text>
                           </HStack>
                         </FormLabel>
-
-                        {/* Cliente seleccionado (no editable) */}
-                        <Box position="relative" ref={clientSearchRef} minW={{ base: '100%', md: '18.75rem' }}>
-                          {selectedClient ? (
-                            <Flex
-                              h="40px"
-                              px="0.75rem"
-                              bg={inputBg}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              align="center"
-                              justify="space-between"
-                            >
-                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                {selectedClient.name}
-                              </Text>
-                            </Flex>
-                          ) : null}
-                        </Box>
-
-                        {!selectedClient?.id && formik.submitCount > 0 && (
-                          <FormErrorMessage>El cliente es requerido</FormErrorMessage>
-                        )}
-                      </FormControl>
-
-                      <FormControl
-                        isInvalid={
-                          !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
-                        }
-                      >
-                        <FormLabel fontWeight="semibold">Productos</FormLabel>
 
                         {/* Buscador de productos */}
                         <Box position="relative" ref={productSearchRef}>
@@ -630,7 +556,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 </Box>
                                                 {isSelected && (
                                                   <Text fontSize="xs" color="green.500">
-                                                    Seleccionado
+                                                    Ya agregado
                                                   </Text>
                                                 )}
                                               </Flex>
@@ -651,106 +577,110 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                   );
                                 }
 
-                                if (
-                                  debouncedProductSearch.length >= 2 &&
-                                  (!searchCompleted || isLoadingProductsSearch)
-                                ) {
-                                  return (
-                                    <Flex p={3} justify="center" align="center" gap={2}>
-                                      <Spinner size="sm" />
-                                      <Text fontSize="sm" color="gray.500">
-                                        Buscando productos...
-                                      </Text>
-                                    </Flex>
-                                  );
-                                }
-
                                 return null;
                               })()}
                             </Box>
                           )}
                         </Box>
+                      </FormControl>
 
-                        <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
+                      <Divider />
 
-                        {/* Lista de productos seleccionados */}
-                        {selectedProducts.length > 0 && (
-                          <Box mt="1rem">
-                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                              Productos seleccionados ({selectedProducts.length}):
-                            </Text>
+                      {/* Lista de productos */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiPackage} boxSize="1rem" />
+                            <Text>Productos a preparar ({selectedProducts.length})</Text>
+                          </HStack>
+                        </FormLabel>
+
+                        {selectedProducts.length > 0 ? (
+                          <>
                             <VStack spacing="0.5rem" align="stretch">
-                              {selectedProducts.map((product) => {
-                                const subtotal = product.quantity * product.price;
-                                return (
-                                  <Flex
-                                    key={product.id}
-                                    p="0.75rem"
-                                    border="1px solid"
-                                    borderColor={inputBorder}
+                              {selectedProducts.map((product) => (
+                                <Flex
+                                  key={product.id}
+                                  p="0.75rem"
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  borderRadius="md"
+                                  bg={inputBg}
+                                  align="center"
+                                  gap="0.75rem"
+                                >
+                                  {/* Imagen */}
+                                  <Image
+                                    src={
+                                      product.imageUrl ||
+                                      'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                    }
+                                    alt={product.name}
+                                    boxSize="40px"
+                                    objectFit="cover"
                                     borderRadius="md"
-                                    bg={inputBg}
-                                    align="center"
-                                    gap="0.75rem"
-                                  >
-                                    {/* Imagen */}
-                                    <Image
-                                      src={
-                                        product.imageUrl ||
-                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                      }
-                                      alt={product.name}
-                                      boxSize="40px"
-                                      objectFit="cover"
-                                      borderRadius="md"
-                                      flexShrink={0}
-                                    />
+                                    flexShrink={0}
+                                  />
 
-                                    {/* Nombre y precio */}
-                                    <Box flex="1" minW="0">
-                                      <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                                        {product.name}
-                                      </Text>
-                                      <HStack spacing="0.5rem" align="center" mt="0.25rem">
-                                        {product.isLoadingDiscount ? (
-                                          <>
-                                            <Text fontSize="xs" color={textColor}>
-                                              ${product.price.toFixed(2)}
-                                            </Text>
-                                            <Spinner size="xs" />
-                                            <Text fontSize="xs" color="gray.500">
-                                              Cargando...
-                                            </Text>
-                                          </>
-                                        ) : product.discount && product.discount > 0 ? (
-                                          <>
-                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                              ${product.price.toFixed(2)}
-                                            </Text>
-                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                              ${(product.price * (1 - product.discount / 100)).toFixed(2)}
-                                            </Text>
-                                            <Box
-                                              bg="green.500"
-                                              color="white"
-                                              px="0.4rem"
-                                              py="0.1rem"
-                                              borderRadius="md"
-                                              fontSize="xs"
-                                              fontWeight="bold"
-                                            >
-                                              -{product.discount}%
-                                            </Box>
-                                          </>
-                                        ) : (
+                                  {/* Nombre y precio */}
+                                  <Box flex="1" minW="0">
+                                    <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                                      {product.name}
+                                    </Text>
+                                    <HStack spacing="0.5rem" align="center" mt="0.25rem">
+                                      {product.isLoadingDiscount ? (
+                                        <>
                                           <Text fontSize="xs" color={textColor}>
                                             ${product.price.toFixed(2)}
                                           </Text>
-                                        )}
-                                      </HStack>
-                                    </Box>
+                                          <Spinner size="xs" />
+                                          <Text fontSize="xs" color="gray.500">
+                                            Cargando...
+                                          </Text>
+                                        </>
+                                      ) : product.discount && product.discount > 0 ? (
+                                        <>
+                                          <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                            ${product.price.toFixed(2)}
+                                          </Text>
+                                          <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                            ${(product.price * (1 - product.discount / 100)).toFixed(2)}
+                                          </Text>
+                                          <Box
+                                            bg="green.500"
+                                            color="white"
+                                            px="0.4rem"
+                                            py="0.1rem"
+                                            borderRadius="md"
+                                            fontSize="xs"
+                                            fontWeight="bold"
+                                          >
+                                            -{product.discount}%
+                                          </Box>
+                                        </>
+                                      ) : (
+                                        <Text fontSize="xs" color={textColor}>
+                                          ${product.price.toFixed(2)}
+                                        </Text>
+                                      )}
+                                    </HStack>
+                                  </Box>
 
-                                    {/* Controles de cantidad */}
+                                  {/* Cantidad solicitada */}
+                                  <VStack spacing="0.25rem" align="center" minW="80px">
+                                    <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                      Solicitado
+                                    </Text>
+                                    <Text fontSize="sm" fontWeight="semibold">
+                                      {product.requestedQuantity}
+                                    </Text>
+                                  </VStack>
+
+                                  {/* Cantidad real */}
+                                  <VStack spacing="0.25rem" align="center" minW="120px">
+                                    <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                      Real
+                                    </Text>
                                     <HStack spacing={0}>
                                       <IconButton
                                         aria-label="Disminuir cantidad"
@@ -758,9 +688,9 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                         size="sm"
                                         variant="outline"
                                         onClick={() => {
-                                          const newValue = Math.max(0.1, product.quantity - 0.1);
+                                          const newValue = Math.max(0.1, product.actualQuantity - 0.1);
                                           const rounded = parseFloat(newValue.toFixed(1));
-                                          handleProductQuantityChange(product.id, rounded);
+                                          handleQuantityChange(product.id, rounded);
                                           setQuantityInputs((prev) => ({
                                             ...prev,
                                             [product.id]: rounded.toString(),
@@ -770,7 +700,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                       />
                                       <Input
                                         size="sm"
-                                        value={quantityInputs[product.id] ?? product.quantity}
+                                        value={quantityInputs[product.id] ?? product.actualQuantity}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           const regex = /^\d*\.?\d*$/;
@@ -778,16 +708,16 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
                                             const numValue = parseFloat(value);
                                             if (!isNaN(numValue) && numValue >= 0) {
-                                              handleProductQuantityChange(product.id, numValue);
+                                              handleQuantityChange(product.id, numValue);
                                             } else if (value === '' || value === '.') {
-                                              handleProductQuantityChange(product.id, 0);
+                                              handleQuantityChange(product.id, 0);
                                             }
                                           }
                                         }}
                                         onBlur={(e) => {
                                           const value = parseFloat(e.target.value);
                                           if (isNaN(value) || value <= 0) {
-                                            handleProductQuantityChange(product.id, 1);
+                                            handleQuantityChange(product.id, 1);
                                             setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
                                           } else {
                                             setQuantityInputs((prev) => ({
@@ -808,9 +738,9 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                         size="sm"
                                         variant="outline"
                                         onClick={() => {
-                                          const newValue = product.quantity + 0.1;
+                                          const newValue = product.actualQuantity + 0.1;
                                           const rounded = parseFloat(newValue.toFixed(1));
-                                          handleProductQuantityChange(product.id, rounded);
+                                          handleQuantityChange(product.id, rounded);
                                           setQuantityInputs((prev) => ({
                                             ...prev,
                                             [product.id]: rounded.toString(),
@@ -819,34 +749,32 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                         borderLeftRadius={0}
                                       />
                                     </HStack>
+                                  </VStack>
 
-                                    {/* Subtotal */}
-                                    <Box minW="90px" textAlign="right" flexShrink={0} mr="1rem">
-                                      <Text fontSize="md" fontWeight="bold">
-                                        $
-                                        {(product.discount || 0) > 0
-                                          ? (
-                                              product.quantity *
-                                              product.price *
-                                              (1 - (product.discount || 0) / 100)
-                                            ).toFixed(2)
-                                          : subtotal.toFixed(2)}
-                                      </Text>
-                                    </Box>
+                                  {/* Subtotal */}
+                                  <Box minW="90px" textAlign="right" flexShrink={0} mr="1rem">
+                                    <Text fontSize="md" fontWeight="bold">
+                                      $
+                                      {(
+                                        product.actualQuantity *
+                                        product.price *
+                                        (1 - (product.discount || 0) / 100)
+                                      ).toFixed(2)}
+                                    </Text>
+                                  </Box>
 
-                                    {/* Botón eliminar */}
-                                    <IconButton
-                                      aria-label="Eliminar producto"
-                                      icon={<FaTrash />}
-                                      size="sm"
-                                      colorScheme="red"
-                                      variant="ghost"
-                                      onClick={() => handleRemoveProduct(product.id)}
-                                      flexShrink={0}
-                                    />
-                                  </Flex>
-                                );
-                              })}
+                                  {/* Botón eliminar */}
+                                  <IconButton
+                                    aria-label="Eliminar producto"
+                                    icon={<FaTrash />}
+                                    size="sm"
+                                    colorScheme="red"
+                                    variant="ghost"
+                                    onClick={() => handleRemoveProduct(product.id)}
+                                    flexShrink={0}
+                                  />
+                                </Flex>
+                              ))}
                             </VStack>
 
                             {/* Total */}
@@ -860,22 +788,56 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                   $
                                   {selectedProducts
                                     .reduce((total, product) => {
-                                      const productTotal = product.quantity * product.price;
-                                      const discountAmount = (productTotal * (product.discount || 0)) / 100;
-                                      return total + (productTotal - discountAmount);
+                                      const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
+                                      return total + product.actualQuantity * effectivePrice;
                                     }, 0)
                                     .toFixed(2)}
                                 </Text>
                               </HStack>
                             </Box>
+                          </>
+                        ) : (
+                          <Box
+                            p="2rem"
+                            textAlign="center"
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            bg={inputBg}
+                          >
+                            <Text color={textColor}>No hay productos para preparar</Text>
                           </Box>
                         )}
                       </FormControl>
 
+                      {/* Cajones */}
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} />
+                            <Icon as={FiPackage} boxSize="1rem" />
+                            <Text>Cajones a utilizar</Text>
+                          </HStack>
+                        </FormLabel>
+                        <NumberInput
+                          value={formik.values.crates}
+                          onChange={(_, valueAsNumber) => {
+                            formik.setFieldValue('crates', isNaN(valueAsNumber) ? 0 : valueAsNumber);
+                          }}
+                          min={0}
+                        >
+                          <NumberInputField placeholder="Número de cajones" bg={inputBg} borderColor={inputBorder} />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </FormControl>
+
+                      {/* Observaciones */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
                             <Text>Observaciones</Text>
                           </HStack>
                         </FormLabel>
@@ -883,8 +845,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                           bg={inputBg}
                           borderColor={inputBorder}
                           {...formik.getFieldProps('observations')}
-                          placeholder="Observaciones del pedido..."
-                          rows={3}
+                          placeholder="Observaciones de la preparación..."
+                          rows={4}
                         />
                       </FormControl>
                     </VStack>
@@ -896,20 +858,20 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
-              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+              <Button variant="ghost" onClick={handleOverlayClick} disabled={isLoading} size="sm">
                 Cancelar
               </Button>
               <Button
-                form="order-request-edit-form"
+                form="order-prepare-form"
                 type="submit"
                 colorScheme="blue"
                 variant="outline"
                 leftIcon={<FaCheck />}
                 isLoading={isLoading}
-                loadingText="Actualizando..."
+                loadingText="Preparando..."
                 size="sm"
               >
-                Actualizar pedido
+                Completar preparación
               </Button>
             </HStack>
           </ModalFooter>
@@ -919,7 +881,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       <UnsavedChangesModal
         isOpen={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
-        onConfirm={handleConfirmClose}
+        onConfirm={handleClose}
       />
     </>
   );

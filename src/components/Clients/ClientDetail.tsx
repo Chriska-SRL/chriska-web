@@ -282,6 +282,9 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
                 </Button>
               </HStack>
               <HStack spacing="0.5rem" w="100%">
+                <Button variant="ghost" size="sm" onClick={handleClose} flex="1">
+                  Cerrar
+                </Button>
                 {canDeleteClients && (
                   <GenericDelete
                     item={{ id: client.id, name: client.name }}

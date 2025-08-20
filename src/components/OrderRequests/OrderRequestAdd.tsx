@@ -41,6 +41,7 @@ import { OrderRequest } from '@/entities/orderRequest';
 import { useAddOrderRequest } from '@/hooks/orderRequest';
 import { useGetClients } from '@/hooks/client';
 import { useGetProducts } from '@/hooks/product';
+import { getBestDiscount } from '@/services/discount';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -97,7 +98,16 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const [productSearchType, setProductSearchType] = useState<'name' | 'internalCode' | 'barcode'>('name');
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<
-    Array<{ id: number; name: string; price: number; imageUrl?: string; quantity: number }>
+    Array<{
+      id: number;
+      name: string;
+      price: number;
+      imageUrl?: string;
+      quantity: number;
+      discount?: number;
+      discountId?: string;
+      isLoadingDiscount?: boolean;
+    }>
   >([]);
   const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
@@ -220,9 +230,10 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
     }
   };
 
-  const handleProductSelect = (product: any) => {
+  const handleProductSelect = async (product: any) => {
     const isAlreadySelected = selectedProducts.some((p) => p.id === product.id);
-    if (!isAlreadySelected) {
+    if (!isAlreadySelected && selectedClient) {
+      // Agregar inmediatamente el producto con estado de carga
       setSelectedProducts((prev) => [
         ...prev,
         {
@@ -231,11 +242,50 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
           price: product.price || 0,
           imageUrl: product.imageUrl,
           quantity: 1.0,
+          discount: 0,
+          isLoadingDiscount: true,
         },
       ]);
+
+      setProductSearch('');
+      setShowProductDropdown(false);
+
+      try {
+        // Obtener el mejor descuento para este producto y cliente
+        const bestDiscount = await getBestDiscount(product.id, selectedClient.id);
+
+        // Actualizar el producto con el descuento obtenido
+        setSelectedProducts((prev) =>
+          prev.map((p) =>
+            p.id === product.id
+              ? {
+                  ...p,
+                  discount: bestDiscount?.percentage || 0,
+                  discountId: bestDiscount?.id || undefined,
+                  isLoadingDiscount: false,
+                }
+              : p,
+          ),
+        );
+      } catch (error) {
+        console.error('Error getting best discount:', error);
+        // Si hay error, quitar el estado de carga y mantener sin descuento
+        setSelectedProducts((prev) =>
+          prev.map((p) =>
+            p.id === product.id
+              ? {
+                  ...p,
+                  discount: 0,
+                  isLoadingDiscount: false,
+                }
+              : p,
+          ),
+        );
+      }
+    } else {
+      setProductSearch('');
+      setShowProductDropdown(false);
     }
-    setProductSearch('');
-    setShowProductDropdown(false);
   };
 
   const handleRemoveProduct = (productId: number) => {
@@ -329,6 +379,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
+        discount: item.discount || 0,
       })),
     } as any;
 
@@ -597,23 +648,21 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                           !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
                         }
                       >
-                        <FormLabel fontWeight="bold" fontSize="lg">
-                          Productos
-                        </FormLabel>
+                        <FormLabel fontWeight="semibold">Productos</FormLabel>
 
                         {/* Mostrar mensaje si no hay cliente seleccionado */}
                         {!selectedClient ? (
                           <Flex
                             justifyContent="center"
                             alignItems="center"
-                            h="2.5rem"
+                            h={{ base: '4rem', md: '2.5rem' }}
                             bg={inputBg}
                             borderRadius="md"
                             border="1px solid"
                             borderColor={inputBorder}
                           >
-                            <Text fontSize="sm" color={textColor}>
-                              Seleccione un cliente primero para agregar productos
+                            <Text fontSize="sm" color={textColor} textAlign="center">
+                              Seleccione un cliente antes de agregar productos
                             </Text>
                           </Flex>
                         ) : (
@@ -803,9 +852,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                 </Text>
                                 <VStack spacing="0.5rem" align="stretch">
                                   {selectedProducts.map((product) => {
-                                    // Hardcoded: simular descuento del 15% para el primer producto
-                                    const effectivePrice =
-                                      product === selectedProducts[0] ? product.price * 0.85 : product.price;
+                                    const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
                                     const subtotal = product.quantity * effectivePrice;
                                     return (
                                       <Flex
@@ -837,14 +884,23 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                             {product.name}
                                           </Text>
                                           <HStack spacing="0.5rem" align="center">
-                                            {/* Hardcoded para ver cómo se ve con descuento - solo para el primer producto */}
-                                            {product === selectedProducts[0] ? (
+                                            {product.isLoadingDiscount ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor}>
+                                                  ${product.price.toFixed(2)}
+                                                </Text>
+                                                <Spinner size="xs" />
+                                                <Text fontSize="xs" color="gray.500">
+                                                  Cargando...
+                                                </Text>
+                                              </>
+                                            ) : product.discount && product.discount > 0 ? (
                                               <>
                                                 <Text fontSize="xs" color={textColor} textDecoration="line-through">
                                                   ${product.price.toFixed(2)}
                                                 </Text>
                                                 <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                  ${(product.price * 0.85).toFixed(2)}
+                                                  ${effectivePrice.toFixed(2)}
                                                 </Text>
                                                 <Box
                                                   bg="green.500"
@@ -855,7 +911,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                   fontSize="xs"
                                                   fontWeight="bold"
                                                 >
-                                                  -15%
+                                                  -{product.discount}%
                                                 </Box>
                                               </>
                                             ) : (
@@ -962,19 +1018,25 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                     );
                                   })}
                                 </VStack>
-                                <HStack justify="flex-end" mt={4}>
-                                  <Text fontWeight="bold" fontSize="lg">
-                                    Total: $
-                                    {selectedProducts
-                                      .reduce((total, product) => {
-                                        // Hardcoded: aplicar descuento del 15% al primer producto
-                                        const effectivePrice =
-                                          product === selectedProducts[0] ? product.price * 0.85 : product.price;
-                                        return total + product.quantity * effectivePrice;
-                                      }, 0)
-                                      .toFixed(2)}
-                                  </Text>
-                                </HStack>
+
+                                {/* Total */}
+                                <Box>
+                                  <Divider mt="1rem" mb="0.5rem" />
+                                  <HStack justify="space-between">
+                                    <Text fontSize="md" fontWeight="semibold">
+                                      Total:
+                                    </Text>
+                                    <Text fontSize="md" fontWeight="semibold">
+                                      $
+                                      {selectedProducts
+                                        .reduce((total, product) => {
+                                          const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
+                                          return total + product.quantity * effectivePrice;
+                                        }, 0)
+                                        .toFixed(2)}
+                                    </Text>
+                                  </HStack>
+                                </Box>
                               </Box>
                             )}
                           </>
@@ -982,8 +1044,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                       </FormControl>
 
                       <FormControl>
-                        <FormLabel>
-                          <HStack spacing={1}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
                             <Icon as={FiFileText} />
                             <Text>Observaciones</Text>
                           </HStack>

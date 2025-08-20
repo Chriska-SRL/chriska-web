@@ -28,10 +28,9 @@ import {
   AlertDialogOverlay,
   Spinner,
 } from '@chakra-ui/react';
-import { OrderRequest } from '@/entities/orderRequest';
+import { Order } from '@/entities/order';
 import {
   FiEye,
-  FiEdit,
   FiCheckCircle,
   FiUsers,
   FiUser,
@@ -41,38 +40,30 @@ import {
   FiDollarSign,
   FiX,
 } from 'react-icons/fi';
-import { OrderRequestEdit } from './OrderRequestEdit';
-import { useChangeOrderRequestStatus } from '@/hooks/orderRequest';
+import { OrderPrepare } from './OrderPrepare';
+import { useChangeOrderStatus } from '@/hooks/order';
 import { getBestDiscount } from '@/services/discount';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { Permission } from '@/enums/permission.enum';
-import { useUserStore } from '@/stores/useUserStore';
 import { getStatusLabel, Status } from '@/enums/status.enum';
 
-type OrderRequestDetailProps = {
-  orderRequest: OrderRequest;
-  setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+type OrderDetailProps = {
+  order: Order;
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
 };
 
-export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequestDetailProps) => {
-  const canEditOrderRequests = useUserStore((s) => s.hasPermission(Permission.EDIT_ORDER_REQUESTS));
+export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
-  const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
-  const { isOpen: isCancelDialogOpen, onOpen: openCancelDialog, onClose: closeCancelDialog } = useDisclosure();
+  const { isOpen: isStatusDialogOpen, onOpen: openStatusDialog, onClose: closeStatusDialog } = useDisclosure();
+  const { isOpen: isPrepareOpen, onOpen: openPrepare, onClose: closePrepare } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
-  const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
+  const [actionType, setActionType] = useState<'cancel' | null>(null);
   const [productDiscounts, setProductDiscounts] = useState<{
     [productId: number]: { discount: number; loading: boolean };
   }>({});
-  const {
-    data: statusData,
-    isLoading: statusLoading,
-    fieldError: statusError,
-  } = useChangeOrderRequestStatus(statusProps);
+  const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeOrderStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
 
@@ -92,10 +83,17 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     }
   };
 
+  const isValidDate = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    // Verificar si es una fecha válida y no es 01/01/0001
+    return date.getFullYear() > 1900;
+  };
+
   const calculateSubtotal = () => {
     return (
-      orderRequest.productItems?.reduce((total, item) => {
-        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+      order.productItems?.reduce((total, item) => {
+        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
           // Para pending: usar precios actuales
           return total + item.quantity * item.unitPrice;
         } else {
@@ -109,8 +107,8 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
 
   const calculateDiscount = () => {
     return (
-      orderRequest.productItems?.reduce((total, item) => {
-        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+      order.productItems?.reduce((total, item) => {
+        if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
           // Para pending: usar descuentos actuales del endpoint
           const productDiscount = productDiscounts[item.product.id];
           const discountPercentage = productDiscount?.discount || 0;
@@ -129,69 +127,49 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     return calculateSubtotal() - calculateDiscount();
   };
 
-  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
-    <Box w="100%">
-      <HStack mb="0.5rem" spacing="0.5rem">
-        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
-        <Text color={labelColor} fontWeight="semibold">
-          {label}
-        </Text>
-      </HStack>
-      <Box
-        px="1rem"
-        py="0.5rem"
-        bg={inputBg}
-        border="1px solid"
-        borderColor={inputBorder}
-        borderRadius="md"
-        minH="2.75rem"
-        maxH="10rem"
-        overflowY="auto"
-        whiteSpace="pre-wrap"
-        wordBreak="break-word"
-        transition="all 0.2s"
-      >
-        {value ?? '—'}
-      </Box>
-    </Box>
-  );
-
-  const handleConfirmOrder = useCallback(() => {
-    if (statusLoading || statusProps) return;
-    closeConfirmDialog();
-    setActionType('confirm');
-    setStatusProps({ id: orderRequest.id, status: Status.CONFIRMED });
-  }, [statusLoading, statusProps, orderRequest.id, closeConfirmDialog]);
+  const handlePrepareOrder = useCallback(() => {
+    onClose(); // Close OrderDetail modal first
+    openPrepare();
+  }, [onClose, openPrepare]);
 
   const handleCancelOrder = useCallback(() => {
     if (statusLoading || statusProps) return;
-    closeCancelDialog();
     setActionType('cancel');
-    setStatusProps({ id: orderRequest.id, status: 'Cancelled' });
-  }, [statusLoading, statusProps, orderRequest.id, closeCancelDialog]);
+    openStatusDialog();
+  }, [statusLoading, statusProps, openStatusDialog]);
+
+  const confirmStatusChange = useCallback(() => {
+    if (actionType === 'cancel') {
+      setStatusProps({ id: order.id, status: Status.CANCELLED });
+    }
+    closeStatusDialog();
+  }, [actionType, order.id, closeStatusDialog]);
 
   useEffect(() => {
     if (statusData) {
-      setOrderRequests((prev) => prev.map((or) => (or.id === orderRequest.id ? statusData : or)));
-      const isConfirmed = statusData.status?.toLowerCase() === Status.CONFIRMED.toLowerCase();
-      const isCancelled = statusData.status?.toLowerCase() === 'Cancelled';
+      setOrders((prev) => prev.map((o) => (o.id === statusData.id ? statusData : o)));
+
+      const isCancelled = statusData.status?.toLowerCase() === Status.CANCELLED.toLowerCase();
 
       toast({
-        title: isConfirmed ? 'Pedido confirmado' : isCancelled ? 'Pedido cancelado' : 'Estado actualizado',
-        description: isConfirmed
-          ? 'El pedido ha sido confirmado exitosamente'
-          : isCancelled
-            ? 'El pedido ha sido cancelado exitosamente'
-            : 'El estado del pedido ha sido actualizado',
+        title: isCancelled ? 'Orden cancelada' : 'Estado actualizado',
+        description: isCancelled
+          ? 'La orden ha sido cancelada exitosamente.'
+          : 'El estado de la orden ha sido actualizado correctamente.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
+
       setStatusProps(undefined);
       setActionType(null);
-      onClose(); // Cerrar el modal de detail
+
+      // Cerrar el modal después de cancelar
+      if (isCancelled) {
+        onClose();
+      }
     }
-  }, [statusData, setOrderRequests, toast, orderRequest.id, onClose]);
+  }, [statusData, setOrders, toast, onClose]);
 
   useEffect(() => {
     if (statusError) {
@@ -208,24 +186,24 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   // Obtener descuentos reales cuando se abre el modal (solo si está pending)
   useEffect(() => {
     const fetchDiscounts = async () => {
-      // Solo obtener descuentos si el pedido está pending
+      // Solo obtener descuentos si la orden está pending
       if (
         isOpen &&
-        orderRequest.productItems &&
-        orderRequest.client &&
-        orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()
+        order.productItems &&
+        order.client &&
+        order.status?.toLowerCase() === Status.PENDING.toLowerCase()
       ) {
         // Marcar todos los productos como cargando
         const loadingState: { [productId: number]: { discount: number; loading: boolean } } = {};
-        orderRequest.productItems.forEach((item) => {
+        order.productItems.forEach((item) => {
           loadingState[item.product.id] = { discount: 0, loading: true };
         });
         setProductDiscounts(loadingState);
 
         // Obtener descuentos para cada producto
-        for (const item of orderRequest.productItems) {
+        for (const item of order.productItems) {
           try {
-            const bestDiscount = await getBestDiscount(item.product.id, orderRequest.client.id);
+            const bestDiscount = await getBestDiscount(item.product.id, order.client.id);
             setProductDiscounts((prev) => ({
               ...prev,
               [item.product.id]: {
@@ -248,7 +226,35 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     };
 
     fetchDiscounts();
-  }, [isOpen, orderRequest.productItems, orderRequest.client, orderRequest.status]);
+  }, [isOpen, order.productItems, order.client, order.status]);
+
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
+    <Box w="100%">
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
+      <Box
+        px="1rem"
+        py="0.5rem"
+        bg={inputBg}
+        border="1px solid"
+        borderColor={inputBorder}
+        borderRadius="md"
+        minH="2.75rem"
+        maxH="10rem"
+        overflowY="auto"
+        whiteSpace="pre-wrap"
+        wordBreak="break-word"
+        transition="all 0.2s"
+        color={textColor}
+      >
+        {value ?? '—'}
+      </Box>
+    </Box>
+  );
 
   return (
     <>
@@ -261,9 +267,9 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+        <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader
             py="0.75rem"
             textAlign="center"
@@ -272,7 +278,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Detalle del Pedido #{orderRequest.id}
+            Detalle de la Orden #{order.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -282,8 +288,8 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Cliente', orderRequest.client?.name, FiUsers)}
-                {detailField('Usuario', orderRequest.user?.name, FiUser)}
+                {detailField('Cliente', order.client?.name, FiUsers)}
+                {detailField('Usuario', order.user?.name, FiUser)}
               </Stack>
 
               <Stack
@@ -291,8 +297,8 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Fecha del pedido', formatDate(orderRequest.date), FiCalendar)}
-                {detailField('Estado', getStatusLabel(orderRequest.status), FiPackage)}
+                {detailField('Fecha de la orden', formatDate(order.date), FiCalendar)}
+                {detailField('Estado', getStatusLabel(order.status), FiPackage)}
               </Stack>
 
               <Stack
@@ -302,13 +308,28 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
               >
                 {detailField(
                   'Fecha de confirmación',
-                  orderRequest.confirmedDate ? formatDate(orderRequest.confirmedDate) : 'No confirmado',
-                  FiCalendar,
+                  isValidDate(order.confirmedDate) ? formatDate(order.confirmedDate) : 'No confirmado',
+                  FiCheckCircle,
                 )}
                 {detailField('Total', `$${calculateTotal().toFixed(2)}`, FiDollarSign)}
               </Stack>
 
-              {orderRequest.observations && detailField('Observaciones', orderRequest.observations, FiFileText)}
+              {order.crates > 0 && (
+                <Stack
+                  direction={{ base: 'column', md: 'row' }}
+                  spacing="1rem"
+                  align={{ base: 'stretch', md: 'flex-start' }}
+                >
+                  {detailField('Cajones', order.crates.toString(), FiPackage)}
+                  {order.orderRequest && detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
+                </Stack>
+              )}
+
+              {!order.crates &&
+                order.orderRequest &&
+                detailField('Pedido origen', `#${order.orderRequest.id}`, FiFileText)}
+
+              {order.observation && detailField('Observaciones', order.observation, FiFileText)}
 
               <Divider />
 
@@ -316,18 +337,26 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                 <HStack mb="0.5rem" spacing="0.5rem">
                   <Icon as={FiPackage} boxSize="1rem" color={iconColor} />
                   <Text color={labelColor} fontWeight="semibold">
-                    Productos ({orderRequest.productItems?.length || 0})
+                    Productos ({order.productItems?.length || 0})
                   </Text>
                 </HStack>
-                {orderRequest.productItems && orderRequest.productItems.length > 0 ? (
+                {order.productItems && order.productItems.length > 0 ? (
                   <VStack spacing="0.5rem" align="stretch" maxH="300px" overflowY="auto">
-                    {orderRequest.productItems.map((item, index) => {
+                    {order.productItems.map((item, index) => {
                       const productDiscount = productDiscounts[item.product.id];
-                      const discountPercentage = productDiscount?.discount || 0;
-                      const isLoadingDiscount = productDiscount?.loading || false;
-                      const subtotal = item.quantity * item.unitPrice;
-                      const discount = subtotal * (discountPercentage / 100);
-                      const total = subtotal - discount;
+
+                      let effectivePrice = item.unitPrice;
+                      let total = item.quantity * item.unitPrice;
+
+                      if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                        // Para pending: usar descuentos actuales
+                        const discountPercentage = productDiscount?.discount || 0;
+                        effectivePrice = item.unitPrice * (1 - discountPercentage / 100);
+                        total = item.quantity * effectivePrice;
+                      } else {
+                        // Para confirmados/cancelados: el unitPrice ya tiene el descuento aplicado
+                        total = item.quantity * item.unitPrice;
+                      }
 
                       return (
                         <Box
@@ -357,74 +386,92 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                   {item.product?.name || '-'}
                                 </Text>
                                 <HStack spacing="0.5rem" align="center" mt="0.25rem">
-                                  {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
-                                    // Para pending: usar descuentos actuales del endpoint
-                                    isLoadingDiscount ? (
-                                      <>
-                                        <Text fontSize="xs" color={textColor}>
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Spinner size="xs" />
-                                        <Text fontSize="xs" color="gray.500">
-                                          Cargando...
-                                        </Text>
-                                      </>
-                                    ) : discountPercentage > 0 ? (
-                                      <>
-                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
-                                        </Text>
-                                        <Box
-                                          bg="green.500"
-                                          color="white"
-                                          px="0.4rem"
-                                          py="0.1rem"
-                                          borderRadius="md"
-                                          fontSize="xs"
-                                          fontWeight="bold"
-                                        >
-                                          -{discountPercentage}%
-                                        </Box>
-                                      </>
-                                    ) : (
-                                      <Text fontSize="xs" color={textColor}>
-                                        ${item.unitPrice.toFixed(2)}
-                                      </Text>
-                                    )
-                                  ) : // Para confirmados/cancelados: usar descuentos históricos del item
-                                  item.discount > 0 ? (
-                                    <>
-                                      <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                        ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
-                                      </Text>
-                                      <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                        ${item.unitPrice.toFixed(2)}
-                                      </Text>
-                                      <Box
-                                        bg="green.500"
-                                        color="white"
-                                        px="0.4rem"
-                                        py="0.1rem"
-                                        borderRadius="md"
-                                        fontSize="xs"
-                                        fontWeight="bold"
-                                      >
-                                        -{item.discount}%
-                                      </Box>
-                                    </>
-                                  ) : (
-                                    <Text fontSize="xs" color={textColor}>
-                                      ${item.unitPrice.toFixed(2)}
-                                    </Text>
-                                  )}
+                                  {(() => {
+                                    const productDiscount = productDiscounts[item.product.id];
+                                    const discountPercentage = productDiscount?.discount || 0;
+                                    const isLoadingDiscount = productDiscount?.loading || false;
+
+                                    if (order.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                                      // Para pending: usar descuentos actuales del endpoint
+                                      if (isLoadingDiscount) {
+                                        return (
+                                          <>
+                                            <Text fontSize="xs" color={textColor}>
+                                              ${item.unitPrice.toFixed(2)}
+                                            </Text>
+                                            <Spinner size="xs" />
+                                            <Text fontSize="xs" color="gray.500">
+                                              Cargando...
+                                            </Text>
+                                          </>
+                                        );
+                                      } else if (discountPercentage > 0) {
+                                        return (
+                                          <>
+                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                              ${item.unitPrice.toFixed(2)}
+                                            </Text>
+                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                              ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
+                                            </Text>
+                                            <Box
+                                              bg="green.500"
+                                              color="white"
+                                              px="0.4rem"
+                                              py="0.1rem"
+                                              borderRadius="md"
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                            >
+                                              -{discountPercentage}%
+                                            </Box>
+                                          </>
+                                        );
+                                      } else {
+                                        return (
+                                          <Text fontSize="xs" color={textColor}>
+                                            ${item.unitPrice.toFixed(2)}
+                                          </Text>
+                                        );
+                                      }
+                                    } else {
+                                      // Para confirmados/cancelados: usar descuentos históricos del item
+                                      if (item.discount > 0) {
+                                        return (
+                                          <>
+                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                              ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                            </Text>
+                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                              ${item.unitPrice.toFixed(2)}
+                                            </Text>
+                                            <Box
+                                              bg="green.500"
+                                              color="white"
+                                              px="0.4rem"
+                                              py="0.1rem"
+                                              borderRadius="md"
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                            >
+                                              -{item.discount}%
+                                            </Box>
+                                          </>
+                                        );
+                                      } else {
+                                        return (
+                                          <Text fontSize="xs" color={textColor}>
+                                            ${item.unitPrice.toFixed(2)}
+                                          </Text>
+                                        );
+                                      }
+                                    }
+                                  })()}
                                 </HStack>
                               </Box>
                             </Flex>
 
-                            {/* Desktop: Cantidad, descuento y subtotal en línea */}
+                            {/* Desktop: Cantidad y subtotal en línea */}
                             <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="2rem">
                               <VStack spacing="0.25rem" align="center" minW="80px">
                                 <Text fontSize="xs" color={textColor}>
@@ -479,7 +526,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                     textAlign="center"
                   >
                     <Text color={textColor} fontSize="sm">
-                      No hay productos en este pedido
+                      No hay productos en esta orden
                     </Text>
                   </Box>
                 )}
@@ -488,7 +535,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
+            {order.status === Status.PENDING ? (
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="0.5rem"
@@ -508,129 +555,80 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                   Cerrar
                 </Button>
 
-                {/* Botón Cancelar - único */}
+                {/* Botón Cancelar */}
                 <Button
                   leftIcon={<FiX />}
                   colorScheme="red"
                   variant="outline"
                   size="sm"
-                  onClick={openCancelDialog}
-                  isLoading={statusLoading && actionType === 'cancel'}
+                  onClick={handleCancelOrder}
+                  isLoading={statusLoading}
                   disabled={statusLoading || !!statusProps}
                   w={{ base: '100%', md: 'auto' }}
                   order={{ base: 2, md: 2 }}
                 >
-                  Cancelar
+                  Cancelar orden
                 </Button>
 
-                {/* Botón Confirmar - único */}
+                {/* Botón Preparar */}
                 <Button
                   leftIcon={<FiCheckCircle />}
-                  colorScheme="green"
+                  colorScheme="blue"
                   variant="outline"
                   size="sm"
-                  onClick={openConfirmDialog}
-                  isLoading={statusLoading && actionType === 'confirm'}
-                  disabled={statusLoading || !!statusProps}
+                  onClick={handlePrepareOrder}
+                  disabled={statusLoading}
                   w={{ base: '100%', md: 'auto' }}
                   order={{ base: 3, md: 3 }}
                 >
-                  Confirmar
+                  Preparar orden
                 </Button>
-
-                {/* Botón Editar - único */}
-                {canEditOrderRequests && (
-                  <Button
-                    leftIcon={<FiEdit />}
-                    onClick={() => {
-                      openEdit();
-                      onClose();
-                    }}
-                    colorScheme="blue"
-                    variant="outline"
-                    size="sm"
-                    disabled={statusLoading || !!statusProps}
-                    w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 4, md: 4 }}
-                  >
-                    Editar
-                  </Button>
-                )}
               </Stack>
             ) : (
-              // Botón Cerrar para pedidos confirmados/cancelados
-              <HStack justify="flex-end" w="100%">
-                <Button variant="ghost" onClick={onClose} size="sm">
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="0.5rem"
+                w="100%"
+                align="stretch"
+                justify={{ base: 'stretch', md: 'flex-end' }}
+              >
+                {/* Solo botón Cerrar para órdenes confirmadas/canceladas */}
+                <Button variant="ghost" size="sm" onClick={onClose} w={{ base: '100%', md: 'auto' }}>
                   Cerrar
                 </Button>
-              </HStack>
+              </Stack>
             )}
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && (
-        <OrderRequestEdit
-          orderRequest={orderRequest}
-          isOpen={isEditOpen}
-          onClose={closeEdit}
-          setOrderRequests={setOrderRequests}
-        />
+      {/* Prepare Modal */}
+      {isPrepareOpen && (
+        <OrderPrepare isOpen={isPrepareOpen} onClose={closePrepare} order={order} setOrders={setOrders} />
       )}
 
-      {/* Modal de confirmación para confirmar pedido */}
-      <AlertDialog isOpen={isConfirmDialogOpen} leastDestructiveRef={cancelRef} onClose={closeConfirmDialog} isCentered>
+      {/* Modal de confirmación para cancelar orden */}
+      <AlertDialog isOpen={isStatusDialogOpen} leastDestructiveRef={cancelRef} onClose={closeStatusDialog} isCentered>
         <AlertDialogOverlay />
         <AlertDialogContent mx="1rem">
           <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
-            Confirmar pedido
+            Cancelar orden
           </AlertDialogHeader>
 
           <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
-            ¿Estás seguro de que deseas confirmar el pedido #{orderRequest.id}?
+            ¿Estás seguro de que deseas cancelar la orden #{order.id}?
             <br />
             Esta acción no se puede deshacer.
           </AlertDialogBody>
 
           <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
-            <Button ref={cancelRef} onClick={closeConfirmDialog} variant="ghost" size="sm">
-              Cancelar
-            </Button>
-            <Button
-              colorScheme="green"
-              onClick={handleConfirmOrder}
-              isLoading={statusLoading && actionType === 'confirm'}
-              variant="outline"
-              size="sm"
-            >
-              Confirmar
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Modal de confirmación para cancelar pedido */}
-      <AlertDialog isOpen={isCancelDialogOpen} leastDestructiveRef={cancelRef} onClose={closeCancelDialog} isCentered>
-        <AlertDialogOverlay />
-        <AlertDialogContent mx="1rem">
-          <AlertDialogHeader fontSize="1.125rem" fontWeight="semibold" pb="0.75rem">
-            Cancelar pedido
-          </AlertDialogHeader>
-
-          <AlertDialogBody fontSize="0.875rem" pb="1.5rem">
-            ¿Estás seguro de que deseas cancelar el pedido #{orderRequest.id}?
-            <br />
-            Esta acción no se puede deshacer.
-          </AlertDialogBody>
-
-          <AlertDialogFooter pt="0" justifyContent="flex-end" gap="0.5rem">
-            <Button ref={cancelRef} onClick={closeCancelDialog} variant="ghost" size="sm">
+            <Button ref={cancelRef} onClick={closeStatusDialog} variant="ghost" size="sm">
               No cancelar
             </Button>
             <Button
               colorScheme="red"
-              onClick={handleCancelOrder}
-              isLoading={statusLoading && actionType === 'cancel'}
+              onClick={confirmStatusChange}
+              isLoading={statusLoading}
               variant="outline"
               size="sm"
             >

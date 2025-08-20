@@ -110,6 +110,9 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                Cerrar
+              </Button>
               {canDeleteVehicleCosts && (
                 <GenericDelete
                   item={{

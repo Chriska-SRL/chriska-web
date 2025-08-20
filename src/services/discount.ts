@@ -93,3 +93,7 @@ export const updateDiscount = (
 export const deleteDiscount = (id: string): Promise<Discount> => {
   return del<Discount>(`${API_URL}/Discounts/${id}`);
 };
+
+export const getBestDiscount = (productId: number, clientId: number): Promise<Discount | null> => {
+  return get<Discount | null>(`${API_URL}/Discounts/best?productId=${productId}&clientId=${clientId}`);
+};

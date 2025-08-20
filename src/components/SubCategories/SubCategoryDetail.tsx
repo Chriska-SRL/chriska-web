@@ -146,6 +146,9 @@ export const SubCategoryDetail = ({
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                Cerrar
+              </Button>
               {canDeleteCategories && (
                 <GenericDelete
                   item={{ id: subcategory.id, name: subcategory.name }}

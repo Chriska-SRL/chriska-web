@@ -296,6 +296,9 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 Registrar movimiento de stock
               </Button>
               <HStack spacing="0.5rem" w="100%">
+                <Button variant="ghost" size="sm" onClick={handleClose} flex="1">
+                  Cerrar
+                </Button>
                 {canDeleteProducts && (
                   <GenericDelete
                     item={{ id: product.id, name: product.name }}

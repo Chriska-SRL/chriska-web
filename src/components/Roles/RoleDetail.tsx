@@ -186,6 +186,9 @@ export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDeta
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                Cerrar
+              </Button>
               {canDeleteRoles && (
                 <GenericDelete
                   item={{ id: role.id, name: role.name }}

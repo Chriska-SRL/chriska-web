@@ -119,6 +119,9 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                Cerrar
+              </Button>
               {canDeleteWarehouses && (
                 <GenericDelete
                   item={{ id: warehouse.id, name: warehouse.name }}
