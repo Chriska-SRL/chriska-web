@@ -5,6 +5,10 @@ import { chakraConfig } from './chakraConfig';
 
 const theme = extendTheme({
   chakraConfig,
+  fonts: {
+    heading: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    body: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+  },
   styles: {
     global: (props: StyleFunctionProps) => ({
       body: {
