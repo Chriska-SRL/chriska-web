@@ -33,7 +33,6 @@ import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackag
 import { useChangeDeliveryStatus } from '@/hooks/delivery';
 import { DeliveryEdit } from './DeliveryEdit';
 import { DeliveryConfirm } from './DeliveryConfirm';
-import { getBestDiscount } from '@/services/discount';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -53,9 +52,6 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
-  const [productDiscounts, setProductDiscounts] = useState<{
-    [productId: number]: { discount: number; loading: boolean };
-  }>({});
   const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeDeliveryStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
@@ -86,14 +82,9 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateSubtotal = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-          // Para pending: usar precios actuales
-          return total + item.quantity * item.unitPrice;
-        } else {
-          // Para confirmados/cancelados: calcular precio original sin descuento
-          const originalPrice = item.unitPrice / (1 - item.discount / 100);
-          return total + item.quantity * originalPrice;
-        }
+        // Para todos los estados: calcular precio original sin descuento
+        const originalPrice = item.unitPrice / (1 - item.discount / 100);
+        return total + item.quantity * originalPrice;
       }, 0) || 0
     );
   };
@@ -101,17 +92,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateDiscount = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-          // Para pending: usar descuentos actuales del endpoint
-          const productDiscount = productDiscounts[item.product.id];
-          const discountPercentage = productDiscount?.discount || 0;
-          return total + (item.quantity * item.unitPrice * discountPercentage) / 100;
-        } else {
-          // Para confirmados/cancelados: usar descuentos históricos
-          const originalPrice = item.unitPrice / (1 - item.discount / 100);
-          const discountAmount = originalPrice - item.unitPrice;
-          return total + item.quantity * discountAmount;
-        }
+        // Para todos los estados: usar descuentos almacenados
+        const originalPrice = item.unitPrice / (1 - item.discount / 100);
+        const discountAmount = originalPrice - item.unitPrice;
+        return total + item.quantity * discountAmount;
       }, 0) || 0
     );
   };
@@ -191,50 +175,8 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
     }
   }, [statusError, toast]);
 
-  // Obtener descuentos reales cuando se abre el modal (solo si está pending)
-  useEffect(() => {
-    const fetchDiscounts = async () => {
-      // Solo obtener descuentos si la entrega está pending
-      if (
-        isOpen &&
-        delivery.productItems &&
-        delivery.client &&
-        delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()
-      ) {
-        // Marcar todos los productos como cargando
-        const loadingState: { [productId: number]: { discount: number; loading: boolean } } = {};
-        delivery.productItems.forEach((item) => {
-          loadingState[item.product.id] = { discount: 0, loading: true };
-        });
-        setProductDiscounts(loadingState);
-
-        // Obtener descuentos para cada producto
-        for (const item of delivery.productItems) {
-          try {
-            const bestDiscount = await getBestDiscount(item.product.id, delivery.client.id);
-            setProductDiscounts((prev) => ({
-              ...prev,
-              [item.product.id]: {
-                discount: bestDiscount?.percentage || 0,
-                loading: false,
-              },
-            }));
-          } catch (error) {
-            console.error('Error getting best discount for product', item.product.id, error);
-            setProductDiscounts((prev) => ({
-              ...prev,
-              [item.product.id]: {
-                discount: 0,
-                loading: false,
-              },
-            }));
-          }
-        }
-      }
-    };
-
-    fetchDiscounts();
-  }, [isOpen, delivery.productItems, delivery.client, delivery.status]);
+  // Ya no necesitamos obtener descuentos del endpoint /best
+  // Ahora PENDING también usa el descuento almacenado
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
     <Box w="100%">
@@ -341,26 +283,13 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                   <>
                     <VStack spacing="0.5rem" align="stretch" maxH="400px" overflowY="auto">
                       {delivery.productItems.map((item, index) => {
-                        const productDiscount = productDiscounts[item.product.id];
-                        const discountPercentage = productDiscount?.discount || 0;
-                        const isLoadingDiscount = productDiscount?.loading || false;
-
                         // Por ahora, cantidad real = cantidad solicitada
                         const requestedQuantity = item.quantity;
                         const actualQuantity = item.quantity;
                         const weight = item.product?.unitType === UnitType.KILO ? actualQuantity : null;
 
-                        let effectivePrice = item.unitPrice;
-                        let total = actualQuantity * item.unitPrice;
-
-                        if (delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                          // Para pending: usar descuentos actuales
-                          effectivePrice = item.unitPrice * (1 - discountPercentage / 100);
-                          total = actualQuantity * effectivePrice;
-                        } else {
-                          // Para confirmados/cancelados: el unitPrice ya tiene el descuento aplicado
-                          total = actualQuantity * item.unitPrice;
-                        }
+                        // Para todos los estados: el unitPrice ya tiene el descuento aplicado
+                        const total = actualQuantity * item.unitPrice;
 
                         return (
                           <Box
@@ -391,43 +320,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {delivery.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
-                                      isLoadingDiscount ? (
-                                        <>
-                                          <Text fontSize="xs" color={textColor}>
-                                            ${item.unitPrice.toFixed(2)}
-                                          </Text>
-                                          <Spinner size="xs" />
-                                          <Text fontSize="xs" color="gray.500">
-                                            Cargando...
-                                          </Text>
-                                        </>
-                                      ) : discountPercentage > 0 ? (
-                                        <>
-                                          <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                            ${item.unitPrice.toFixed(2)}
-                                          </Text>
-                                          <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                            ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
-                                          </Text>
-                                          <Box
-                                            bg="green.500"
-                                            color="white"
-                                            px="0.4rem"
-                                            py="0.1rem"
-                                            borderRadius="md"
-                                            fontSize="xs"
-                                            fontWeight="bold"
-                                          >
-                                            -{discountPercentage}%
-                                          </Box>
-                                        </>
-                                      ) : (
-                                        <Text fontSize="xs" color={textColor}>
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                      )
-                                    ) : item.discount > 0 ? (
+                                    {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
                                           ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
@@ -516,43 +409,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {delivery.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
-                                      isLoadingDiscount ? (
-                                        <>
-                                          <Text fontSize="xs" color={textColor}>
-                                            ${item.unitPrice.toFixed(2)}
-                                          </Text>
-                                          <Spinner size="xs" />
-                                          <Text fontSize="xs" color="gray.500">
-                                            Cargando...
-                                          </Text>
-                                        </>
-                                      ) : discountPercentage > 0 ? (
-                                        <>
-                                          <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                            ${item.unitPrice.toFixed(2)}
-                                          </Text>
-                                          <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                            ${(item.unitPrice * (1 - discountPercentage / 100)).toFixed(2)}
-                                          </Text>
-                                          <Box
-                                            bg="green.500"
-                                            color="white"
-                                            px="0.4rem"
-                                            py="0.1rem"
-                                            borderRadius="md"
-                                            fontSize="xs"
-                                            fontWeight="bold"
-                                          >
-                                            -{discountPercentage}%
-                                          </Box>
-                                        </>
-                                      ) : (
-                                        <Text fontSize="xs" color={textColor}>
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                      )
-                                    ) : item.discount > 0 ? (
+                                    {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
                                           ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
