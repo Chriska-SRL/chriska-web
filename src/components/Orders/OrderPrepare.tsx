@@ -214,17 +214,18 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       // Usar los descuentos que ya vienen en los items de la orden
       const initialProducts = order.productItems.map((item) => {
         // Buscar la cantidad solicitada en el orderRequest original
-        const requestedItem = orderRequestData?.productItems?.find(
-          (reqItem) => reqItem.product.id === item.product.id,
-        );
+        const requestedItem = orderRequestData?.productItems?.find((reqItem) => reqItem.product.id === item.product.id);
         const requestedQuantity = requestedItem?.quantity || 0;
-        
+
         // Verificar si este producto estaba en el pedido original
         const wasInOriginalOrder = !!requestedItem;
 
         // Calcular el descuento basado en el precio unitario vs precio original
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
         const discountPercentage = item.discount || 0;
+
+        // TODO: API CHANGE - Cuando la API incluya minQuantityForDiscount en order.productItems:
+        // const minQuantityForDiscount = item.minQuantityForDiscount || undefined;
 
         return {
           id: item.product.id,
@@ -243,7 +244,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           originalPrice: wasInOriginalOrder ? originalPrice : undefined,
           originalDiscount: wasInOriginalOrder ? discountPercentage : undefined,
           originalRequestedQuantity: wasInOriginalOrder ? requestedQuantity : undefined,
-          minQuantityForDiscount: undefined, // Se definirá cuando sea necesario
+          minQuantityForDiscount: undefined, // TODO: API CHANGE - Cambiar por: item.minQuantityForDiscount || undefined
         };
       });
       setSelectedProducts(initialProducts);
@@ -284,16 +285,17 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     const exists = selectedProducts.find((p) => p.id === product.id);
     if (!exists) {
       // Verificar si este producto estaba en el pedido original (orderRequest)
-      const originalItem = orderRequestData?.productItems?.find(
-        (reqItem) => reqItem.product.id === product.id,
-      );
-      
+      const originalItem = orderRequestData?.productItems?.find((reqItem) => reqItem.product.id === product.id);
+
       if (originalItem) {
         // Es un producto del pedido original que se está re-agregando
-        const orderItem = order.productItems?.find(item => item.product.id === product.id);
+        const orderItem = order.productItems?.find((item) => item.product.id === product.id);
         const originalPrice = orderItem ? orderItem.unitPrice / (1 - orderItem.discount / 100) : product.price;
         const originalDiscount = orderItem?.discount || 0;
-        
+
+        // TODO: API CHANGE - Obtener cantidad mínima del orderItem cuando esté disponible:
+        // const originalMinQuantity = orderItem?.minQuantityForDiscount || undefined;
+
         setSelectedProducts((prev) => [
           ...prev,
           {
@@ -313,7 +315,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
             originalPrice: originalPrice,
             originalDiscount: originalDiscount,
             originalRequestedQuantity: originalItem.quantity,
-            minQuantityForDiscount: undefined,
+            minQuantityForDiscount: undefined, // TODO: API CHANGE - Cambiar por: originalMinQuantity
           },
         ]);
       } else {
@@ -342,7 +344,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
         // Buscar descuento actual para producto nuevo
         try {
-          const bestDiscount = await getBestDiscount(product.id, order.client?.id!);
+          const bestDiscount = await getBestDiscount(product.id, order.client.id);
           setSelectedProducts((prev) =>
             prev.map((p) =>
               p.id === product.id
@@ -462,7 +464,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     }
 
     // Validar stock disponible
-    const hasStockErrors = selectedProducts.some(product => isQuantityExceedsStock(product));
+    const hasStockErrors = selectedProducts.some((product) => isQuantityExceedsStock(product));
     if (hasStockErrors) {
       errors.stock = 'Algunos productos exceden el stock disponible';
     }
@@ -482,7 +484,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
       quantity: product.actualQuantity,
-      weight: product.unitType === UnitType.KILO ? product.weight / 1000 : undefined,
+      weight: product.unitType === UnitType.KILO ? (product.weight ?? 0) / 1000 : undefined,
     }));
 
     const orderData: any = {
@@ -774,19 +776,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             {product.name}
                                           </Text>
                                           {!product.isOriginalFromOrder && (
-                                            <Badge
-                                              size="sm"
-                                              colorScheme="blue"
-                                              variant="subtle"
-                                            >
+                                            <Badge size="sm" colorScheme="blue" variant="subtle">
                                               <HStack spacing="0.25rem" align="center">
-                                                <Icon 
-                                                  as={FaPlus} 
-                                                  boxSize="0.625rem" 
-                                                />
-                                                <Text fontSize="xs">
-                                                  Nuevo
-                                                </Text>
+                                                <Icon as={FaPlus} boxSize="0.625rem" />
+                                                <Text fontSize="xs">Nuevo</Text>
                                               </HStack>
                                             </Badge>
                                           )}
@@ -848,10 +841,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         {isLoadingOrderRequest ? (
                                           <Spinner size="xs" />
                                         ) : (
-                                          <Text
-                                            fontSize="sm"
-                                            fontWeight="semibold"
-                                          >
+                                          <Text fontSize="sm" fontWeight="semibold">
                                             {product.requestedQuantity}
                                           </Text>
                                         )}
@@ -1012,7 +1002,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           {(
                                             product.actualQuantity *
                                             product.price *
-                                            (1 - (isDiscountStillValid(product) ? (product.discount || 0) : 0) / 100)
+                                            (1 - (isDiscountStillValid(product) ? product.discount || 0 : 0) / 100)
                                           ).toFixed(2)}
                                         </Text>
                                       </VStack>
@@ -1040,19 +1030,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             {product.name}
                                           </Text>
                                           {!product.isOriginalFromOrder && (
-                                            <Badge
-                                              size="sm"
-                                              colorScheme="blue"
-                                              variant="subtle"
-                                            >
+                                            <Badge size="sm" colorScheme="blue" variant="subtle">
                                               <HStack spacing="0.25rem" align="center">
-                                                <Icon 
-                                                  as={FaPlus} 
-                                                  boxSize="0.625rem" 
-                                                />
-                                                <Text fontSize="xs">
-                                                  Nuevo
-                                                </Text>
+                                                <Icon as={FaPlus} boxSize="0.625rem" />
+                                                <Text fontSize="xs">Nuevo</Text>
                                               </HStack>
                                             </Badge>
                                           )}
@@ -1115,10 +1096,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         {isLoadingOrderRequest ? (
                                           <Spinner size="xs" />
                                         ) : (
-                                          <Text
-                                            fontSize="sm"
-                                            fontWeight="semibold"
-                                          >
+                                          <Text fontSize="sm" fontWeight="semibold">
                                             {product.requestedQuantity}
                                           </Text>
                                         )}
@@ -1280,7 +1258,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           {(
                                             product.actualQuantity *
                                             product.price *
-                                            (1 - (isDiscountStillValid(product) ? (product.discount || 0) : 0) / 100)
+                                            (1 - (isDiscountStillValid(product) ? product.discount || 0 : 0) / 100)
                                           ).toFixed(2)}
                                         </Text>
                                       </VStack>
@@ -1301,7 +1279,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                   $
                                   {selectedProducts
                                     .reduce((total, product) => {
-                                      const discountToApply = isDiscountStillValid(product) ? (product.discount || 0) : 0;
+                                      const discountToApply = isDiscountStillValid(product) ? product.discount || 0 : 0;
                                       const effectivePrice = product.price * (1 - discountToApply / 100);
                                       return total + product.actualQuantity * effectivePrice;
                                     }, 0)
@@ -1404,3 +1382,57 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     </>
   );
 };
+
+/* 
+===== TODO: CAMBIO EN LA API PARA CANTIDAD MÍNIMA DE DESCUENTOS =====
+
+PROBLEMA ACTUAL:
+- Para productos nuevos: ✅ Tenemos minQuantityForDiscount (viene de getBestDiscount)
+- Para productos originales: ❌ No tenemos minQuantityForDiscount (solo discount percentage)
+
+SOLUCIÓN - CAMBIO EN LA API:
+La API debe modificar order.productItems para incluir el campo minQuantityForDiscount:
+
+ANTES (orden actual):
+{
+  "productItems": [
+    {
+      "product": { "id": 1, "name": "Producto A" },
+      "quantity": 5,
+      "unitPrice": 9.50,
+      "discount": 5
+    }
+  ]
+}
+
+DESPUÉS (con el cambio):
+{
+  "productItems": [
+    {
+      "product": { "id": 1, "name": "Producto A" },
+      "quantity": 5,
+      "unitPrice": 9.50,
+      "discount": 5,
+      "minQuantityForDiscount": 10  // ← NUEVO CAMPO
+    }
+  ]
+}
+
+CAMBIOS NECESARIOS EN EL CÓDIGO (cuando esté la API):
+
+1. Línea 228: Descomentar y usar item.minQuantityForDiscount
+2. Línea 247: Cambiar undefined por item.minQuantityForDiscount || undefined
+3. Línea 297: Descomentar y usar orderItem?.minQuantityForDiscount
+4. Línea 318: Cambiar undefined por originalMinQuantity
+
+FUNCIONALIDAD QUE SE HABILITARÁ:
+- ✅ Productos originales mostrarán warning si cantidad < mínima requerida
+- ✅ Productos originales no aplicarán descuento si no cumplen cantidad mínima
+- ✅ Validación completa para todos los productos (originales + nuevos)
+- ✅ Tooltip informativo para productos originales también
+
+ARCHIVOS A ACTUALIZAR:
+- types/order.ts (agregar minQuantityForDiscount?: number al ProductItem)
+- components/Orders/OrderPrepare.tsx (este archivo)
+- Opcionalmente: OrderDetail.tsx si también necesita esta info
+*/

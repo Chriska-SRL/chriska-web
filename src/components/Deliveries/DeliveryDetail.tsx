@@ -26,7 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Spinner,
 } from '@chakra-ui/react';
 import { Delivery } from '@/entities/delivery';
 import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX, FiEdit } from 'react-icons/fi';
