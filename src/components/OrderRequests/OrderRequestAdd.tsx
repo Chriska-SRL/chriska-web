@@ -31,7 +31,11 @@ import {
   Flex,
   Divider,
   Image,
-  Tooltip,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
 import { FaPlus, FaCheck, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
@@ -114,6 +118,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
     }>
   >([]);
   const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
+  const [openTooltips, setOpenTooltips] = useState<{ [productId: number]: boolean }>({});
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
@@ -306,6 +311,14 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   // Función para validar si la cantidad excede el stock disponible
   const isQuantityExceedsStock = (product: any): boolean => {
     return product.quantity > (product.availableStock || 0);
+  };
+
+  // Auto-cerrar tooltip después de 2 segundos
+  const handleTooltipOpen = (productId: number) => {
+    setOpenTooltips((prev) => ({ ...prev, [productId]: true }));
+    setTimeout(() => {
+      setOpenTooltips((prev) => ({ ...prev, [productId]: false }));
+    }, 2000);
   };
 
   const handleClose = () => {
@@ -949,112 +962,203 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
                                             {/* Controles de cantidad */}
                                             <VStack spacing="0.25rem" align="stretch" px="1rem">
-                                              <HStack spacing={0}>
-                                                <IconButton
-                                                  aria-label="Disminuir cantidad"
-                                                  icon={<Text fontSize="sm">−</Text>}
-                                                  size="sm"
-                                                  variant="outline"
-                                                  onClick={() => {
-                                                    const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                    const rounded = parseFloat(newValue.toFixed(1));
-                                                    handleProductQuantityChange(product.id, rounded);
-                                                    setQuantityInputs((prev) => ({
-                                                      ...prev,
-                                                      [product.id]: rounded.toString(),
-                                                    }));
-                                                  }}
-                                                  borderRightRadius={0}
-                                                />
-                                                <Input
-                                                  size="sm"
-                                                  value={quantityInputs[product.id] ?? product.quantity}
-                                                  onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    const regex = /^\d*\.?\d*$/;
-                                                    if (regex.test(value) || value === '') {
-                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                      const numValue = parseFloat(value);
-                                                      if (!isNaN(numValue) && numValue >= 0) {
-                                                        handleProductQuantityChange(product.id, numValue);
-                                                      } else if (value === '' || value === '.') {
-                                                        handleProductQuantityChange(product.id, 0);
-                                                      }
+                                              <HStack spacing="0.5rem">
+                                                {isQuantityExceedsStock(product) ? (
+                                                  <Popover
+                                                    isOpen={openTooltips[product.id]}
+                                                    onClose={() =>
+                                                      setOpenTooltips((prev) => ({ ...prev, [product.id]: false }))
                                                     }
-                                                  }}
-                                                  onBlur={(e) => {
-                                                    const value = parseFloat(e.target.value);
-                                                    if (isNaN(value) || value <= 0) {
-                                                      handleProductQuantityChange(product.id, 1);
-                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                                    } else {
+                                                    placement="top"
+                                                    closeOnBlur
+                                                    trigger="click"
+                                                  >
+                                                    <PopoverTrigger>
+                                                      <Icon
+                                                        as={FaExclamationTriangle}
+                                                        color="red.500"
+                                                        boxSize="0.75rem"
+                                                        cursor="pointer"
+                                                        onClick={() => handleTooltipOpen(product.id)}
+                                                      />
+                                                    </PopoverTrigger>
+                                                    <PopoverContent
+                                                      bg="red.500"
+                                                      color="white"
+                                                      border="none"
+                                                      fontSize="sm"
+                                                      w="fit-content"
+                                                      maxW="250px"
+                                                      p={0}
+                                                    >
+                                                      <PopoverArrow bg="red.500" />
+                                                      <PopoverBody
+                                                        p="0.5rem"
+                                                        fontSize="sm"
+                                                        fontWeight="semibold"
+                                                        whiteSpace="nowrap"
+                                                      >
+                                                        Stock insuficiente
+                                                      </PopoverBody>
+                                                    </PopoverContent>
+                                                  </Popover>
+                                                ) : product.minQuantityForDiscount ? (
+                                                  <>
+                                                    {product.quantity >= product.minQuantityForDiscount ? (
+                                                      <Popover
+                                                        isOpen={openTooltips[product.id]}
+                                                        onClose={() =>
+                                                          setOpenTooltips((prev) => ({ ...prev, [product.id]: false }))
+                                                        }
+                                                        placement="top"
+                                                        closeOnBlur
+                                                        trigger="click"
+                                                      >
+                                                        <PopoverTrigger>
+                                                          <Text
+                                                            fontSize="xs"
+                                                            color="green.500"
+                                                            fontWeight="medium"
+                                                            cursor="pointer"
+                                                            onClick={() => handleTooltipOpen(product.id)}
+                                                          >
+                                                            ✓
+                                                          </Text>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent
+                                                          bg="green.500"
+                                                          color="white"
+                                                          border="none"
+                                                          fontSize="sm"
+                                                          w="fit-content"
+                                                          maxW="250px"
+                                                          p={0}
+                                                        >
+                                                          <PopoverArrow bg="green.500" />
+                                                          <PopoverBody
+                                                            p="0.5rem"
+                                                            fontSize="sm"
+                                                            fontWeight="semibold"
+                                                            whiteSpace="nowrap"
+                                                          >
+                                                            Descuento aplicado
+                                                          </PopoverBody>
+                                                        </PopoverContent>
+                                                      </Popover>
+                                                    ) : (
+                                                      <Popover
+                                                        isOpen={openTooltips[product.id]}
+                                                        onClose={() =>
+                                                          setOpenTooltips((prev) => ({ ...prev, [product.id]: false }))
+                                                        }
+                                                        placement="top"
+                                                        closeOnBlur
+                                                        trigger="click"
+                                                      >
+                                                        <PopoverTrigger>
+                                                          <Icon
+                                                            as={FaExclamationTriangle}
+                                                            color="orange.500"
+                                                            boxSize="0.75rem"
+                                                            cursor="pointer"
+                                                            onClick={() => handleTooltipOpen(product.id)}
+                                                          />
+                                                        </PopoverTrigger>
+                                                        <PopoverContent
+                                                          bg="orange.500"
+                                                          color="white"
+                                                          border="none"
+                                                          fontSize="sm"
+                                                          w="fit-content"
+                                                          maxW="280px"
+                                                          p={0}
+                                                        >
+                                                          <PopoverArrow bg="orange.500" />
+                                                          <PopoverBody
+                                                            p="0.5rem"
+                                                            fontSize="sm"
+                                                            fontWeight="semibold"
+                                                            whiteSpace="nowrap"
+                                                          >
+                                                            Min. requerido para el descuento:{' '}
+                                                            {product.minQuantityForDiscount}
+                                                          </PopoverBody>
+                                                        </PopoverContent>
+                                                      </Popover>
+                                                    )}
+                                                  </>
+                                                ) : (
+                                                  <Box w="0.75rem" h="0.75rem" />
+                                                )}
+                                                <HStack spacing={0}>
+                                                  <IconButton
+                                                    aria-label="Disminuir cantidad"
+                                                    icon={<Text fontSize="sm">−</Text>}
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                      const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                      const rounded = parseFloat(newValue.toFixed(1));
+                                                      handleProductQuantityChange(product.id, rounded);
                                                       setQuantityInputs((prev) => ({
                                                         ...prev,
-                                                        [product.id]: value.toString(),
+                                                        [product.id]: rounded.toString(),
                                                       }));
-                                                    }
-                                                  }}
-                                                  w="4rem"
-                                                  textAlign="center"
-                                                  borderRadius={0}
-                                                  borderLeft="none"
-                                                  borderRight="none"
-                                                />
-                                                <IconButton
-                                                  aria-label="Aumentar cantidad"
-                                                  icon={<Text fontSize="sm">+</Text>}
-                                                  size="sm"
-                                                  variant="outline"
-                                                  onClick={() => {
-                                                    const newValue = product.quantity + 0.1;
-                                                    const rounded = parseFloat(newValue.toFixed(1));
-                                                    handleProductQuantityChange(product.id, rounded);
-                                                    setQuantityInputs((prev) => ({
-                                                      ...prev,
-                                                      [product.id]: rounded.toString(),
-                                                    }));
-                                                  }}
-                                                  borderLeftRadius={0}
-                                                />
-                                              </HStack>
-                                              {product.minQuantityForDiscount && (
-                                                <Text
-                                                  fontSize="xs"
-                                                  color={
-                                                    product.quantity >= product.minQuantityForDiscount
-                                                      ? 'green.500'
-                                                      : 'orange.500'
-                                                  }
-                                                  fontWeight="medium"
-                                                  textAlign="center"
-                                                >
-                                                  {product.quantity >= product.minQuantityForDiscount ? (
-                                                    <>✓ Descuento aplicado</>
-                                                  ) : (
-                                                    <>Mín. {product.minQuantityForDiscount} para descuento</>
-                                                  )}
-                                                </Text>
-                                              )}
-                                              {isQuantityExceedsStock(product) && (
-                                                <HStack justify="center" spacing="0.25rem">
-                                                  <Tooltip
-                                                    label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
-                                                    placement="top"
-                                                    hasArrow
-                                                    bg="red.500"
-                                                    color="white"
-                                                  >
-                                                    <Icon
-                                                      as={FaExclamationTriangle}
-                                                      color="red.500"
-                                                      boxSize="0.75rem"
-                                                    />
-                                                  </Tooltip>
-                                                  <Text fontSize="xs" color="red.500" fontWeight="medium">
-                                                    Stock insuficiente
-                                                  </Text>
+                                                    }}
+                                                    borderRightRadius={0}
+                                                  />
+                                                  <Input
+                                                    size="sm"
+                                                    value={quantityInputs[product.id] ?? product.quantity}
+                                                    onChange={(e) => {
+                                                      const value = e.target.value;
+                                                      const regex = /^\d*\.?\d*$/;
+                                                      if (regex.test(value) || value === '') {
+                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                        const numValue = parseFloat(value);
+                                                        if (!isNaN(numValue) && numValue >= 0) {
+                                                          handleProductQuantityChange(product.id, numValue);
+                                                        } else if (value === '' || value === '.') {
+                                                          handleProductQuantityChange(product.id, 0);
+                                                        }
+                                                      }
+                                                    }}
+                                                    onBlur={(e) => {
+                                                      const value = parseFloat(e.target.value);
+                                                      if (isNaN(value) || value <= 0) {
+                                                        handleProductQuantityChange(product.id, 1);
+                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                      } else {
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: value.toString(),
+                                                        }));
+                                                      }
+                                                    }}
+                                                    w="3.5rem"
+                                                    textAlign="center"
+                                                    borderRadius={0}
+                                                    borderLeft="none"
+                                                    borderRight="none"
+                                                  />
+                                                  <IconButton
+                                                    aria-label="Aumentar cantidad"
+                                                    icon={<Text fontSize="sm">+</Text>}
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                      const newValue = product.quantity + 0.1;
+                                                      const rounded = parseFloat(newValue.toFixed(1));
+                                                      handleProductQuantityChange(product.id, rounded);
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: rounded.toString(),
+                                                      }));
+                                                    }}
+                                                    borderLeftRadius={0}
+                                                  />
                                                 </HStack>
-                                              )}
+                                              </HStack>
                                             </VStack>
 
                                             {/* Subtotal */}
@@ -1075,9 +1179,23 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                           </Flex>
 
                                           {/* Mobile Layout - Mantener como estaba */}
-                                          <Box display={{ base: 'block', md: 'none' }}>
+                                          <Box display={{ base: 'block', md: 'none' }} position="relative">
+                                            {/* Botón eliminar - posición absoluta arriba derecha */}
+                                            <IconButton
+                                              aria-label="Eliminar producto"
+                                              icon={<FaTrash />}
+                                              size="sm"
+                                              colorScheme="red"
+                                              variant="ghost"
+                                              onClick={() => handleRemoveProduct(product.id)}
+                                              position="absolute"
+                                              top="-0.5rem"
+                                              right="-0.5rem"
+                                              zIndex={1}
+                                            />
+
                                             {/* Fila superior: Imagen + Nombre/Precio */}
-                                            <Flex align="center" gap="0.75rem" mb="0.75rem">
+                                            <Flex align="center" gap="0.75rem" mb="0.75rem" pr="3rem">
                                               <Image
                                                 src={
                                                   product.imageUrl ||
@@ -1141,123 +1259,213 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                               </Box>
                                             </Flex>
 
-                                            {/* Fila inferior: Botón eliminar | Controles cantidad | Subtotal */}
+                                            {/* Fila inferior: Controles cantidad | Subtotal */}
                                             <Flex justify="space-between" align="center">
-                                              <IconButton
-                                                aria-label="Eliminar producto"
-                                                icon={<FaTrash />}
-                                                size="sm"
-                                                colorScheme="red"
-                                                variant="ghost"
-                                                onClick={() => handleRemoveProduct(product.id)}
-                                              />
                                               <VStack spacing="0.25rem">
-                                                <HStack spacing={0}>
-                                                  <IconButton
-                                                    aria-label="Disminuir cantidad"
-                                                    icon={<Text fontSize="sm">−</Text>}
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                      const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
-                                                    }}
-                                                    borderRightRadius={0}
-                                                  />
-                                                  <Input
-                                                    size="sm"
-                                                    value={quantityInputs[product.id] ?? product.quantity}
-                                                    onChange={(e) => {
-                                                      const value = e.target.value;
-                                                      const regex = /^\d*\.?\d*$/;
-                                                      if (regex.test(value) || value === '') {
-                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                        const numValue = parseFloat(value);
-                                                        if (!isNaN(numValue) && numValue >= 0) {
-                                                          handleProductQuantityChange(product.id, numValue);
-                                                        } else if (value === '' || value === '.') {
-                                                          handleProductQuantityChange(product.id, 0);
-                                                        }
-                                                      }
-                                                    }}
-                                                    onBlur={(e) => {
-                                                      const value = parseFloat(e.target.value);
-                                                      if (isNaN(value) || value <= 0) {
-                                                        handleProductQuantityChange(product.id, 1);
-                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                                      } else {
+                                                <HStack spacing="0.5rem">
+                                                  <HStack spacing={0}>
+                                                    <IconButton
+                                                      aria-label="Disminuir cantidad"
+                                                      icon={<Text fontSize="sm">−</Text>}
+                                                      size="sm"
+                                                      variant="outline"
+                                                      onClick={() => {
+                                                        const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                        const rounded = parseFloat(newValue.toFixed(1));
+                                                        handleProductQuantityChange(product.id, rounded);
                                                         setQuantityInputs((prev) => ({
                                                           ...prev,
-                                                          [product.id]: value.toString(),
+                                                          [product.id]: rounded.toString(),
                                                         }));
-                                                      }
-                                                    }}
-                                                    w="3rem"
-                                                    textAlign="center"
-                                                    borderRadius={0}
-                                                    borderLeft="none"
-                                                    borderRight="none"
-                                                  />
-                                                  <IconButton
-                                                    aria-label="Aumentar cantidad"
-                                                    icon={<Text fontSize="sm">+</Text>}
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                      const newValue = product.quantity + 0.1;
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
-                                                    }}
-                                                    borderLeftRadius={0}
-                                                  />
-                                                </HStack>
-                                                {product.minQuantityForDiscount && (
-                                                  <Text
-                                                    fontSize="xs"
-                                                    color={
-                                                      product.quantity >= product.minQuantityForDiscount
-                                                        ? 'green.500'
-                                                        : 'orange.500'
-                                                    }
-                                                    fontWeight="medium"
-                                                    textAlign="center"
-                                                  >
-                                                    {product.quantity >= product.minQuantityForDiscount ? (
-                                                      <>✓</>
-                                                    ) : (
-                                                      <>Mín. {product.minQuantityForDiscount}</>
-                                                    )}
-                                                  </Text>
-                                                )}
-                                                {isQuantityExceedsStock(product) && (
-                                                  <HStack justify="center" spacing="0.25rem">
-                                                    <Tooltip
-                                                      label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
-                                                      placement="top"
-                                                      hasArrow
-                                                      bg="red.500"
-                                                      color="white"
-                                                    >
-                                                      <Icon
-                                                        as={FaExclamationTriangle}
-                                                        color="red.500"
-                                                        boxSize="0.75rem"
-                                                      />
-                                                    </Tooltip>
-                                                    <Text fontSize="xs" color="red.500" fontWeight="medium">
-                                                      Stock insuficiente
-                                                    </Text>
+                                                      }}
+                                                      borderRightRadius={0}
+                                                    />
+                                                    <Input
+                                                      size="sm"
+                                                      value={quantityInputs[product.id] ?? product.quantity}
+                                                      onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        const regex = /^\d*\.?\d*$/;
+                                                        if (regex.test(value) || value === '') {
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: value,
+                                                          }));
+                                                          const numValue = parseFloat(value);
+                                                          if (!isNaN(numValue) && numValue >= 0) {
+                                                            handleProductQuantityChange(product.id, numValue);
+                                                          } else if (value === '' || value === '.') {
+                                                            handleProductQuantityChange(product.id, 0);
+                                                          }
+                                                        }
+                                                      }}
+                                                      onBlur={(e) => {
+                                                        const value = parseFloat(e.target.value);
+                                                        if (isNaN(value) || value <= 0) {
+                                                          handleProductQuantityChange(product.id, 1);
+                                                          setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                        } else {
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: value.toString(),
+                                                          }));
+                                                        }
+                                                      }}
+                                                      w="3.5rem"
+                                                      textAlign="center"
+                                                      borderRadius={0}
+                                                      borderLeft="none"
+                                                      borderRight="none"
+                                                    />
+                                                    <IconButton
+                                                      aria-label="Aumentar cantidad"
+                                                      icon={<Text fontSize="sm">+</Text>}
+                                                      size="sm"
+                                                      variant="outline"
+                                                      onClick={() => {
+                                                        const newValue = product.quantity + 0.1;
+                                                        const rounded = parseFloat(newValue.toFixed(1));
+                                                        handleProductQuantityChange(product.id, rounded);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: rounded.toString(),
+                                                        }));
+                                                      }}
+                                                      borderLeftRadius={0}
+                                                    />
                                                   </HStack>
-                                                )}
+                                                  {isQuantityExceedsStock(product) ? (
+                                                    <Popover
+                                                      isOpen={openTooltips[product.id]}
+                                                      onClose={() =>
+                                                        setOpenTooltips((prev) => ({ ...prev, [product.id]: false }))
+                                                      }
+                                                      placement="top"
+                                                      closeOnBlur
+                                                      trigger="click"
+                                                    >
+                                                      <PopoverTrigger>
+                                                        <Icon
+                                                          as={FaExclamationTriangle}
+                                                          color="red.500"
+                                                          boxSize="0.75rem"
+                                                          cursor="pointer"
+                                                          onClick={() => handleTooltipOpen(product.id)}
+                                                        />
+                                                      </PopoverTrigger>
+                                                      <PopoverContent
+                                                        bg="red.500"
+                                                        color="white"
+                                                        border="none"
+                                                        fontSize="sm"
+                                                        w="fit-content"
+                                                        maxW="250px"
+                                                        p={0}
+                                                      >
+                                                        <PopoverArrow bg="red.500" />
+                                                        <PopoverBody
+                                                          p="0.5rem"
+                                                          fontSize="sm"
+                                                          fontWeight="semibold"
+                                                          whiteSpace="nowrap"
+                                                        >
+                                                          Stock insuficiente
+                                                        </PopoverBody>
+                                                      </PopoverContent>
+                                                    </Popover>
+                                                  ) : product.minQuantityForDiscount ? (
+                                                    <>
+                                                      {product.quantity >= product.minQuantityForDiscount ? (
+                                                        <Popover
+                                                          isOpen={openTooltips[product.id]}
+                                                          onClose={() =>
+                                                            setOpenTooltips((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: false,
+                                                            }))
+                                                          }
+                                                          placement="top"
+                                                          closeOnBlur
+                                                          trigger="click"
+                                                        >
+                                                          <PopoverTrigger>
+                                                            <Text
+                                                              fontSize="xs"
+                                                              color="green.500"
+                                                              fontWeight="medium"
+                                                              cursor="pointer"
+                                                              onClick={() => handleTooltipOpen(product.id)}
+                                                            >
+                                                              ✓
+                                                            </Text>
+                                                          </PopoverTrigger>
+                                                          <PopoverContent
+                                                            bg="green.500"
+                                                            color="white"
+                                                            border="none"
+                                                            fontSize="sm"
+                                                            w="fit-content"
+                                                            maxW="250px"
+                                                            p={0}
+                                                          >
+                                                            <PopoverArrow bg="green.500" />
+                                                            <PopoverBody
+                                                              p="0.5rem"
+                                                              fontSize="sm"
+                                                              fontWeight="semibold"
+                                                              whiteSpace="nowrap"
+                                                            >
+                                                              Descuento aplicado
+                                                            </PopoverBody>
+                                                          </PopoverContent>
+                                                        </Popover>
+                                                      ) : (
+                                                        <Popover
+                                                          isOpen={openTooltips[product.id]}
+                                                          onClose={() =>
+                                                            setOpenTooltips((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: false,
+                                                            }))
+                                                          }
+                                                          placement="top"
+                                                          closeOnBlur
+                                                          trigger="click"
+                                                        >
+                                                          <PopoverTrigger>
+                                                            <Icon
+                                                              as={FaExclamationTriangle}
+                                                              color="orange.500"
+                                                              boxSize="0.75rem"
+                                                              cursor="pointer"
+                                                              onClick={() => handleTooltipOpen(product.id)}
+                                                            />
+                                                          </PopoverTrigger>
+                                                          <PopoverContent
+                                                            bg="orange.500"
+                                                            color="white"
+                                                            border="none"
+                                                            fontSize="sm"
+                                                            w="fit-content"
+                                                            maxW="280px"
+                                                            p={0}
+                                                          >
+                                                            <PopoverArrow bg="orange.500" />
+                                                            <PopoverBody
+                                                              p="0.5rem"
+                                                              fontSize="sm"
+                                                              fontWeight="semibold"
+                                                              whiteSpace="nowrap"
+                                                            >
+                                                              Min. requerido para el descuento:{' '}
+                                                              {product.minQuantityForDiscount}
+                                                            </PopoverBody>
+                                                          </PopoverContent>
+                                                        </Popover>
+                                                      )}
+                                                    </>
+                                                  ) : null}
+                                                </HStack>
                                               </VStack>
                                               <Box textAlign="right">
                                                 <Text fontSize="md" fontWeight="bold">

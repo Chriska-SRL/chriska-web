@@ -39,7 +39,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
-import { FaCheck, FaTrash, FaExclamationTriangle, FaHistory, FaPlus } from 'react-icons/fa';
+import { FaCheck, FaTrash, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { FiPackage, FiUsers, FiFileText } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
