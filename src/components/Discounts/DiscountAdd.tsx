@@ -469,28 +469,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                   <form id="discount-add-form" onSubmit={handleSubmit}>
                     <Box>
                       <VStack spacing="1rem" align="stretch">
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese la descripción del descuento"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="percentage" validate={validateEmpty}>
                             {({ field, meta }: any) => (
@@ -616,6 +594,28 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                             )}
                           </Field>
                         </Stack>
+
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field, meta }: any) => (
+                            <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
 
                         {/* Selector de tipo de productos */}
                         <FormControl>

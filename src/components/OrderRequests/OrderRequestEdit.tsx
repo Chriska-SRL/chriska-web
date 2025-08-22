@@ -89,6 +89,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       quantity: number;
       discount?: number;
       discountId?: string;
+      minQuantityForDiscount?: number;
       isLoadingDiscount?: boolean;
     }>
   >([]);
@@ -123,6 +124,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           imageUrl: item.product.imageUrl,
           quantity: item.quantity,
           discount: 0,
+          minQuantityForDiscount: undefined,
           isLoadingDiscount: true,
         }));
         setSelectedProducts(initialProducts);
@@ -138,6 +140,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                       ...p,
                       discount: bestDiscount?.percentage || 0,
                       discountId: bestDiscount?.id || undefined,
+                      minQuantityForDiscount: bestDiscount?.productQuantity || undefined,
                       isLoadingDiscount: false,
                     }
                   : p,
@@ -287,6 +290,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                   ...p,
                   discount: bestDiscount?.percentage || 0,
                   discountId: bestDiscount?.id || undefined,
+                  minQuantityForDiscount: bestDiscount?.productQuantity || undefined,
                   isLoadingDiscount: false,
                 }
               : p,
@@ -376,8 +380,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        discount: item.discount || 0,
-        discountId: item.discountId,
       })),
     } as any;
 
@@ -681,7 +683,12 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                             </Text>
                             <VStack spacing="0.5rem" align="stretch">
                               {selectedProducts.map((product) => {
-                                const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
+                                // Only apply discount if minimum quantity is met
+                                const discountToApply =
+                                  product.minQuantityForDiscount && product.quantity >= product.minQuantityForDiscount
+                                    ? product.discount || 0
+                                    : 0;
+                                const effectivePrice = product.price * (1 - discountToApply / 100);
                                 const subtotal = product.quantity * effectivePrice;
                                 return (
                                   <Box
@@ -725,11 +732,16 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             </>
                                           ) : product.discount && product.discount > 0 ? (
                                             <>
-                                              <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                              {/* Always show original price, strikethrough only when minimum quantity met */}
+                                              <Text
+                                                fontSize="xs"
+                                                color={textColor}
+                                                textDecoration={discountToApply > 0 ? 'line-through' : 'none'}
+                                              >
                                                 ${product.price.toFixed(2)}
                                               </Text>
                                               <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                ${effectivePrice.toFixed(2)}
+                                                ${(product.price * (1 - (product.discount || 0) / 100)).toFixed(2)}
                                               </Text>
                                               <Box
                                                 bg="green.500"
@@ -752,161 +764,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                       </Box>
 
                                       {/* Controles de cantidad */}
-                                      <HStack spacing={0}>
-                                        <IconButton
-                                          aria-label="Disminuir cantidad"
-                                          icon={<Text fontSize="sm">−</Text>}
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            const newValue = Math.max(0.1, product.quantity - 0.1);
-                                            const rounded = parseFloat(newValue.toFixed(1));
-                                            handleProductQuantityChange(product.id, rounded);
-                                            setQuantityInputs((prev) => ({
-                                              ...prev,
-                                              [product.id]: rounded.toString(),
-                                            }));
-                                          }}
-                                          borderRightRadius={0}
-                                        />
-                                        <Input
-                                          size="sm"
-                                          value={quantityInputs[product.id] ?? product.quantity}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^\d*\.?\d*$/;
-                                            if (regex.test(value) || value === '') {
-                                              setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                              const numValue = parseFloat(value);
-                                              if (!isNaN(numValue) && numValue >= 0) {
-                                                handleProductQuantityChange(product.id, numValue);
-                                              } else if (value === '' || value === '.') {
-                                                handleProductQuantityChange(product.id, 0);
-                                              }
-                                            }
-                                          }}
-                                          onBlur={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            if (isNaN(value) || value <= 0) {
-                                              handleProductQuantityChange(product.id, 1);
-                                              setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                            } else {
-                                              setQuantityInputs((prev) => ({
-                                                ...prev,
-                                                [product.id]: value.toString(),
-                                              }));
-                                            }
-                                          }}
-                                          w="3rem"
-                                          textAlign="center"
-                                          borderRadius={0}
-                                          borderLeft="none"
-                                          borderRight="none"
-                                        />
-                                        <IconButton
-                                          aria-label="Aumentar cantidad"
-                                          icon={<Text fontSize="sm">+</Text>}
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            const newValue = product.quantity + 0.1;
-                                            const rounded = parseFloat(newValue.toFixed(1));
-                                            handleProductQuantityChange(product.id, rounded);
-                                            setQuantityInputs((prev) => ({
-                                              ...prev,
-                                              [product.id]: rounded.toString(),
-                                            }));
-                                          }}
-                                          borderLeftRadius={0}
-                                        />
-                                      </HStack>
-
-                                      {/* Subtotal */}
-                                      <Text fontSize="md" fontWeight="bold" minW="80px" textAlign="center">
-                                        ${subtotal.toFixed(2)}
-                                      </Text>
-
-                                      {/* Botón eliminar */}
-                                      <IconButton
-                                        aria-label="Eliminar producto"
-                                        icon={<FaTrash />}
-                                        size="sm"
-                                        colorScheme="red"
-                                        variant="ghost"
-                                        onClick={() => handleRemoveProduct(product.id)}
-                                        flexShrink={0}
-                                      />
-                                    </Flex>
-
-                                    {/* Mobile Layout - Mantener como estaba */}
-                                    <Box display={{ base: 'block', md: 'none' }}>
-                                      {/* Fila superior: Imagen + Nombre/Precio */}
-                                      <Flex align="center" gap="0.75rem" mb="0.75rem">
-                                        <Image
-                                          src={
-                                            product.imageUrl ||
-                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                          }
-                                          alt={product.name}
-                                          boxSize="50px"
-                                          objectFit="cover"
-                                          borderRadius="md"
-                                          flexShrink={0}
-                                        />
-                                        <Box flex="1">
-                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
-                                            {product.name}
-                                          </Text>
-                                          <HStack spacing="0.5rem" align="center">
-                                            {product.isLoadingDiscount ? (
-                                              <>
-                                                <Text fontSize="xs" color={textColor}>
-                                                  ${product.price.toFixed(2)}
-                                                </Text>
-                                                <Spinner size="xs" />
-                                                <Text fontSize="xs" color="gray.500">
-                                                  Cargando...
-                                                </Text>
-                                              </>
-                                            ) : product.discount && product.discount > 0 ? (
-                                              <>
-                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                                  ${product.price.toFixed(2)}
-                                                </Text>
-                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                  ${effectivePrice.toFixed(2)}
-                                                </Text>
-                                                <Box
-                                                  bg="green.500"
-                                                  color="white"
-                                                  px="0.4rem"
-                                                  py="0.1rem"
-                                                  borderRadius="md"
-                                                  fontSize="xs"
-                                                  fontWeight="bold"
-                                                >
-                                                  -{product.discount}%
-                                                </Box>
-                                              </>
-                                            ) : (
-                                              <Text fontSize="xs" color={textColor}>
-                                                ${product.price.toFixed(2)}
-                                              </Text>
-                                            )}
-                                          </HStack>
-                                        </Box>
-                                      </Flex>
-
-                                      {/* Fila inferior: Botón eliminar | Controles cantidad | Subtotal */}
-                                      <Flex justify="space-between" align="center">
-                                        <IconButton
-                                          aria-label="Eliminar producto"
-                                          icon={<FaTrash />}
-                                          size="sm"
-                                          colorScheme="red"
-                                          variant="ghost"
-                                          onClick={() => handleRemoveProduct(product.id)}
-                                        />
+                                      <VStack spacing="0.25rem" align="stretch">
                                         <HStack spacing={0}>
                                           <IconButton
                                             aria-label="Disminuir cantidad"
@@ -975,6 +833,205 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             borderLeftRadius={0}
                                           />
                                         </HStack>
+                                        {product.minQuantityForDiscount && (
+                                          <Text
+                                            fontSize="xs"
+                                            color={
+                                              product.quantity >= product.minQuantityForDiscount
+                                                ? 'green.500'
+                                                : 'orange.500'
+                                            }
+                                            fontWeight="medium"
+                                            textAlign="center"
+                                          >
+                                            {product.quantity >= product.minQuantityForDiscount ? (
+                                              <>✓ Descuento aplicado</>
+                                            ) : (
+                                              <>Mín. {product.minQuantityForDiscount} para descuento</>
+                                            )}
+                                          </Text>
+                                        )}
+                                      </VStack>
+
+                                      {/* Subtotal */}
+                                      <Text fontSize="md" fontWeight="bold" minW="80px" textAlign="center">
+                                        ${subtotal.toFixed(2)}
+                                      </Text>
+
+                                      {/* Botón eliminar */}
+                                      <IconButton
+                                        aria-label="Eliminar producto"
+                                        icon={<FaTrash />}
+                                        size="sm"
+                                        colorScheme="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveProduct(product.id)}
+                                        flexShrink={0}
+                                      />
+                                    </Flex>
+
+                                    {/* Mobile Layout - Mantener como estaba */}
+                                    <Box display={{ base: 'block', md: 'none' }}>
+                                      {/* Fila superior: Imagen + Nombre/Precio */}
+                                      <Flex align="center" gap="0.75rem" mb="0.75rem">
+                                        <Image
+                                          src={
+                                            product.imageUrl ||
+                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                          }
+                                          alt={product.name}
+                                          boxSize="50px"
+                                          objectFit="cover"
+                                          borderRadius="md"
+                                          flexShrink={0}
+                                        />
+                                        <Box flex="1">
+                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                            {product.name}
+                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            {product.isLoadingDiscount ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor}>
+                                                  ${product.price.toFixed(2)}
+                                                </Text>
+                                                <Spinner size="xs" />
+                                                <Text fontSize="xs" color="gray.500">
+                                                  Cargando...
+                                                </Text>
+                                              </>
+                                            ) : product.discount && product.discount > 0 ? (
+                                              <>
+                                                {/* Always show original price, strikethrough only when minimum quantity met */}
+                                                <Text
+                                                  fontSize="xs"
+                                                  color={textColor}
+                                                  textDecoration={discountToApply > 0 ? 'line-through' : 'none'}
+                                                >
+                                                  ${product.price.toFixed(2)}
+                                                </Text>
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  ${(product.price * (1 - (product.discount || 0) / 100)).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -{product.discount}%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${product.price.toFixed(2)}
+                                              </Text>
+                                            )}
+                                          </HStack>
+                                        </Box>
+                                      </Flex>
+
+                                      {/* Fila inferior: Botón eliminar | Controles cantidad | Subtotal */}
+                                      <Flex justify="space-between" align="center">
+                                        <IconButton
+                                          aria-label="Eliminar producto"
+                                          icon={<FaTrash />}
+                                          size="sm"
+                                          colorScheme="red"
+                                          variant="ghost"
+                                          onClick={() => handleRemoveProduct(product.id)}
+                                        />
+                                        <VStack spacing="0.25rem">
+                                          <HStack spacing={0}>
+                                            <IconButton
+                                              aria-label="Disminuir cantidad"
+                                              icon={<Text fontSize="sm">−</Text>}
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => {
+                                                const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                const rounded = parseFloat(newValue.toFixed(1));
+                                                handleProductQuantityChange(product.id, rounded);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: rounded.toString(),
+                                                }));
+                                              }}
+                                              borderRightRadius={0}
+                                            />
+                                            <Input
+                                              size="sm"
+                                              value={quantityInputs[product.id] ?? product.quantity}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const regex = /^\d*\.?\d*$/;
+                                                if (regex.test(value) || value === '') {
+                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                  const numValue = parseFloat(value);
+                                                  if (!isNaN(numValue) && numValue >= 0) {
+                                                    handleProductQuantityChange(product.id, numValue);
+                                                  } else if (value === '' || value === '.') {
+                                                    handleProductQuantityChange(product.id, 0);
+                                                  }
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                const value = parseFloat(e.target.value);
+                                                if (isNaN(value) || value <= 0) {
+                                                  handleProductQuantityChange(product.id, 1);
+                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                } else {
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: value.toString(),
+                                                  }));
+                                                }
+                                              }}
+                                              w="3rem"
+                                              textAlign="center"
+                                              borderRadius={0}
+                                              borderLeft="none"
+                                              borderRight="none"
+                                            />
+                                            <IconButton
+                                              aria-label="Aumentar cantidad"
+                                              icon={<Text fontSize="sm">+</Text>}
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => {
+                                                const newValue = product.quantity + 0.1;
+                                                const rounded = parseFloat(newValue.toFixed(1));
+                                                handleProductQuantityChange(product.id, rounded);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: rounded.toString(),
+                                                }));
+                                              }}
+                                              borderLeftRadius={0}
+                                            />
+                                          </HStack>
+                                          {product.minQuantityForDiscount && (
+                                            <Text
+                                              fontSize="xs"
+                                              color={
+                                                product.quantity >= product.minQuantityForDiscount
+                                                  ? 'green.500'
+                                                  : 'orange.500'
+                                              }
+                                              fontWeight="medium"
+                                              textAlign="center"
+                                            >
+                                              {product.quantity >= product.minQuantityForDiscount ? (
+                                                <>✓</>
+                                              ) : (
+                                                <>Mín. {product.minQuantityForDiscount}</>
+                                              )}
+                                            </Text>
+                                          )}
+                                        </VStack>
                                         <Box textAlign="right">
                                           <Text fontSize="md" fontWeight="bold">
                                             ${subtotal.toFixed(2)}
@@ -998,7 +1055,13 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                   $
                                   {selectedProducts
                                     .reduce((total, product) => {
-                                      const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
+                                      // Only apply discount if minimum quantity is met
+                                      const discountToApply =
+                                        product.minQuantityForDiscount &&
+                                        product.quantity >= product.minQuantityForDiscount
+                                          ? product.discount || 0
+                                          : 0;
+                                      const effectivePrice = product.price * (1 - discountToApply / 100);
                                       return total + product.quantity * effectivePrice;
                                     }, 0)
                                     .toFixed(2)}

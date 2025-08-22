@@ -109,7 +109,7 @@ const sidebarItems = [
   { path: 'entregas', text: 'Entregas', icon: FiTruck, Permission: Permission.VIEW_DELIVERIES },
   {
     path: 'movimientos-de-stock',
-    text: 'Movimientos de stock',
+    text: 'Mov. de stock',
     icon: LuArrowDownUp,
     Permission: Permission.VIEW_STOCK_MOVEMENTS,
   },

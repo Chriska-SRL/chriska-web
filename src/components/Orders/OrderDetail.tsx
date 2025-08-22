@@ -38,6 +38,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { getStatusLabel, Status } from '@/enums/status.enum';
 import { UnitType } from '@/enums/unitType.enum';
+import { getBestDiscount } from '@/services/discount';
+import { getOrderRequestById } from '@/services/orderRequest';
+import type { Discount } from '@/entities/discount';
+import type { OrderRequest } from '@/entities/orderRequest';
 
 type OrderDetailProps = {
   order: Order;
@@ -53,6 +57,10 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
   const [preparedOrderData, setPreparedOrderData] = useState<Order | null>(null);
+  const [discountData, setDiscountData] = useState<{ [productId: number]: { discount: Discount | null; isLoading: boolean } }>({});
+  const [isLoadingDiscounts, setIsLoadingDiscounts] = useState(false);
+  const [orderRequestData, setOrderRequestData] = useState<OrderRequest | null>(null);
+  const [isLoadingOrderRequest, setIsLoadingOrderRequest] = useState(false);
   const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeOrderStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
@@ -83,7 +91,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   const calculateSubtotal = () => {
     return (
       order.productItems?.reduce((total, item) => {
-        // Para todos los estados: calcular precio original sin descuento
+        // Siempre calcular precio original sin descuento
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
         return total + item.quantity * originalPrice;
       }, 0) || 0
@@ -91,18 +99,76 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
   };
 
   const calculateDiscount = () => {
+    if (order.status !== Status.PENDING) {
+      // Para estados no PENDING: usar descuentos almacenados
+      return (
+        order.productItems?.reduce((total, item) => {
+          const originalPrice = item.unitPrice / (1 - item.discount / 100);
+          const discountAmount = originalPrice - item.unitPrice;
+          return total + item.quantity * discountAmount;
+        }, 0) || 0
+      );
+    }
+
+    // Para PENDING: usar descuentos actualizados del endpoint /best
     return (
       order.productItems?.reduce((total, item) => {
-        // Para todos los estados: usar descuentos almacenados
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        const discountAmount = originalPrice - item.unitPrice;
-        return total + item.quantity * discountAmount;
+        const currentDiscount = discountData[item.product.id];
+        
+        if (currentDiscount?.discount) {
+          // Solo aplicar descuento si se cumple la cantidad mínima
+          const requestedQuantity = orderRequestData?.productItems?.find(pi => pi.product.id === item.product.id)?.quantity || item.quantity;
+          const minQuantity = currentDiscount.discount.productQuantity;
+          
+          if (requestedQuantity >= minQuantity) {
+            const discountAmount = originalPrice * (currentDiscount.discount.percentage / 100);
+            return total + item.quantity * discountAmount;
+          }
+        }
+        
+        return total; // Sin descuento si no se cumple la cantidad mínima o no hay descuento
       }, 0) || 0
     );
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscount();
+    if (!order.productItems) return 0;
+    
+    // Usar la misma lógica simple que OrderList para todas las órdenes
+    // Los subtotales individuales ya manejan correctamente los descuentos
+    return order.productItems.reduce((total, item) => {
+      // Para órdenes PENDING, solo ajustar si hay descuentos actualizados
+      if (order.status === Status.PENDING) {
+        const requestedItem = orderRequestData?.productItems?.find(
+          (reqItem) => reqItem.product.id === item.product.id,
+        );
+        const requestedQuantity = requestedItem?.quantity || 0;
+        const actualQuantity = item.quantity;
+        const currentDiscount = discountData[item.product.id];
+        
+        // Si estamos cargando o no hay información de descuento, usar precio actual
+        if (!currentDiscount || currentDiscount.isLoading) {
+          return total + (actualQuantity * item.unitPrice);
+        }
+        
+        if (currentDiscount.discount) {
+          const originalPrice = item.unitPrice / (1 - item.discount / 100);
+          const minQuantity = currentDiscount.discount.productQuantity;
+          if (requestedQuantity >= minQuantity) {
+            // Aplicar nuevo descuento
+            const effectivePrice = originalPrice * (1 - currentDiscount.discount.percentage / 100);
+            return total + (actualQuantity * effectivePrice);
+          } else {
+            // Sin descuento si no se cumple cantidad mínima
+            return total + (actualQuantity * originalPrice);
+          }
+        }
+      }
+      
+      // Para todos los otros casos: item.unitPrice ya tiene el descuento aplicado
+      return total + (item.quantity * item.unitPrice);
+    }, 0);
   };
 
   const handlePrepareOrder = useCallback(() => {
@@ -196,8 +262,70 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     }
   }, [statusError, toast]);
 
-  // Ya no necesitamos obtener descuentos del endpoint /best
-  // Ahora PENDING también usa el descuento almacenado
+  // Cargar datos de orderRequest cuando se abre el modal
+  useEffect(() => {
+    if (!isOpen || !order.orderRequest?.id) {
+      return;
+    }
+
+    const fetchOrderRequest = async () => {
+      setIsLoadingOrderRequest(true);
+      try {
+        const orderRequestData = await getOrderRequestById(order.orderRequest!.id);
+        setOrderRequestData(orderRequestData);
+      } catch (error) {
+        console.error('Error loading orderRequest:', error);
+        toast({
+          title: 'Error',
+          description: 'No se pudo cargar la información del pedido original',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoadingOrderRequest(false);
+      }
+    };
+
+    fetchOrderRequest();
+  }, [isOpen, order.orderRequest?.id, toast]);
+
+  // Para pedidos PENDING: obtener mejores descuentos para mostrar precios actualizados
+  useEffect(() => {
+    if (!isOpen || order.status !== Status.PENDING || !order.productItems?.length || !order.orderRequest?.clientId) {
+      return;
+    }
+
+    const fetchDiscounts = async () => {
+      setIsLoadingDiscounts(true);
+      const discountPromises = order.productItems!.map(async (item) => {
+        try {
+          setDiscountData(prev => ({
+            ...prev,
+            [item.product.id]: { discount: null, isLoading: true }
+          }));
+
+          const bestDiscount = await getBestDiscount(item.product.id, order.orderRequest!.clientId!);
+          
+          setDiscountData(prev => ({
+            ...prev,
+            [item.product.id]: { discount: bestDiscount, isLoading: false }
+          }));
+        } catch (error) {
+          console.error('Error getting best discount:', error);
+          setDiscountData(prev => ({
+            ...prev,
+            [item.product.id]: { discount: null, isLoading: false }
+          }));
+        }
+      });
+
+      await Promise.all(discountPromises);
+      setIsLoadingDiscounts(false);
+    };
+
+    fetchDiscounts();
+  }, [isOpen, order.status, order.productItems, order.orderRequest?.clientId]);
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
     <Box w="100%">
@@ -314,14 +442,34 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                   <>
                     <VStack spacing="0.5rem" align="stretch" maxH="400px" overflowY="auto">
                       {order.productItems.map((item, index) => {
-                        // Por ahora, cantidad real = cantidad solicitada
-                        // TODO: Cuando la API traiga el pedido, usar item.requestedQuantity vs item.actualQuantity
-                        const requestedQuantity = item.quantity;
+                        // Buscar la cantidad solicitada en el orderRequest original
+                        const requestedItem = orderRequestData?.productItems?.find(
+                          (reqItem) => reqItem.product.id === item.product.id,
+                        );
+                        const requestedQuantity = requestedItem?.quantity || 0;
                         const actualQuantity = item.quantity;
-                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity : null;
+                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity * 1000 : null;
 
-                        // Para todos los estados: el unitPrice ya tiene el descuento aplicado
-                        const total = actualQuantity * item.unitPrice;
+                        // Calcular total considerando descuentos actualizados para PENDING
+                        const total = (() => {
+                          if (order.status === Status.PENDING) {
+                            const currentDiscount = discountData[item.product.id];
+                            if (currentDiscount?.discount) {
+                              const originalPrice = item.unitPrice / (1 - item.discount / 100);
+                              const minQuantity = currentDiscount.discount.productQuantity;
+                              if (requestedQuantity >= minQuantity) {
+                                // Aplicar nuevo descuento
+                                const effectivePrice = originalPrice * (1 - currentDiscount.discount.percentage / 100);
+                                return actualQuantity * effectivePrice;
+                              } else {
+                                // Sin descuento si no se cumple cantidad mínima
+                                return actualQuantity * originalPrice;
+                              }
+                            }
+                          }
+                          // Para otros estados: usar precio almacenado (ya con descuento aplicado)
+                          return actualQuantity * item.unitPrice;
+                        })();
 
                         return (
                           <Box
@@ -352,31 +500,89 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {item.discount > 0 ? (
-                                      <>
-                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                    {(() => {
+                                      if (order.status === Status.PENDING) {
+                                        // Para PENDING: usar descuentos actualizados
+                                        const currentDiscount = discountData[item.product.id];
+                                        
+                                        if (currentDiscount?.isLoading) {
+                                          return (
+                                            <>
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                              </Text>
+                                              <Spinner size="xs" />
+                                              <Text fontSize="xs" color="gray.500">Cargando...</Text>
+                                            </>
+                                          );
+                                        }
+                                        
+                                        if (currentDiscount?.discount) {
+                                          const originalPrice = item.unitPrice / (1 - item.discount / 100);
+                                          const discountedPrice = originalPrice * (1 - currentDiscount.discount.percentage / 100);
+                                          const requestedQuantity = orderRequestData?.productItems?.find(pi => pi.product.id === item.product.id)?.quantity || item.quantity;
+                                          const minQuantity = currentDiscount.discount.productQuantity;
+                                          const discountApplied = requestedQuantity >= minQuantity;
+                                          
+                                          return (
+                                            <>
+                                              <Text 
+                                                fontSize="xs" 
+                                                color={textColor}
+                                                textDecoration={discountApplied ? "line-through" : "none"}
+                                              >
+                                                ${originalPrice.toFixed(2)}
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                ${discountedPrice.toFixed(2)}
+                                              </Text>
+                                              <Box
+                                                bg="green.500"
+                                                color="white"
+                                                px="0.4rem"
+                                                py="0.1rem"
+                                                borderRadius="md"
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                              >
+                                                -{currentDiscount.discount.percentage}%
+                                              </Box>
+                                            </>
+                                          );
+                                        }
+                                      }
+                                      
+                                      // Para otros estados: usar descuentos almacenados
+                                      if (item.discount > 0) {
+                                        return (
+                                          <>
+                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                              ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                            </Text>
+                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                              ${item.unitPrice.toFixed(2)}
+                                            </Text>
+                                            <Box
+                                              bg="green.500"
+                                              color="white"
+                                              px="0.4rem"
+                                              py="0.1rem"
+                                              borderRadius="md"
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                            >
+                                              -{item.discount}%
+                                            </Box>
+                                          </>
+                                        );
+                                      }
+                                      
+                                      return (
+                                        <Text fontSize="xs" color={textColor}>
                                           ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
-                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Box
-                                          bg="green.500"
-                                          color="white"
-                                          px="0.4rem"
-                                          py="0.1rem"
-                                          borderRadius="md"
-                                          fontSize="xs"
-                                          fontWeight="bold"
-                                        >
-                                          -{item.discount}%
-                                        </Box>
-                                      </>
-                                    ) : (
-                                      <Text fontSize="xs" color={textColor}>
-                                        ${item.unitPrice.toFixed(2)}
-                                      </Text>
-                                    )}
+                                      );
+                                    })()}
                                   </HStack>
                                 </Box>
                               </Flex>
@@ -387,26 +593,36 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Cant. solicitada
                                   </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
-                                    {requestedQuantity}
-                                  </Text>
+                                  {isLoadingOrderRequest ? (
+                                    <Spinner size="xs" />
+                                  ) : (
+                                    <Text
+                                      fontSize="sm"
+                                      fontWeight="semibold"
+                                    >
+                                      {requestedQuantity}
+                                    </Text>
+                                  )}
                                 </VStack>
 
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Cant. real
                                   </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="semibold"
+                                  >
                                     {actualQuantity}
                                   </Text>
                                 </VStack>
 
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Peso (kg)
+                                    Peso (g)
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
-                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(0) || '-' : 'N/A'}
                                   </Text>
                                 </VStack>
 
@@ -414,9 +630,16 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Subtotal
                                   </Text>
-                                  <Text fontSize="md" fontWeight="bold">
-                                    ${total.toFixed(2)}
-                                  </Text>
+                                  {order.status === Status.PENDING && isLoadingDiscounts ? (
+                                    <HStack spacing="0.25rem">
+                                      <Spinner size="xs" />
+                                      <Text fontSize="xs" color="gray.500">Calc...</Text>
+                                    </HStack>
+                                  ) : (
+                                    <Text fontSize="md" fontWeight="bold">
+                                      ${total.toFixed(2)}
+                                    </Text>
+                                  )}
                                 </VStack>
                               </Flex>
                             </Box>
@@ -441,31 +664,89 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
-                                    {item.discount > 0 ? (
-                                      <>
-                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                    {(() => {
+                                      if (order.status === Status.PENDING) {
+                                        // Para PENDING: usar descuentos actualizados
+                                        const currentDiscount = discountData[item.product.id];
+                                        
+                                        if (currentDiscount?.isLoading) {
+                                          return (
+                                            <>
+                                              <Text fontSize="xs" color={textColor}>
+                                                ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                              </Text>
+                                              <Spinner size="xs" />
+                                              <Text fontSize="xs" color="gray.500">Cargando...</Text>
+                                            </>
+                                          );
+                                        }
+                                        
+                                        if (currentDiscount?.discount) {
+                                          const originalPrice = item.unitPrice / (1 - item.discount / 100);
+                                          const discountedPrice = originalPrice * (1 - currentDiscount.discount.percentage / 100);
+                                          const requestedQuantity = orderRequestData?.productItems?.find(pi => pi.product.id === item.product.id)?.quantity || item.quantity;
+                                          const minQuantity = currentDiscount.discount.productQuantity;
+                                          const discountApplied = requestedQuantity >= minQuantity;
+                                          
+                                          return (
+                                            <>
+                                              <Text 
+                                                fontSize="xs" 
+                                                color={textColor}
+                                                textDecoration={discountApplied ? "line-through" : "none"}
+                                              >
+                                                ${originalPrice.toFixed(2)}
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                ${discountedPrice.toFixed(2)}
+                                              </Text>
+                                              <Box
+                                                bg="green.500"
+                                                color="white"
+                                                px="0.4rem"
+                                                py="0.1rem"
+                                                borderRadius="md"
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                              >
+                                                -{currentDiscount.discount.percentage}%
+                                              </Box>
+                                            </>
+                                          );
+                                        }
+                                      }
+                                      
+                                      // Para otros estados: usar descuentos almacenados
+                                      if (item.discount > 0) {
+                                        return (
+                                          <>
+                                            <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                              ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                            </Text>
+                                            <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                              ${item.unitPrice.toFixed(2)}
+                                            </Text>
+                                            <Box
+                                              bg="green.500"
+                                              color="white"
+                                              px="0.4rem"
+                                              py="0.1rem"
+                                              borderRadius="md"
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                            >
+                                              -{item.discount}%
+                                            </Box>
+                                          </>
+                                        );
+                                      }
+                                      
+                                      return (
+                                        <Text fontSize="xs" color={textColor}>
                                           ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
-                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Box
-                                          bg="green.500"
-                                          color="white"
-                                          px="0.4rem"
-                                          py="0.1rem"
-                                          borderRadius="md"
-                                          fontSize="xs"
-                                          fontWeight="bold"
-                                        >
-                                          -{item.discount}%
-                                        </Box>
-                                      </>
-                                    ) : (
-                                      <Text fontSize="xs" color={textColor}>
-                                        ${item.unitPrice.toFixed(2)}
-                                      </Text>
-                                    )}
+                                      );
+                                    })()}
                                   </HStack>
                                 </Box>
                               </Flex>
@@ -476,15 +757,25 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Cant. solicitada
                                   </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
-                                    {requestedQuantity}
-                                  </Text>
+                                  {isLoadingOrderRequest ? (
+                                    <Spinner size="xs" />
+                                  ) : (
+                                    <Text
+                                      fontSize="sm"
+                                      fontWeight="semibold"
+                                    >
+                                      {requestedQuantity}
+                                    </Text>
+                                  )}
                                 </VStack>
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Cant. real
                                   </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="semibold"
+                                  >
                                     {actualQuantity}
                                   </Text>
                                 </VStack>
@@ -494,19 +785,26 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                               <Flex justify="space-between" align="center">
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Peso (kg)
+                                    Peso (g)
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
-                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(0) || '-' : 'N/A'}
                                   </Text>
                                 </VStack>
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Subtotal
                                   </Text>
-                                  <Text fontSize="md" fontWeight="bold">
-                                    ${total.toFixed(2)}
-                                  </Text>
+                                  {order.status === Status.PENDING && isLoadingDiscounts ? (
+                                    <HStack spacing="0.25rem">
+                                      <Spinner size="xs" />
+                                      <Text fontSize="xs" color="gray.500">Calc...</Text>
+                                    </HStack>
+                                  ) : (
+                                    <Text fontSize="md" fontWeight="bold">
+                                      ${total.toFixed(2)}
+                                    </Text>
+                                  )}
                                 </VStack>
                               </Flex>
                             </Box>
@@ -522,9 +820,18 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                         <Text fontSize="md" fontWeight="semibold">
                           Total:
                         </Text>
-                        <Text fontSize="md" fontWeight="semibold">
-                          ${calculateTotal().toFixed(2)}
-                        </Text>
+                        {order.status === Status.PENDING && isLoadingDiscounts ? (
+                          <HStack spacing="0.5rem">
+                            <Spinner size="sm" />
+                            <Text fontSize="md" fontWeight="semibold" color="gray.500">
+                              Calculando...
+                            </Text>
+                          </HStack>
+                        ) : (
+                          <Text fontSize="md" fontWeight="semibold">
+                            ${calculateTotal().toFixed(2)}
+                          </Text>
+                        )}
                       </HStack>
                     </Box>
                   </>

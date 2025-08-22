@@ -176,6 +176,11 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 {detailField('Unidad', getUnitTypeLabel(product.unitType), FiGrid)}
               </SimpleGrid>
 
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Stock total', product.stock?.toString() || '0', FiPackage)}
+                {detailField('Stock disponible', product.availableStock?.toString() || '0', FiBox)}
+              </SimpleGrid>
+
               {detailField('Descripción', product.description, FiFileText)}
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">

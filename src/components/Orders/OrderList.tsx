@@ -79,7 +79,8 @@ export const OrderList = ({
   const calculateTotal = (order: Order) => {
     return (
       order.productItems?.reduce((total, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - item.discount / 100);
+        // item.unitPrice ya tiene el descuento aplicado
+        const itemTotal = item.quantity * item.unitPrice;
         return total + itemTotal;
       }, 0) || 0
     );

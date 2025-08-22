@@ -35,18 +35,22 @@ import {
   Divider,
   Image,
   Select,
+  Tooltip,
+  Badge,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
-import { FaCheck, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaTrash, FaExclamationTriangle, FaHistory, FaPlus } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { FiPackage, FiUsers, FiFileText } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
 import { Order } from '@/entities/order';
+import { getOrderRequestById } from '@/services/orderRequest';
+import { getBestDiscount } from '@/services/discount';
 import { useUpdateOrder } from '@/hooks/order';
 import { useGetProducts } from '@/hooks/product';
-import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
+import type { OrderRequest } from '@/entities/orderRequest';
 
 type OrderPrepareProps = {
   order: Order;
@@ -90,12 +94,22 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       discount?: number;
       discountId?: string;
       isLoadingDiscount?: boolean;
+      stock?: number;
+      availableStock?: number;
+      isOriginalFromOrder: boolean;
+      originalPrice?: number;
+      originalDiscount?: number;
+      originalRequestedQuantity?: number;
+      minQuantityForDiscount?: number;
     }>
   >([]);
   const [debouncedProductSearch, setDebouncedProductSearch] = useState(productSearch);
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
   const [weightInputs, setWeightInputs] = useState<{ [key: number]: string }>({});
+  const [orderRequestData, setOrderRequestData] = useState<OrderRequest | null>(null);
+  const [isLoadingOrderRequest, setIsLoadingOrderRequest] = useState(false);
+  const [isInitializingProducts, setIsInitializingProducts] = useState(true);
   const productSearchRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, fieldError } = useUpdateOrder(orderProps);
@@ -166,67 +180,82 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     }
   }, [isLoadingProductsSearch, debouncedProductSearch]);
 
-  // Inicializar productos seleccionados con los productos de la orden
+  // Cargar datos de orderRequest cuando se abre el modal
   useEffect(() => {
-    const initializeProducts = async () => {
-      if (order.productItems && selectedProducts.length === 0 && order.client) {
-        // Primero agregar productos con estado de carga
-        const initialProducts = order.productItems.map((item) => ({
-          id: item.product.id,
-          name: item.product.name,
-          price: item.unitPrice,
-          imageUrl: item.product.imageUrl,
-          unitType: item.product.unitType,
-          requestedQuantity: item.quantity,
-          actualQuantity: item.quantity,
-          weight: item.product.unitType === UnitType.KILO ? item.quantity : undefined,
-          discount: 0,
-          isLoadingDiscount: true,
-        }));
-        setSelectedProducts(initialProducts);
+    if (!isOpen || !order.orderRequest?.id) {
+      return;
+    }
 
-        // Luego obtener descuentos reales para cada producto
-        for (const item of order.productItems) {
-          try {
-            const bestDiscount = await getBestDiscount(item.product.id, order.client.id);
-            setSelectedProducts((prev) =>
-              prev.map((p) =>
-                p.id === item.product.id
-                  ? {
-                      ...p,
-                      discount: bestDiscount?.percentage || 0,
-                      discountId: bestDiscount?.id || undefined,
-                      isLoadingDiscount: false,
-                    }
-                  : p,
-              ),
-            );
-          } catch (error) {
-            console.error('Error getting best discount for product', item.product.id, error);
-            setSelectedProducts((prev) =>
-              prev.map((p) =>
-                p.id === item.product.id
-                  ? {
-                      ...p,
-                      discount: 0,
-                      isLoadingDiscount: false,
-                    }
-                  : p,
-              ),
-            );
-          }
-        }
+    const fetchOrderRequest = async () => {
+      setIsLoadingOrderRequest(true);
+      try {
+        const orderRequestData = await getOrderRequestById(order.orderRequest!.id);
+        setOrderRequestData(orderRequestData);
+      } catch (error) {
+        console.error('Error loading orderRequest:', error);
+        toast({
+          title: 'Error',
+          description: 'No se pudo cargar la información del pedido original',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoadingOrderRequest(false);
       }
     };
 
-    if (order.productItems && selectedProducts.length === 0) {
-      initializeProducts();
+    fetchOrderRequest();
+  }, [isOpen, order.orderRequest?.id, toast]);
+
+  // Inicializar productos seleccionados con los productos de la orden
+  useEffect(() => {
+    if (order.productItems && selectedProducts.length === 0 && orderRequestData) {
+      // Usar los descuentos que ya vienen en los items de la orden
+      const initialProducts = order.productItems.map((item) => {
+        // Buscar la cantidad solicitada en el orderRequest original
+        const requestedItem = orderRequestData?.productItems?.find(
+          (reqItem) => reqItem.product.id === item.product.id,
+        );
+        const requestedQuantity = requestedItem?.quantity || 0;
+        
+        // Verificar si este producto estaba en el pedido original
+        const wasInOriginalOrder = !!requestedItem;
+
+        // Calcular el descuento basado en el precio unitario vs precio original
+        const originalPrice = item.unitPrice / (1 - item.discount / 100);
+        const discountPercentage = item.discount || 0;
+
+        return {
+          id: item.product.id,
+          name: item.product.name,
+          price: originalPrice, // Usar precio original
+          imageUrl: item.product.imageUrl,
+          unitType: item.product.unitType,
+          requestedQuantity: requestedQuantity,
+          actualQuantity: item.quantity,
+          weight: item.product.unitType === UnitType.KILO ? 0 : undefined,
+          discount: discountPercentage,
+          isLoadingDiscount: false,
+          stock: item.product.stock,
+          availableStock: item.product.availableStock,
+          isOriginalFromOrder: wasInOriginalOrder,
+          originalPrice: wasInOriginalOrder ? originalPrice : undefined,
+          originalDiscount: wasInOriginalOrder ? discountPercentage : undefined,
+          originalRequestedQuantity: wasInOriginalOrder ? requestedQuantity : undefined,
+          minQuantityForDiscount: undefined, // Se definirá cuando sea necesario
+        };
+      });
+      setSelectedProducts(initialProducts);
+      setIsInitializingProducts(false);
     }
-  }, [order.productItems, selectedProducts.length, order.client]);
+  }, [order.productItems, selectedProducts.length, orderRequestData]);
 
   const handleClose = () => {
     setOrderProps(undefined);
     setShowConfirmDialog(false);
+    setIsInitializingProducts(true);
+    setSelectedProducts([]);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
@@ -253,11 +282,43 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   const handleProductSelect = async (product: any) => {
     const exists = selectedProducts.find((p) => p.id === product.id);
-    if (!exists && order.client) {
-      // Agregar inmediatamente el producto con estado de carga
-      setSelectedProducts((prev) => [
-        ...prev,
-        {
+    if (!exists) {
+      // Verificar si este producto estaba en el pedido original (orderRequest)
+      const originalItem = orderRequestData?.productItems?.find(
+        (reqItem) => reqItem.product.id === product.id,
+      );
+      
+      if (originalItem) {
+        // Es un producto del pedido original que se está re-agregando
+        const orderItem = order.productItems?.find(item => item.product.id === product.id);
+        const originalPrice = orderItem ? orderItem.unitPrice / (1 - orderItem.discount / 100) : product.price;
+        const originalDiscount = orderItem?.discount || 0;
+        
+        setSelectedProducts((prev) => [
+          ...prev,
+          {
+            id: product.id,
+            name: product.name,
+            price: originalPrice,
+            imageUrl: product.imageUrl,
+            unitType: product.unitType,
+            requestedQuantity: originalItem.quantity,
+            actualQuantity: originalItem.quantity,
+            weight: product.unitType === UnitType.KILO ? 0 : undefined,
+            discount: originalDiscount,
+            isLoadingDiscount: false,
+            stock: product.stock,
+            availableStock: product.availableStock,
+            isOriginalFromOrder: true,
+            originalPrice: originalPrice,
+            originalDiscount: originalDiscount,
+            originalRequestedQuantity: originalItem.quantity,
+            minQuantityForDiscount: undefined,
+          },
+        ]);
+      } else {
+        // Es un producto nuevo, buscar descuento actual
+        const newProduct = {
           id: product.id,
           name: product.name,
           price: product.price,
@@ -265,47 +326,53 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: product.unitType,
           requestedQuantity: 0,
           actualQuantity: 1,
-          weight: product.unitType === UnitType.KILO ? 1 : undefined,
+          weight: product.unitType === UnitType.KILO ? 0 : undefined,
           discount: 0,
           isLoadingDiscount: true,
-        },
-      ]);
+          stock: product.stock,
+          availableStock: product.availableStock,
+          isOriginalFromOrder: false,
+          originalPrice: undefined,
+          originalDiscount: undefined,
+          originalRequestedQuantity: undefined,
+          minQuantityForDiscount: undefined,
+        };
+
+        setSelectedProducts((prev) => [...prev, newProduct]);
+
+        // Buscar descuento actual para producto nuevo
+        try {
+          const bestDiscount = await getBestDiscount(product.id, order.client?.id!);
+          setSelectedProducts((prev) =>
+            prev.map((p) =>
+              p.id === product.id
+                ? {
+                    ...p,
+                    discount: bestDiscount?.percentage || 0,
+                    minQuantityForDiscount: bestDiscount?.productQuantity,
+                    isLoadingDiscount: false,
+                  }
+                : p,
+            ),
+          );
+        } catch (error) {
+          console.error('Error getting best discount:', error);
+          setSelectedProducts((prev) =>
+            prev.map((p) =>
+              p.id === product.id
+                ? {
+                    ...p,
+                    discount: 0,
+                    isLoadingDiscount: false,
+                  }
+                : p,
+            ),
+          );
+        }
+      }
 
       setProductSearch('');
       setShowProductDropdown(false);
-
-      try {
-        // Obtener el mejor descuento para este producto y cliente
-        const bestDiscount = await getBestDiscount(product.id, order.client.id);
-
-        // Actualizar el producto con el descuento obtenido
-        setSelectedProducts((prev) =>
-          prev.map((p) =>
-            p.id === product.id
-              ? {
-                  ...p,
-                  discount: bestDiscount?.percentage || 0,
-                  discountId: bestDiscount?.id || undefined,
-                  isLoadingDiscount: false,
-                }
-              : p,
-          ),
-        );
-      } catch (error) {
-        console.error('Error getting best discount:', error);
-        // Si hay error, quitar el estado de carga y mantener sin descuento
-        setSelectedProducts((prev) =>
-          prev.map((p) =>
-            p.id === product.id
-              ? {
-                  ...p,
-                  discount: 0,
-                  isLoadingDiscount: false,
-                }
-              : p,
-          ),
-        );
-      }
     } else {
       setProductSearch('');
       setShowProductDropdown(false);
@@ -322,6 +389,17 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   const handleWeightChange = (productId: number, weight: number) => {
     setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, weight } : p)));
+  };
+
+  // Función para validar si la cantidad excede el stock disponible
+  const isQuantityExceedsStock = (product: any): boolean => {
+    return product.actualQuantity > (product.availableStock || 0);
+  };
+
+  // Función para verificar si el descuento aún se aplica según cantidad mínima
+  const isDiscountStillValid = (product: any): boolean => {
+    if (!product.discount || !product.minQuantityForDiscount) return true;
+    return product.actualQuantity >= product.minQuantityForDiscount;
   };
 
   // Click outside handler
@@ -373,7 +451,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   };
 
   const validateForm = (values: typeof initialValues) => {
-    const errors: { crates?: string; products?: string } = {};
+    const errors: { crates?: string; products?: string; stock?: string } = {};
 
     if (!values.crates || values.crates <= 0) {
       errors.crates = 'Los cajones deben ser mayor a 0';
@@ -381,6 +459,12 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
     if (selectedProducts.length === 0) {
       errors.products = 'Debe tener al menos un producto en la lista';
+    }
+
+    // Validar stock disponible
+    const hasStockErrors = selectedProducts.some(product => isQuantityExceedsStock(product));
+    if (hasStockErrors) {
+      errors.stock = 'Algunos productos exceden el stock disponible';
     }
 
     return errors;
@@ -398,7 +482,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
       quantity: product.actualQuantity,
-      weight: product.unitType === UnitType.KILO ? product.weight : undefined,
+      weight: product.unitType === UnitType.KILO ? product.weight / 1000 : undefined,
     }));
 
     const orderData: any = {
@@ -631,7 +715,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                       <Divider />
 
                       {/* Lista de productos */}
-                      <FormControl isInvalid={!!(formik.errors as any).products}>
+                      <FormControl isInvalid={!!(formik.errors as any).products || !!(formik.errors as any).stock}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
@@ -641,8 +725,23 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                         {(formik.errors as any).products && (
                           <FormErrorMessage mb="0.5rem">{(formik.errors as any).products}</FormErrorMessage>
                         )}
+                        {(formik.errors as any).stock && (
+                          <FormErrorMessage mb="0.5rem">{(formik.errors as any).stock}</FormErrorMessage>
+                        )}
 
-                        {selectedProducts.length > 0 ? (
+                        {isInitializingProducts ? (
+                          <Box
+                            p="2rem"
+                            textAlign="center"
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            bg={inputBg}
+                          >
+                            <Spinner size="md" mb="1rem" />
+                            <Text color={textColor}>Cargando productos...</Text>
+                          </Box>
+                        ) : selectedProducts.length > 0 ? (
                           <>
                             <VStack spacing="0.5rem" align="stretch">
                               {selectedProducts.map((product) => (
@@ -670,9 +769,28 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         flexShrink={0}
                                       />
                                       <Box flex="1" alignSelf="center">
-                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
-                                          {product.name}
-                                        </Text>
+                                        <HStack spacing="0.5rem" align="center" mb="0.25rem">
+                                          <Text fontSize="sm" fontWeight="medium">
+                                            {product.name}
+                                          </Text>
+                                          {!product.isOriginalFromOrder && (
+                                            <Badge
+                                              size="sm"
+                                              colorScheme="blue"
+                                              variant="subtle"
+                                            >
+                                              <HStack spacing="0.25rem" align="center">
+                                                <Icon 
+                                                  as={FaPlus} 
+                                                  boxSize="0.625rem" 
+                                                />
+                                                <Text fontSize="xs">
+                                                  Nuevo
+                                                </Text>
+                                              </HStack>
+                                            </Badge>
+                                          )}
+                                        </HStack>
                                         <HStack spacing="0.5rem" align="center">
                                           {product.isLoadingDiscount ? (
                                             <>
@@ -727,15 +845,46 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         <Text fontSize="xs" color={textColor} fontWeight="medium">
                                           Cant. solicitada
                                         </Text>
-                                        <Text fontSize="sm" fontWeight="semibold">
-                                          {product.requestedQuantity}
-                                        </Text>
+                                        {isLoadingOrderRequest ? (
+                                          <Spinner size="xs" />
+                                        ) : (
+                                          <Text
+                                            fontSize="sm"
+                                            fontWeight="semibold"
+                                          >
+                                            {product.requestedQuantity}
+                                          </Text>
+                                        )}
                                       </VStack>
 
                                       <VStack spacing="0.25rem" align="center">
-                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                          Cant. real
-                                        </Text>
+                                        <HStack spacing="0.25rem">
+                                          <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                            Cant. real
+                                          </Text>
+                                          {isQuantityExceedsStock(product) && (
+                                            <Tooltip
+                                              label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
+                                              placement="top"
+                                              hasArrow
+                                              bg="red.500"
+                                              color="white"
+                                            >
+                                              <Icon as={FaExclamationTriangle} color="red.500" boxSize="0.75rem" />
+                                            </Tooltip>
+                                          )}
+                                          {!isDiscountStillValid(product) && product.minQuantityForDiscount && (
+                                            <Tooltip
+                                              label={`Cantidad mínima para descuento: ${product.minQuantityForDiscount} | Descuento no aplicable`}
+                                              placement="top"
+                                              hasArrow
+                                              bg="orange.500"
+                                              color="white"
+                                            >
+                                              <Icon as={FaExclamationTriangle} color="orange.500" boxSize="0.75rem" />
+                                            </Tooltip>
+                                          )}
+                                        </HStack>
                                         <HStack spacing={0}>
                                           <IconButton
                                             aria-label="Disminuir cantidad"
@@ -808,7 +957,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
                                       <VStack spacing="0.25rem" align="center">
                                         <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                          Peso (kg)
+                                          Peso (g)
                                         </Text>
                                         <Input
                                           size="sm"
@@ -836,8 +985,8 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             if (product.unitType === UnitType.KILO) {
                                               const value = parseFloat(e.target.value);
                                               if (isNaN(value) || value <= 0) {
-                                                handleWeightChange(product.id, 1);
-                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                handleWeightChange(product.id, 0);
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '0' }));
                                               } else {
                                                 setWeightInputs((prev) => ({
                                                   ...prev,
@@ -863,7 +1012,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           {(
                                             product.actualQuantity *
                                             product.price *
-                                            (1 - (product.discount || 0) / 100)
+                                            (1 - (isDiscountStillValid(product) ? (product.discount || 0) : 0) / 100)
                                           ).toFixed(2)}
                                         </Text>
                                       </VStack>
@@ -886,9 +1035,28 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         flexShrink={0}
                                       />
                                       <Box flex="1">
-                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
-                                          {product.name}
-                                        </Text>
+                                        <VStack spacing="0.25rem" align="flex-start" mb="0.25rem">
+                                          <Text fontSize="sm" fontWeight="medium">
+                                            {product.name}
+                                          </Text>
+                                          {!product.isOriginalFromOrder && (
+                                            <Badge
+                                              size="sm"
+                                              colorScheme="blue"
+                                              variant="subtle"
+                                            >
+                                              <HStack spacing="0.25rem" align="center">
+                                                <Icon 
+                                                  as={FaPlus} 
+                                                  boxSize="0.625rem" 
+                                                />
+                                                <Text fontSize="xs">
+                                                  Nuevo
+                                                </Text>
+                                              </HStack>
+                                            </Badge>
+                                          )}
+                                        </VStack>
                                         <HStack spacing="0.5rem" align="center">
                                           {product.isLoadingDiscount ? (
                                             <>
@@ -944,14 +1112,45 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         <Text fontSize="xs" color={textColor} fontWeight="medium">
                                           Cant. solicitada
                                         </Text>
-                                        <Text fontSize="sm" fontWeight="semibold">
-                                          {product.requestedQuantity}
-                                        </Text>
+                                        {isLoadingOrderRequest ? (
+                                          <Spinner size="xs" />
+                                        ) : (
+                                          <Text
+                                            fontSize="sm"
+                                            fontWeight="semibold"
+                                          >
+                                            {product.requestedQuantity}
+                                          </Text>
+                                        )}
                                       </VStack>
                                       <VStack spacing="0.25rem" align="center">
-                                        <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                          Cant. real
-                                        </Text>
+                                        <HStack spacing="0.25rem">
+                                          <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                            Cant. real
+                                          </Text>
+                                          {isQuantityExceedsStock(product) && (
+                                            <Tooltip
+                                              label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
+                                              placement="top"
+                                              hasArrow
+                                              bg="red.500"
+                                              color="white"
+                                            >
+                                              <Icon as={FaExclamationTriangle} color="red.500" boxSize="0.75rem" />
+                                            </Tooltip>
+                                          )}
+                                          {!isDiscountStillValid(product) && product.minQuantityForDiscount && (
+                                            <Tooltip
+                                              label={`Cantidad mínima para descuento: ${product.minQuantityForDiscount} | Descuento no aplicable`}
+                                              placement="top"
+                                              hasArrow
+                                              bg="orange.500"
+                                              color="white"
+                                            >
+                                              <Icon as={FaExclamationTriangle} color="orange.500" boxSize="0.75rem" />
+                                            </Tooltip>
+                                          )}
+                                        </HStack>
                                         <HStack spacing={0}>
                                           <IconButton
                                             aria-label="Disminuir cantidad"
@@ -1027,7 +1226,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                     <Flex justify="space-between" align="center">
                                       <VStack spacing="0.25rem" align="center">
                                         <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                          Peso (kg)
+                                          Peso (g)
                                         </Text>
                                         <Input
                                           size="sm"
@@ -1055,8 +1254,8 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             if (product.unitType === UnitType.KILO) {
                                               const value = parseFloat(e.target.value);
                                               if (isNaN(value) || value <= 0) {
-                                                handleWeightChange(product.id, 1);
-                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                handleWeightChange(product.id, 0);
+                                                setWeightInputs((prev) => ({ ...prev, [product.id]: '0' }));
                                               } else {
                                                 setWeightInputs((prev) => ({
                                                   ...prev,
@@ -1081,7 +1280,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           {(
                                             product.actualQuantity *
                                             product.price *
-                                            (1 - (product.discount || 0) / 100)
+                                            (1 - (isDiscountStillValid(product) ? (product.discount || 0) : 0) / 100)
                                           ).toFixed(2)}
                                         </Text>
                                       </VStack>
@@ -1102,7 +1301,8 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                   $
                                   {selectedProducts
                                     .reduce((total, product) => {
-                                      const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
+                                      const discountToApply = isDiscountStillValid(product) ? (product.discount || 0) : 0;
+                                      const effectivePrice = product.price * (1 - discountToApply / 100);
                                       return total + product.actualQuantity * effectivePrice;
                                     }, 0)
                                     .toFixed(2)}

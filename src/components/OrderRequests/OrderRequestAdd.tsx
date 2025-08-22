@@ -106,6 +106,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       quantity: number;
       discount?: number;
       discountId?: string;
+      minQuantityForDiscount?: number;
       isLoadingDiscount?: boolean;
     }>
   >([]);
@@ -262,6 +263,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                   ...p,
                   discount: bestDiscount?.percentage || 0,
                   discountId: bestDiscount?.id || undefined,
+                  minQuantityForDiscount: bestDiscount?.productQuantity || undefined,
                   isLoadingDiscount: false,
                 }
               : p,
@@ -379,7 +381,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        discount: item.discount || 0,
       })),
     } as any;
 
@@ -444,575 +445,436 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                 }, [selectedProducts.length, selectedClient?.id, formik.submitCount]);
 
                 return (
-                  <form id="order-request-form" onSubmit={formik.handleSubmit}>
-                    <VStack spacing="1rem" align="stretch">
-                      <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiUsers} boxSize="1rem" />
-                            <Text>Cliente</Text>
-                          </HStack>
-                        </FormLabel>
+                  <>
+                    <form id="order-request-form" onSubmit={formik.handleSubmit}>
+                      <VStack spacing="1rem" align="stretch">
+                        <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiUsers} boxSize="1rem" />
+                              <Text>Cliente</Text>
+                            </HStack>
+                          </FormLabel>
 
-                        {/* Búsqueda de clientes */}
-                        <Box position="relative" ref={clientSearchRef}>
-                          {selectedClient ? (
-                            <Flex
-                              h="40px"
-                              px="0.75rem"
-                              bg={inputBg}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              align="center"
-                              justify="space-between"
-                            >
-                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                {selectedClient.name}
-                              </Text>
-                              <IconButton
-                                aria-label="Limpiar cliente"
-                                icon={<Text fontSize="sm">✕</Text>}
-                                size="xs"
-                                variant="ghost"
-                                onClick={handleClearClientSearch}
-                                color={textColor}
-                                _hover={{}}
-                                ml="0.5rem"
-                              />
-                            </Flex>
-                          ) : (
-                            <Box>
+                          {/* Búsqueda de clientes */}
+                          <Box position="relative" ref={clientSearchRef}>
+                            {selectedClient ? (
                               <Flex
+                                h="40px"
+                                px="0.75rem"
                                 bg={inputBg}
                                 borderRadius="md"
-                                overflow="hidden"
-                                borderWidth="1px"
+                                border="1px solid"
                                 borderColor={inputBorder}
+                                align="center"
+                                justify="space-between"
                               >
-                                <Select
-                                  value={clientSearchType}
-                                  onChange={(e) =>
-                                    setClientSearchType(
-                                      e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName',
-                                    )
-                                  }
-                                  bg="transparent"
-                                  border="none"
+                                <Text fontSize="sm" noOfLines={1} fontWeight="medium">
+                                  {selectedClient.name}
+                                </Text>
+                                <IconButton
+                                  aria-label="Limpiar cliente"
+                                  icon={<Text fontSize="sm">✕</Text>}
+                                  size="xs"
+                                  variant="ghost"
+                                  onClick={handleClearClientSearch}
                                   color={textColor}
-                                  w={{ base: '6rem', md: 'auto' }}
-                                  minW={{ base: '6rem', md: '7rem' }}
-                                  borderRadius="none"
-                                  _focus={{ boxShadow: 'none' }}
-                                  fontSize={{ base: 'xs', md: 'sm' }}
+                                  _hover={{}}
+                                  ml="0.5rem"
+                                />
+                              </Flex>
+                            ) : (
+                              <Box>
+                                <Flex
+                                  bg={inputBg}
+                                  borderRadius="md"
+                                  overflow="hidden"
+                                  borderWidth="1px"
+                                  borderColor={inputBorder}
                                 >
-                                  <option value="name">Nombre</option>
-                                  <option value="rut">RUT</option>
-                                  <option value="razonSocial">Razón social</option>
-                                  <option value="contactName">Contacto</option>
-                                </Select>
-
-                                <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                                <InputGroup flex="1">
-                                  <Input
-                                    placeholder="Buscar cliente..."
-                                    value={clientSearch}
-                                    onChange={(e) => handleClientSearch(e.target.value)}
+                                  <Select
+                                    value={clientSearchType}
+                                    onChange={(e) =>
+                                      setClientSearchType(
+                                        e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName',
+                                      )
+                                    }
                                     bg="transparent"
                                     border="none"
-                                    borderRadius="none"
-                                    _placeholder={{ color: textColor }}
                                     color={textColor}
-                                    _focus={{ boxShadow: 'none' }}
-                                    pl="1rem"
-                                    onFocus={() => clientSearch && setShowClientDropdown(true)}
-                                  />
-                                  <InputRightElement>
-                                    <IconButton
-                                      aria-label="Buscar"
-                                      icon={<AiOutlineSearch size="1.25rem" />}
-                                      size="sm"
-                                      variant="ghost"
-                                      color={textColor}
-                                      _hover={{}}
-                                    />
-                                  </InputRightElement>
-                                </InputGroup>
-                              </Flex>
-
-                              {/* Dropdown de resultados de clientes */}
-                              {showClientDropdown && (
-                                <Box
-                                  position="absolute"
-                                  top="100%"
-                                  left={0}
-                                  right={0}
-                                  mt={1}
-                                  bg={dropdownBg}
-                                  border="1px solid"
-                                  borderColor={dropdownBorder}
-                                  borderRadius="md"
-                                  boxShadow="lg"
-                                  maxH="400px"
-                                  overflowY="auto"
-                                  zIndex={20}
-                                >
-                                  {(() => {
-                                    const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
-                                    const isSearching =
-                                      !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
-                                    const searchCompleted =
-                                      !isTyping &&
-                                      !isSearching &&
-                                      debouncedClientSearch.length >= 2 &&
-                                      lastClientSearchTerm === debouncedClientSearch;
-
-                                    if (isTyping || isSearching) {
-                                      return (
-                                        <Flex p={3} justify="center" align="center" gap={2}>
-                                          <Spinner size="sm" />
-                                          <Text fontSize="sm" color="gray.500">
-                                            Buscando clientes...
-                                          </Text>
-                                        </Flex>
-                                      );
-                                    }
-
-                                    if (searchCompleted && clientsSearch?.length > 0) {
-                                      return (
-                                        <List spacing={0}>
-                                          {clientsSearch.map((client: any, index: number) => (
-                                            <Fragment key={client.id}>
-                                              <ListItem
-                                                p="0.75rem"
-                                                cursor="pointer"
-                                                _hover={{ bg: hoverBg }}
-                                                transition="background-color 0.2s ease"
-                                                onClick={() => handleClientSelect(client)}
-                                              >
-                                                <Box>
-                                                  <Text fontSize="sm" fontWeight="medium">
-                                                    {client.name}
-                                                  </Text>
-                                                  <Text fontSize="xs" color={textColor}>
-                                                    {client.rut && `RUT: ${client.rut}`}
-                                                    {client.contactName && ` - Contacto: ${client.contactName}`}
-                                                  </Text>
-                                                </Box>
-                                              </ListItem>
-                                              {index < clientsSearch.length - 1 && <Divider />}
-                                            </Fragment>
-                                          ))}
-                                        </List>
-                                      );
-                                    }
-
-                                    if (searchCompleted && clientsSearch?.length === 0) {
-                                      return (
-                                        <Text p={3} fontSize="sm" color="gray.500">
-                                          No se encontraron clientes
-                                        </Text>
-                                      );
-                                    }
-
-                                    if (
-                                      debouncedClientSearch.length >= 2 &&
-                                      (!searchCompleted || isLoadingClientsSearch)
-                                    ) {
-                                      return (
-                                        <Flex p={3} justify="center" align="center" gap={2}>
-                                          <Spinner size="sm" />
-                                          <Text fontSize="sm" color="gray.500">
-                                            Buscando clientes...
-                                          </Text>
-                                        </Flex>
-                                      );
-                                    }
-
-                                    return null;
-                                  })()}
-                                </Box>
-                              )}
-                            </Box>
-                          )}
-                        </Box>
-
-                        {!selectedClient?.id && formik.submitCount > 0 && (
-                          <FormErrorMessage>El cliente es requerido</FormErrorMessage>
-                        )}
-                      </FormControl>
-
-                      <FormControl
-                        isInvalid={
-                          !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
-                        }
-                      >
-                        <FormLabel fontWeight="semibold">Productos</FormLabel>
-
-                        {/* Mostrar mensaje si no hay cliente seleccionado */}
-                        {!selectedClient ? (
-                          <Flex
-                            justifyContent="center"
-                            alignItems="center"
-                            h={{ base: '4rem', md: '2.5rem' }}
-                            bg={inputBg}
-                            borderRadius="md"
-                            border="1px solid"
-                            borderColor={inputBorder}
-                          >
-                            <Text fontSize="sm" color={textColor} textAlign="center">
-                              Seleccione un cliente antes de agregar productos
-                            </Text>
-                          </Flex>
-                        ) : (
-                          <>
-                            {/* Buscador de productos */}
-                            <Box position="relative" ref={productSearchRef}>
-                              <Flex
-                                bg={inputBg}
-                                borderRadius="md"
-                                overflow="hidden"
-                                borderWidth="1px"
-                                borderColor={inputBorder}
-                              >
-                                <Select
-                                  value={productSearchType}
-                                  onChange={(e) =>
-                                    setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
-                                  }
-                                  bg="transparent"
-                                  border="none"
-                                  color={textColor}
-                                  w={{ base: '6rem', md: 'auto' }}
-                                  minW={{ base: '6rem', md: '7rem' }}
-                                  borderRadius="none"
-                                  _focus={{ boxShadow: 'none' }}
-                                  fontSize={{ base: 'xs', md: 'sm' }}
-                                >
-                                  <option value="name">Nombre</option>
-                                  <option value="internalCode">Cód. interno</option>
-                                  <option value="barcode">Cód. de barras</option>
-                                </Select>
-
-                                <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                                <InputGroup flex="1">
-                                  <Input
-                                    placeholder="Buscar producto..."
-                                    value={productSearch}
-                                    onChange={(e) => handleProductSearch(e.target.value)}
-                                    bg="transparent"
-                                    border="none"
+                                    w={{ base: '6rem', md: 'auto' }}
+                                    minW={{ base: '6rem', md: '7rem' }}
                                     borderRadius="none"
-                                    _placeholder={{ color: textColor }}
-                                    color={textColor}
                                     _focus={{ boxShadow: 'none' }}
-                                    pl="1rem"
-                                    onFocus={() => productSearch && setShowProductDropdown(true)}
-                                  />
-                                  <InputRightElement>
-                                    <IconButton
-                                      aria-label="Buscar"
-                                      icon={<AiOutlineSearch size="1.25rem" />}
-                                      size="sm"
-                                      variant="ghost"
+                                    fontSize={{ base: 'xs', md: 'sm' }}
+                                  >
+                                    <option value="name">Nombre</option>
+                                    <option value="rut">RUT</option>
+                                    <option value="razonSocial">Razón social</option>
+                                    <option value="contactName">Contacto</option>
+                                  </Select>
+
+                                  <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                  <InputGroup flex="1">
+                                    <Input
+                                      placeholder="Buscar cliente..."
+                                      value={clientSearch}
+                                      onChange={(e) => handleClientSearch(e.target.value)}
+                                      bg="transparent"
+                                      border="none"
+                                      borderRadius="none"
+                                      _placeholder={{ color: textColor }}
                                       color={textColor}
-                                      _hover={{}}
+                                      _focus={{ boxShadow: 'none' }}
+                                      pl="1rem"
+                                      onFocus={() => clientSearch && setShowClientDropdown(true)}
                                     />
-                                  </InputRightElement>
-                                </InputGroup>
-                              </Flex>
+                                    <InputRightElement>
+                                      <IconButton
+                                        aria-label="Buscar"
+                                        icon={<AiOutlineSearch size="1.25rem" />}
+                                        size="sm"
+                                        variant="ghost"
+                                        color={textColor}
+                                        _hover={{}}
+                                      />
+                                    </InputRightElement>
+                                  </InputGroup>
+                                </Flex>
 
-                              {/* Dropdown de resultados de productos */}
-                              {showProductDropdown && (
-                                <Box
-                                  position="absolute"
-                                  top="100%"
-                                  left={0}
-                                  right={0}
-                                  mt={1}
-                                  bg={dropdownBg}
-                                  border="1px solid"
-                                  borderColor={dropdownBorder}
-                                  borderRadius="md"
-                                  boxShadow="lg"
-                                  maxH="400px"
-                                  overflowY="auto"
-                                  zIndex={20}
-                                >
-                                  {(() => {
-                                    const isTyping =
-                                      productSearch !== debouncedProductSearch && productSearch.length >= 2;
-                                    const isSearching =
-                                      !isTyping && isLoadingProductsSearch && debouncedProductSearch.length >= 2;
-                                    const searchCompleted =
-                                      !isTyping &&
-                                      !isSearching &&
-                                      debouncedProductSearch.length >= 2 &&
-                                      lastProductSearchTerm === debouncedProductSearch;
+                                {/* Dropdown de resultados de clientes */}
+                                {showClientDropdown && (
+                                  <Box
+                                    position="absolute"
+                                    top="100%"
+                                    left={0}
+                                    right={0}
+                                    mt={1}
+                                    bg={dropdownBg}
+                                    border="1px solid"
+                                    borderColor={dropdownBorder}
+                                    borderRadius="md"
+                                    boxShadow="lg"
+                                    maxH="400px"
+                                    overflowY="auto"
+                                    zIndex={20}
+                                  >
+                                    {(() => {
+                                      const isTyping =
+                                        clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
+                                      const isSearching =
+                                        !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                      const searchCompleted =
+                                        !isTyping &&
+                                        !isSearching &&
+                                        debouncedClientSearch.length >= 2 &&
+                                        lastClientSearchTerm === debouncedClientSearch;
 
-                                    if (isTyping || isSearching) {
-                                      return (
-                                        <Flex p={3} justify="center" align="center" gap={2}>
-                                          <Spinner size="sm" />
-                                          <Text fontSize="sm" color="gray.500">
-                                            Buscando productos...
-                                          </Text>
-                                        </Flex>
-                                      );
-                                    }
+                                      if (isTyping || isSearching) {
+                                        return (
+                                          <Flex p={3} justify="center" align="center" gap={2}>
+                                            <Spinner size="sm" />
+                                            <Text fontSize="sm" color="gray.500">
+                                              Buscando clientes...
+                                            </Text>
+                                          </Flex>
+                                        );
+                                      }
 
-                                    if (searchCompleted && productsSearch?.length > 0) {
-                                      return (
-                                        <List spacing={0}>
-                                          {productsSearch.map((product: any, index: number) => {
-                                            const isSelected = selectedProducts.some((p) => p.id === product.id);
-                                            return (
-                                              <Fragment key={product.id}>
+                                      if (searchCompleted && clientsSearch?.length > 0) {
+                                        return (
+                                          <List spacing={0}>
+                                            {clientsSearch.map((client: any, index: number) => (
+                                              <Fragment key={client.id}>
                                                 <ListItem
                                                   p="0.75rem"
                                                   cursor="pointer"
                                                   _hover={{ bg: hoverBg }}
                                                   transition="background-color 0.2s ease"
-                                                  opacity={isSelected ? 0.5 : 1}
-                                                  onClick={() => !isSelected && handleProductSelect(product)}
+                                                  onClick={() => handleClientSelect(client)}
                                                 >
-                                                  <Flex align="center" gap="0.75rem">
-                                                    <Image
-                                                      src={
-                                                        product.imageUrl ||
-                                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                                      }
-                                                      alt={product.name}
-                                                      boxSize="40px"
-                                                      objectFit="cover"
-                                                      borderRadius="md"
-                                                      flexShrink={0}
-                                                    />
-                                                    <Box flex="1">
-                                                      <Text fontSize="sm" fontWeight="medium">
-                                                        {product.name}
-                                                      </Text>
-                                                      <Text fontSize="xs" color={textColor}>
-                                                        Precio: ${product.price || 0}
-                                                        {product.internalCode && ` - Cód: ${product.internalCode}`}
-                                                      </Text>
-                                                    </Box>
-                                                    {isSelected && (
-                                                      <Text fontSize="xs" color="green.500">
-                                                        Seleccionado
-                                                      </Text>
-                                                    )}
-                                                  </Flex>
-                                                </ListItem>
-                                                {index < productsSearch.length - 1 && <Divider />}
-                                              </Fragment>
-                                            );
-                                          })}
-                                        </List>
-                                      );
-                                    }
-
-                                    if (searchCompleted && productsSearch?.length === 0) {
-                                      return (
-                                        <Text p={3} fontSize="sm" color="gray.500">
-                                          No se encontraron productos
-                                        </Text>
-                                      );
-                                    }
-
-                                    if (
-                                      debouncedProductSearch.length >= 2 &&
-                                      (!searchCompleted || isLoadingProductsSearch)
-                                    ) {
-                                      return (
-                                        <Flex p={3} justify="center" align="center" gap={2}>
-                                          <Spinner size="sm" />
-                                          <Text fontSize="sm" color="gray.500">
-                                            Buscando productos...
-                                          </Text>
-                                        </Flex>
-                                      );
-                                    }
-
-                                    return null;
-                                  })()}
-                                </Box>
-                              )}
-                            </Box>
-
-                            <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
-
-                            {/* Lista de productos seleccionados */}
-                            {selectedProducts.length > 0 && (
-                              <Box mt="1rem">
-                                <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                                  Productos seleccionados ({selectedProducts.length}):
-                                </Text>
-                                <VStack spacing="0.5rem" align="stretch">
-                                  {selectedProducts.map((product) => {
-                                    const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
-                                    const subtotal = product.quantity * effectivePrice;
-                                    return (
-                                      <Box
-                                        key={product.id}
-                                        p={{ base: '1rem', md: '0.75rem' }}
-                                        border="1px solid"
-                                        borderColor={inputBorder}
-                                        borderRadius="md"
-                                        bg={inputBg}
-                                      >
-                                        {/* Desktop Layout - Una sola fila */}
-                                        <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="1rem">
-                                          {/* Imagen */}
-                                          <Image
-                                            src={
-                                              product.imageUrl ||
-                                              'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                            }
-                                            alt={product.name}
-                                            boxSize="50px"
-                                            objectFit="cover"
-                                            borderRadius="md"
-                                            flexShrink={0}
-                                          />
-
-                                          {/* Nombre y Precio */}
-                                          <Box flex="1">
-                                            <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
-                                              {product.name}
-                                            </Text>
-                                            <HStack spacing="0.5rem" align="center">
-                                              {product.isLoadingDiscount ? (
-                                                <>
-                                                  <Text fontSize="xs" color={textColor}>
-                                                    ${product.price.toFixed(2)}
-                                                  </Text>
-                                                  <Spinner size="xs" />
-                                                  <Text fontSize="xs" color="gray.500">
-                                                    Cargando...
-                                                  </Text>
-                                                </>
-                                              ) : product.discount && product.discount > 0 ? (
-                                                <>
-                                                  <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                                    ${product.price.toFixed(2)}
-                                                  </Text>
-                                                  <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                    ${effectivePrice.toFixed(2)}
-                                                  </Text>
-                                                  <Box
-                                                    bg="green.500"
-                                                    color="white"
-                                                    px="0.4rem"
-                                                    py="0.1rem"
-                                                    borderRadius="md"
-                                                    fontSize="xs"
-                                                    fontWeight="bold"
-                                                  >
-                                                    -{product.discount}%
+                                                  <Box>
+                                                    <Text fontSize="sm" fontWeight="medium">
+                                                      {client.name}
+                                                    </Text>
+                                                    <Text fontSize="xs" color={textColor}>
+                                                      {client.rut && `RUT: ${client.rut}`}
+                                                      {client.contactName && ` - Contacto: ${client.contactName}`}
+                                                    </Text>
                                                   </Box>
-                                                </>
-                                              ) : (
-                                                <Text fontSize="xs" color={textColor}>
-                                                  ${product.price.toFixed(2)}
-                                                </Text>
-                                              )}
-                                            </HStack>
-                                          </Box>
+                                                </ListItem>
+                                                {index < clientsSearch.length - 1 && <Divider />}
+                                              </Fragment>
+                                            ))}
+                                          </List>
+                                        );
+                                      }
 
-                                          {/* Controles de cantidad */}
-                                          <HStack spacing={0}>
-                                            <IconButton
-                                              aria-label="Disminuir cantidad"
-                                              icon={<Text fontSize="sm">−</Text>}
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => {
-                                                const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
-                                              }}
-                                              borderRightRadius={0}
-                                            />
-                                            <Input
-                                              size="sm"
-                                              value={quantityInputs[product.id] ?? product.quantity}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const regex = /^\d*\.?\d*$/;
-                                                if (regex.test(value) || value === '') {
-                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                  const numValue = parseFloat(value);
-                                                  if (!isNaN(numValue) && numValue >= 0) {
-                                                    handleProductQuantityChange(product.id, numValue);
-                                                  } else if (value === '' || value === '.') {
-                                                    handleProductQuantityChange(product.id, 0);
-                                                  }
-                                                }
-                                              }}
-                                              onBlur={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                if (isNaN(value) || value <= 0) {
-                                                  handleProductQuantityChange(product.id, 1);
-                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                                } else {
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: value.toString(),
-                                                  }));
-                                                }
-                                              }}
-                                              w="3rem"
-                                              textAlign="center"
-                                              borderRadius={0}
-                                              borderLeft="none"
-                                              borderRight="none"
-                                            />
-                                            <IconButton
-                                              aria-label="Aumentar cantidad"
-                                              icon={<Text fontSize="sm">+</Text>}
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => {
-                                                const newValue = product.quantity + 0.1;
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
-                                              }}
-                                              borderLeftRadius={0}
-                                            />
-                                          </HStack>
-
-                                          {/* Subtotal */}
-                                          <Text fontSize="md" fontWeight="bold" minW="80px" textAlign="center">
-                                            ${subtotal.toFixed(2)}
+                                      if (searchCompleted && clientsSearch?.length === 0) {
+                                        return (
+                                          <Text p={3} fontSize="sm" color="gray.500">
+                                            No se encontraron clientes
                                           </Text>
+                                        );
+                                      }
 
-                                          {/* Botón eliminar */}
-                                          <IconButton
-                                            aria-label="Eliminar producto"
-                                            icon={<FaTrash />}
-                                            size="sm"
-                                            colorScheme="red"
-                                            variant="ghost"
-                                            onClick={() => handleRemoveProduct(product.id)}
-                                            flexShrink={0}
-                                          />
-                                        </Flex>
+                                      if (
+                                        debouncedClientSearch.length >= 2 &&
+                                        (!searchCompleted || isLoadingClientsSearch)
+                                      ) {
+                                        return (
+                                          <Flex p={3} justify="center" align="center" gap={2}>
+                                            <Spinner size="sm" />
+                                            <Text fontSize="sm" color="gray.500">
+                                              Buscando clientes...
+                                            </Text>
+                                          </Flex>
+                                        );
+                                      }
 
-                                        {/* Mobile Layout - Mantener como estaba */}
-                                        <Box display={{ base: 'block', md: 'none' }}>
-                                          {/* Fila superior: Imagen + Nombre/Precio */}
-                                          <Flex align="center" gap="0.75rem" mb="0.75rem">
+                                      return null;
+                                    })()}
+                                  </Box>
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+
+                          {!selectedClient?.id && formik.submitCount > 0 && (
+                            <FormErrorMessage>El cliente es requerido</FormErrorMessage>
+                          )}
+                        </FormControl>
+
+                        <FormControl
+                          isInvalid={
+                            !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
+                          }
+                        >
+                          <FormLabel fontWeight="semibold">Productos</FormLabel>
+
+                          {/* Mostrar mensaje si no hay cliente seleccionado */}
+                          {!selectedClient ? (
+                            <Flex
+                              justifyContent="center"
+                              alignItems="center"
+                              h={{ base: '4rem', md: '2.5rem' }}
+                              bg={inputBg}
+                              borderRadius="md"
+                              border="1px solid"
+                              borderColor={inputBorder}
+                            >
+                              <Text fontSize="sm" color={textColor} textAlign="center">
+                                Seleccione un cliente antes de agregar productos
+                              </Text>
+                            </Flex>
+                          ) : (
+                            <>
+                              {/* Buscador de productos */}
+                              <Box position="relative" ref={productSearchRef}>
+                                <Flex
+                                  bg={inputBg}
+                                  borderRadius="md"
+                                  overflow="hidden"
+                                  borderWidth="1px"
+                                  borderColor={inputBorder}
+                                >
+                                  <Select
+                                    value={productSearchType}
+                                    onChange={(e) =>
+                                      setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')
+                                    }
+                                    bg="transparent"
+                                    border="none"
+                                    color={textColor}
+                                    w={{ base: '6rem', md: 'auto' }}
+                                    minW={{ base: '6rem', md: '7rem' }}
+                                    borderRadius="none"
+                                    _focus={{ boxShadow: 'none' }}
+                                    fontSize={{ base: 'xs', md: 'sm' }}
+                                  >
+                                    <option value="name">Nombre</option>
+                                    <option value="internalCode">Cód. interno</option>
+                                    <option value="barcode">Cód. de barras</option>
+                                  </Select>
+
+                                  <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                  <InputGroup flex="1">
+                                    <Input
+                                      placeholder="Buscar producto..."
+                                      value={productSearch}
+                                      onChange={(e) => handleProductSearch(e.target.value)}
+                                      bg="transparent"
+                                      border="none"
+                                      borderRadius="none"
+                                      _placeholder={{ color: textColor }}
+                                      color={textColor}
+                                      _focus={{ boxShadow: 'none' }}
+                                      pl="1rem"
+                                      onFocus={() => productSearch && setShowProductDropdown(true)}
+                                    />
+                                    <InputRightElement>
+                                      <IconButton
+                                        aria-label="Buscar"
+                                        icon={<AiOutlineSearch size="1.25rem" />}
+                                        size="sm"
+                                        variant="ghost"
+                                        color={textColor}
+                                        _hover={{}}
+                                      />
+                                    </InputRightElement>
+                                  </InputGroup>
+                                </Flex>
+
+                                {/* Dropdown de resultados de productos */}
+                                {showProductDropdown && (
+                                  <Box
+                                    position="absolute"
+                                    top="100%"
+                                    left={0}
+                                    right={0}
+                                    mt={1}
+                                    bg={dropdownBg}
+                                    border="1px solid"
+                                    borderColor={dropdownBorder}
+                                    borderRadius="md"
+                                    boxShadow="lg"
+                                    maxH="400px"
+                                    overflowY="auto"
+                                    zIndex={20}
+                                  >
+                                    {(() => {
+                                      const isTyping =
+                                        productSearch !== debouncedProductSearch && productSearch.length >= 2;
+                                      const isSearching =
+                                        !isTyping && isLoadingProductsSearch && debouncedProductSearch.length >= 2;
+                                      const searchCompleted =
+                                        !isTyping &&
+                                        !isSearching &&
+                                        debouncedProductSearch.length >= 2 &&
+                                        lastProductSearchTerm === debouncedProductSearch;
+
+                                      if (isTyping || isSearching) {
+                                        return (
+                                          <Flex p={3} justify="center" align="center" gap={2}>
+                                            <Spinner size="sm" />
+                                            <Text fontSize="sm" color="gray.500">
+                                              Buscando productos...
+                                            </Text>
+                                          </Flex>
+                                        );
+                                      }
+
+                                      if (searchCompleted && productsSearch?.length > 0) {
+                                        return (
+                                          <List spacing={0}>
+                                            {productsSearch.map((product: any, index: number) => {
+                                              const isSelected = selectedProducts.some((p) => p.id === product.id);
+                                              return (
+                                                <Fragment key={product.id}>
+                                                  <ListItem
+                                                    p="0.75rem"
+                                                    cursor="pointer"
+                                                    _hover={{ bg: hoverBg }}
+                                                    transition="background-color 0.2s ease"
+                                                    opacity={isSelected ? 0.5 : 1}
+                                                    onClick={() => !isSelected && handleProductSelect(product)}
+                                                  >
+                                                    <Flex align="center" gap="0.75rem">
+                                                      <Image
+                                                        src={
+                                                          product.imageUrl ||
+                                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                                        }
+                                                        alt={product.name}
+                                                        boxSize="40px"
+                                                        objectFit="cover"
+                                                        borderRadius="md"
+                                                        flexShrink={0}
+                                                      />
+                                                      <Box flex="1">
+                                                        <Text fontSize="sm" fontWeight="medium">
+                                                          {product.name}
+                                                        </Text>
+                                                        <Text fontSize="xs" color={textColor}>
+                                                          Precio: ${product.price || 0}
+                                                          {product.internalCode && ` - Cód: ${product.internalCode}`}
+                                                        </Text>
+                                                      </Box>
+                                                      {isSelected && (
+                                                        <Text fontSize="xs" color="green.500">
+                                                          Seleccionado
+                                                        </Text>
+                                                      )}
+                                                    </Flex>
+                                                  </ListItem>
+                                                  {index < productsSearch.length - 1 && <Divider />}
+                                                </Fragment>
+                                              );
+                                            })}
+                                          </List>
+                                        );
+                                      }
+
+                                      if (searchCompleted && productsSearch?.length === 0) {
+                                        return (
+                                          <Text p={3} fontSize="sm" color="gray.500">
+                                            No se encontraron productos
+                                          </Text>
+                                        );
+                                      }
+
+                                      if (
+                                        debouncedProductSearch.length >= 2 &&
+                                        (!searchCompleted || isLoadingProductsSearch)
+                                      ) {
+                                        return (
+                                          <Flex p={3} justify="center" align="center" gap={2}>
+                                            <Spinner size="sm" />
+                                            <Text fontSize="sm" color="gray.500">
+                                              Buscando productos...
+                                            </Text>
+                                          </Flex>
+                                        );
+                                      }
+
+                                      return null;
+                                    })()}
+                                  </Box>
+                                )}
+                              </Box>
+
+                              <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
+
+                              {/* Lista de productos seleccionados */}
+                              {selectedProducts.length > 0 && (
+                                <Box mt="1rem">
+                                  <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                    Productos seleccionados ({selectedProducts.length}):
+                                  </Text>
+                                  <VStack spacing="0.5rem" align="stretch">
+                                    {selectedProducts.map((product) => {
+                                      // Only apply discount if minimum quantity is met
+                                      const discountToApply =
+                                        product.minQuantityForDiscount &&
+                                        product.quantity >= product.minQuantityForDiscount
+                                          ? product.discount || 0
+                                          : 0;
+                                      const effectivePrice = product.price * (1 - discountToApply / 100);
+                                      const subtotal = product.quantity * effectivePrice;
+                                      return (
+                                        <Box
+                                          key={product.id}
+                                          p={{ base: '1rem', md: '0.75rem' }}
+                                          border="1px solid"
+                                          borderColor={inputBorder}
+                                          borderRadius="md"
+                                          bg={inputBg}
+                                        >
+                                          {/* Desktop Layout - Una sola fila */}
+                                          <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="1rem">
+                                            {/* Imagen */}
                                             <Image
                                               src={
                                                 product.imageUrl ||
@@ -1024,6 +886,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                               borderRadius="md"
                                               flexShrink={0}
                                             />
+
+                                            {/* Nombre y Precio */}
                                             <Box flex="1">
                                               <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
                                                 {product.name}
@@ -1041,11 +905,17 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                   </>
                                                 ) : product.discount && product.discount > 0 ? (
                                                   <>
-                                                    <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                    {/* Always show original price, strikethrough only when minimum quantity met */}
+                                                    <Text
+                                                      fontSize="xs"
+                                                      color={textColor}
+                                                      textDecoration={discountToApply > 0 ? 'line-through' : 'none'}
+                                                    >
                                                       ${product.price.toFixed(2)}
                                                     </Text>
                                                     <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                      ${effectivePrice.toFixed(2)}
+                                                      $
+                                                      {(product.price * (1 - (product.discount || 0) / 100)).toFixed(2)}
                                                     </Text>
                                                     <Box
                                                       bg="green.500"
@@ -1066,10 +936,103 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                 )}
                                               </HStack>
                                             </Box>
-                                          </Flex>
 
-                                          {/* Fila inferior: Botón eliminar | Controles cantidad | Subtotal */}
-                                          <Flex justify="space-between" align="center">
+                                            {/* Controles de cantidad */}
+                                            <VStack spacing="0.25rem" align="stretch" px="1rem">
+                                              <HStack spacing={0}>
+                                                <IconButton
+                                                  aria-label="Disminuir cantidad"
+                                                  icon={<Text fontSize="sm">−</Text>}
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={() => {
+                                                    const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                    const rounded = parseFloat(newValue.toFixed(1));
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  }}
+                                                  borderRightRadius={0}
+                                                />
+                                                <Input
+                                                  size="sm"
+                                                  value={quantityInputs[product.id] ?? product.quantity}
+                                                  onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    const regex = /^\d*\.?\d*$/;
+                                                    if (regex.test(value) || value === '') {
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                      const numValue = parseFloat(value);
+                                                      if (!isNaN(numValue) && numValue >= 0) {
+                                                        handleProductQuantityChange(product.id, numValue);
+                                                      } else if (value === '' || value === '.') {
+                                                        handleProductQuantityChange(product.id, 0);
+                                                      }
+                                                    }
+                                                  }}
+                                                  onBlur={(e) => {
+                                                    const value = parseFloat(e.target.value);
+                                                    if (isNaN(value) || value <= 0) {
+                                                      handleProductQuantityChange(product.id, 1);
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                    } else {
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: value.toString(),
+                                                      }));
+                                                    }
+                                                  }}
+                                                  w="4rem"
+                                                  textAlign="center"
+                                                  borderRadius={0}
+                                                  borderLeft="none"
+                                                  borderRight="none"
+                                                />
+                                                <IconButton
+                                                  aria-label="Aumentar cantidad"
+                                                  icon={<Text fontSize="sm">+</Text>}
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={() => {
+                                                    const newValue = product.quantity + 0.1;
+                                                    const rounded = parseFloat(newValue.toFixed(1));
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  }}
+                                                  borderLeftRadius={0}
+                                                />
+                                              </HStack>
+                                              {product.minQuantityForDiscount && (
+                                                <Text
+                                                  fontSize="xs"
+                                                  color={
+                                                    product.quantity >= product.minQuantityForDiscount
+                                                      ? 'green.500'
+                                                      : 'orange.500'
+                                                  }
+                                                  fontWeight="medium"
+                                                  textAlign="center"
+                                                >
+                                                  {product.quantity >= product.minQuantityForDiscount ? (
+                                                    <>✓ Descuento aplicado</>
+                                                  ) : (
+                                                    <>Mín. {product.minQuantityForDiscount} para descuento</>
+                                                  )}
+                                                </Text>
+                                              )}
+                                            </VStack>
+
+                                            {/* Subtotal */}
+                                            <Text fontSize="md" fontWeight="bold" minW="80px" textAlign="center">
+                                              ${subtotal.toFixed(2)}
+                                            </Text>
+
+                                            {/* Botón eliminar */}
                                             <IconButton
                                               aria-label="Eliminar producto"
                                               icon={<FaTrash />}
@@ -1077,128 +1040,235 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                               colorScheme="red"
                                               variant="ghost"
                                               onClick={() => handleRemoveProduct(product.id)}
+                                              flexShrink={0}
                                             />
-                                            <HStack spacing={0}>
-                                              <IconButton
-                                                aria-label="Disminuir cantidad"
-                                                icon={<Text fontSize="sm">−</Text>}
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                  const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
-                                                }}
-                                                borderRightRadius={0}
-                                              />
-                                              <Input
-                                                size="sm"
-                                                value={quantityInputs[product.id] ?? product.quantity}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const regex = /^\d*\.?\d*$/;
-                                                  if (regex.test(value) || value === '') {
-                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                    const numValue = parseFloat(value);
-                                                    if (!isNaN(numValue) && numValue >= 0) {
-                                                      handleProductQuantityChange(product.id, numValue);
-                                                    } else if (value === '' || value === '.') {
-                                                      handleProductQuantityChange(product.id, 0);
-                                                    }
-                                                  }
-                                                }}
-                                                onBlur={(e) => {
-                                                  const value = parseFloat(e.target.value);
-                                                  if (isNaN(value) || value <= 0) {
-                                                    handleProductQuantityChange(product.id, 1);
-                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                                  } else {
-                                                    setQuantityInputs((prev) => ({
-                                                      ...prev,
-                                                      [product.id]: value.toString(),
-                                                    }));
-                                                  }
-                                                }}
-                                                w="3rem"
-                                                textAlign="center"
-                                                borderRadius={0}
-                                                borderLeft="none"
-                                                borderRight="none"
-                                              />
-                                              <IconButton
-                                                aria-label="Aumentar cantidad"
-                                                icon={<Text fontSize="sm">+</Text>}
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                  const newValue = product.quantity + 0.1;
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
-                                                }}
-                                                borderLeftRadius={0}
-                                              />
-                                            </HStack>
-                                            <Box textAlign="right">
-                                              <Text fontSize="md" fontWeight="bold">
-                                                ${subtotal.toFixed(2)}
-                                              </Text>
-                                            </Box>
                                           </Flex>
+
+                                          {/* Mobile Layout - Mantener como estaba */}
+                                          <Box display={{ base: 'block', md: 'none' }}>
+                                            {/* Fila superior: Imagen + Nombre/Precio */}
+                                            <Flex align="center" gap="0.75rem" mb="0.75rem">
+                                              <Image
+                                                src={
+                                                  product.imageUrl ||
+                                                  'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                                }
+                                                alt={product.name}
+                                                boxSize="50px"
+                                                objectFit="cover"
+                                                borderRadius="md"
+                                                flexShrink={0}
+                                              />
+                                              <Box flex="1">
+                                                <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                                  {product.name}
+                                                </Text>
+                                                <HStack spacing="0.5rem" align="center">
+                                                  {product.isLoadingDiscount ? (
+                                                    <>
+                                                      <Text fontSize="xs" color={textColor}>
+                                                        ${product.price.toFixed(2)}
+                                                      </Text>
+                                                      <Spinner size="xs" />
+                                                      <Text fontSize="xs" color="gray.500">
+                                                        Cargando...
+                                                      </Text>
+                                                    </>
+                                                  ) : product.discount && product.discount > 0 ? (
+                                                    <>
+                                                      {/* Always show original price, strikethrough only when minimum quantity met */}
+                                                      <Text
+                                                        fontSize="xs"
+                                                        color={textColor}
+                                                        textDecoration={discountToApply > 0 ? 'line-through' : 'none'}
+                                                      >
+                                                        ${product.price.toFixed(2)}
+                                                      </Text>
+                                                      <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                        $
+                                                        {(product.price * (1 - (product.discount || 0) / 100)).toFixed(
+                                                          2,
+                                                        )}
+                                                      </Text>
+                                                      <Box
+                                                        bg="green.500"
+                                                        color="white"
+                                                        px="0.4rem"
+                                                        py="0.1rem"
+                                                        borderRadius="md"
+                                                        fontSize="xs"
+                                                        fontWeight="bold"
+                                                      >
+                                                        -{product.discount}%
+                                                      </Box>
+                                                    </>
+                                                  ) : (
+                                                    <Text fontSize="xs" color={textColor}>
+                                                      ${product.price.toFixed(2)}
+                                                    </Text>
+                                                  )}
+                                                </HStack>
+                                              </Box>
+                                            </Flex>
+
+                                            {/* Fila inferior: Botón eliminar | Controles cantidad | Subtotal */}
+                                            <Flex justify="space-between" align="center">
+                                              <IconButton
+                                                aria-label="Eliminar producto"
+                                                icon={<FaTrash />}
+                                                size="sm"
+                                                colorScheme="red"
+                                                variant="ghost"
+                                                onClick={() => handleRemoveProduct(product.id)}
+                                              />
+                                              <VStack spacing="0.25rem">
+                                                <HStack spacing={0}>
+                                                  <IconButton
+                                                    aria-label="Disminuir cantidad"
+                                                    icon={<Text fontSize="sm">−</Text>}
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                      const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                      const rounded = parseFloat(newValue.toFixed(1));
+                                                      handleProductQuantityChange(product.id, rounded);
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: rounded.toString(),
+                                                      }));
+                                                    }}
+                                                    borderRightRadius={0}
+                                                  />
+                                                  <Input
+                                                    size="sm"
+                                                    value={quantityInputs[product.id] ?? product.quantity}
+                                                    onChange={(e) => {
+                                                      const value = e.target.value;
+                                                      const regex = /^\d*\.?\d*$/;
+                                                      if (regex.test(value) || value === '') {
+                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
+                                                        const numValue = parseFloat(value);
+                                                        if (!isNaN(numValue) && numValue >= 0) {
+                                                          handleProductQuantityChange(product.id, numValue);
+                                                        } else if (value === '' || value === '.') {
+                                                          handleProductQuantityChange(product.id, 0);
+                                                        }
+                                                      }
+                                                    }}
+                                                    onBlur={(e) => {
+                                                      const value = parseFloat(e.target.value);
+                                                      if (isNaN(value) || value <= 0) {
+                                                        handleProductQuantityChange(product.id, 1);
+                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                      } else {
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: value.toString(),
+                                                        }));
+                                                      }
+                                                    }}
+                                                    w="3rem"
+                                                    textAlign="center"
+                                                    borderRadius={0}
+                                                    borderLeft="none"
+                                                    borderRight="none"
+                                                  />
+                                                  <IconButton
+                                                    aria-label="Aumentar cantidad"
+                                                    icon={<Text fontSize="sm">+</Text>}
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                      const newValue = product.quantity + 0.1;
+                                                      const rounded = parseFloat(newValue.toFixed(1));
+                                                      handleProductQuantityChange(product.id, rounded);
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: rounded.toString(),
+                                                      }));
+                                                    }}
+                                                    borderLeftRadius={0}
+                                                  />
+                                                </HStack>
+                                                {product.minQuantityForDiscount && (
+                                                  <Text
+                                                    fontSize="xs"
+                                                    color={
+                                                      product.quantity >= product.minQuantityForDiscount
+                                                        ? 'green.500'
+                                                        : 'orange.500'
+                                                    }
+                                                    fontWeight="medium"
+                                                    textAlign="center"
+                                                  >
+                                                    {product.quantity >= product.minQuantityForDiscount ? (
+                                                      <>✓</>
+                                                    ) : (
+                                                      <>Mín. {product.minQuantityForDiscount}</>
+                                                    )}
+                                                  </Text>
+                                                )}
+                                              </VStack>
+                                              <Box textAlign="right">
+                                                <Text fontSize="md" fontWeight="bold">
+                                                  ${subtotal.toFixed(2)}
+                                                </Text>
+                                              </Box>
+                                            </Flex>
+                                          </Box>
                                         </Box>
-                                      </Box>
-                                    );
-                                  })}
-                                </VStack>
+                                      );
+                                    })}
+                                  </VStack>
 
-                                {/* Total */}
-                                <Box>
-                                  <Divider mt="1rem" mb="0.5rem" />
-                                  <HStack justify="space-between">
-                                    <Text fontSize="md" fontWeight="semibold">
-                                      Total:
-                                    </Text>
-                                    <Text fontSize="md" fontWeight="semibold">
-                                      $
-                                      {selectedProducts
-                                        .reduce((total, product) => {
-                                          const effectivePrice = product.price * (1 - (product.discount || 0) / 100);
-                                          return total + product.quantity * effectivePrice;
-                                        }, 0)
-                                        .toFixed(2)}
-                                    </Text>
-                                  </HStack>
+                                  {/* Total */}
+                                  <Box>
+                                    <Divider mt="1rem" mb="0.5rem" />
+                                    <HStack justify="space-between">
+                                      <Text fontSize="md" fontWeight="semibold">
+                                        Total:
+                                      </Text>
+                                      <Text fontSize="md" fontWeight="semibold">
+                                        $
+                                        {selectedProducts
+                                          .reduce((total, product) => {
+                                            // Only apply discount if minimum quantity is met
+                                            const discountToApply =
+                                              product.minQuantityForDiscount &&
+                                              product.quantity >= product.minQuantityForDiscount
+                                                ? product.discount || 0
+                                                : 0;
+                                            const effectivePrice = product.price * (1 - discountToApply / 100);
+                                            return total + product.quantity * effectivePrice;
+                                          }, 0)
+                                          .toFixed(2)}
+                                      </Text>
+                                    </HStack>
+                                  </Box>
                                 </Box>
-                              </Box>
-                            )}
-                          </>
-                        )}
-                      </FormControl>
+                              )}
+                            </>
+                          )}
+                        </FormControl>
 
-                      <FormControl>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} />
-                            <Text>Observaciones</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Textarea
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          {...formik.getFieldProps('observations')}
-                          placeholder="Observaciones del pedido..."
-                          rows={3}
-                        />
-                      </FormControl>
-                    </VStack>
-                  </form>
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiFileText} />
+                              <Text>Observaciones</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Textarea
+                            bg={inputBg}
+                            borderColor={inputBorder}
+                            {...formik.getFieldProps('observations')}
+                            placeholder="Observaciones del pedido..."
+                            rows={3}
+                          />
+                        </FormControl>
+                      </VStack>
+                    </form>
+                  </>
                 );
               }}
             </Formik>
