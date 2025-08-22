@@ -101,9 +101,8 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           // Para pending: usar precios actuales
           return total + item.quantity * item.unitPrice;
         } else {
-          // Para confirmados/cancelados: calcular precio original sin descuento
-          const originalPrice = item.unitPrice / (1 - item.discount / 100);
-          return total + item.quantity * originalPrice;
+          // Para confirmados: item.unitPrice es el precio original
+          return total + item.quantity * item.unitPrice;
         }
       }, 0) || 0
     );
@@ -124,10 +123,12 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           }
           return total; // Sin descuento si no se cumple la cantidad mínima
         } else {
-          // Para confirmados/cancelados: usar descuentos históricos
-          const originalPrice = item.unitPrice / (1 - item.discount / 100);
-          const discountAmount = originalPrice - item.unitPrice;
-          return total + item.quantity * discountAmount;
+          // Para confirmados: item.unitPrice es el precio original, item.discount es el porcentaje
+          if (item.discount > 0) {
+            const discountAmount = item.unitPrice * (item.discount / 100);
+            return total + item.quantity * discountAmount;
+          }
+          return total; // Sin descuento aplicado
         }
       }, 0) || 0
     );
@@ -361,7 +362,17 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                     {orderRequest.productItems.map((item, index) => {
                       const productDiscount = productDiscounts[item.product.id];
                       const isLoadingDiscount = productDiscount?.loading || false;
-                      const subtotal = item.quantity * item.unitPrice;
+
+                      // Calcular subtotal basado en el estado del pedido
+                      const subtotal = (() => {
+                        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                          // Para pending: usar precio actual
+                          return item.quantity * item.unitPrice;
+                        } else {
+                          // Para confirmados: item.unitPrice es el precio original
+                          return item.quantity * item.unitPrice;
+                        }
+                      })();
 
                       // Calcular descuento aplicado según cantidad mínima
                       const discount = (() => {
@@ -375,15 +386,24 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                           }
                           return 0; // Sin descuento si no se cumple cantidad mínima
                         }
-                        // Para estados no pending, usar descuento histórico
+                        // Para estados no pending: item.unitPrice es el precio original, item.discount es el porcentaje
                         if (item.discount > 0) {
-                          const originalPrice = item.unitPrice / (1 - item.discount / 100);
-                          return item.quantity * (originalPrice - item.unitPrice);
+                          const discountAmount = item.unitPrice * (item.discount / 100);
+                          return item.quantity * discountAmount;
                         }
                         return 0;
                       })();
 
-                      const total = subtotal - discount;
+                      // El total final debe ser el precio que realmente se paga
+                      const total = (() => {
+                        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
+                          return subtotal - discount;
+                        } else {
+                          // Para confirmados: calcular precio final con descuento aplicado
+                          const finalPrice = item.unitPrice * (1 - item.discount / 100);
+                          return item.quantity * finalPrice;
+                        }
+                      })();
 
                       return (
                         <Box
@@ -455,14 +475,14 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                         ${item.unitPrice.toFixed(2)}
                                       </Text>
                                     )
-                                  ) : // Para confirmados/cancelados: usar descuentos históricos del item
+                                  ) : // Para confirmados/cancelados: item.unitPrice es precio original, item.discount es porcentaje
                                   item.discount > 0 ? (
                                     <>
                                       <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                        ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                        ${item.unitPrice.toFixed(2)}
                                       </Text>
                                       <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                        ${item.unitPrice.toFixed(2)}
+                                        ${(item.unitPrice * (1 - item.discount / 100)).toFixed(2)}
                                       </Text>
                                       <Box
                                         bg="green.500"

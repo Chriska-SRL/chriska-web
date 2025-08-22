@@ -28,7 +28,18 @@ import {
   AlertDialogOverlay,
 } from '@chakra-ui/react';
 import { Delivery } from '@/entities/delivery';
-import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX, FiEdit } from 'react-icons/fi';
+import {
+  FiEye,
+  FiCheckCircle,
+  FiUsers,
+  FiUser,
+  FiCalendar,
+  FiFileText,
+  FiPackage,
+  FiX,
+  FiEdit,
+  FiDollarSign,
+} from 'react-icons/fi';
 import { useChangeDeliveryStatus } from '@/hooks/delivery';
 import { DeliveryEdit } from './DeliveryEdit';
 import { DeliveryConfirm } from './DeliveryConfirm';
@@ -232,6 +243,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
+              {/* Fila 1: Cliente - Usuario */}
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="1rem"
@@ -241,33 +253,61 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 {detailField('Usuario', delivery.user?.name, FiUser)}
               </Stack>
 
+              {/* Fila 2: Fecha de entrega - Fecha de confirmación */}
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
                 {detailField('Fecha de la entrega', formatDate(delivery.date), FiCalendar)}
-                {detailField('Estado', getStatusLabel(delivery.status), FiPackage)}
+                {detailField(
+                  'Fecha de confirmación',
+                  isValidDate(delivery.confirmedDate) ? formatDate(delivery.confirmedDate) : 'No confirmado',
+                  FiCheckCircle,
+                )}
               </Stack>
 
+              {/* Fila 3: Estado - Total */}
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="1rem"
+                align={{ base: 'stretch', md: 'flex-start' }}
+              >
+                {detailField('Estado', getStatusLabel(delivery.status), FiPackage)}
+                {detailField('Total', `$${(calculateSubtotal() - calculateDiscount()).toFixed(2)}`, FiDollarSign)}
+              </Stack>
+
+              {/* Fila 4: Cajones utilizados - Cajones devueltos */}
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
                 {detailField(
-                  'Fecha de confirmación',
-                  isValidDate(delivery.confirmedDate) ? formatDate(delivery.confirmedDate) : 'No confirmado',
-                  FiCheckCircle,
+                  'Cajones utilizados',
+                  delivery.order?.crates && delivery.order.crates > 0
+                    ? delivery.order.crates.toString()
+                    : 'No definido',
+                  FiPackage,
                 )}
                 {detailField(
-                  'Cajones utilizados',
-                  delivery.crates && delivery.crates > 0 ? delivery.crates.toString() : 'No definido',
+                  'Cajones devueltos',
+                  delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()
+                    ? '-'
+                    : delivery.crates?.toString() || '0',
                   FiPackage,
                 )}
               </Stack>
 
-              {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
+              {/* Fila 5: Observaciones - Observaciones */}
+              <Stack
+                direction={{ base: 'column', md: 'row' }}
+                spacing="1rem"
+                align={{ base: 'stretch', md: 'flex-start' }}
+              >
+                {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
+                {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
+              </Stack>
 
               <Divider />
 

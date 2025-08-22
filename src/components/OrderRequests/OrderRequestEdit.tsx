@@ -30,9 +30,10 @@ import {
   Flex,
   Divider,
   Image,
+  Tooltip,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
-import { FaCheck, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { FiFileText, FiUsers } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
@@ -91,6 +92,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       discountId?: string;
       minQuantityForDiscount?: number;
       isLoadingDiscount?: boolean;
+      stock?: number;
+      availableStock?: number;
     }>
   >([]);
   const [quantityInputs, setQuantityInputs] = useState<{ [key: number]: string }>({});
@@ -126,6 +129,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           discount: 0,
           minQuantityForDiscount: undefined,
           isLoadingDiscount: true,
+          stock: item.product.stock,
+          availableStock: item.product.availableStock,
         }));
         setSelectedProducts(initialProducts);
 
@@ -272,6 +277,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           quantity: 1.0,
           discount: 0,
           isLoadingDiscount: true,
+          stock: product.stock,
+          availableStock: product.availableStock,
         },
       ]);
 
@@ -323,6 +330,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const handleProductQuantityChange = (productId: number, quantity: number) => {
     setSelectedProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, quantity } : p)));
+  };
+
+  // Función para validar si la cantidad excede el stock disponible
+  const isQuantityExceedsStock = (product: any): boolean => {
+    return product.quantity > (product.availableStock || 0);
   };
 
   // Click outside handler
@@ -851,6 +863,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             )}
                                           </Text>
                                         )}
+                                        {isQuantityExceedsStock(product) && (
+                                          <HStack justify="center" spacing="0.25rem">
+                                            <Tooltip
+                                              label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
+                                              placement="top"
+                                              hasArrow
+                                              bg="red.500"
+                                              color="white"
+                                            >
+                                              <Icon as={FaExclamationTriangle} color="red.500" boxSize="0.75rem" />
+                                            </Tooltip>
+                                            <Text fontSize="xs" color="red.500" fontWeight="medium">
+                                              Stock insuficiente
+                                            </Text>
+                                          </HStack>
+                                        )}
                                       </VStack>
 
                                       {/* Subtotal */}
@@ -1030,6 +1058,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 <>Mín. {product.minQuantityForDiscount}</>
                                               )}
                                             </Text>
+                                          )}
+                                          {isQuantityExceedsStock(product) && (
+                                            <HStack justify="center" spacing="0.25rem">
+                                              <Tooltip
+                                                label={`Stock total: ${product.stock || 0} | Stock disponible: ${product.availableStock || 0}`}
+                                                placement="top"
+                                                hasArrow
+                                                bg="red.500"
+                                                color="white"
+                                              >
+                                                <Icon as={FaExclamationTriangle} color="red.500" boxSize="0.75rem" />
+                                              </Tooltip>
+                                              <Text fontSize="xs" color="red.500" fontWeight="medium">
+                                                Stock insuficiente
+                                              </Text>
+                                            </HStack>
                                           )}
                                         </VStack>
                                         <Box textAlign="right">

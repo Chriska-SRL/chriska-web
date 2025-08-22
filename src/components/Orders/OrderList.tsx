@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { Order } from '@/entities/order';
 import { OrderDetail } from './OrderDetail';
-import { FiCalendar, FiUser, FiUsers, FiDollarSign, FiPackage, FiCheckCircle } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiUsers, FiPackage, FiCheckCircle } from 'react-icons/fi';
 import { Pagination } from '../Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -74,16 +74,6 @@ export const OrderList = ({
     const date = new Date(dateString);
     // Verificar si es una fecha válida y no es 01/01/0001
     return date.getFullYear() > 1900;
-  };
-
-  const calculateTotal = (order: Order) => {
-    return (
-      order.productItems?.reduce((total, item) => {
-        // item.unitPrice ya tiene el descuento aplicado
-        const itemTotal = item.quantity * item.unitPrice;
-        return total + itemTotal;
-      }, 0) || 0
-    );
   };
 
   if (error)
@@ -193,16 +183,6 @@ export const OrderList = ({
                         {getStatusLabel(order.status)}
                       </Badge>
                     </HStack>
-
-                    <HStack justify="space-between">
-                      <HStack spacing="0.5rem">
-                        <Icon as={FiDollarSign} boxSize="0.875rem" color={iconColor} />
-                        <Text color={textColor}>Total</Text>
-                      </HStack>
-                      <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
-                        ${calculateTotal(order).toFixed(2)}
-                      </Text>
-                    </HStack>
                   </VStack>
 
                   <Box position="absolute" top="0rem" right="0.25rem">
@@ -255,9 +235,6 @@ export const OrderList = ({
                   <Th textAlign="center" w="10rem">
                     Estado
                   </Th>
-                  <Th textAlign="center" w="10rem">
-                    Total
-                  </Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -286,7 +263,6 @@ export const OrderList = ({
                         {getStatusLabel(order.status)}
                       </Badge>
                     </Td>
-                    <Td textAlign="center">${calculateTotal(order).toFixed(2)}</Td>
                     <Td textAlign="center" pr="2rem">
                       <OrderDetail order={order} setOrders={setOrders} />
                     </Td>
