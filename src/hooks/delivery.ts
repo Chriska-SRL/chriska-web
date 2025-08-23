@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delivery } from '@/entities/delivery';
-import { getDeliveries, getDeliveryById, updateDelivery, changeDeliveryStatus } from '@/services/delivery';
+import { getDeliveries, getDeliveryById, updateDelivery, changeDeliveryStatus, getConfirmedDeliveriesByClient } from '@/services/delivery';
 import { useFetch } from '@/utils/useFetch';
 
 type DeliveryFilters = {
@@ -116,4 +116,36 @@ export const useChangeDeliveryStatus = (props?: { id: number; status: string }) 
   }, [props]);
 
   return { data, isLoading, fieldError };
+};
+
+export const useGetConfirmedDeliveriesByClient = (clientId?: number) => {
+  const [data, setData] = useState<Delivery[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const fetchConfirmedDeliveries = async () => {
+    if (!clientId) {
+      setData([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(undefined);
+
+    try {
+      const result = await getConfirmedDeliveriesByClient(clientId);
+      setData(result);
+    } catch (err: any) {
+      setError(err?.message || 'Error al obtener las entregas confirmadas');
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfirmedDeliveries();
+  }, [clientId]);
+
+  return { data, isLoading, error, refetch: fetchConfirmedDeliveries };
 };
