@@ -54,3 +54,7 @@ export const updateDelivery = (delivery: Partial<Delivery>): Promise<Delivery> =
 export const changeDeliveryStatus = (id: number, status: string): Promise<Delivery> => {
   return put<Delivery>(`${API_URL}/Delivery/changestatus/${id}`, { status });
 };
+
+export const getConfirmedDeliveriesByClient = (clientId: number): Promise<Delivery[]> => {
+  return get<Delivery[]>(`${API_URL}/Delivery/client/${clientId}/confirmed`);
+};
