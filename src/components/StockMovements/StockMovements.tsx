@@ -2,6 +2,7 @@
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { StockMovementList } from './StockMovementList';
 import { StockMovement } from '@/entities/stockMovement';
 import { useGetStockMovements } from '@/hooks/stockMovement';
@@ -10,11 +11,20 @@ import { StockMovementFilters } from './StockMovementFilters';
 
 export const StockMovements = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const preselectedProductId = searchParams.get('product') ? Number(searchParams.get('product')) : undefined;
+
+  // Función para limpiar el parámetro de URL
+  const clearProductParam = useCallback(() => {
+    if (preselectedProductId) {
+      router.replace('/movimientos-de-stock');
+    }
+  }, [preselectedProductId, router]);
 
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const [filters, setFilters] = useState<{
@@ -36,7 +46,6 @@ export const StockMovements = () => {
   useEffect(() => {
     if (data) {
       setStockMovements(data);
-      setHasNextPage(false);
     }
   }, [data]);
 
@@ -53,13 +62,24 @@ export const StockMovements = () => {
     [],
   );
 
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  }, []);
+
   return (
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
           {isMobile ? 'Mov.' : 'Movimientos'} de stock
         </Text>
-        {isMobile && <StockMovementAdd setStockMovements={setStockMovements} />}
+        {isMobile && (
+          <StockMovementAdd
+            setStockMovements={setStockMovements}
+            preselectedProductId={preselectedProductId}
+            onModalClose={clearProductParam}
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -70,7 +90,11 @@ export const StockMovements = () => {
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <StockMovementAdd setStockMovements={setStockMovements} />
+            <StockMovementAdd
+              setStockMovements={setStockMovements}
+              preselectedProductId={preselectedProductId}
+              onModalClose={clearProductParam}
+            />
           </>
         )}
       </Flex>
@@ -84,8 +108,8 @@ export const StockMovements = () => {
         setStockMovements={setStockMovements}
         currentPage={page}
         pageSize={pageSize}
-        hasNextPage={hasNextPage}
         onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );

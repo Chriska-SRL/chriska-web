@@ -157,16 +157,8 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
-      {/* Búsqueda principal de productos */}
       <Box position="relative" ref={searchRef} flex="1">
-        <Box
-          display="flex"
-          bg={isLoading ? disabledColor : bgInput}
-          borderRadius="md"
-          overflow="hidden"
-          borderWidth="1px"
-          borderColor={isLoading ? disabledColor : borderInput}
-        >
+        <Flex bg={isLoading ? disabledColor : bgInput} borderRadius="md" overflow="hidden">
           <Select
             value={productSearchType}
             onChange={(e) => setProductSearchType(e.target.value as 'name' | 'internalCode' | 'barcode')}
@@ -226,7 +218,7 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
               )}
             </InputRightElement>
           </InputGroup>
-        </Box>
+        </Flex>
 
         {showProductDropdown && (
           <Box
@@ -481,7 +473,6 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
             transition="all 0.2s ease"
           />
         )}
-
       </Flex>
     </Flex>
   );

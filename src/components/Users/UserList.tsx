@@ -181,18 +181,10 @@ export const UserList = ({
             <Table variant="unstyled">
               <Thead position="sticky" top="0" bg={tableHeadBg} zIndex="1">
                 <Tr>
-                  <Th textAlign="center" w="12rem">
-                    Usuario
-                  </Th>
-                  <Th textAlign="center" w="15rem">
-                    Nombre
-                  </Th>
-                  <Th textAlign="center" w="12rem">
-                    Rol
-                  </Th>
-                  <Th textAlign="center" w="8rem">
-                    Estado
-                  </Th>
+                  <Th textAlign="center">Usuario</Th>
+                  <Th textAlign="center">Nombre</Th>
+                  <Th textAlign="center">Rol</Th>
+                  <Th textAlign="center">Estado</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -220,8 +212,8 @@ export const UserList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
             </Text>
             <Pagination

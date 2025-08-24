@@ -6,13 +6,13 @@ import {
   Image,
   Input,
   VStack,
-  HStack,
   IconButton,
   useColorModeValue,
   useToast,
   Spinner,
   Center,
   Icon,
+  Flex,
 } from '@chakra-ui/react';
 import { FiUpload, FiTrash2, FiImage } from 'react-icons/fi';
 import { useRef, useState, useEffect, useCallback } from 'react';
@@ -182,23 +182,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
   const isLoading = isUploading || isDeleting;
 
   return (
-    <Box w="100%">
-      <HStack justifyContent="space-between" alignItems="center" mb="0.5rem">
-        <Text>Imagen</Text>
-        {editable && hasImage && (
-          <IconButton
-            aria-label="Eliminar imagen"
-            icon={<FiTrash2 />}
-            size="sm"
-            variant="ghost"
-            colorScheme="red"
-            onClick={handleDeleteImage}
-            isLoading={isDeleting}
-            isDisabled={isLoading}
-          />
-        )}
-      </HStack>
-
+    <Box w="100%" position="relative">
       <Box
         position="relative"
         border="1px solid"
@@ -211,6 +195,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
         _hover={editable ? { borderColor: 'blue.300' } : undefined}
         transition="border-color 0.2s"
         mx="auto"
+        role="group"
       >
         {hasImage ? (
           <>
@@ -225,16 +210,15 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
             />
 
             {previewUrl && (
-              <Box
+              <Flex
                 position="absolute"
                 top="0"
                 left="0"
                 right="0"
                 bottom="0"
                 bg="blackAlpha.800"
-                display="flex"
-                alignItems="center"
                 justifyContent="center"
+                alignItems="center"
                 backdropFilter="blur(2px)"
               >
                 <VStack spacing="3" color="white">
@@ -243,44 +227,76 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                     Subiendo nueva imagen...
                   </Text>
                 </VStack>
-              </Box>
+              </Flex>
             )}
 
             {editable && !previewUrl && (
-              <Box
-                position="absolute"
-                top="0"
-                left="0"
-                right="0"
-                bottom="0"
-                bg={overlayBg}
-                opacity="0"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                transition="opacity 0.2s"
-                _hover={{ opacity: 1 }}
-              >
-                {isLoading ? (
-                  <VStack color="white" spacing="3">
-                    <Spinner size="lg" thickness="3px" speed="0.8s" />
-                    <Text fontSize="sm" fontWeight="medium">
-                      {isUploading ? 'Subiendo...' : 'Eliminando...'}
-                    </Text>
-                  </VStack>
-                ) : (
-                  <VStack color="white" spacing="2">
-                    <Icon as={FiUpload} boxSize="2rem" />
-                    <Text fontSize="sm" textAlign="center" fontWeight="medium">
-                      Click para cambiar imagen
-                    </Text>
-                  </VStack>
-                )}
-              </Box>
+              <>
+                {/* Overlay para cambiar imagen */}
+                <Flex
+                  position="absolute"
+                  top="0"
+                  left="0"
+                  right="0"
+                  bottom="0"
+                  bg={overlayBg}
+                  opacity="0"
+                  justifyContent="center"
+                  alignItems="center"
+                  transition="opacity 0.2s"
+                  _groupHover={{ opacity: 1 }}
+                >
+                  {isLoading ? (
+                    <VStack color="white" spacing="3">
+                      <Spinner size="lg" thickness="3px" speed="0.8s" />
+                      <Text fontSize="sm" fontWeight="medium">
+                        {isUploading ? 'Subiendo...' : 'Eliminando...'}
+                      </Text>
+                    </VStack>
+                  ) : (
+                    <VStack color="white" spacing="2">
+                      <Icon as={FiUpload} boxSize="2rem" />
+                      <Text fontSize="sm" textAlign="center" fontWeight="medium">
+                        Click para cambiar imagen
+                      </Text>
+                    </VStack>
+                  )}
+                </Flex>
+
+                {/* Botón de eliminar en la esquina superior derecha */}
+                <IconButton
+                  aria-label="Eliminar imagen"
+                  icon={<FiTrash2 />}
+                  size="xs"
+                  variant="solid"
+                  colorScheme="red"
+                  position="absolute"
+                  top="0.5rem"
+                  right="0.5rem"
+                  opacity="0"
+                  transition="opacity 0.2s"
+                  _groupHover={{ opacity: 1 }}
+                  zIndex="2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage(e);
+                  }}
+                  isLoading={isDeleting}
+                  isDisabled={isLoading}
+                />
+              </>
             )}
           </>
         ) : (
-          <Center height="18rem" bg={placeholderBg} flexDirection="column" color={placeholderColor}>
+          <Center
+            bg={placeholderBg}
+            flexDirection="column"
+            color={placeholderColor}
+            w="100%"
+            h="100%"
+            minH="200px"
+            aspectRatio="1"
+          >
             {isLoading ? (
               <VStack spacing="3">
                 <Spinner size="lg" thickness="3px" speed="0.8s" color="blue.400" />

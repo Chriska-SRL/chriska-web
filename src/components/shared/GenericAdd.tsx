@@ -15,7 +15,6 @@ import {
   VStack,
   Progress,
   Box,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
 } from '@chakra-ui/react';
@@ -79,7 +78,7 @@ export const GenericAddModal = <T extends Record<string, any>>({
           <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
             {modalTitle}
           </ModalHeader>
-          <ModalCloseButton />
+
           <Formik
             initialValues={initialValues}
             onSubmit={(values) => {

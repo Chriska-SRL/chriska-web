@@ -1,24 +1,12 @@
 'use client';
 
-import {
-  Box,
-  Collapse,
-  Divider,
-  Flex,
-  IconButton,
-  Spinner,
-  Text,
-  VStack,
-  useColorModeValue,
-  useMediaQuery,
-} from '@chakra-ui/react';
+import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack, useColorModeValue } from '@chakra-ui/react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState } from 'react';
 import { ShelveAdd } from '../Shelves/ShelveAdd';
 import { ShelveDetail } from '../Shelves/ShelveDetail';
 import { WarehouseDetail } from './WarehouseDetail';
 import { Warehouse } from '@/entities/warehouse';
-import { ShelveEdit } from '../Shelves/ShelveEdit';
 import { Pagination } from '../Pagination';
 
 type WarehouseListProps = {
@@ -43,7 +31,6 @@ export const WarehouseList = ({
   onPageSizeChange,
 }: WarehouseListProps) => {
   const [expandedWarehouseIds, setExpandedWarehouseIds] = useState<number[]>([]);
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const bgBox = useColorModeValue('white', 'gray.800');
   const borderBox = useColorModeValue('#f2f2f2', 'gray.600');
@@ -164,7 +151,7 @@ export const WarehouseList = ({
           ))}
         </VStack>
       </Box>
-      <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+      <Flex alignItems="center" justifyContent="space-between">
         <Text fontSize="sm" fontWeight="medium">
           Mostrando {warehouses.length} depósito{warehouses.length !== 1 ? 's' : ''}
         </Text>

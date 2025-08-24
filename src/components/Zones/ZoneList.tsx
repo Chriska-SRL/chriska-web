@@ -34,12 +34,12 @@ type ZoneListProps = {
   onPageSizeChange: (pageSize: number) => void;
 };
 
-export const ZoneList = ({ 
-  zones, 
-  setZones, 
-  isLoading, 
-  error, 
-  zoneToOpenModal, 
+export const ZoneList = ({
+  zones,
+  setZones,
+  isLoading,
+  error,
+  zoneToOpenModal,
   setZoneToOpenModal,
   currentPage,
   pageSize,
@@ -179,8 +179,10 @@ export const ZoneList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}</Text>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {zones.length} zona{zones.length !== 1 ? 's' : ''}
+            </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

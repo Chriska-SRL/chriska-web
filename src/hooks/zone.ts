@@ -13,11 +13,11 @@ import { useState, useEffect } from 'react';
 import { Day } from '@/enums/day.enum';
 
 export const useGetZones = (
-  page: number = 1, 
-  pageSize: number = 10, 
+  page: number = 1,
+  pageSize: number = 10,
   filterName?: string,
   filterRequestDay?: Day | '',
-  filterDeliveryDay?: Day | ''
+  filterDeliveryDay?: Day | '',
 ) => {
   const [data, setData] = useState<Zone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ export const useGetZones = (
         if (filterName) filters.name = filterName;
         if (filterRequestDay) filters.requestDay = filterRequestDay;
         if (filterDeliveryDay) filters.deliveryDay = filterDeliveryDay;
-        
+
         const hasFilters = Object.keys(filters).length > 0;
         const result = await getZones(page, pageSize, hasFilters ? filters : undefined);
         setData(result);

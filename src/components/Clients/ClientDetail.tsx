@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
@@ -16,10 +15,26 @@ import {
   useColorModeValue,
   useDisclosure,
   HStack,
-  Flex,
   Icon,
+  SimpleGrid,
+  Divider,
+  Flex,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import {
+  FiEye,
+  FiUser,
+  FiHash,
+  FiMapPin,
+  FiClock,
+  FiPhone,
+  FiMail,
+  FiFileText,
+  FiStar,
+  FiBox,
+  FiCreditCard,
+  FiUsers,
+  FiMap,
+} from 'react-icons/fi';
 import { FaEdit, FaStar } from 'react-icons/fa';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -30,8 +45,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
-import { QualificationSelector } from '../QualificationSelector';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 type ClientDetailProps = {
   client: Client;
@@ -49,28 +63,31 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
 
+  const labelColor = useColorModeValue('black', 'white');
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  const handleClose = useCallback(() => {
+    onClose();
+    onModalClose?.();
+  }, [onClose, onModalClose]);
+
   useEffect(() => {
     if (forceOpen) {
       onOpen();
     }
   }, [forceOpen, onOpen]);
 
-  const handleClose = () => {
-    onClose();
-    onModalClose?.();
-  };
-
-  const labelColor = useColorModeValue('black', 'white');
-  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
-  const accountSubtextColor = useColorModeValue('gray.600', 'gray.400');
-
-  const detailField = (label: string, value: string | number | null | undefined, onClick?: () => void) => (
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any, onClick?: () => void) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -106,20 +123,34 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   const renderQualificationStars = (qualification?: string) => {
     const defaultQualification = qualification || '4/5';
-    const [current, total] = defaultQualification.split('/').map(Number);
+    const [current] = defaultQualification.split('/').map(Number);
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
-      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="2.5rem" />);
+      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="1.25rem" />);
     }
 
     return (
       <Box w="100%">
-        <Text color={labelColor} mb="0.5rem">
-          Calificación
-        </Text>
-        <Flex justifyContent="center" alignItems="center" w="100%" py="0.5rem">
-          <HStack spacing="1rem">{stars}</HStack>
+        <HStack mb="0.5rem" spacing="0.5rem">
+          <Icon as={FiStar} boxSize="1rem" color={iconColor} />
+          <Text color={labelColor} fontWeight="semibold">
+            Calificación
+          </Text>
+        </HStack>
+        <Flex
+          px="1rem"
+          py="0.5rem"
+          bg={inputBg}
+          border="1px solid"
+          borderColor={inputBorder}
+          borderRadius="md"
+          minH="2.75rem"
+          justifyContent="center"
+          alignItems="center"
+          transition="all 0.2s"
+        >
+          <HStack spacing="0.25rem">{stars}</HStack>
         </Flex>
       </Box>
     );
@@ -132,131 +163,160 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
         icon={<FiEye />}
         onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg" maxH="90dvh" display="flex" flexDirection="column">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0" flexShrink={0}>
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle del cliente
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            flex="1"
-            maxH="calc(90dvh - 200px)"
-            overflowY="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
-              {detailField('Nombre', client.name)}
-              {detailField('RUT', client.rut)}
-              {detailField('Razón Social', client.razonSocial)}
-              {detailField('Dirección', client.address)}
-              {detailField('Dirección en Maps', client.mapsAddress)}
-              {detailField('Horario', client.schedule)}
-              {detailField('Teléfono', client.phone)}
-              {detailField('Persona de contacto', client.contactName)}
-              {detailField('Correo electrónico', client.email)}
-              {detailField('Zona', client.zone.name, () => {
-                router.push(`/zonas?open=${client.zone.id}`);
-              })}
-              {detailField('Cajones prestados', client.loanedCrates)}
-              {renderQualificationStars(client.qualification)}
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Nombre', client.name, FiUser)}
+                {detailField('RUT', client.rut, FiHash)}
+              </SimpleGrid>
+
+              {detailField('Razón Social', client.razonSocial, FiUsers)}
+              {detailField('Dirección', client.address, FiMapPin)}
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Teléfono', client.phone, FiPhone)}
+                {detailField('Correo electrónico', client.email, FiMail)}
+              </SimpleGrid>
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Persona de contacto', client.contactName, FiUser)}
+                {renderQualificationStars(client.qualification)}
+              </SimpleGrid>
+
+              {detailField('Dirección en Maps', client.mapsAddress, FiMap)}
+              {detailField('Horario', client.schedule, FiClock)}
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Zona', client.zone.name, FiMapPin, () => {
+                  router.push(`/zonas?open=${client.zone.id}`);
+                })}
+                {detailField('Cajones prestados', client.loanedCrates, FiBox)}
+              </SimpleGrid>
+
+              <Divider />
+
               {client.bankAccounts && client.bankAccounts.length > 0 && (
-                <Box w="100%">
-                  <Text color={labelColor} mb="0.5rem">
-                    Cuentas bancarias
-                  </Text>
-                  <VStack spacing="0.5rem" align="stretch">
-                    {client.bankAccounts.map((account: BankAccount, index: number) => (
-                      <Box
-                        key={index}
-                        px="1rem"
-                        py="0.5rem"
-                        bg={inputBg}
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        borderRadius="md"
-                      >
-                        <Text fontWeight="semibold" fontSize="sm">
-                          {account.accountName}
-                        </Text>
-                        <Text fontSize="sm" color={accountSubtextColor}>
-                          {account.bank} - {account.accountNumber}
-                        </Text>
-                      </Box>
-                    ))}
-                  </VStack>
+                <Box>
+                  <HStack mb="0.5rem" spacing="0.5rem">
+                    <Icon as={FiCreditCard} boxSize="1rem" color={iconColor} />
+                    <Text fontSize="lg" fontWeight="bold" color={labelColor}>
+                      Cuentas bancarias
+                    </Text>
+                  </HStack>
+                  <Box
+                    px="1rem"
+                    py="0.75rem"
+                    bg={inputBg}
+                    border="1px solid"
+                    borderColor={inputBorder}
+                    borderRadius="md"
+                    maxH="200px"
+                    overflowY="auto"
+                  >
+                    <VStack spacing="0.5rem" align="stretch">
+                      {client.bankAccounts.map((account: BankAccount, index: number) => (
+                        <Box key={index} p="0.5rem" bg="whiteAlpha.50" borderRadius="md">
+                          <Text fontSize="sm" fontWeight="medium">
+                            {account.accountName}
+                          </Text>
+                          <Text fontSize="xs" color={iconColor}>
+                            {account.bank} - {account.accountNumber}
+                          </Text>
+                        </Box>
+                      ))}
+                    </VStack>
+                  </Box>
                 </Box>
               )}
-              {detailField('Observaciones', client.observations)}
+
+              <Divider />
+
+              {detailField('Observaciones', client.observations, FiFileText)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem" flexShrink={0}>
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              <Button
-                bg="#4C88D8"
-                color="white"
-                _hover={{ backgroundColor: '#376bb0' }}
-                width="100%"
-                leftIcon={<FaPlus />}
-                onClick={() => {
-                  handleClose();
-                  openEdit();
-                }}
-              >
-                Crear orden
-              </Button>
-              <Button
-                bg="#4C88D8"
-                color="white"
-                _hover={{ backgroundColor: '#376bb0' }}
-                width="100%"
-                leftIcon={<FaPlus />}
-                onClick={() => {
-                  handleClose();
-                  openEdit();
-                }}
-              >
-                Crear devolución
-              </Button>
-              {canEditClients && (
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <VStack spacing="0.5rem" w="100%">
+              <HStack spacing="0.5rem" w="100%">
                 <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
+                  flex="1"
+                  leftIcon={<FaPlus />}
                   onClick={() => {
                     handleClose();
-                    openEdit();
                   }}
+                  colorScheme="green"
+                  variant="outline"
+                  size="sm"
                 >
-                  Editar
+                  Crear orden
                 </Button>
-              )}
-              {canDeleteClients && (
-                <GenericDelete
-                  item={{ id: client.id, name: client.name }}
-                  useDeleteHook={useDeleteClient}
-                  setItems={setClients}
-                  onDeleted={handleClose}
-                />
-              )}
-            </Box>
+                <Button
+                  flex="1"
+                  leftIcon={<FaPlus />}
+                  onClick={() => {
+                    handleClose();
+                  }}
+                  colorScheme="orange"
+                  variant="outline"
+                  size="sm"
+                >
+                  Crear devolución
+                </Button>
+              </HStack>
+              <HStack spacing="0.5rem" w="100%">
+                <Button variant="ghost" size="sm" onClick={handleClose} flex="1">
+                  Cerrar
+                </Button>
+                {canDeleteClients && (
+                  <GenericDelete
+                    item={{ id: client.id, name: client.name }}
+                    useDeleteHook={useDeleteClient}
+                    setItems={setClients}
+                    onDeleted={handleClose}
+                    size="sm"
+                    variant="outline"
+                  />
+                )}
+                {canEditClients && (
+                  <Button
+                    leftIcon={<FaEdit />}
+                    onClick={() => {
+                      openEdit();
+                      handleClose();
+                    }}
+                    colorScheme="blue"
+                    variant="outline"
+                    size="sm"
+                    flex="1"
+                  >
+                    Editar
+                  </Button>
+                )}
+              </HStack>
+            </VStack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && <ClientEdit isOpen={isEditOpen} onClose={closeEdit} client={client} setClients={setClients} />}
+      <ClientEdit isOpen={isEditOpen} onClose={closeEdit} client={client} setClients={setClients} />
     </>
   );
 };

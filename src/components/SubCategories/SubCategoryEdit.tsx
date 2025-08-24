@@ -13,21 +13,21 @@ import {
   Input,
   useToast,
   VStack,
-  Progress,
-  Box,
   Textarea,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  HStack,
+  Text,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FiGrid, FiFileText } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { Category } from '@/entities/category';
-import { Permission } from '@/enums/permission.enum';
-import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { SubCategory } from '@/entities/subcategory';
 import { useUpdateSubCategory } from '@/hooks/subcategory';
 
@@ -41,10 +41,12 @@ type CategoryEditProps = {
 export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }: CategoryEditProps) => {
   const toast = useToast();
   const [subCategoryProps, setSubCategoryProps] = useState<Partial<Category>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (data) {
@@ -99,91 +101,136 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
     setSubCategoryProps(updatedCategory);
   };
 
+  const handleClose = () => {
+    setSubCategoryProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
-      <ModalOverlay />
-      <ModalContent mx="auto" borderRadius="lg">
-        <ModalHeader textAlign="center" fontSize="2rem" pb="0">
-          Editar subcategoría
-        </ModalHeader>
-        <ModalCloseButton />
-        <Formik
-          initialValues={{ id: subcategory.id, name: subcategory.name, description: subcategory.description }}
-          onSubmit={handleSubmit}
-          validateOnChange
-          validateOnBlur={false}
-        >
-          {({ handleSubmit, errors, touched, submitCount }) => (
-            <form onSubmit={handleSubmit}>
-              <ModalBody
-                pb="0"
-                maxH="31rem"
-                overflow="auto"
-                sx={{
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                }}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
+        <ModalOverlay />
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
+            Editar subcategoría
+          </ModalHeader>
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{ id: subcategory.id, name: subcategory.name, description: subcategory.description }}
+              onSubmit={handleSubmit}
+              validateOnChange
+              validateOnBlur={false}
+            >
+              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="subcategory-edit-form" onSubmit={handleSubmit}>
+                    <VStack spacing="0.75rem">
+                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiGrid} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          h="2.75rem"
+                          validate={validate}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Descripción</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="description"
+                          type="text"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          validate={validateEmpty}
+                          disabled={isLoading}
+                          rows={4}
+                        />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
+                      </FormControl>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                Cancelar
+              </Button>
+              <Button
+                form="subcategory-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
               >
-                <VStack spacing="0.75rem">
-                  <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                    <FormLabel>Nombre</FormLabel>
-                    <Field
-                      as={Input}
-                      name="name"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      h="2.75rem"
-                      validate={validate}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.name}</FormErrorMessage>
-                  </FormControl>
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-                  <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                    <FormLabel>Descripción</FormLabel>
-                    <Field
-                      as={Textarea}
-                      name="description"
-                      type="text"
-                      bg={inputBg}
-                      borderColor={borderColor}
-                      validate={validateEmpty}
-                      disabled={isLoading}
-                    />
-                    <FormErrorMessage>{errors.description}</FormErrorMessage>
-                  </FormControl>
-                </VStack>
-              </ModalBody>
-
-              <ModalFooter pb="1.5rem">
-                <Box mt="0.25rem" w="100%">
-                  <Progress
-                    h={isLoading ? '4px' : '1px'}
-                    mb="1.25rem"
-                    size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    bg="#4C88D8"
-                    color="white"
-                    _hover={{ backgroundColor: '#376bb0' }}
-                    width="100%"
-                    leftIcon={<FaCheck />}
-                    fontSize="1rem"
-                  >
-                    Guardar cambios
-                  </Button>
-                </Box>
-              </ModalFooter>
-            </form>
-          )}
-        </Formik>
-      </ModalContent>
-    </Modal>
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
   );
 };

@@ -20,7 +20,7 @@ export const useGetVehicleCosts = (
   vehicleId: number,
   page: number = 1,
   pageSize: number = 10,
-  filters?: { type?: string; description?: string; from?: string; to?: string }
+  filters?: { type?: string; description?: string; from?: string; to?: string },
 ) => {
   const [data, setData] = useState<VehicleCost[]>([]);
   const [isLoading, setIsLoading] = useState(false);

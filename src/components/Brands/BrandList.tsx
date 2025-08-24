@@ -179,8 +179,10 @@ export const BrandList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex mt="0.5rem" justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm">Mostrando {brands.length} marca{brands.length !== 1 ? 's' : ''}</Text>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="medium">
+              Mostrando {brands.length} marca{brands.length !== 1 ? 's' : ''}
+            </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}

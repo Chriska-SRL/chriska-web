@@ -1,6 +1,6 @@
 'use client';
 
-import { Divider, Flex, IconButton, Spinner, Text, useMediaQuery, Box, Skeleton } from '@chakra-ui/react';
+import { Divider, Flex, IconButton, Text, useMediaQuery, Box, Spinner } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetVehicleCosts } from '@/hooks/vehicleCost';
@@ -71,12 +71,13 @@ export const VehicleCosts = () => {
                   Costos del vehiculo:&nbsp;
                 </Text>
               )}
-              {/* <Spinner size="md" ml="2rem" mt={{ base: '0.5rem', md: 0 }} /> */}
-              <Skeleton w="7.5rem" h="2.25rem" isLoaded={!isLoadingVehicle}>
+              {isLoadingVehicle ? (
+                <Spinner size="md" ml="2rem" mt={{ base: '0.5rem', md: 0 }} />
+              ) : (
                 <Text fontSize="1.5rem" fontWeight="bold">
                   {vehicle?.plate}
-                </Text>{' '}
-              </Skeleton>
+                </Text>
+              )}
             </Flex>
           </Flex>
           {isMobile && <VehicleCostAdd vehicleId={vehicleId} setCosts={setCosts} isLoading={isLoading} />}

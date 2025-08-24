@@ -78,3 +78,10 @@ export * from './Shelves/ShelveEdit';
 
 export * from './StockMovements/StockMovements';
 export * from './StockMovements/StockMovementList';
+
+export * from './Discounts/Discounts';
+export * from './Discounts/DiscountAdd';
+export * from './Discounts/DiscountEdit';
+export * from './Discounts/DiscountList';
+// export * from './Discounts/DiscountFilters'; // Temporarily disabled to debug requests
+export * from './Discounts/DiscountDetail';

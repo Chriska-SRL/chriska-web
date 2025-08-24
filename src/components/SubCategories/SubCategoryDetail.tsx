@@ -8,25 +8,25 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  HStack,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
-
-import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteSubCategory } from '@/hooks/subcategory';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { SubCategory } from '@/entities/subcategory';
 import { SubCategoryEdit } from './SubCategoryEdit';
-import { useEffect } from 'react';
+import { GenericDelete } from '../shared/GenericDelete';
+import { useEffect, useCallback } from 'react';
 
 type SubCategoryDetailProps = {
   subcategory: SubCategory;
@@ -53,6 +53,12 @@ export const SubCategoryDetail = ({
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  const handleClose = useCallback(() => {
+    onClose();
+    onModalClose?.();
+  }, [onClose, onModalClose]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -60,19 +66,13 @@ export const SubCategoryDetail = ({
     }
   }, [forceOpen, onOpen]);
 
-  const handleClose = () => {
-    onClose();
-    onModalClose?.();
-  };
-
-  const onDeleted = () => {
-    onClose();
+  const handleSubcategoryDeleted = useCallback(() => {
     if (onSubcategoryDeleted) {
       onSubcategoryDeleted();
     } else {
       setCategories((prev) =>
         prev.map((cat) =>
-          cat.id === subcategory.category.id
+          cat.id === subcategory.category?.id
             ? {
                 ...cat,
                 subCategories: cat.subCategories.filter((sub) => sub.id !== subcategory.id),
@@ -81,13 +81,17 @@ export const SubCategoryDetail = ({
         ),
       );
     }
-  };
+    handleClose();
+  }, [onSubcategoryDeleted, setCategories, subcategory.category?.id, subcategory.id, handleClose]);
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -100,6 +104,7 @@ export const SubCategoryDetail = ({
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -109,75 +114,76 @@ export const SubCategoryDetail = ({
   return (
     <>
       <IconButton
-        aria-label="Ver detalle"
+        aria-label="Ver detalles"
         icon={<FiEye />}
-        onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
+        onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle de la subcategoría
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            maxH="30rem"
-            overflow="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
-              {detailField('Nombre', subcategory.name)}
-              {detailField('Descripción', subcategory.description)}
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
+              {detailField('Categoría', subcategory.category?.name, FiGrid)}
+              {detailField('Nombre', subcategory.name, FiTag)}
+              {detailField('Descripción', subcategory.description, FiFileText)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditCategories && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    handleClose();
-                    openEdit();
-                  }}
-                >
-                  Editar
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                Cerrar
+              </Button>
               {canDeleteCategories && (
                 <GenericDelete
                   item={{ id: subcategory.id, name: subcategory.name }}
                   useDeleteHook={useDeleteSubCategory}
                   setItems={() => {}}
-                  onDeleted={onDeleted}
+                  onDeleted={handleSubcategoryDeleted}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditCategories && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {isEditOpen && (
-        <SubCategoryEdit
-          isOpen={isEditOpen}
-          onClose={closeEdit}
-          subcategory={subcategory}
-          setCategories={setCategories}
-        />
-      )}
+      <SubCategoryEdit
+        isOpen={isEditOpen}
+        onClose={closeEdit}
+        subcategory={subcategory}
+        setCategories={setCategories}
+      />
     </>
   );
 };

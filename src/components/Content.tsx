@@ -1,12 +1,10 @@
 'use client';
 
-import { Flex, useMediaQuery, useColorModeValue } from '@chakra-ui/react';
+import { Flex, useColorModeValue } from '@chakra-ui/react';
 import { ReactNode } from 'react';
 
 export const Content = ({ children }: { children: ReactNode }) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
-  const outerBg = useColorModeValue('gray.100', 'gray.800');
+  const outerBg = useColorModeValue('#f4f4f4', 'gray.800');
   const innerBg = useColorModeValue('white', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 

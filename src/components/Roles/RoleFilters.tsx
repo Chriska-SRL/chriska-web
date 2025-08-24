@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Flex,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Icon,
-  IconButton,
-  useMediaQuery,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { Flex, Input, InputGroup, InputRightElement, IconButton, useColorModeValue } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
@@ -21,7 +12,6 @@ type RoleFiltersProps = {
 };
 
 export const RoleFilters = ({ isLoading, filterName, setFilterName }: RoleFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [inputValue, setInputValue] = useState(filterName);
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
@@ -56,13 +46,7 @@ export const RoleFilters = ({ isLoading, filterName, setFilterName }: RoleFilter
   }, [filterName]);
 
   return (
-    <Flex
-      gap="1rem"
-      flexDir="row"
-      w="100%"
-      alignItems="center"
-      flexWrap="wrap"
-    >
+    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
       <InputGroup flex="1" minW={{ base: '0', md: '15rem' }}>
         <Input
           placeholder="Buscar por nombre..."

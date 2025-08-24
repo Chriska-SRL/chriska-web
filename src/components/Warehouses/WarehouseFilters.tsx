@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Flex,
-  Input,
-  InputGroup,
-  InputRightElement,
-  IconButton,
-  useColorModeValue,
-  useMediaQuery,
-} from '@chakra-ui/react';
+import { Flex, Input, InputGroup, InputRightElement, IconButton, useColorModeValue } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { VscDebugRestart } from 'react-icons/vsc';
@@ -20,7 +12,6 @@ type WarehouseFiltersProps = {
 };
 
 export const WarehouseFilters = ({ isLoading, filterName, setFilterName }: WarehouseFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [inputValue, setInputValue] = useState(filterName);
 
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');

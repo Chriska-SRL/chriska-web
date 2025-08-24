@@ -15,14 +15,15 @@ import {
   Select,
   useToast,
   VStack,
-  Progress,
-  Box,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Text,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FiUser, FiMail, FiShield, FiActivity } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useAddUser, useTemporaryPassword } from '@/hooks/user';
 import { User } from '@/entities/user';
@@ -31,19 +32,29 @@ import { validate } from '@/utils/validations/validate';
 import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type UserAddProps = {
   isLoading: boolean;
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 };
 
-export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) => {
-  const canCreateUsers = useUserStore((s) => s.hasPermission(Permission.CREATE_USERS));
+type UserAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const toast = useToast();
 
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+
   const [userProps, setUserProps] = useState<Partial<User>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
 
   const [newUserId, setNewUserId] = useState<number>();
@@ -54,21 +65,30 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
 
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
-  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
+  const handleClose = () => {
+    setUserProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
 
   useEffect(() => {
     if (data) {
-      console.log('aca', data);
       toast({
         title: 'Usuario creado',
-        description: `El usuario ha sido creado correctamente.`,
+        description: 'El usuario ha sido creado correctamente.',
         status: 'success',
-        duration: 1500,
+        duration: 2000,
         isClosable: true,
       });
       setUserProps(undefined);
@@ -76,15 +96,27 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
       setNewUserId(data.id);
       onClose();
     }
-  }, [data]);
+  }, [data, setUsers, toast, onClose]);
 
   useEffect(() => {
     if (fieldError) {
-      toast({ title: `Error`, description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
+      toast({
+        title: 'Error',
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
     } else if (error) {
-      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
+      toast({
+        title: 'Error inesperado',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   useEffect(() => {
     if (temporalPassword) {
@@ -103,7 +135,7 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
         isClosable: true,
       });
     }
-  }, [resetError]);
+  }, [resetError, toast]);
 
   const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
@@ -118,140 +150,177 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
 
   return (
     <>
-      {canCreateUsers && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          px="1.5rem"
-          disabled={isLoadingUsers}
-        >
-          Nuevo
-        </Button>
-      )}
-
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Nuevo usuario
           </ModalHeader>
-          <ModalCloseButton />
-          <Formik
-            initialValues={{ username: '', name: '', roleId: '', estado: '' }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount }) => (
-              <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
-                  <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
-                      <FormLabel>Nombre de usuario</FormLabel>
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                username: '',
+                name: '',
+                roleId: '',
+                estado: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
+            >
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
+
+                return (
+                  <form id="user-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
                       <Field
-                        as={Input}
                         name="username"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        disabled={isLoading}
                         validate={(value: string) => {
                           const emptyError = validate(value);
                           if (emptyError) return emptyError;
                           if (!/^[a-z]+$/.test(value)) return 'Debe ser una sola palabra en minúsculas';
                           return undefined;
                         }}
-                      />
-                      <FormErrorMessage>{errors.username}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                      <FormLabel>Nombre</FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        type="text"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        disabled={isLoading}
-                        validate={validate}
-                      />
-                      <FormErrorMessage>{errors.name}</FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
-                      <FormLabel>Rol</FormLabel>
-                      <Field
-                        as={Select}
-                        name="roleId"
-                        placeholder="Seleccionar rol"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoadingRoles || isLoading}
                       >
-                        {roles?.map((role) => (
-                          <option key={role.id} value={role.id}>
-                            {role.name}
-                          </option>
-                        ))}
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiMail} boxSize="1rem" />
+                                <Text>Nombre de usuario</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre de usuario"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
                       </Field>
-                      <FormErrorMessage>{errors.roleId}</FormErrorMessage>
-                    </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
-                      <FormLabel>Estado</FormLabel>
-                      <Field
-                        as={Select}
-                        name="estado"
-                        placeholder="Seleccionar estado"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        fontSize="0.875rem"
-                        h="2.75rem"
-                        validate={validate}
-                        disabled={isLoading}
-                      >
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
+                      <Field name="name" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiUser} boxSize="1rem" />
+                                <Text>Nombre completo</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre completo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
                       </Field>
-                      <FormErrorMessage>{errors.estado}</FormErrorMessage>
-                    </FormControl>
-                  </VStack>
-                </ModalBody>
 
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
-                    <Progress
-                      h={isLoading ? '4px' : '1px'}
-                      mb="1.5rem"
-                      size="xs"
-                      isIndeterminate={isLoading}
-                      colorScheme="blue"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      bg={submitBg}
-                      color="white"
-                      _hover={{ backgroundColor: submitHover }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      py="1.375rem"
-                    >
-                      Confirmar
-                    </Button>
-                  </Box>
-                </ModalFooter>
-              </form>
-            )}
-          </Formik>
+                      <Field name="roleId" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiShield} boxSize="1rem" />
+                                <Text>Rol</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar rol"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoadingRoles || isLoading}
+                            >
+                              {roles?.map((role) => (
+                                <option key={role.id} value={role.id}>
+                                  {role.name}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="estado" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiActivity} boxSize="1rem" />
+                                <Text>Estado</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccionar estado"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              <option value="Activo">Activo</option>
+                              <option value="Inactivo">Inactivo</option>
+                            </Select>
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="user-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear usuario
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 
@@ -260,6 +329,41 @@ export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) =
         onClose={() => setIsPasswordModalOpen(false)}
         password={tempPassword}
       />
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const UserAdd = ({ isLoading: isLoadingUsers, setUsers }: UserAddProps) => {
+  const canCreateUsers = useUserStore((s) => s.hasPermission(Permission.CREATE_USERS));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+
+  if (!canCreateUsers) return null;
+
+  return (
+    <>
+      <Button
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        px="1.5rem"
+        disabled={isLoadingUsers}
+      >
+        Nuevo
+      </Button>
+
+      {/* Solo renderizar el formulario cuando el modal está abierto */}
+      {isOpen && <UserAddModal isOpen={isOpen} onClose={onClose} setUsers={setUsers} />}
     </>
   );
 };

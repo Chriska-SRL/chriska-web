@@ -58,23 +58,23 @@ export const ClientList = ({
   const textColor = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  if (error) {
+  const hasNextPage = clients.length === pageSize;
+
+  if (error)
     return (
       <Box p="2rem" textAlign="center">
         <Text color="red.500">Error: {error}</Text>
       </Box>
     );
-  }
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <Flex justify="center" align="center" h="100%">
         <Spinner size="xl" />
       </Flex>
     );
-  }
 
-  if (!clients?.length) {
+  if (!clients?.length)
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
@@ -85,7 +85,6 @@ export const ClientList = ({
         </Text>
       </Flex>
     );
-  }
 
   return (
     <>
@@ -168,18 +167,19 @@ export const ClientList = ({
               ))}
             </VStack>
           </Box>
-          <Box h="3.5rem" display="flex" alignItems="center" justifyContent="space-between">
+          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
               Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}
-              hasNextPage={clients.length === pageSize}
+              hasNextPage={hasNextPage}
               onPageChange={onPageChange}
               onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
             />
-          </Box>
+          </Flex>
         </>
       ) : (
         <>
@@ -232,18 +232,19 @@ export const ClientList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Box mt="0.5rem" display="flex" alignItems="center" justifyContent="space-between">
-            <Text fontSize="sm">
+          <Flex alignItems="center" justifyContent="space-between">
+            <Text fontSize="sm" fontWeight="medium">
               Mostrando {clients.length} cliente{clients.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
               pageSize={pageSize}
-              hasNextPage={clients.length === pageSize}
+              hasNextPage={hasNextPage}
               onPageChange={onPageChange}
               onPageSizeChange={onPageSizeChange}
+              isLoading={isLoading}
             />
-          </Box>
+          </Flex>
         </>
       )}
     </>

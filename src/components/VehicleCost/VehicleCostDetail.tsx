@@ -8,15 +8,16 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  ModalCloseButton,
   VStack,
   Box,
   Text,
   Button,
   useColorModeValue,
   useDisclosure,
+  Icon,
+  HStack,
 } from '@chakra-ui/react';
-import { FiEye } from 'react-icons/fi';
+import { FiEye, FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { VehicleCostEdit } from './VehicleCostEdit';
@@ -44,12 +45,16 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  const detailField = (label: string, value: string | number | null | undefined) => (
+  const detailField = (label: string, value: string | number | null | undefined, icon?: any) => (
     <Box w="100%">
-      <Text color={labelColor} mb="0.5rem">
-        {label}
-      </Text>
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
       <Box
         px="1rem"
         py="0.5rem"
@@ -62,6 +67,7 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
         overflowY="auto"
         whiteSpace="pre-wrap"
         wordBreak="break-word"
+        transition="all 0.2s"
       >
         {value ?? '—'}
       </Box>
@@ -75,52 +81,38 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
         icon={<FiEye />}
         onClick={onOpen}
         variant="ghost"
-        size="lg"
+        size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
-        <ModalContent mx="auto" borderRadius="lg">
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Detalle del costo
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody
-            pb="0"
-            maxH="30rem"
-            overflow="auto"
-            sx={{
-              '&::-webkit-scrollbar': { display: 'none' },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            <VStack spacing="0.75rem">
-              {detailField('Fecha', formatDate(vehicleCost.date))}
-              {detailField('Tipo', getVehicleCostTypeLabel(vehicleCost.type))}
-              {detailField('Monto', formatPrice(vehicleCost.amount))}
-              {detailField('Descripción', vehicleCost.description)}
+
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <VStack spacing="1rem" align="stretch">
+              {detailField('Fecha', formatDate(vehicleCost.date), FiCalendar)}
+              {detailField('Tipo', getVehicleCostTypeLabel(vehicleCost.type), FiTag)}
+              {detailField('Monto', formatPrice(vehicleCost.amount), FiDollarSign)}
+              {detailField('Descripción', vehicleCost.description, FiFileText)}
             </VStack>
           </ModalBody>
 
-          <ModalFooter py="1.5rem">
-            <Box display="flex" flexDir="column" gap="0.75rem" w="100%">
-              {canEditVehicleCosts && (
-                <Button
-                  bg="#4C88D8"
-                  color="white"
-                  _hover={{ backgroundColor: '#376bb0' }}
-                  width="100%"
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    onClose();
-                    openEdit();
-                  }}
-                >
-                  Editar costo
-                </Button>
-              )}
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                Cerrar
+              </Button>
               {canDeleteVehicleCosts && (
                 <GenericDelete
                   item={{
@@ -130,9 +122,25 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
                   useDeleteHook={useDeleteVehicleCost}
                   setItems={setVehicleCosts}
                   onDeleted={onClose}
+                  size="sm"
+                  variant="outline"
                 />
               )}
-            </Box>
+              {canEditVehicleCosts && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    onClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
+                </Button>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

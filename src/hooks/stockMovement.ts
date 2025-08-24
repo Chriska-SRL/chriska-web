@@ -22,13 +22,10 @@ export const useGetStockMovements = (
   const [error, setError] = useState<string>();
 
   // Memoize filters to prevent unnecessary re-renders
-  const memoizedFilters = useMemo(() => filters, [
-    filters.Type,
-    filters.DateFrom,
-    filters.DateTo,
-    filters.ProductId,
-    filters.CreatedBy,
-  ]);
+  const memoizedFilters = useMemo(
+    () => filters,
+    [filters.Type, filters.DateFrom, filters.DateTo, filters.ProductId, filters.CreatedBy],
+  );
 
   useEffect(() => {
     const fetchData = async () => {

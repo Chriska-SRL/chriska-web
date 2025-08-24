@@ -12,64 +12,86 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   useToast,
   VStack,
-  Progress,
-  Box,
-  Textarea,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Text,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FiPackage, FiFileText } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Warehouse } from '@/entities/warehouse';
-import { validate } from '@/utils/validations/validate';
 import { useAddWarehouse } from '@/hooks/warehouse';
+import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type WarehouseAddProps = {
   isLoading: boolean;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
 };
 
-export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: WarehouseAddProps) => {
-  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
+type WarehouseAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModalProps) => {
   const toast = useToast();
+
+  const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
+
   const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddWarehouse(warehouseProps);
 
-  const inputBg = useColorModeValue('#f5f5f7', 'whiteAlpha.100');
-  const inputBorder = useColorModeValue('#f5f5f7', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
+  const handleClose = () => {
+    setWarehouseProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
 
   useEffect(() => {
     if (data) {
       toast({
         title: 'Depósito creado',
-        description: `El depósito se creó correctamente.`,
+        description: 'El depósito ha sido creado correctamente.',
         status: 'success',
-        duration: 1500,
+        duration: 2000,
         isClosable: true,
       });
-      setWarehouses((prev) => [...prev, data]);
       setWarehouseProps(undefined);
+      setWarehouses((prev) => [...prev, data]);
       onClose();
     }
-  }, [data]);
+  }, [data, setWarehouses, toast, onClose]);
 
   useEffect(() => {
     if (fieldError) {
       toast({
-        title: `Error`,
+        title: 'Error',
         description: fieldError.error,
         status: 'error',
         duration: 4000,
@@ -84,110 +106,160 @@ export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: 
         isClosable: true,
       });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { name: string; description: string }) => {
-    setWarehouseProps({
-      name: values.name,
-      description: values.description,
-    });
+  const handleSubmit = (values: Partial<Warehouse>) => {
+    setWarehouseProps(values);
   };
 
   return (
     <>
-      {canCreateWarehouses && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          px="1.5rem"
-          disabled={isLoadingWarehouses}
-        >
-          Nuevo
-        </Button>
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Nuevo depósito
           </ModalHeader>
-          <ModalCloseButton />
-          <Formik
-            initialValues={{ name: '', description: '' }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount }) => {
-              const showError = (field: keyof typeof errors) => submitCount > 0 && touched[field] && !!errors[field];
 
-              return (
-                <form onSubmit={handleSubmit}>
-                  <ModalBody pb="0">
-                    <VStack spacing="0.75rem">
-                      <FormControl isInvalid={showError('name')}>
-                        <FormLabel>Nombre</FormLabel>
-                        <Field
-                          as={Input}
-                          name="name"
-                          type="text"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                          validate={validate}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                name: '',
+                description: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
+            >
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-                      <FormControl isInvalid={showError('description')}>
-                        <FormLabel>Descripción</FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="description"
-                          type="text"
-                          bg={inputBg}
-                          borderColor={inputBorder}
-                          h="5rem"
-                          validate={validateEmpty}
-                          disabled={isLoading}
-                        />
-                        <FormErrorMessage>{errors.description}</FormErrorMessage>
-                      </FormControl>
+                return (
+                  <form id="warehouse-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field name="name" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiPackage} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre del depósito"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="description" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese una descripción del depósito"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
                     </VStack>
-                  </ModalBody>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
 
-                  <ModalFooter pb="1.5rem">
-                    <Box mt="0.5rem" w="100%">
-                      <Progress
-                        h={isLoading ? '4px' : '1px'}
-                        mb="1.5rem"
-                        size="xs"
-                        isIndeterminate={isLoading}
-                        colorScheme="blue"
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        bg={submitBg}
-                        color="white"
-                        _hover={{ backgroundColor: submitHover }}
-                        width="100%"
-                        leftIcon={<FaCheck />}
-                        py="1.375rem"
-                      >
-                        Confirmar
-                      </Button>
-                    </Box>
-                  </ModalFooter>
-                </form>
-              );
-            }}
-          </Formik>
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="warehouse-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear depósito
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const WarehouseAdd = ({ isLoading: isLoadingWarehouses, setWarehouses }: WarehouseAddProps) => {
+  const canCreateWarehouses = useUserStore((s) => s.hasPermission(Permission.CREATE_WAREHOUSES));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+
+  if (!canCreateWarehouses) return null;
+
+  return (
+    <>
+      <Button
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        px="1.5rem"
+        disabled={isLoadingWarehouses}
+      >
+        Nuevo
+      </Button>
+
+      {/* Solo renderizar el formulario cuando el modal está abierto */}
+      {isOpen && <WarehouseAddModal isOpen={isOpen} onClose={onClose} setWarehouses={setWarehouses} />}
     </>
   );
 };

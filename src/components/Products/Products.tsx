@@ -52,7 +52,7 @@ export const Products = () => {
     if (filterCategory) result.categoryId = parseInt(filterCategory);
     if (filterSubCategory) result.subCategoryId = parseInt(filterSubCategory);
 
-    return Object.keys(result).length > 0 ? result : undefined;
+    return Object.keys(result).length > 0 ? result : {};
   }, [filterName, searchParam, filterUnitType, filterBrand, filterCategory, filterSubCategory]);
 
   const { data, isLoading, error } = useGetProducts(currentPage, pageSize, filters);

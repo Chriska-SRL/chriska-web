@@ -1,7 +1,7 @@
 'use client';
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ZoneFilters } from './ZoneFilters';
 import { ZoneAdd } from './ZoneAdd';
 import { ZoneList } from './ZoneList';
@@ -53,9 +53,6 @@ export const Zones = () => {
     }
   }, [filterName, filterPedidoDay, filterEntregaDay]);
 
-  // Server-side filtering is now handled by the API
-  const filteredZones = zones;
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -97,7 +94,7 @@ export const Zones = () => {
       {isMobile && <Divider />}
 
       <ZoneList
-        zones={filteredZones}
+        zones={zones}
         isLoading={isLoading || isFilterLoading}
         error={error}
         setZones={setZones}

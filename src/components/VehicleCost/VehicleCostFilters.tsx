@@ -1,18 +1,7 @@
 'use client';
 
 import { VehicleCostTypeLabels } from '@/enums/vehicleCostType.enum';
-import {
-  Flex,
-  Select,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Icon,
-  IconButton,
-  useMediaQuery,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import { AiOutlineSearch } from 'react-icons/ai';
+import { Flex, Select, Input, IconButton, useColorModeValue } from '@chakra-ui/react';
 import { VscDebugRestart } from 'react-icons/vsc';
 
 type VehicleCostFiltersProps = {
@@ -34,8 +23,6 @@ export const VehicleCostFilters = ({
   setFrom,
   setTo,
 }: VehicleCostFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
-
   const bgInput = useColorModeValue('#f2f2f2', 'gray.700');
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
@@ -91,7 +78,7 @@ export const VehicleCostFilters = ({
         disabled={isLoading}
         placeholder="Desde"
       />
-      
+
       <Input
         type="date"
         value={to}

@@ -1,17 +1,6 @@
 'use client';
 
-import {
-  Box,
-  Collapse,
-  Divider,
-  Flex,
-  IconButton,
-  Spinner,
-  Text,
-  VStack,
-  useColorModeValue,
-  useMediaQuery,
-} from '@chakra-ui/react';
+import { Box, Collapse, Divider, Flex, IconButton, Spinner, Text, VStack, useColorModeValue } from '@chakra-ui/react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import { SubCategoryAdd } from '../SubCategories/SubCategoryAdd';
@@ -50,7 +39,6 @@ export const CategoryList = ({
   onPageSizeChange,
 }: CategoryListProps) => {
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<number[]>([]);
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const bgBox = useColorModeValue('white', 'gray.800');
   const borderBox = useColorModeValue('#f2f2f2', 'gray.600');
@@ -191,7 +179,7 @@ export const CategoryList = ({
           ))}
         </VStack>
       </Box>
-      <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+      <Flex justifyContent="space-between" alignItems="center">
         <Text fontSize="sm" fontWeight="medium">
           Mostrando {categories.length} categoría{categories.length !== 1 ? 's' : ''}
         </Text>

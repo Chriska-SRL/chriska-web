@@ -2,12 +2,13 @@ import eslintPluginPrettier from 'eslint-plugin-prettier';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import next from 'next';
 
 export default [
+  {
+    ignores: ['.next/**/*', 'node_modules/**/*', 'dist/**/*', 'build/**/*', '*.config.js', '*.config.mjs'],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  next(),
   eslintConfigPrettier, // Desactiva reglas que chocan con Prettier
   {
     plugins: {
@@ -16,6 +17,8 @@ export default [
     rules: {
       'prettier/prettier': ['error'],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
     },
   },
 ];

@@ -5,9 +5,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Icon,
   IconButton,
-  useMediaQuery,
   useColorModeValue,
   Select,
   Box,
@@ -28,16 +26,15 @@ type VehicleFiltersProps = {
   setFilterModel: (value: string) => void;
 };
 
-export const VehicleFilters = ({ 
-  isLoading: isLoadingVehicles, 
-  filterPlate, 
+export const VehicleFilters = ({
+  isLoading: isLoadingVehicles,
+  filterPlate,
   setFilterPlate,
   filterBrand,
   setFilterBrand,
   filterModel,
-  setFilterModel
+  setFilterModel,
 }: VehicleFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [searchParam, setSearchParam] = useState<SearchParam>('plate');
   const [inputValue, setInputValue] = useState('');
 
@@ -122,8 +119,7 @@ export const VehicleFilters = ({
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
-      <Box
-        display="flex"
+      <Flex
         bg={isLoadingVehicles ? disabledColor : bgInput}
         borderRadius="md"
         overflow="hidden"
@@ -182,7 +178,7 @@ export const VehicleFilters = ({
             />
           </InputRightElement>
         </InputGroup>
-      </Box>
+      </Flex>
 
       {hasActiveFilters && (
         <IconButton

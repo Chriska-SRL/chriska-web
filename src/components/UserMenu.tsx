@@ -19,14 +19,13 @@ export const UserMenu = () => {
 
     setTimeout(() => {
       logout();
-      // Refresh and navigate to let middleware handle the redirection
       router.refresh();
       router.push('/iniciar-sesion');
     }, 2500);
   };
 
-  const bgButton = useColorModeValue('gray.100', 'gray.700');
-  const bgHover = useColorModeValue('gray.200', 'gray.600');
+  const bgButton = useColorModeValue('#f2f2f2', 'gray.700');
+  const bgHover = useColorModeValue('#e0dede', 'gray.600');
   const textColor = useColorModeValue('black', 'white');
 
   return (

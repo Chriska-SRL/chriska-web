@@ -10,7 +10,6 @@ import {
   InputRightElement,
   Button,
   Box,
-  useMediaQuery,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -48,7 +47,6 @@ export const ClientFilters = ({
   filterZoneId,
   setFilterZoneId,
 }: ClientFiltersProps) => {
-  const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [inputValue, setInputValue] = useState(filterName);
 
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
@@ -129,16 +127,7 @@ export const ClientFilters = ({
 
   return (
     <Flex gap="1rem" flexDir={{ base: 'column', md: 'row' }} alignItems="center" flexWrap="wrap" w="100%">
-      <Box
-        display="flex"
-        bg={isLoading ? disabledColor : bgInput}
-        borderRadius="md"
-        overflow="hidden"
-        flex="1"
-        w="100%"
-        borderWidth="1px"
-        borderColor={isLoading ? disabledColor : borderInput}
-      >
+      <Flex bg={isLoading ? disabledColor : bgInput} borderRadius="md" overflow="hidden" flex="1" w="100%">
         <Select
           value={searchParam}
           onChange={handleSearchParamChange}
@@ -189,7 +178,7 @@ export const ClientFilters = ({
             />
           </InputRightElement>
         </InputGroup>
-      </Box>
+      </Flex>
 
       <Flex gap="1rem" w={{ base: '100%', md: 'auto' }} alignItems="center" flexShrink={0}>
         <Popover placement="bottom-end">

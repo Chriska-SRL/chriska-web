@@ -20,5 +20,4 @@ export type Product = {
   brand: Brand;
   suppliers: Supplier[];
   shelve: Shelve;
-  // discounts: Discount[];
 };

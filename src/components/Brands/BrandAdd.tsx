@@ -15,14 +15,15 @@ import {
   Textarea,
   useToast,
   VStack,
-  Progress,
-  Box,
-  ModalCloseButton,
   useColorModeValue,
   FormErrorMessage,
+  Text,
+  HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
+import { FiTag, FiFileText } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Brand } from '@/entities/brand';
 import { useAddBrand } from '@/hooks/brand';
@@ -30,50 +31,82 @@ import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
+import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type BrandAddProps = {
   isLoading: boolean;
   setBrands: React.Dispatch<React.SetStateAction<Brand[]>>;
 };
 
-export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProps) => {
-  const canCreateBrands = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCTS));
+type BrandAddModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  setBrands: React.Dispatch<React.SetStateAction<Brand[]>>;
+};
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+// Componente interno que contiene todos los hooks y lógica del formulario
+const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
   const toast = useToast();
-
-  const [brandProps, setBrandProps] = useState<Partial<Brand>>();
-  const { data, isLoading, error, fieldError } = useAddBrand(brandProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
-  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
-  const submitBg = useColorModeValue('#4C88D8', 'blue.400');
-  const submitHover = useColorModeValue('#376bb0', 'blue.600');
+
+  const [brandProps, setBrandProps] = useState<Partial<Brand>>();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [formikInstance, setFormikInstance] = useState<any>(null);
+  const { data, isLoading, error, fieldError } = useAddBrand(brandProps);
+
+  const handleClose = () => {
+    setBrandProps(undefined);
+    setShowConfirmDialog(false);
+    if (formikInstance && formikInstance.resetForm) {
+      formikInstance.resetForm();
+    }
+    onClose();
+  };
+
+  const handleOverlayClick = () => {
+    if (formikInstance && formikInstance.dirty) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
 
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Zona creada',
-        description: `La marca ha sido creada correctamente.`,
+        title: 'Marca creada',
+        description: 'La marca ha sido creada correctamente.',
         status: 'success',
-        duration: 1500,
+        duration: 2000,
         isClosable: true,
       });
       setBrandProps(undefined);
       setBrands((prev) => [...prev, data]);
       onClose();
     }
-  }, [data]);
+  }, [data, setBrands, toast, onClose]);
 
   useEffect(() => {
     if (fieldError) {
-      toast({ title: `Error`, description: fieldError.error, status: 'error', duration: 4000, isClosable: true });
+      toast({
+        title: 'Error',
+        description: fieldError.error,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
     } else if (error) {
-      toast({ title: 'Error inesperado', description: error, status: 'error', duration: 3000, isClosable: true });
+      toast({
+        title: 'Error inesperado',
+        description: error,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
     }
-  }, [error, fieldError]);
+  }, [error, fieldError, toast]);
 
   const handleSubmit = (values: Partial<Brand>) => {
     setBrandProps(values);
@@ -81,93 +114,152 @@ export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProp
 
   return (
     <>
-      {canCreateBrands && (
-        <Button
-          bg={buttonBg}
-          _hover={{ bg: buttonHover }}
-          leftIcon={<FaPlus />}
-          onClick={onOpen}
-          px="1.5rem"
-          disabled={isLoadingBrands}
-        >
-          Nuevo
-        </Button>
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'sm' }} isCentered>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'md' }}
+        isCentered
+        closeOnOverlayClick={false}
+        onOverlayClick={handleOverlayClick}
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader textAlign="center" fontSize="2rem" pb="0.5rem">
+        <ModalContent maxH="90dvh" display="flex" flexDirection="column">
+          <ModalHeader
+            py="0.75rem"
+            textAlign="center"
+            fontSize="1.5rem"
+            flexShrink={0}
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
             Nueva marca
           </ModalHeader>
-          <ModalCloseButton />
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-            }}
-            onSubmit={handleSubmit}
-            validateOnChange
-            validateOnBlur={false}
-          >
-            {({ handleSubmit, errors, touched, submitCount }) => (
-              <form onSubmit={handleSubmit}>
-                <ModalBody pb="0">
-                  <VStack spacing="0.75rem">
-                    <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                      <FormLabel>Nombre</FormLabel>
-                      <Field
-                        as={Input}
-                        name="name"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        h="2.75rem"
-                        validate={validate}
-                      />
-                      <FormErrorMessage>{errors.name}</FormErrorMessage>
-                    </FormControl>
 
-                    <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                      <FormLabel>Descripción</FormLabel>
-                      <Field
-                        as={Textarea}
-                        name="description"
-                        bg={inputBg}
-                        borderColor={inputBorder}
-                        validate={validateEmpty}
-                      />
-                      <FormErrorMessage>{errors.description}</FormErrorMessage>
-                    </FormControl>
-                  </VStack>
-                </ModalBody>
+          <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
+            <Formik
+              initialValues={{
+                name: '',
+                description: '',
+              }}
+              onSubmit={handleSubmit}
+              enableReinitialize
+            >
+              {({ handleSubmit, dirty, resetForm }) => {
+                // Actualizar la instancia de formik solo cuando cambie
+                useEffect(() => {
+                  setFormikInstance({ dirty, resetForm });
+                }, [dirty, resetForm]);
 
-                <ModalFooter pb="1.5rem">
-                  <Box mt="0.5rem" w="100%">
-                    <Progress
-                      h={isLoading ? '4px' : '1px'}
-                      mb="1.5rem"
-                      size="xs"
-                      isIndeterminate={isLoading}
-                      colorScheme="blue"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      bg={submitBg}
-                      color="white"
-                      _hover={{ backgroundColor: submitHover }}
-                      width="100%"
-                      leftIcon={<FaCheck />}
-                      py="1.375rem"
-                    >
-                      Confirmar
-                    </Button>
-                  </Box>
-                </ModalFooter>
-              </form>
-            )}
-          </Formik>
+                return (
+                  <form id="brand-add-form" onSubmit={handleSubmit}>
+                    <VStack spacing="1rem" align="stretch">
+                      <Field name="name" validate={validate}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre de la marca"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="description" validate={validateEmpty}>
+                        {({ field, meta }: any) => (
+                          <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese una descripción de la marca"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                    </VStack>
+                  </form>
+                );
+              }}
+            </Formik>
+          </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm">
+                Cancelar
+              </Button>
+              <Button
+                form="brand-add-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Creando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Crear marca
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <UnsavedChangesModal
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleClose}
+      />
+    </>
+  );
+};
+
+// Componente principal que controla la apertura del modal
+export const BrandAdd = ({ isLoading: isLoadingBrands, setBrands }: BrandAddProps) => {
+  const canCreateBrands = useUserStore((s) => s.hasPermission(Permission.CREATE_BRANDS));
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
+  const buttonHover = useColorModeValue('#e0dede', 'gray.500');
+
+  if (!canCreateBrands) return null;
+
+  return (
+    <>
+      <Button
+        bg={buttonBg}
+        _hover={{ bg: buttonHover }}
+        leftIcon={<FaPlus />}
+        onClick={onOpen}
+        px="1.5rem"
+        disabled={isLoadingBrands}
+      >
+        Nuevo
+      </Button>
+
+      {/* Siempre renderizar el modal para mantener las animaciones */}
+      {isOpen && <BrandAddModal isOpen={isOpen} onClose={onClose} setBrands={setBrands} />}
     </>
   );
 };
