@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { ReturnRequest } from '@/entities/returnRequest';
 import { ReturnRequestDetail } from './ReturnRequestDetail';
-import { FiCalendar, FiUser, FiUsers, FiPackage, FiTruck, FiRotateCcw } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiUsers, FiTruck, FiRotateCcw } from 'react-icons/fi';
 import { Pagination } from '../Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -67,10 +67,6 @@ export const ReturnRequestList = ({
     } catch {
       return dateString;
     }
-  };
-
-  const calculateTotalItems = (returnRequest: ReturnRequest) => {
-    return returnRequest.productItems?.reduce((total, item) => total + item.quantity, 0) || 0;
   };
 
   if (error)

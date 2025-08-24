@@ -169,16 +169,7 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
               onSubmit={handleSubmit}
               enableReinitialize
             >
-              {(formik) => {
-                const handleModalClose = () => {
-                  if (formik.dirty) {
-                    setShowConfirmDialog(true);
-                  } else {
-                    onClose();
-                  }
-                };
-
-                // Update the modal close handler to use formik.dirty
+              {() => {
                 return (
                   <Form id="return-request-edit-form">
                     <VStack spacing="1rem" align="stretch">

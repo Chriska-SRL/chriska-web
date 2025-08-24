@@ -70,13 +70,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const [orderRequestProps, setOrderRequestProps] = useState<Partial<OrderRequest>>();
 
-  // Estados para la búsqueda de clientes
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  // Estados para la búsqueda de clientes (edit mode - read only client display)
+  const [clientSearch] = useState('');
+  const [clientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
   const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
   const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, fieldError } = useUpdateOrderRequest(orderRequestProps);
@@ -245,13 +243,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const { data: productsSearch = [], isLoading: isLoadingProductsSearch } = useGetProducts(1, 10, actualProductFilters);
 
-  // Actualizar el término de búsqueda cuando se completa la búsqueda
-  useEffect(() => {
-    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
-      setLastClientSearchTerm(debouncedClientSearch);
-    }
-  }, [isLoadingClientsSearch, debouncedClientSearch]);
-
   useEffect(() => {
     if (!isLoadingProductsSearch && debouncedProductSearch && debouncedProductSearch.length >= 2) {
       setLastProductSearchTerm(debouncedProductSearch);
@@ -350,12 +341,9 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     }, 2000);
   };
 
-  // Click outside handler
+  // Click outside handler (only for product dropdown in edit mode)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
-      }
       if (productSearchRef.current && !productSearchRef.current.contains(event.target as Node)) {
         setShowProductDropdown(false);
       }
