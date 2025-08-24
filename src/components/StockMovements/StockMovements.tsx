@@ -23,7 +23,7 @@ export const StockMovements = () => {
   }, [preselectedProductId, router]);
 
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
@@ -61,6 +61,11 @@ export const StockMovements = () => {
     },
     [],
   );
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  }, []);
 
   return (
     <>
@@ -104,6 +109,7 @@ export const StockMovements = () => {
         currentPage={page}
         pageSize={pageSize}
         onPageChange={setPage}
+        onPageSizeChange={handlePageSizeChange}
       />
     </>
   );

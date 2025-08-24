@@ -600,7 +600,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                                   flexShrink={0}
                                                 />
                                                 <Box flex="1">
-                                                  <Text fontSize="sm" fontWeight="medium">
+                                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                                     {product.name}
                                                   </Text>
                                                   <Text fontSize="xs" color={textColor}>
@@ -697,7 +697,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                         />
                                         <Box flex="1">
                                           <HStack spacing="0.5rem" align="center" mb="0.25rem">
-                                            <Text fontSize="sm" fontWeight="medium">
+                                            <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                               {product.name}
                                             </Text>
                                             {!product.isOriginalFromOrder && (
@@ -887,7 +887,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                       />
                                       <Box flex="1">
                                         <VStack spacing="0.25rem" align="flex-start" mb="0.25rem">
-                                          <Text fontSize="sm" fontWeight="medium">
+                                          <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                             {product.name}
                                           </Text>
                                           {!product.isOriginalFromOrder && (

@@ -241,7 +241,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader

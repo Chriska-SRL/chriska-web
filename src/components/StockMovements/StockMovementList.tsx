@@ -30,6 +30,7 @@ type StockMovementListProps = {
   currentPage: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export const StockMovementList = ({
@@ -40,6 +41,7 @@ export const StockMovementList = ({
   currentPage,
   pageSize,
   onPageChange,
+  onPageSizeChange,
 }: StockMovementListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -152,7 +154,7 @@ export const StockMovementList = ({
               pageSize={pageSize}
               hasNextPage={hasNextPage}
               onPageChange={onPageChange}
-              onPageSizeChange={() => {}}
+              onPageSizeChange={onPageSizeChange}
               isLoading={isLoading}
             />
           </Flex>
@@ -202,7 +204,7 @@ export const StockMovementList = ({
               pageSize={pageSize}
               hasNextPage={hasNextPage}
               onPageChange={onPageChange}
-              onPageSizeChange={() => {}}
+              onPageSizeChange={onPageSizeChange}
               isLoading={isLoading}
             />
           </Flex>

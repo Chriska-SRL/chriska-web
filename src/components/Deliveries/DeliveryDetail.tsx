@@ -227,7 +227,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'lg' }} isCentered scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader
@@ -299,13 +299,12 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 )}
               </Stack>
 
-              {/* Fila 5: Observaciones - Observaciones */}
+              {/* Fila 5: Observaciones */}
               <Stack
                 direction={{ base: 'column', md: 'row' }}
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
                 {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
               </Stack>
 
@@ -355,7 +354,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                   flexShrink={0}
                                 />
                                 <Box flex="1" alignSelf="center">
-                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
@@ -444,7 +443,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                   flexShrink={0}
                                 />
                                 <Box flex="1">
-                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                  <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                     {item.product?.name || '-'}
                                   </Text>
                                   <HStack spacing="0.5rem" align="center">
@@ -631,17 +630,19 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                   Cerrar
                 </Button>
 
-                {/* Botón Editar para entregas confirmadas/canceladas */}
-                <Button
-                  leftIcon={<FiEdit />}
-                  colorScheme="blue"
-                  variant="outline"
-                  size="sm"
-                  onClick={openEdit}
-                  w={{ base: '100%', md: 'auto' }}
-                >
-                  Editar
-                </Button>
+                {/* Botón Editar para entregas confirmadas/canceladas - solo mostrar si no está confirmado */}
+                {delivery.status?.toLowerCase() !== Status.CONFIRMED.toLowerCase() && (
+                  <Button
+                    leftIcon={<FiEdit />}
+                    colorScheme="blue"
+                    variant="outline"
+                    size="sm"
+                    onClick={openEdit}
+                    w={{ base: '100%', md: 'auto' }}
+                  >
+                    Editar
+                  </Button>
+                )}
               </Stack>
             )}
           </ModalFooter>

@@ -817,7 +817,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                         flexShrink={0}
                                                       />
                                                       <Box flex="1">
-                                                        <Text fontSize="sm" fontWeight="medium">
+                                                        <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                                           {product.name}
                                                         </Text>
                                                         <Text fontSize="xs" color={textColor}>
@@ -912,7 +912,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
                                             {/* Nombre y Precio */}
                                             <Box flex="1">
-                                              <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                              <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                                 {product.name}
                                               </Text>
                                               <HStack spacing="0.5rem" align="center">
@@ -1208,7 +1208,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                 flexShrink={0}
                                               />
                                               <Box flex="1">
-                                                <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                                <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                                   {product.name}
                                                 </Text>
                                                 <HStack spacing="0.5rem" align="center">

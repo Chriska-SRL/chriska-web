@@ -647,7 +647,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   flexShrink={0}
                                                 />
                                                 <Box flex="1">
-                                                  <Text fontSize="sm" fontWeight="medium">
+                                                  <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                                     {product.name}
                                                   </Text>
                                                   <Text fontSize="xs" color={textColor}>
@@ -741,7 +741,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
                                       {/* Nombre y Precio */}
                                       <Box flex="1">
-                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                           {product.name}
                                         </Text>
                                         <HStack spacing="0.5rem" align="center">
@@ -1035,7 +1035,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                           flexShrink={0}
                                         />
                                         <Box flex="1">
-                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem">
+                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                             {product.name}
                                           </Text>
                                           <HStack spacing="0.5rem" align="center">
