@@ -21,6 +21,7 @@ import {
   Text,
   HStack,
   Icon,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -28,23 +29,23 @@ import { Formik, Field, FieldArray } from 'formik';
 import { FaCheck, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   FiUser,
-  FiCreditCard,
   FiMapPin,
   FiClock,
   FiPhone,
   FiMail,
   FiFileText,
   FiStar,
-  FiPackage,
   FiMap,
   FiGrid,
+  FiBox,
+  FiHash,
+  FiUsers,
 } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useGetZones } from '@/hooks/zone';
 import { useUpdateClient } from '@/hooks/client';
 import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
-import { Zone } from '@/entities/zone';
 import { QualificationSelector } from '@/components/QualificationSelector';
 import { BankOptions } from '@/enums/bank.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -207,72 +208,107 @@ const ClientEditForm = ({
                   <form id="client-edit-form" onSubmit={handleSubmit}>
                     <Box>
                       <VStack spacing="1rem" align="stretch">
-                        <Field name="name" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiUser} boxSize="1rem" />
-                                  <Text>Nombre</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el nombre del cliente"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.name}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                        {/* Fila 1: Nombre - RUT */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                          <Field name="name" validate={validate}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiUser} boxSize="1rem" />
+                                    <Text>Nombre</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese el nombre del cliente"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.name}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                        <Field name="rut" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiCreditCard} boxSize="1rem" />
-                                  <Text>RUT</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el RUT del cliente"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.rut}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                          <Field name="rut" validate={validate}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiHash} boxSize="1rem" />
+                                    <Text>RUT</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese el RUT del cliente"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.rut}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </SimpleGrid>
 
-                        <Field name="razonSocial">
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Razón Social</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese la razón social"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                        {/* Fila 2: Razón Social - Zona */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                          <Field name="razonSocial">
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiUsers} boxSize="1rem" />
+                                    <Text>Razón Social</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese la razón social"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
+                          <Field name="zoneId" validate={validateEmpty}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiMapPin} boxSize="1rem" />
+                                    <Text>Zona</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Select
+                                  {...field}
+                                  placeholder="Seleccionar zona"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoadingZones || isLoading}
+                                >
+                                  {zones?.map((zone) => (
+                                    <option key={zone.id} value={zone.id}>
+                                      {zone.name}
+                                    </option>
+                                  ))}
+                                </Select>
+                                <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </SimpleGrid>
+
+                        {/* Fila 3: Dirección (completo) */}
                         <Field name="address" validate={validateEmpty}>
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
@@ -295,121 +331,55 @@ const ClientEditForm = ({
                           )}
                         </Field>
 
-                        <Field name="latitude" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.latitude && !!errors.latitude}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiMap} boxSize="1rem" />
-                                  <Text>Latitud</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                type="number"
-                                step="any"
-                                placeholder="Ingrese la latitud"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.latitude}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                        {/* Fila 4: Persona de contacto - Teléfono */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                          <Field name="contactName" validate={validate}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiUser} boxSize="1rem" />
+                                    <Text>Persona de contacto</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese la persona de contacto"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.contactName}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                        <Field name="longitude" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.longitude && !!errors.longitude}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiMap} boxSize="1rem" />
-                                  <Text>Longitud</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                type="number"
-                                step="any"
-                                placeholder="Ingrese la longitud"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.longitude}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                          <Field name="phone" validate={validate}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiPhone} boxSize="1rem" />
+                                    <Text>Teléfono</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese el teléfono del cliente"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </SimpleGrid>
 
-                        <Field name="schedule" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiClock} boxSize="1rem" />
-                                  <Text>Horario</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el horario de atención"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.schedule}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
-                        <Field name="phone" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiPhone} boxSize="1rem" />
-                                  <Text>Teléfono</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el teléfono del cliente"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
-                        <Field name="contactName" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiUser} boxSize="1rem" />
-                                  <Text>Persona de contacto</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese la persona de contacto"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.contactName}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
-                        <Field name="email">
+                        {/* Fila 5: Email (completo) */}
+                        <Field name="email" validate={validateEmpty}>
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                               <FormLabel fontWeight="semibold">
@@ -432,70 +402,121 @@ const ClientEditForm = ({
                           )}
                         </Field>
 
-                        <Field name="zoneId" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiMapPin} boxSize="1rem" />
-                                  <Text>Zona</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Select
-                                {...field}
-                                placeholder="Seleccionar zona"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading || isLoadingZones}
-                              >
-                                {zones?.map((zone: Zone) => (
-                                  <option key={zone.id} value={zone.id}>
-                                    {zone.name}
-                                  </option>
-                                ))}
-                              </Select>
-                              <FormErrorMessage>{errors.name}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                        {/* Fila 6: Ubicación (Latitud - Longitud) */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                          <Field name="latitude" validate={validateEmpty}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.latitude && !!errors.latitude}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiMap} boxSize="1rem" />
+                                    <Text>Latitud</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  step="any"
+                                  placeholder="Ingrese la latitud"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.latitude}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                        <Field name="loanedCrates" validate={validate}>
+                          <Field name="longitude" validate={validateEmpty}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.longitude && !!errors.longitude}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiMap} boxSize="1rem" />
+                                    <Text>Longitud</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  step="any"
+                                  placeholder="Ingrese la longitud"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.longitude}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                        </SimpleGrid>
+
+                        {/* Fila 7: Horario (completo) */}
+                        <Field name="schedule" validate={validateEmpty}>
                           {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
+                            <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
-                                  <Icon as={FiPackage} boxSize="1rem" />
-                                  <Text>Cajones prestados</Text>
+                                  <Icon as={FiClock} boxSize="1rem" />
+                                  <Text>Horario</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
                                 {...field}
-                                type="number"
-                                min="0"
-                                placeholder="0"
+                                placeholder="Ingrese el horario de atención"
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
+                              <FormErrorMessage>{errors.schedule}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
-                        <FormControl>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiStar} boxSize="1rem" />
-                              <Text>Calificación</Text>
-                            </HStack>
-                          </FormLabel>
-                          <QualificationSelector
-                            value={values.qualification}
-                            onChange={(value) => setFieldValue('qualification', value)}
-                          />
-                        </FormControl>
+                        {/* Fila 8: Cajones prestados - Calificación */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                          <Field name="loanedCrates" validate={validate}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiBox} boxSize="1rem" />
+                                    <Text>Cajones prestados</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  min="0"
+                                  placeholder="0"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+
+                          <FormControl>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiStar} boxSize="1rem" />
+                                <Text>Calificación</Text>
+                              </HStack>
+                            </FormLabel>
+                            <QualificationSelector
+                              value={values.qualification}
+                              onChange={(value) => setFieldValue('qualification', value)}
+                              size="2.25rem"
+                              spacing="0.75rem"
+                            />
+                          </FormControl>
+                        </SimpleGrid>
 
                         <FormControl>
                           <FormLabel fontWeight="semibold">

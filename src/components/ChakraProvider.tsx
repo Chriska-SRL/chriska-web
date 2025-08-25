@@ -8,7 +8,7 @@ import { useInitializeGeolocation } from '@/hooks/useGeolocation';
 
 export const ChakraProviders = ({ children }: { children: ReactNode }) => {
   const initializeFromStorage = useUserStore((state) => state.initializeFromStorage);
-  
+
   // Inicializar geolocalización
   useInitializeGeolocation();
 

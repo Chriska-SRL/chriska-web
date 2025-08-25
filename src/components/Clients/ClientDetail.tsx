@@ -17,7 +17,6 @@ import {
   HStack,
   Icon,
   SimpleGrid,
-  Divider,
   Flex,
 } from '@chakra-ui/react';
 import {
@@ -127,7 +126,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
     const stars = [];
 
     for (let i = 1; i <= 5; i++) {
-      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="1.25rem" />);
+      stars.push(<Icon as={FaStar} key={i} color={i <= current ? '#FFD700' : '#E2E8F0'} boxSize="2.25rem" />);
     }
 
     return (
@@ -138,19 +137,8 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
             Calificación
           </Text>
         </HStack>
-        <Flex
-          px="1rem"
-          py="0.5rem"
-          bg={inputBg}
-          border="1px solid"
-          borderColor={inputBorder}
-          borderRadius="md"
-          minH="2.75rem"
-          justifyContent="center"
-          alignItems="center"
-          transition="all 0.2s"
-        >
-          <HStack spacing="0.25rem">{stars}</HStack>
+        <Flex justifyContent="center" alignItems="center" py="0.25rem">
+          <HStack spacing="0.75rem">{stars}</HStack>
         </Flex>
       </Box>
     );
@@ -183,35 +171,43 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
+              {/* Fila 1: Nombre - RUT */}
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                 {detailField('Nombre', client.name, FiUser)}
                 {detailField('RUT', client.rut, FiHash)}
               </SimpleGrid>
 
-              {detailField('Razón Social', client.razonSocial, FiUsers)}
-              {detailField('Dirección', client.address, FiMapPin)}
-
+              {/* Fila 2: Razón Social - Zona */}
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Teléfono', client.phone, FiPhone)}
-                {detailField('Correo electrónico', client.email, FiMail)}
-              </SimpleGrid>
-
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Persona de contacto', client.contactName, FiUser)}
-                {renderQualificationStars(client.qualification)}
-              </SimpleGrid>
-
-              {detailField('Ubicación', `${client.location.latitude}, ${client.location.longitude}`, FiMap)}
-              {detailField('Horario', client.schedule, FiClock)}
-
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Razón Social', client.razonSocial, FiUsers)}
                 {detailField('Zona', client.zone.name, FiMapPin, () => {
                   router.push(`/zonas?open=${client.zone.id}`);
                 })}
-                {detailField('Cajones prestados', client.loanedCrates, FiBox)}
               </SimpleGrid>
 
-              <Divider />
+              {/* Fila 3: Dirección (completo) */}
+              {detailField('Dirección', client.address, FiMapPin)}
+
+              {/* Fila 4: Persona de contacto - Teléfono */}
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Persona de contacto', client.contactName, FiUser)}
+                {detailField('Teléfono', client.phone, FiPhone)}
+              </SimpleGrid>
+
+              {/* Fila 5: Email (completo) */}
+              {detailField('Correo electrónico', client.email, FiMail)}
+
+              {/* Fila 6: Ubicación (completo) */}
+              {detailField('Ubicación', `${client.location.latitude}, ${client.location.longitude}`, FiMap)}
+
+              {/* Fila 7: Horario (completo) */}
+              {detailField('Horario', client.schedule, FiClock)}
+
+              {/* Fila 8: Cajones prestados - Calificación */}
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Cajones prestados', client.loanedCrates, FiBox)}
+                {renderQualificationStars(client.qualification)}
+              </SimpleGrid>
 
               {client.bankAccounts && client.bankAccounts.length > 0 && (
                 <Box>
@@ -246,8 +242,6 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
                   </Box>
                 </Box>
               )}
-
-              <Divider />
 
               {detailField('Observaciones', client.observations, FiFileText)}
             </VStack>
