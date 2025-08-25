@@ -30,21 +30,20 @@ const getHeaders = (withAuth: boolean, isFormData: boolean = false): HeadersInit
   return headers;
 };
 
-const addLocationToBody = (body: any, method: Method): any => {
+const addLocationToBody = async (body: any, method: Method): Promise<any> => {
   if (method !== 'POST' && method !== 'PUT') {
     return body;
   }
 
+  // Import getUserLocation dynamically to avoid SSR issues
+  const { getUserLocation } = await import('./geolocation');
+  const location = await getUserLocation();
+
   // For FormData, add location as separate entries
   if (body instanceof FormData) {
     if (!body.has('latitude') && !body.has('longitude')) {
-      if (typeof window !== 'undefined' && navigator.geolocation) {
-        // For FormData, we'll handle location separately in the calling code
-        // since it requires async operation
-      } else {
-        body.append('latitude', '0');
-        body.append('longitude', '0');
-      }
+      body.append('latitude', location.latitude.toString());
+      body.append('longitude', location.longitude.toString());
     }
     return body;
   }
@@ -54,23 +53,21 @@ const addLocationToBody = (body: any, method: Method): any => {
     return body;
   }
 
-  const defaultCoords = { latitude: 0, longitude: 0 };
-
   if (!body) {
     return {
-      location: defaultCoords,
+      location,
     };
   }
 
   return {
     ...body,
-    location: defaultCoords,
+    location,
   };
 };
 
 const request = async <T>(method: Method, url: string, body?: any, withAuth: boolean = true): Promise<T> => {
   const isFormData = body instanceof FormData;
-  const processedBody = addLocationToBody(body, method);
+  const processedBody = await addLocationToBody(body, method);
 
   const res = await fetch(url, {
     method,
