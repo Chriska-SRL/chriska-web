@@ -32,7 +32,6 @@ import {
   FiThermometer,
   FiBox,
   FiTruck,
-  FiImage,
 } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Product } from '@/entities/product';
@@ -151,25 +150,20 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                <Box>
-                  <HStack mb="0.5rem" spacing="0.5rem">
-                    <Icon as={FiImage} boxSize="1rem" color={iconColor} />
-                    <Text color={labelColor} fontWeight="semibold">
-                      Imagen del producto
-                    </Text>
-                  </HStack>
-                  <Flex justifyContent="center" alignItems="center" aspectRatio="1" borderRadius="md">
+              <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" align="start">
+                <Box flexShrink={0} w={{ base: '100%', md: '10.25rem' }}>
+                  <Box w="100%" aspectRatio="1" borderRadius="md">
                     <ProductImageUpload product={product} editable={false} />
-                  </Flex>
+                  </Box>
                 </Box>
 
-                <VStack spacing="2rem" align="stretch">
+                <VStack spacing="1rem" align="stretch" flex="1" justify="start">
                   {detailField('Código interno', product.internalCode, FiHash)}
                   {detailField('Código de barras', product.barcode, FiBarChart2)}
-                  {detailField('Nombre', product.name, FiPackage)}
                 </VStack>
-              </SimpleGrid>
+              </Flex>
+
+              {detailField('Nombre', product.name, FiPackage)}
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                 {detailField('Precio', `$${product.price}`, FiDollarSign)}
@@ -282,9 +276,11 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <VStack spacing="0.5rem" w="100%">
+            <HStack spacing="0.5rem" w="100%" justify="flex-end">
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                Cerrar
+              </Button>
               <Button
-                w="100%"
                 leftIcon={!isNavigating ? <FiBox /> : undefined}
                 onClick={() => {
                   setIsNavigating(true);
@@ -298,39 +294,33 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 loadingText="Redirigiendo..."
                 disabled={isNavigating}
               >
-                Registrar movimiento de stock
+                Registrar movimiento
               </Button>
-              <HStack spacing="0.5rem" w="100%">
-                <Button variant="ghost" size="sm" onClick={handleClose} flex="1">
-                  Cerrar
+              {canDeleteProducts && (
+                <GenericDelete
+                  item={{ id: product.id, name: product.name }}
+                  useDeleteHook={useDeleteProduct}
+                  setItems={setProducts}
+                  onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
+                />
+              )}
+              {canEditProducts && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
                 </Button>
-                {canDeleteProducts && (
-                  <GenericDelete
-                    item={{ id: product.id, name: product.name }}
-                    useDeleteHook={useDeleteProduct}
-                    setItems={setProducts}
-                    onDeleted={handleClose}
-                    size="sm"
-                    variant="outline"
-                  />
-                )}
-                {canEditProducts && (
-                  <Button
-                    leftIcon={<FaEdit />}
-                    onClick={() => {
-                      openEdit();
-                      handleClose();
-                    }}
-                    colorScheme="blue"
-                    variant="outline"
-                    size="sm"
-                    flex="1"
-                  >
-                    Editar
-                  </Button>
-                )}
-              </HStack>
-            </VStack>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

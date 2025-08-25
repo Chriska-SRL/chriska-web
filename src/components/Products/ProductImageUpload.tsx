@@ -182,7 +182,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
   const isLoading = isUploading || isDeleting;
 
   return (
-    <Box w="100%" position="relative">
+    <Box w="100%" h="100%" position="relative">
       <Box
         position="relative"
         border="1px solid"
@@ -190,6 +190,8 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
         borderRadius="md"
         overflow="hidden"
         width="100%"
+        height="100%"
+        display="flex"
         cursor={editable ? 'pointer' : 'default'}
         onClick={editable ? openFileSelector : undefined}
         _hover={editable ? { borderColor: 'blue.300' } : undefined}
@@ -254,10 +256,10 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                       </Text>
                     </VStack>
                   ) : (
-                    <VStack color="white" spacing="2">
-                      <Icon as={FiUpload} boxSize="2rem" />
-                      <Text fontSize="sm" textAlign="center" fontWeight="medium">
-                        Click para cambiar imagen
+                    <VStack color="white" spacing="1">
+                      <Icon as={FiUpload} boxSize="1.5rem" />
+                      <Text fontSize="xs" textAlign="center" fontWeight="medium">
+                        Cambiar
                       </Text>
                     </VStack>
                   )}
@@ -288,15 +290,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
             )}
           </>
         ) : (
-          <Center
-            bg={placeholderBg}
-            flexDirection="column"
-            color={placeholderColor}
-            w="100%"
-            h="100%"
-            minH="200px"
-            aspectRatio="1"
-          >
+          <Center bg={placeholderBg} flexDirection="column" color={placeholderColor} w="100%" flex="1">
             {isLoading ? (
               <VStack spacing="3">
                 <Spinner size="lg" thickness="3px" speed="0.8s" color="blue.400" />
@@ -305,19 +299,21 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
                 </Text>
               </VStack>
             ) : editable ? (
-              <VStack spacing="3">
-                <Icon as={FiImage} boxSize="3rem" />
-                <VStack spacing="1">
-                  <Text fontSize="md" fontWeight="medium">
-                    Click para seleccionar imagen
+              <VStack spacing="2">
+                <Icon as={FiImage} boxSize="1.5rem" />
+                <VStack spacing="0.5">
+                  <Text fontSize="xs" fontWeight="medium">
+                    Click para agregar
                   </Text>
-                  <Text fontSize="sm">JPG, PNG o WebP • Máximo 8MB</Text>
+                  <Text fontSize="xs" opacity="0.7">
+                    JPG, PNG, WebP
+                  </Text>
                 </VStack>
               </VStack>
             ) : (
-              <VStack spacing="2">
-                <Icon as={FiImage} boxSize="2rem" />
-                <Text fontSize="sm">Sin imagen</Text>
+              <VStack spacing="1">
+                <Icon as={FiImage} boxSize="1.5rem" />
+                <Text fontSize="xs">Sin imagen</Text>
               </VStack>
             )}
           </Center>

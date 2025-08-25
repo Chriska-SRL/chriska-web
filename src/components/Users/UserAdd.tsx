@@ -181,8 +181,10 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -201,7 +203,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                         }}
                       >
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
@@ -216,14 +218,14 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.username}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="name" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUser} boxSize="1rem" />
@@ -238,14 +240,14 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="roleId" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiShield} boxSize="1rem" />
@@ -266,14 +268,14 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.roleId}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="estado" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiActivity} boxSize="1rem" />
@@ -291,7 +293,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <option value="Activo">Activo</option>
                               <option value="Inactivo">Inactivo</option>
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.estado}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

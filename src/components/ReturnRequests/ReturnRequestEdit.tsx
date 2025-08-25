@@ -168,8 +168,10 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {() => {
+              {({ errors, touched, submitCount }) => {
                 return (
                   <Form id="return-request-edit-form">
                     <VStack spacing="1rem" align="stretch">
@@ -354,8 +356,8 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
 
                       {/* Observaciones */}
                       <Field name="observations">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={!!(meta.error && meta.touched)}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                             <FormLabel>
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} />
@@ -370,7 +372,7 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
                               borderColor={inputBorder}
                               _hover={{ borderColor: inputBorder }}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.observations}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

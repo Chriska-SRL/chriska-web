@@ -247,12 +247,10 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
 
                       <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start" w="100%">
                         <Box>
-                          <Text mb="0.5rem" fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiCalendar} boxSize="1rem" />
-                              <Text>Días de pedidos</Text>
-                            </HStack>
-                          </Text>
+                          <HStack mb="0.5rem" spacing="0.5rem">
+                            <Icon as={FiCalendar} boxSize="1rem" />
+                            <Text fontWeight="semibold">Días de pedidos</Text>
+                          </HStack>
                           <FieldArray name="requestDays">
                             {({ push, remove }) =>
                               allDays.map((day) => {
@@ -276,12 +274,10 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                         </Box>
 
                         <Box>
-                          <Text mb="0.5rem" fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiClock} boxSize="1rem" />
-                              <Text>Días de entrega</Text>
-                            </HStack>
-                          </Text>
+                          <HStack mb="0.5rem" spacing="0.5rem">
+                            <Icon as={FiClock} boxSize="1rem" />
+                            <Text fontWeight="semibold">Días de entrega</Text>
+                          </HStack>
                           <FieldArray name="deliveryDays">
                             {({ push, remove }) =>
                               allDays.map((day) => {

@@ -23,6 +23,7 @@ import {
   Text,
   Icon,
   SimpleGrid,
+  Flex,
 } from '@chakra-ui/react';
 import { Field, Formik, FieldArray } from 'formik';
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -37,7 +38,6 @@ import {
   FiGrid,
   FiBox,
   FiTruck,
-  FiImage,
 } from 'react-icons/fi';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
@@ -259,7 +259,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
               validateOnChange={true}
               validateOnBlur={false}
             >
-              {({ handleSubmit, errors, submitCount, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, errors, touched, submitCount, setFieldValue, dirty, resetForm }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -268,24 +268,22 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                 return (
                   <form id="product-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <Box>
-                          <HStack mb="0.5rem" spacing="0.5rem">
-                            <Icon as={FiImage} boxSize="1rem" />
-                            <Text fontWeight="semibold">Imagen del producto</Text>
-                          </HStack>
-                          <ProductImageUpload
-                            product={{
-                              ...product,
-                              imageUrl: finalImageUrl,
-                            }}
-                            onImageChange={handleImageChange}
-                            editable
-                          />
+                      <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" align="start">
+                        <Box flexShrink={0} w={{ base: '100%', md: '10.25rem' }}>
+                          <Box w="100%" aspectRatio="1" borderRadius="md">
+                            <ProductImageUpload
+                              product={{
+                                ...product,
+                                imageUrl: finalImageUrl,
+                              }}
+                              onImageChange={handleImageChange}
+                              editable
+                            />
+                          </Box>
                         </Box>
 
-                        <VStack spacing="2.25rem" align="stretch">
-                          <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                        <VStack spacing="1rem" align="stretch" flex="1" justify="start">
+                          <FormControl isInvalid={submitCount > 0 && touched.internalCode && !!errors.internalCode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiPackage} boxSize="1rem" />
@@ -303,7 +301,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
                           </FormControl>
 
-                          <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
+                          <FormControl isInvalid={submitCount > 0 && touched.barcode && !!errors.barcode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
@@ -327,29 +325,29 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             />
                             <FormErrorMessage>{errors.barcode}</FormErrorMessage>
                           </FormControl>
-
-                          <FormControl isInvalid={submitCount > 0 && !!errors.name}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiTag} boxSize="1rem" />
-                                <Text>Nombre</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Field
-                              as={Input}
-                              name="name"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                              validate={validate}
-                            />
-                            <FormErrorMessage>{errors.name}</FormErrorMessage>
-                          </FormControl>
                         </VStack>
-                      </SimpleGrid>
+                      </Flex>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.description}>
+                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiTag} boxSize="1rem" />
+                            <Text>Nombre</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="name"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                          validate={validate}
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
@@ -370,7 +368,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       </FormControl>
 
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
+                        <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiPackage} boxSize="1rem" />
@@ -393,7 +391,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           <FormErrorMessage>{errors.unitType}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && !!errors.price}>
+                        <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiDollarSign} boxSize="1rem" />
@@ -445,7 +443,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           </Select>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
+                        <FormControl isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiGrid} boxSize="1rem" />
@@ -472,7 +470,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         </FormControl>
                       </SimpleGrid>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
+                      <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiTag} boxSize="1rem" />
@@ -498,7 +496,9 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormErrorMessage>{errors.brandId}</FormErrorMessage>
                       </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
+                      <FormControl
+                        isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}
+                      >
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiThermometer} boxSize="1rem" />
@@ -522,7 +522,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
                       </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.observations}>
+                      <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
@@ -542,7 +542,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       </FormControl>
 
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                        <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiBox} boxSize="1rem" />
@@ -568,10 +568,10 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                               </option>
                             ))}
                           </Select>
-                          <FormErrorMessage>{errors.shelveId && 'Depósito es requerido'}</FormErrorMessage>
+                          <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                        <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiBox} boxSize="1rem" />

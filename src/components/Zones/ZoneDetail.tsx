@@ -116,7 +116,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
   );
 
   const renderDaysCheckboxesGrouped = (diasPedidos: string[], diasEntregas: string[]) => (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem" w="100%">
+    <SimpleGrid columns={2} spacing="1rem" w="100%">
       <Box>
         <HStack spacing="0.5rem" mb="0.5rem">
           <Icon as={FiCalendar} boxSize="1rem" color={iconColor} />
@@ -132,7 +132,6 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
             aria-disabled="true"
             mb="0.5rem"
             w="100%"
-            pl="1.5rem"
           >
             {getDayLabel(day)}
           </Checkbox>
@@ -154,7 +153,6 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
             aria-disabled="true"
             mb="0.5rem"
             w="100%"
-            pl="1.5rem"
           >
             {getDayLabel(day)}
           </Checkbox>
@@ -177,7 +175,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -195,10 +193,10 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
             <VStack spacing="1rem" align="stretch">
               <ZoneImageUpload zone={zone} editable={false} />
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+              <VStack spacing="0.75rem" align="stretch">
                 {detailField('Nombre', zone.name, FiMapPin)}
                 {detailField('Descripción', zone.description, FiFileText)}
-              </SimpleGrid>
+              </VStack>
 
               <Divider />
 

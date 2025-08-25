@@ -186,8 +186,10 @@ const ClientEditForm = ({
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -199,7 +201,7 @@ const ClientEditForm = ({
                       <VStack spacing="1rem" align="stretch">
                         <Field name="name" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -214,14 +216,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="rut" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiCreditCard} boxSize="1rem" />
@@ -236,14 +238,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.rut}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="razonSocial">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
@@ -258,14 +260,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="address" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
@@ -280,14 +282,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.address}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="mapsAddress" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiNavigation} boxSize="1rem" />
@@ -302,14 +304,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="schedule" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiClock} boxSize="1rem" />
@@ -324,14 +326,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.schedule}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="phone" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPhone} boxSize="1rem" />
@@ -346,14 +348,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="contactName" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -368,14 +370,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.contactName}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="email">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMail} boxSize="1rem" />
@@ -391,14 +393,14 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.email}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="zoneId" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
@@ -419,14 +421,14 @@ const ClientEditForm = ({
                                   </option>
                                 ))}
                               </Select>
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="loanedCrates" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPackage} boxSize="1rem" />
@@ -443,7 +445,7 @@ const ClientEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -572,7 +574,7 @@ const ClientEditForm = ({
 
                         <Field name="observations">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
@@ -589,7 +591,7 @@ const ClientEditForm = ({
                                 resize="vertical"
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.observations}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>

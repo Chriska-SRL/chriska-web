@@ -198,10 +198,11 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                 observations: '',
               }}
               onSubmit={handleSubmit}
-              validate={validate}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, dirty, resetForm }) => {
+              {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -213,7 +214,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="name">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -228,14 +229,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="rut">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
@@ -250,7 +251,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -258,7 +259,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
                       <Field name="razonSocial">
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -273,14 +274,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="address">
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHome} boxSize="1rem" />
@@ -295,14 +296,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="mapsAddress">
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMapPin} boxSize="1rem" />
@@ -317,7 +318,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -325,7 +326,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="phone">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPhone} boxSize="1rem" />
@@ -340,14 +341,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="contactName">
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -362,7 +363,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -370,7 +371,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
                       <Field name="email">
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
@@ -385,7 +386,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -486,7 +487,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
                       <Field name="observations">
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -502,7 +503,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

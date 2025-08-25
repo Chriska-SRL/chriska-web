@@ -452,7 +452,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                 return errors;
               }}
               validateOnChange={true}
-              validateOnBlur={true}
+              validateOnBlur={false}
             >
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie

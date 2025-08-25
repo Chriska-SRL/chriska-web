@@ -208,8 +208,10 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                   }}
                   onSubmit={handleSubmit}
                   enableReinitialize
+                  validateOnChange={true}
+                  validateOnBlur={false}
                 >
-                  {({ handleSubmit, values, dirty, resetForm }) => {
+                  {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount }) => {
                     // Actualizar la instancia de formik solo cuando cambie
                     useEffect(() => {
                       setFormikInstance({ dirty, resetForm });
@@ -220,7 +222,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                         <VStack spacing="1rem" align="stretch">
                           <Field name="name" validate={validate}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiMapPin} boxSize="1rem" />
@@ -235,14 +237,14 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                                   borderColor={inputBorder}
                                   disabled={isLoading}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.name}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="description" validate={validateEmpty}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" />
@@ -258,7 +260,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                                   disabled={isLoading}
                                   rows={4}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.description}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>

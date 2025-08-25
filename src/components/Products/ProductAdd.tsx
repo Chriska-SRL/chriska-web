@@ -262,8 +262,10 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                   }}
                   onSubmit={handleSubmit}
                   enableReinitialize
+                  validateOnChange={true}
+                  validateOnBlur={false}
                 >
-                  {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+                  {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                     // Actualizar la instancia de formik solo cuando cambie
                     useEffect(() => {
                       setFormikInstance({ dirty, resetForm });
@@ -272,55 +274,53 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                     return (
                       <form id="product-add-form" onSubmit={handleSubmit}>
                         <VStack spacing="1rem" align="stretch">
-                          <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
-                            <Field name="name" validate={validate}>
-                              {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
-                                  <FormLabel fontWeight="semibold">
-                                    <HStack spacing="0.5rem">
-                                      <Icon as={FiTag} boxSize="1rem" />
-                                      <Text>Nombre</Text>
-                                    </HStack>
-                                  </FormLabel>
-                                  <Input
-                                    {...field}
-                                    placeholder="Ingrese el nombre del producto"
-                                    bg={inputBg}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    disabled={isLoading}
-                                  />
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
-                                </FormControl>
-                              )}
-                            </Field>
+                          <Field name="name" validate={validate}>
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiTag} boxSize="1rem" />
+                                    <Text>Nombre</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese el nombre del producto"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.name}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
-                            <Field name="barcode">
-                              {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
-                                  <FormLabel fontWeight="semibold">
-                                    <HStack spacing="0.5rem">
-                                      <Icon as={FiHash} boxSize="1rem" />
-                                      <Text>Código de barras</Text>
-                                    </HStack>
-                                  </FormLabel>
-                                  <Input
-                                    {...field}
-                                    placeholder="Ingrese el código de barras"
-                                    bg={inputBg}
-                                    border="1px solid"
-                                    borderColor={inputBorder}
-                                    disabled={isLoading}
-                                  />
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
-                                </FormControl>
-                              )}
-                            </Field>
-                          </Stack>
+                          <Field name="barcode">
+                            {({ field, meta }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.barcode && !!errors.barcode}>
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiHash} boxSize="1rem" />
+                                    <Text>Código de barras</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  placeholder="Ingrese el código de barras"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.barcode}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
                           <Field name="description" validate={validate}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" />
@@ -336,7 +336,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   disabled={isLoading}
                                   rows={3}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.description}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -344,7 +344,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="categoryId">
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.categoryId && !!errors.categoryId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" />
@@ -372,14 +372,14 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                       </option>
                                     ))}
                                   </Select>
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.categoryId}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
 
                             <Field name="subCategoryId" validate={validate}>
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" />
@@ -400,7 +400,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                       </option>
                                     ))}
                                   </Select>
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.subCategoryId}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
@@ -408,7 +408,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Field name="brandId" validate={validate}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiTag} boxSize="1rem" />
@@ -429,7 +429,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     </option>
                                   ))}
                                 </Select>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.brandId}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -437,7 +437,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="unitType" validate={validate}>
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiPackage} boxSize="1rem" />
@@ -455,14 +455,14 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <option value="Kilo">Kilos</option>
                                     <option value="Unit">Unidades</option>
                                   </Select>
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.unitType}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
 
                             <Field name="price">
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiTag} boxSize="1rem" />
@@ -478,7 +478,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     borderColor={inputBorder}
                                     disabled={isLoading}
                                   />
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.price}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
@@ -486,7 +486,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Field name="temperatureCondition" validate={validate}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiThermometer} boxSize="1rem" />
@@ -505,7 +505,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   <option value="Frozen">Congelado</option>
                                   <option value="Ambient">Natural</option>
                                 </Select>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -513,7 +513,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="warehouseId" validate={validate}>
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.warehouseId && !!errors.warehouseId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiMapPin} boxSize="1rem" />
@@ -541,14 +541,14 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                       </option>
                                     ))}
                                   </Select>
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.warehouseId}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
 
                             <Field name="shelveId" validate={validate}>
                               {({ field, meta }: any) => (
-                                <FormControl isInvalid={meta.error && meta.touched}>
+                                <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiPackage} boxSize="1rem" />
@@ -569,7 +569,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                       </option>
                                     ))}
                                   </Select>
-                                  <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                  <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
                                 </FormControl>
                               )}
                             </Field>
@@ -646,7 +646,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Field name="observations">
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                              <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" />
@@ -662,7 +662,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   disabled={isLoading}
                                   rows={3}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.observations}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>

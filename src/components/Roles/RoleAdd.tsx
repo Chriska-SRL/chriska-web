@@ -59,6 +59,9 @@ type RoleAddModalProps = {
 const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const toast = useToast();
+  
+  // Generate unique ID suffix for this modal instance
+  const modalId = `add-${Date.now()}`;
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -171,8 +174,10 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -210,6 +215,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
                                       {perms.map((perm) => (
                                         <Checkbox
                                           key={perm.id}
+                                          id={`perm-${modalId}-${perm.id}`}
                                           isChecked={values.permissions.includes(perm.id)}
                                           onChange={(e) => {
                                             const checked = e.target.checked;
@@ -235,7 +241,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
                       <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
                         <Field name="name" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -250,14 +256,14 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="description" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
@@ -275,7 +281,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
                                 minH="8rem"
                                 rows={4}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>

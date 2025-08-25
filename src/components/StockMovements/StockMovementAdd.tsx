@@ -275,8 +275,10 @@ const StockMovementAddModal = ({
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -287,7 +289,7 @@ const StockMovementAddModal = ({
                     <VStack spacing="1rem" align="stretch">
                       <Field name="date" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiCalendar} boxSize="1rem" />
@@ -302,7 +304,7 @@ const StockMovementAddModal = ({
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.date}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -312,7 +314,7 @@ const StockMovementAddModal = ({
                         validate={(v: any) => (!v || v <= 0 ? 'Debe ser mayor a cero' : undefined)}
                       >
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.quantity && !!errors.quantity}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
@@ -328,14 +330,14 @@ const StockMovementAddModal = ({
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.quantity}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="type" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
@@ -356,7 +358,7 @@ const StockMovementAddModal = ({
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.type}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -558,7 +560,7 @@ const StockMovementAddModal = ({
 
                       <Field name="reason" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.reason && !!errors.reason}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -574,7 +576,7 @@ const StockMovementAddModal = ({
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.reason}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

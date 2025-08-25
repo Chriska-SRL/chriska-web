@@ -29,6 +29,7 @@ import {
   ModalFooter,
   HStack,
   Icon,
+  Stack,
 } from '@chakra-ui/react';
 import { Field, Formik } from 'formik';
 import { FaCheck, FaTimes } from 'react-icons/fa';
@@ -55,10 +56,13 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
+  
+  // Generate unique ID suffix for this modal instance
+  const modalId = `edit-${role?.id || 'new'}-${Date.now()}`;
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const selectedCountColor = useColorModeValue('gray.600', 'gray.400');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (data) {
@@ -175,13 +179,8 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
 
                   return (
                     <form id="role-edit-form" onSubmit={handleSubmit}>
-                      <Flex
-                        gap="2rem"
-                        align="start"
-                        direction={{ base: 'column', md: 'row' }}
-                        maxH={{ base: 'none', md: '70dvh' }}
-                      >
-                        <Box flex="1">
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">
+                        <Box flex="1" minW={0}>
                           <FormControl>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -189,7 +188,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                 <Text>Permisos</Text>
                               </HStack>
                             </FormLabel>
-                            <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto">
+                            <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
                               <Accordion allowMultiple>
                                 {Object.entries(groupedPermissions).map(([group, perms]) => (
                                   <AccordionItem key={group}>
@@ -198,7 +197,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                         <Box flex="1" textAlign="left" fontWeight="semibold">
                                           {group}
                                         </Box>
-                                        <Text fontSize="sm" color={selectedCountColor} mx="1rem">
+                                        <Text fontSize="sm" color={textColor} mx="1rem">
                                           {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
                                           {isMobile ? 'selec.' : 'seleccionados'}
                                         </Text>
@@ -210,6 +209,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                         {perms.map((perm) => (
                                           <Checkbox
                                             key={perm.id}
+                                            id={`perm-${modalId}-${perm.id}`}
                                             isChecked={values.permissions.includes(perm.id)}
                                             onChange={(e) => {
                                               const checked = e.target.checked;
@@ -218,6 +218,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                                 : values.permissions.filter((p) => p !== perm.id);
                                               setFieldValue('permissions', updated);
                                             }}
+                                            disabled={isLoading}
                                           >
                                             {perm.label}
                                           </Checkbox>
@@ -231,89 +232,83 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                           </FormControl>
                         </Box>
 
-                        <Divider orientation="vertical" h="27rem" display={{ base: 'none', md: 'block' }} />
+                        <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiShield} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Field
+                              as={Input}
+                              name="name"
+                              type="text"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              h="2.75rem"
+                              validate={validate}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
+                          </FormControl>
 
-                        <Flex flex="1" w="100%" flexDir="column" justifyContent="space-between" minW={0}>
-                          <Box>
-                            <VStack spacing="1rem" align="stretch">
-                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiShield} boxSize="1rem" />
-                                    <Text>Nombre</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Field
-                                  as={Input}
-                                  name="name"
-                                  type="text"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  fontSize="0.875rem"
-                                  h="2.75rem"
-                                  validate={validate}
-                                />
-                                <FormErrorMessage>{errors.name}</FormErrorMessage>
-                              </FormControl>
-
-                              <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiFileText} boxSize="1rem" />
-                                    <Text>Descripción</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Field
-                                  as={Textarea}
-                                  name="description"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  fontSize="0.875rem"
-                                  resize="vertical"
-                                  minH="8rem"
-                                  validate={validateEmpty}
-                                  rows={4}
-                                />
-                                <FormErrorMessage>{errors.description}</FormErrorMessage>
-                              </FormControl>
-                            </VStack>
-                          </Box>
-                          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem" px={0}>
-                            <HStack spacing="0.5rem" w="100%">
-                              <Button
-                                variant="ghost"
-                                onClick={handleClose}
-                                disabled={isLoading}
-                                size="sm"
-                                leftIcon={<FaTimes />}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                form="role-edit-form"
-                                type="submit"
-                                colorScheme="blue"
-                                variant="outline"
-                                isLoading={isLoading}
-                                loadingText="Guardando..."
-                                leftIcon={<FaCheck />}
-                                size="sm"
-                                flex="1"
-                              >
-                                Guardar cambios
-                              </Button>
-                            </HStack>
-                          </ModalFooter>
-                        </Flex>
-                      </Flex>
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Field
+                              as={Textarea}
+                              name="description"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              resize="vertical"
+                              minH="8rem"
+                              validate={validateEmpty}
+                              rows={4}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
+                          </FormControl>
+                        </VStack>
+                      </Stack>
                     </form>
                   );
                 }}
               </Formik>
             )}
           </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                disabled={isLoading}
+                size="sm"
+                leftIcon={<FaTimes />}
+              >
+                Cancelar
+              </Button>
+              <Button
+                form="role-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

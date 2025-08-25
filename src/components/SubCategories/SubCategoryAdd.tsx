@@ -152,8 +152,10 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -180,7 +182,7 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
 
                       <Field name="name" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
@@ -195,14 +197,14 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -218,7 +220,7 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

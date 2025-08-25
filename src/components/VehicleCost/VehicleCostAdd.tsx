@@ -149,8 +149,10 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -161,7 +163,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                     <VStack spacing="1rem" align="stretch">
                       <Field name="date" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiCalendar} boxSize="1rem" />
@@ -176,14 +178,14 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.date}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="type" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
@@ -204,14 +206,14 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.type}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="amount" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiDollarSign} boxSize="1rem" />
@@ -228,14 +230,14 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.amount}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -251,7 +253,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

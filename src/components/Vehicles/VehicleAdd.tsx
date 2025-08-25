@@ -148,8 +148,10 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -160,7 +162,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                     <VStack spacing="1rem" align="stretch">
                       <Field name="plate" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
@@ -175,14 +177,14 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="brand" validate={validateVehicle}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
@@ -197,14 +199,14 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="model" validate={validateVehicle}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTruck} boxSize="1rem" />
@@ -219,7 +221,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -232,7 +234,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                         }}
                       >
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiBox} boxSize="1rem" />
@@ -248,7 +250,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

@@ -512,8 +512,10 @@ const DiscountEditForm = ({
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -525,7 +527,7 @@ const DiscountEditForm = ({
                       <VStack spacing="1rem" align="stretch">
                         <Field name="description" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
@@ -540,7 +542,7 @@ const DiscountEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -548,7 +550,7 @@ const DiscountEditForm = ({
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="percentage" validate={validateEmpty}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                              <FormControl isInvalid={submitCount > 0 && touched.percentage && !!errors.percentage} flex="1">
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPercent} boxSize="1rem" />
@@ -583,14 +585,14 @@ const DiscountEditForm = ({
                                     }
                                   }}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.percentage}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="productQuantity" validate={validateEmpty}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                              <FormControl isInvalid={submitCount > 0 && touched.productQuantity && !!errors.productQuantity} flex="1">
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPackage} boxSize="1rem" />
@@ -614,7 +616,7 @@ const DiscountEditForm = ({
                                     <NumberDecrementStepper />
                                   </NumberInputStepper>
                                 </NumberInput>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.productQuantity}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -623,7 +625,7 @@ const DiscountEditForm = ({
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="expirationDate" validate={validateEmpty}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                              <FormControl isInvalid={submitCount > 0 && touched.expirationDate && !!errors.expirationDate} flex="1">
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCalendar} boxSize="1rem" />
@@ -638,14 +640,14 @@ const DiscountEditForm = ({
                                   borderColor={inputBorder}
                                   disabled={isLoading}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.expirationDate}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="status" validate={validateEmpty}>
                             {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                              <FormControl isInvalid={submitCount > 0 && touched.status && !!errors.status} flex="1">
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCheckCircle} boxSize="1rem" />
@@ -665,7 +667,7 @@ const DiscountEditForm = ({
                                     </option>
                                   ))}
                                 </Select>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.status}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>

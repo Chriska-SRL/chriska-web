@@ -186,8 +186,10 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -199,7 +201,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="name" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -214,14 +216,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="rut" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
@@ -236,7 +238,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -245,7 +247,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="razonSocial" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUsers} boxSize="1rem" />
@@ -260,14 +262,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="address" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
@@ -282,7 +284,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -291,7 +293,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="phone" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPhone} boxSize="1rem" />
@@ -306,14 +308,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="email" validate={validateEmpty}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMail} boxSize="1rem" />
@@ -329,7 +331,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -338,7 +340,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="contactName" validate={validate}>
                           {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                            <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
@@ -353,7 +355,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -376,7 +378,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
 
                       <Field name="mapsAddress" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMap} boxSize="1rem" />
@@ -391,14 +393,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="schedule" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiClock} boxSize="1rem" />
@@ -413,14 +415,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="zoneId" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMapPin} boxSize="1rem" />
@@ -441,14 +443,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="loanedCrates" validate={validate}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiBox} boxSize="1rem" />
@@ -465,7 +467,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -580,7 +582,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
 
                       <Field name="observations" validate={validateEmpty}>
                         {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -597,7 +599,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               rows={4}
                               resize="vertical"
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
