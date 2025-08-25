@@ -59,7 +59,7 @@ type RoleAddModalProps = {
 const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const toast = useToast();
-  
+
   // Generate unique ID suffix for this modal instance
   const modalId = `add-${Date.now()}`;
 
@@ -240,7 +240,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
 
                       <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
                         <Field name="name" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -262,7 +262,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
                         </Field>
 
                         <Field name="description" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">

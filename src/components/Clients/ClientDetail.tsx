@@ -201,7 +201,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
                 {renderQualificationStars(client.qualification)}
               </SimpleGrid>
 
-              {detailField('Dirección en Maps', client.mapsAddress, FiMap)}
+              {detailField('Ubicación', `${client.location.latitude}, ${client.location.longitude}`, FiMap)}
               {detailField('Horario', client.schedule, FiClock)}
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">

@@ -36,7 +36,7 @@ import {
   FiFileText,
   FiStar,
   FiPackage,
-  FiNavigation,
+  FiMap,
   FiGrid,
 } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
@@ -137,9 +137,16 @@ const ClientEditForm = ({
   const handleSubmit = (values: any) => {
     const updatedClient = {
       ...values,
+      location: {
+        latitude: Number(values.latitude) || 0,
+        longitude: Number(values.longitude) || 0,
+      },
       zoneId: values.zoneId,
       bankAccounts: bankAccounts,
     };
+    // Remove individual latitude/longitude from the object
+    delete updatedClient.latitude;
+    delete updatedClient.longitude;
     setClientProps(updatedClient);
   };
 
@@ -174,7 +181,8 @@ const ClientEditForm = ({
                 rut: client.rut,
                 razonSocial: client.razonSocial || '',
                 address: client.address,
-                mapsAddress: client.mapsAddress,
+                latitude: client.location?.latitude || 0,
+                longitude: client.location?.longitude || 0,
                 schedule: client.schedule,
                 phone: client.phone,
                 contactName: client.contactName,
@@ -200,7 +208,7 @@ const ClientEditForm = ({
                     <Box>
                       <VStack spacing="1rem" align="stretch">
                         <Field name="name" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -222,7 +230,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="rut" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -244,7 +252,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="razonSocial">
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -266,7 +274,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="address" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -287,30 +295,56 @@ const ClientEditForm = ({
                           )}
                         </Field>
 
-                        <Field name="mapsAddress" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
+                        <Field name="latitude" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.latitude && !!errors.latitude}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
-                                  <Icon as={FiNavigation} boxSize="1rem" />
-                                  <Text>Dirección en Maps</Text>
+                                  <Icon as={FiMap} boxSize="1rem" />
+                                  <Text>Latitud</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
                                 {...field}
-                                placeholder="Ingrese la dirección para Maps"
+                                type="number"
+                                step="any"
+                                placeholder="Ingrese la latitud"
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
+                              <FormErrorMessage>{errors.latitude}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        <Field name="longitude" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.longitude && !!errors.longitude}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiMap} boxSize="1rem" />
+                                  <Text>Longitud</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="any"
+                                placeholder="Ingrese la longitud"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.longitude}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="schedule" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -332,7 +366,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="phone" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -354,7 +388,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="contactName" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -376,7 +410,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="email">
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -399,7 +433,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="zoneId" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -427,7 +461,7 @@ const ClientEditForm = ({
                         </Field>
 
                         <Field name="loanedCrates" validate={validate}>
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
@@ -573,7 +607,7 @@ const ClientEditForm = ({
                         </FormControl>
 
                         <Field name="observations">
-                          {({ field, meta }: any) => (
+                          {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">

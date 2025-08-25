@@ -288,7 +288,7 @@ const StockMovementAddModal = ({
                   <form id="stockmovement-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="date" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -313,7 +313,7 @@ const StockMovementAddModal = ({
                         name="quantity"
                         validate={(v: any) => (!v || v <= 0 ? 'Debe ser mayor a cero' : undefined)}
                       >
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.quantity && !!errors.quantity}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -336,7 +336,7 @@ const StockMovementAddModal = ({
                       </Field>
 
                       <Field name="type" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -559,7 +559,7 @@ const StockMovementAddModal = ({
                       </FormControl>
 
                       <Field name="reason" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.reason && !!errors.reason}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">

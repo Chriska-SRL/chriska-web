@@ -162,7 +162,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                   <form id="vehiclecost-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="date" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -184,7 +184,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                       </Field>
 
                       <Field name="type" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -212,7 +212,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                       </Field>
 
                       <Field name="amount" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -236,7 +236,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">

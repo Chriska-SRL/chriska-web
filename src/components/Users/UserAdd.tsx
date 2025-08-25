@@ -202,7 +202,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                           return undefined;
                         }}
                       >
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -224,7 +224,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                       </Field>
 
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -246,7 +246,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                       </Field>
 
                       <Field name="roleId" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -274,7 +274,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                       </Field>
 
                       <Field name="estado" validate={validate}>
-                        {({ field, meta }: any) => (
+                        {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">

@@ -221,7 +221,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                       <form id="zone-add-form" onSubmit={handleSubmit}>
                         <VStack spacing="1rem" align="stretch">
                           <Field name="name" validate={validate}>
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
@@ -243,7 +243,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                           </Field>
 
                           <Field name="description" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">

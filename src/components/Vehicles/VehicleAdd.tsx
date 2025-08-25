@@ -161,8 +161,8 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                   <form id="vehicle-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="plate" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
@@ -177,14 +177,14 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
+                            <FormErrorMessage>{errors.plate}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="brand" validate={validateVehicle}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
@@ -199,14 +199,14 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
+                            <FormErrorMessage>{errors.brand}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="model" validate={validateVehicle}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTruck} boxSize="1rem" />
@@ -221,7 +221,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
+                            <FormErrorMessage>{errors.model}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -233,8 +233,8 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                           return undefined;
                         }}
                       >
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched[field.name] && !!errors[field.name]}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiBox} boxSize="1rem" />
@@ -250,7 +250,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{errors[field.name]}</FormErrorMessage>
+                            <FormErrorMessage>{errors.crateCapacity}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

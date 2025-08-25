@@ -275,7 +275,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                       <form id="product-add-form" onSubmit={handleSubmit}>
                         <VStack spacing="1rem" align="stretch">
                           <Field name="name" validate={validate}>
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
@@ -297,7 +297,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </Field>
 
                           <Field name="barcode">
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.barcode && !!errors.barcode}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
@@ -319,7 +319,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </Field>
 
                           <Field name="description" validate={validate}>
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
@@ -343,7 +343,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="categoryId">
-                              {({ field, meta }: any) => (
+                              {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.categoryId && !!errors.categoryId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
@@ -378,8 +378,10 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                             </Field>
 
                             <Field name="subCategoryId" validate={validate}>
-                              {({ field, meta }: any) => (
-                                <FormControl isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}>
+                              {({ field }: any) => (
+                                <FormControl
+                                  isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}
+                                >
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" />
@@ -407,7 +409,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </Stack>
 
                           <Field name="brandId" validate={validate}>
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
@@ -436,7 +438,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="unitType" validate={validate}>
-                              {({ field, meta }: any) => (
+                              {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
@@ -461,7 +463,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                             </Field>
 
                             <Field name="price">
-                              {({ field, meta }: any) => (
+                              {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
@@ -485,8 +487,12 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </Stack>
 
                           <Field name="temperatureCondition" validate={validate}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}>
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={
+                                  submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition
+                                }
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiThermometer} boxSize="1rem" />
@@ -512,7 +518,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
                           <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                             <Field name="warehouseId" validate={validate}>
-                              {({ field, meta }: any) => (
+                              {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.warehouseId && !!errors.warehouseId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
@@ -547,7 +553,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                             </Field>
 
                             <Field name="shelveId" validate={validate}>
-                              {({ field, meta }: any) => (
+                              {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
@@ -645,7 +651,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </FormControl>
 
                           <Field name="observations">
-                            {({ field, meta }: any) => (
+                            {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">

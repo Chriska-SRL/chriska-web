@@ -39,11 +39,10 @@ import {
 import { Formik } from 'formik';
 import { FaCheck, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { FiFileText, FiUsers } from 'react-icons/fi';
+import { FiFileText } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
 import { OrderRequest } from '@/entities/orderRequest';
 import { useUpdateOrderRequest } from '@/hooks/orderRequest';
-import { useGetClients } from '@/hooks/client';
 import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -69,13 +68,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const [orderRequestProps, setOrderRequestProps] = useState<Partial<OrderRequest>>();
-
-  // Estados para la búsqueda de clientes (edit mode - read only client display)
-  const [clientSearch] = useState('');
-  const [clientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
-  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const clientSearchRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, fieldError } = useUpdateOrderRequest(orderRequestProps);
 
@@ -104,13 +96,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  // Inicializar cliente seleccionado con el cliente actual del pedido
-  useEffect(() => {
-    if (orderRequest.client) {
-      setSelectedClient({ id: orderRequest.client.id, name: orderRequest.client.name });
-    }
-  }, [orderRequest.client]);
-
   // Limpiar productos cuando el componente se cierra
   useEffect(() => {
     if (!isOpen) {
@@ -121,7 +106,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   // Inicializar productos seleccionados con los productos del pedido
   useEffect(() => {
     const initializeProducts = async () => {
-      if (orderRequest.productItems && selectedClient) {
+      if (orderRequest.productItems && orderRequest.client) {
         // Primero agregar productos con estado de carga
         const initialProducts = orderRequest.productItems.map((item) => ({
           id: item.product.id,
@@ -140,7 +125,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
         // Luego obtener descuentos reales para cada producto
         for (const item of orderRequest.productItems) {
           try {
-            const bestDiscount = await getBestDiscount(item.product.id, selectedClient.id);
+            const bestDiscount = await getBestDiscount(item.product.id, orderRequest.client.id);
             setSelectedProducts((prev) =>
               prev.map((p) =>
                 p.id === item.product.id
@@ -172,19 +157,10 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       }
     };
 
-    if (orderRequest.productItems && selectedClient && selectedProducts.length === 0) {
+    if (orderRequest.productItems && orderRequest.client && selectedProducts.length === 0) {
       initializeProducts();
     }
-  }, [orderRequest.productItems, selectedClient, selectedProducts.length]);
-
-  // Debounce para búsqueda de clientes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedClientSearch(clientSearch);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [clientSearch]);
+  }, [orderRequest.productItems, orderRequest.client, selectedProducts.length]);
 
   // Debounce para búsqueda de productos
   useEffect(() => {
@@ -194,31 +170,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
     return () => clearTimeout(timer);
   }, [productSearch]);
-
-  // Filtros de búsqueda de clientes
-  const clientFilters = useMemo(() => {
-    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
-    const filters: any = {};
-    switch (clientSearchType) {
-      case 'name':
-        filters.name = debouncedClientSearch;
-        break;
-      case 'rut':
-        filters.rut = debouncedClientSearch;
-        break;
-      case 'razonSocial':
-        filters.razonSocial = debouncedClientSearch;
-        break;
-      case 'contactName':
-        filters.contactName = debouncedClientSearch;
-        break;
-    }
-    return filters;
-  }, [debouncedClientSearch, clientSearchType]);
-
-  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
-
-  const { isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
 
   // Filtros de búsqueda de productos
   const productFilters = useMemo(() => {
@@ -261,7 +212,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const handleProductSelect = async (product: any) => {
     const isAlreadySelected = selectedProducts.some((p) => p.id === product.id);
-    if (!isAlreadySelected && selectedClient) {
+    if (!isAlreadySelected && orderRequest.client) {
       // Agregar inmediatamente el producto con estado de carga
       setSelectedProducts((prev) => [
         ...prev,
@@ -283,7 +234,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
       try {
         // Obtener el mejor descuento para este producto y cliente
-        const bestDiscount = await getBestDiscount(product.id, selectedClient.id);
+        const bestDiscount = await getBestDiscount(product.id, orderRequest.client.id);
 
         // Actualizar el producto con el descuento obtenido
         setSelectedProducts((prev) =>
@@ -389,7 +340,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     const orderRequestData = {
       id: orderRequest.id,
       observations: values.observations,
-      clientId: selectedClient?.id,
+      clientId: orderRequest.client?.id,
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
@@ -443,10 +394,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
               validate={() => {
                 const errors: any = {};
 
-                if (!selectedClient?.id) {
-                  errors.client = 'El cliente es requerido';
-                }
-
                 if (!selectedProducts || selectedProducts.length === 0) {
                   errors.productItems = 'Debe agregar al menos un producto';
                 }
@@ -462,49 +409,16 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                   setFormikInstance({ dirty: formik.dirty, resetForm: formik.resetForm });
                 }, [formik.dirty, formik.resetForm]);
 
-                // Revalidar cuando cambian los productos seleccionados o el cliente
+                // Revalidar cuando cambian los productos seleccionados
                 useEffect(() => {
                   if (formik.submitCount > 0) {
                     formik.validateForm();
                   }
-                }, [selectedProducts.length, selectedClient?.id, formik.submitCount]);
+                }, [selectedProducts.length, formik.submitCount]);
 
                 return (
                   <form id="order-request-edit-form" onSubmit={formik.handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiUsers} boxSize="1rem" />
-                            <Text>Cliente</Text>
-                          </HStack>
-                        </FormLabel>
-
-                        {/* Cliente seleccionado (no editable) */}
-                        <Box position="relative" ref={clientSearchRef} minW={{ base: '100%', md: '18.75rem' }}>
-                          {selectedClient ? (
-                            <Flex
-                              h="40px"
-                              px="0.75rem"
-                              bg={inputBg}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              align="center"
-                              justify="space-between"
-                            >
-                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                {selectedClient.name}
-                              </Text>
-                            </Flex>
-                          ) : null}
-                        </Box>
-
-                        {!selectedClient?.id && formik.submitCount > 0 && (
-                          <FormErrorMessage>El cliente es requerido</FormErrorMessage>
-                        )}
-                      </FormControl>
-
                       <FormControl
                         isInvalid={
                           !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)

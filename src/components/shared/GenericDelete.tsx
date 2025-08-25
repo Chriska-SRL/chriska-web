@@ -44,7 +44,7 @@ export const GenericDelete = ({
   const [deleteId, setDeleteId] = useState<number>();
   const { success, data, isLoading, error } = useDeleteHook(deleteId);
   const cancelRef = useRef(null);
-  
+
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
@@ -92,12 +92,17 @@ export const GenericDelete = ({
         Eliminar
       </Button>
 
-      <AlertDialog isOpen={confirmOpen} leastDestructiveRef={cancelRef} onClose={() => setConfirmOpen(false)} isCentered>
+      <AlertDialog
+        isOpen={confirmOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setConfirmOpen(false)}
+        isCentered
+      >
         <AlertDialogOverlay />
         <AlertDialogContent mx="1rem">
-          <AlertDialogHeader 
-            fontSize="1.125rem" 
-            fontWeight="semibold" 
+          <AlertDialogHeader
+            fontSize="1.125rem"
+            fontWeight="semibold"
             pb="0.75rem"
             borderBottom="1px solid"
             borderColor={inputBorder}
@@ -113,14 +118,20 @@ export const GenericDelete = ({
             </Text>
           </AlertDialogBody>
 
-          <AlertDialogFooter 
-            pt="1rem" 
-            justifyContent="flex-end" 
+          <AlertDialogFooter
+            pt="1rem"
+            justifyContent="flex-end"
             gap="0.5rem"
             borderTop="1px solid"
             borderColor={inputBorder}
           >
-            <Button ref={cancelRef} onClick={() => setConfirmOpen(false)} variant="ghost" size="sm" disabled={isLoading}>
+            <Button
+              ref={cancelRef}
+              onClick={() => setConfirmOpen(false)}
+              variant="ghost"
+              size="sm"
+              disabled={isLoading}
+            >
               Cancelar
             </Button>
             <Button

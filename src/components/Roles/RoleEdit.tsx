@@ -21,7 +21,6 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-  Divider,
   useToast,
   useMediaQuery,
   useColorModeValue,
@@ -56,7 +55,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
-  
+
   // Generate unique ID suffix for this modal instance
   const modalId = `edit-${role?.id || 'new'}-${Date.now()}`;
 
@@ -286,13 +285,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <HStack spacing="0.5rem">
-              <Button
-                variant="ghost"
-                onClick={handleClose}
-                disabled={isLoading}
-                size="sm"
-                leftIcon={<FaTimes />}
-              >
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
                 Cancelar
               </Button>
               <Button
