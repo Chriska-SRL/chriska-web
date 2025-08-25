@@ -39,6 +39,11 @@ const addLocationToBody = async (body: any, method: Method): Promise<any> => {
   const { getUserLocation } = await import('./geolocation');
   const location = await getUserLocation();
 
+  // Check if location was denied (0,0 coordinates)
+  if (location.latitude === 0 && location.longitude === 0) {
+    throw new Error('Debe permitir el acceso a su ubicación para continuar');
+  }
+
   // For FormData, add location as separate entries
   if (body instanceof FormData) {
     if (!body.has('latitude') && !body.has('longitude')) {
