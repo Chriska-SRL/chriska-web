@@ -35,7 +35,7 @@ const getCurrentPosition = (): Promise<Coordinates> => {
         resolve(defaultCoords);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: 5000,
         maximumAge: 300000, // 5 minutos de cache
       },
