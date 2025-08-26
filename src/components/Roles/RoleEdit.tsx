@@ -196,10 +196,29 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                                         <Box flex="1" textAlign="left" fontWeight="semibold">
                                           {group}
                                         </Box>
-                                        <Text fontSize="sm" color={textColor} mx="1rem">
-                                          {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
-                                          {isMobile ? 'selec.' : 'seleccionados'}
-                                        </Text>
+                                        <HStack spacing="0.75rem" onClick={(e) => e.stopPropagation()}>
+                                          <Checkbox
+                                            isChecked={perms.every((perm) => values.permissions.includes(perm.id))}
+                                            isIndeterminate={
+                                              perms.some((perm) => values.permissions.includes(perm.id)) &&
+                                              !perms.every((perm) => values.permissions.includes(perm.id))
+                                            }
+                                            onChange={(e) => {
+                                              const checked = e.target.checked;
+                                              const groupPermIds = perms.map((perm) => perm.id);
+                                              const updated = checked
+                                                ? [...new Set([...values.permissions, ...groupPermIds])]
+                                                : values.permissions.filter((p) => !groupPermIds.includes(p));
+                                              setFieldValue('permissions', updated);
+                                            }}
+                                            disabled={isLoading}
+                                            size="md"
+                                          />
+                                          <Text fontSize="sm" color={textColor}>
+                                            {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
+                                            {isMobile ? 'selec.' : 'seleccionados'}
+                                          </Text>
+                                        </HStack>
                                         <AccordionIcon />
                                       </AccordionButton>
                                     </h2>

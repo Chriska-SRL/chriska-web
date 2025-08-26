@@ -478,7 +478,7 @@ const ClientEditForm = ({
 
                         {/* Fila 8: Cajones prestados - Calificación */}
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                          <Field name="loanedCrates" validate={validate}>
+                          <Field name="loanedCrates" validate={validateEmpty}>
                             {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                                 <FormLabel fontWeight="semibold">

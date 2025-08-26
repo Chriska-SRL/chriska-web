@@ -22,7 +22,7 @@ import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes, FaTags, FaWarehouse, FaPercent } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
 import { MdPlace } from 'react-icons/md';
-import { FiBriefcase, FiPackage, FiCheckCircle, FiTruck, FiRotateCcw } from 'react-icons/fi';
+import { FiBriefcase, FiPackage, FiCheckCircle, FiTruck, FiRotateCcw, FiSend } from 'react-icons/fi';
 import { LuArrowDownUp } from 'react-icons/lu';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
@@ -108,6 +108,7 @@ const sidebarItems = [
   { path: 'ordenes', text: 'Órdenes', icon: FiCheckCircle, Permission: Permission.VIEW_ORDERS },
   { path: 'entregas', text: 'Entregas', icon: FiTruck, Permission: Permission.VIEW_DELIVERIES },
   { path: 'devoluciones', text: 'Devoluciones', icon: FiRotateCcw, Permission: Permission.VIEW_ORDER_REQUESTS },
+  { path: 'repartos', text: 'Repartos', icon: FiSend, Permission: Permission.VIEW_DISTRIBUTIONS },
   {
     path: 'movimientos-de-stock',
     text: 'Mov. de stock',

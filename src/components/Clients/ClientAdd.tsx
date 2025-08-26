@@ -188,7 +188,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                 contactName: '',
                 email: '',
                 observations: '',
-                qualification: '',
+                qualification: '3',
                 loanedCrates: 0,
                 zoneId: '',
               }}
@@ -476,7 +476,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
 
                       {/* Fila 8: Cajones prestados - Calificación */}
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <Field name="loanedCrates" validate={validate}>
+                        <Field name="loanedCrates" validate={validateEmpty}>
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
                               <FormLabel fontWeight="semibold">
@@ -624,7 +624,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         </FieldArray>
                       </FormControl>
 
-                      <Field name="observations" validate={validateEmpty}>
+                      <Field name="observations">
                         {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                             <FormLabel fontWeight="semibold">
