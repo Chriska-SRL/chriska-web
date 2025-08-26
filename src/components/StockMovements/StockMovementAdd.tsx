@@ -78,6 +78,9 @@ const StockMovementAddModal = ({
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.200', 'whiteAlpha.300');
 
+  // Verificar permiso para mostrar el campo de fecha
+  const canSetCustomDate = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCT_WITHDATE));
+
   // Hook para obtener el producto preseleccionado
   const { data: preselectedProduct } = useGetProductById(preselectedProductId);
 
@@ -232,13 +235,19 @@ const StockMovementAddModal = ({
     reason: string;
     productId: string;
   }) => {
-    setMovementProps({
-      date: values.date,
+    const movementData: any = {
       quantity: values.quantity,
       type: values.type,
       reason: values.reason,
       productId: Number(values.productId),
-    } as any);
+    };
+
+    // Solo incluir la fecha si el usuario tiene permiso para establecerla
+    if (canSetCustomDate) {
+      movementData.date = values.date;
+    }
+    
+    setMovementProps(movementData);
   };
 
   return (
@@ -287,27 +296,29 @@ const StockMovementAddModal = ({
                 return (
                   <form id="stockmovement-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <Field name="date" validate={validateEmpty}>
-                        {({ field }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiCalendar} boxSize="1rem" />
-                                <Text>Fecha</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              type="date"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{errors.date}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
+                      {canSetCustomDate && (
+                        <Field name="date" validate={canSetCustomDate ? validateEmpty : undefined}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiCalendar} boxSize="1rem" />
+                                  <Text>Fecha</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="date"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.date}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+                      )}
 
                       <Field
                         name="quantity"

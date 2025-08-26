@@ -25,7 +25,8 @@ import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { FiUser, FiMail, FiShield, FiActivity } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { useAddUser, useTemporaryPassword } from '@/hooks/user';
+import { useAddUser } from '@/hooks/user';
+import { temporaryPassword } from '@/services/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
@@ -57,9 +58,6 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError } = useAddUser(userProps);
 
-  const [newUserId, setNewUserId] = useState<number>();
-  const { data: temporalPassword, error: resetError } = useTemporaryPassword(newUserId);
-
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
@@ -67,6 +65,8 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
 
   const handleClose = () => {
     setUserProps(undefined);
+    setTempPassword(null);
+    setIsPasswordModalOpen(false);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -93,8 +93,23 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
       });
       setUserProps(undefined);
       setUsers((prev) => [...prev, data]);
-      setNewUserId(data.id);
-      onClose();
+
+      // Llamar directamente al servicio de contraseña temporal
+      temporaryPassword(data.id)
+        .then((response) => {
+          setTempPassword(response.password);
+          setIsPasswordModalOpen(true);
+        })
+        .catch((error) => {
+          toast({
+            title: 'Error al generar contraseña temporal',
+            description: error.message || 'Error desconocido',
+            status: 'error',
+            duration: 4000,
+            isClosable: true,
+          });
+          onClose(); // Cerrar el modal principal aunque haya error
+        });
     }
   }, [data, setUsers, toast, onClose]);
 
@@ -118,25 +133,6 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
     }
   }, [error, fieldError, toast]);
 
-  useEffect(() => {
-    if (temporalPassword) {
-      setTempPassword(temporalPassword.password);
-      setIsPasswordModalOpen(true);
-    }
-  }, [temporalPassword]);
-
-  useEffect(() => {
-    if (resetError) {
-      toast({
-        title: 'Error al generar contraseña temporal',
-        description: resetError,
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
-    }
-  }, [resetError, toast]);
-
   const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
       username: values.username,
@@ -151,7 +147,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   return (
     <>
       <Modal
-        isOpen={isOpen}
+        isOpen={isOpen && !isPasswordModalOpen}
         onClose={handleClose}
         size={{ base: 'xs', md: 'md' }}
         isCentered
@@ -328,7 +324,10 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
 
       <TemporaryPasswordModal
         isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          onClose(); // Cerrar el modal principal cuando se cierre el modal de contraseña
+        }}
         password={tempPassword}
       />
 

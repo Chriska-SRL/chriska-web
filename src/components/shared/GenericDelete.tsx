@@ -107,7 +107,7 @@ export const GenericDelete = ({
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Eliminar elemento
+            Confirmar eliminación
           </AlertDialogHeader>
 
           <AlertDialogBody fontSize="0.875rem" pt="1rem" pb="1.5rem">
