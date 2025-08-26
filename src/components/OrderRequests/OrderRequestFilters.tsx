@@ -20,7 +20,6 @@ import {
   Text,
   Spinner,
   Divider,
-  HStack,
 } from '@chakra-ui/react';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
 import { VscDebugRestart } from 'react-icons/vsc';
@@ -196,28 +195,33 @@ export const OrderRequestFilters = ({ onFilterChange, disabled = false }: OrderR
       {/* Búsqueda principal de clientes */}
       <Box position="relative" ref={clientSearchRef} flex="1" minW="18.75rem">
         {selectedClient ? (
-          <HStack
-            p="0.75rem"
-            bg={bgInput}
+          <Flex
+            bg={disabled ? disabledColor : bgInput}
             borderRadius="md"
+            overflow="hidden"
             border="1px solid"
             borderColor={borderInput}
-            spacing="0.5rem"
+            minH="2.5rem"
+            align="center"
           >
-            <Text fontSize="md" flex="1" noOfLines={1} fontWeight="medium">
-              {selectedClient.name}
-            </Text>
-            <IconButton
-              aria-label="Limpiar cliente"
-              icon={<Text fontSize="sm">✕</Text>}
-              size="sm"
-              variant="ghost"
-              onClick={handleClearClientSearch}
-              color={textColor}
-              _hover={{}}
-              disabled={disabled}
-            />
-          </HStack>
+            <Box flex="1" px="1rem" py="0.5rem">
+              <Text fontSize="md" noOfLines={1} fontWeight="medium" color={textColor}>
+                {selectedClient.name}
+              </Text>
+            </Box>
+            <Box pr="0.5rem">
+              <IconButton
+                aria-label="Limpiar cliente"
+                icon={<Text fontSize="sm">✕</Text>}
+                size="sm"
+                variant="ghost"
+                onClick={handleClearClientSearch}
+                color={textColor}
+                _hover={{}}
+                disabled={disabled}
+              />
+            </Box>
+          </Flex>
         ) : (
           <Box>
             <Flex bg={disabled ? disabledColor : bgInput} borderRadius="md" overflow="hidden">
