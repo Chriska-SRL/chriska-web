@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Spinner,
 } from '@chakra-ui/react';
 import { Delivery } from '@/entities/delivery';
 import {
@@ -47,6 +48,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
 import { getStatusLabel, Status } from '@/enums/status.enum';
 import { UnitType } from '@/enums/unitType.enum';
 
@@ -62,9 +64,11 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
+  const [redirectingToClient, setRedirectingToClient] = useState(false);
   const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeDeliveryStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
+  const router = useRouter();
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -188,7 +192,13 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   // Ya no necesitamos obtener descuentos del endpoint /best
   // Ahora PENDING también usa el descuento almacenado
 
-  const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
+  const detailField = (
+    label: string, 
+    value: string | number | null | undefined, 
+    icon?: any, 
+    onClick?: () => void,
+    isLoading?: boolean
+  ) => (
     <Box w="100%">
       <HStack mb="0.5rem" spacing="0.5rem">
         {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
@@ -210,8 +220,32 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         wordBreak="break-word"
         transition="all 0.2s"
         color={textColor}
+        cursor={onClick ? 'pointer' : 'default'}
+        _hover={onClick ? { bg: hoverBgIcon } : {}}
+        onClick={onClick && !isLoading ? onClick : undefined}
+        position="relative"
       >
         {value ?? '—'}
+        {onClick && (
+          isLoading ? (
+            <Spinner 
+              position="absolute" 
+              right="1rem" 
+              top="50%" 
+              transform="translateY(-50%)" 
+              size="sm" 
+            />
+          ) : (
+            <Icon 
+              as={FiEye} 
+              position="absolute" 
+              right="1rem" 
+              top="50%" 
+              transform="translateY(-50%)" 
+              boxSize="1rem" 
+            />
+          )
+        )}
       </Box>
     </Box>
   );
@@ -249,7 +283,13 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Cliente', delivery.client?.name, FiUsers)}
+                {detailField('Cliente', delivery.client?.name, FiUsers, async () => {
+                  if (delivery.client?.id) {
+                    setRedirectingToClient(true);
+                    onClose();
+                    router.push(`/clientes?open=${delivery.client.id}`);
+                  }
+                }, redirectingToClient)}
                 {detailField('Usuario', delivery.user?.name, FiUser)}
               </Stack>
 

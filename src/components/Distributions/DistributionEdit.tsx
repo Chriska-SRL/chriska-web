@@ -25,10 +25,16 @@ import {
   IconButton,
   Divider,
   FormErrorMessage,
+  Input,
+  InputGroup,
+  InputRightElement,
+  List,
+  ListItem,
 } from '@chakra-ui/react';
 import { FaCheck, FaTimes, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { FiFileText, FiUser, FiTruck, FiPackage } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
+import { AiOutlineSearch } from 'react-icons/ai';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Distribution } from '@/entities/distribution';
 import { User } from '@/entities/user';
 import { Vehicle } from '@/entities/vehicle';
@@ -37,6 +43,8 @@ import { useUpdateDistribution } from '@/hooks/distribution';
 import { useGetUsers } from '@/hooks/user';
 import { useGetVehicles } from '@/hooks/vehicle';
 import { useGetDeliveries } from '@/hooks/delivery';
+import { useGetClients } from '@/hooks/client';
+import { useDebounce } from '@/hooks/useDebounce';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { Status } from '@/enums/status.enum';
 import { Formik, Field } from 'formik';
@@ -57,6 +65,8 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const loadingTextColor = useColorModeValue('gray.600', 'gray.400');
+  const hoverBg = useColorModeValue('gray.100', 'gray.700');
+  const dropdownBg = useColorModeValue('white', 'gray.800');
 
   const toast = useToast();
 
@@ -66,9 +76,42 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
   const [selectedZones, setSelectedZones] = useState<{ id: number; name: string }[]>([]);
   const [selectedDeliveries, setSelectedDeliveries] = useState<{ id: number; clientName: string }[]>([]);
 
+  // Estados para búsqueda de cliente y entregas pendientes
+  const [clientSearch, setClientSearch] = useState('');
+  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
+  const clientSearchRef = useRef<HTMLDivElement>(null);
+
+  // Usar el hook de debounce
+  const debouncedClientSearch = useDebounce(clientSearch, 500);
+
+  const clientFilters = useMemo(() => {
+    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
+
+    return {
+      ...(clientSearchType === 'name' && { name: debouncedClientSearch }),
+      ...(clientSearchType === 'rut' && { rut: debouncedClientSearch }),
+      ...(clientSearchType === 'razonSocial' && { razonSocial: debouncedClientSearch }),
+      ...(clientSearchType === 'contactName' && { contactName: debouncedClientSearch }),
+    };
+  }, [debouncedClientSearch, clientSearchType]);
+
   const { data: users, isLoading: isLoadingUsers } = useGetUsers(1, 100);
   const { data: vehicles, isLoading: isLoadingVehicles } = useGetVehicles(1, 100);
   const { data: deliveries, isLoading: isLoadingDeliveries } = useGetDeliveries(1, 100);
+  const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, clientFilters);
+
+  // Filtrar entregas pendientes del cliente seleccionado
+  const clientPendingDeliveries = useMemo(() => {
+    if (!selectedClient || !deliveries) return [];
+    return deliveries.filter(
+      (delivery: Delivery) =>
+        delivery.client?.id === selectedClient.id &&
+        delivery.status === Status.PENDING &&
+        !selectedDeliveries.some((sd) => sd.id === delivery.id)
+    );
+  }, [selectedClient, deliveries, selectedDeliveries]);
 
   const isLoadingData = isLoadingUsers || isLoadingVehicles || isLoadingDeliveries;
 
@@ -124,6 +167,17 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
     }
   }, [error, fieldError, toast]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
+        setShowClientDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleClose = () => {
     if (hasChanges) {
       setShowConfirmDialog(true);
@@ -145,6 +199,9 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
     setSelectedVehicleId(null);
     setSelectedZones([]);
     setSelectedDeliveries([]);
+    setClientSearch('');
+    setSelectedClient(null);
+    setShowClientDropdown(false);
     setHasChanges(false);
     setUpdateProps(undefined);
     if (formikInstance && formikInstance.resetForm) {
@@ -195,6 +252,39 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
       const newDeliveries = [...selectedDeliveries];
       [newDeliveries[index], newDeliveries[index + 1]] = [newDeliveries[index + 1], newDeliveries[index]];
       setSelectedDeliveries(newDeliveries);
+      handleFieldChange();
+    }
+  };
+
+  // Handlers para búsqueda de cliente
+  const handleClientSearch = (value: string) => {
+    setClientSearch(value);
+    setShowClientDropdown(value.length >= 2);
+    if (selectedClient && value !== selectedClient.name) {
+      setSelectedClient(null);
+    }
+  };
+
+  const handleClientSelect = (client: any) => {
+    setSelectedClient({ id: client.id, name: client.name });
+    setClientSearch(client.name);
+    setShowClientDropdown(false);
+  };
+
+  const handleClearClientSearch = () => {
+    setClientSearch('');
+    setSelectedClient(null);
+    setShowClientDropdown(false);
+  };
+
+  // Handler para agregar entrega del cliente seleccionado
+  const handleAddClientDelivery = (deliveryId: number) => {
+    const delivery = clientPendingDeliveries.find((d) => d.id === deliveryId);
+    if (delivery && !selectedDeliveries.some((d) => d.id === deliveryId)) {
+      setSelectedDeliveries((prev) => [
+        ...prev,
+        { id: delivery.id, clientName: delivery.client?.name || '' },
+      ]);
       handleFieldChange();
     }
   };
@@ -316,45 +406,185 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
                           )}
                         </Field>
 
+                        {/* Buscador de cliente para agregar entregas */}
                         <FormControl>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiPackage} boxSize="1rem" />
-                              <Text>Entregas (opcional)</Text>
+                              <Text>Agregar entregas por cliente</Text>
                             </HStack>
                           </FormLabel>
-                          <Select
-                            placeholder="Seleccione una entrega para agregar"
-                            value=""
-                            onChange={(e) => {
-                              const deliveryId = Number(e.target.value);
-                              const delivery = deliveries?.find((d: Delivery) => d.id === deliveryId);
-                              if (delivery && !selectedDeliveries.some((d) => d.id === deliveryId)) {
-                                setSelectedDeliveries((prev) => [
-                                  ...prev,
-                                  { id: delivery.id, clientName: delivery.client?.name || '' },
-                                ]);
-                                handleFieldChange();
-                              }
-                            }}
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            isDisabled={isUpdating || isLoadingDeliveries}
-                          >
-                            {deliveries
-                              ?.filter(
-                                (delivery: Delivery) =>
-                                  (delivery.status === Status.PENDING ||
-                                    distribution.deliveries?.some((d) => d.id === delivery.id)) &&
-                                  !selectedDeliveries.some((sd) => sd.id === delivery.id),
-                              )
-                              .map((delivery: Delivery) => (
-                                <option key={delivery.id} value={delivery.id}>
-                                  Entrega #{delivery.id} - {delivery.client?.name}
-                                </option>
-                              ))}
-                          </Select>
+                          <Box position="relative" ref={clientSearchRef}>
+                            <Input
+                              as={Box}
+                              display="flex"
+                              bg={inputBg}
+                              borderRadius="md"
+                              overflow="hidden"
+                              borderWidth="1px"
+                              borderColor={inputBorder}
+                              disabled={isUpdating}
+                              p={0}
+                            >
+                              <Select
+                                value={clientSearchType}
+                                onChange={(e) =>
+                                  setClientSearchType(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')
+                                }
+                                bg="transparent"
+                                border="none"
+                                w="auto"
+                                minW={{ base: '4.5rem', md: '7rem' }}
+                                maxW={{ base: '5rem', md: '8rem' }}
+                                borderRadius="none"
+                                _focus={{ boxShadow: 'none' }}
+                                disabled={isUpdating}
+                                fontSize={{ base: 'sm', md: 'md' }}
+                              >
+                                <option value="name">Nombre</option>
+                                <option value="rut">RUT</option>
+                                <option value="razonSocial">Razón Social</option>
+                                <option value="contactName">Contacto</option>
+                              </Select>
+
+                              <Box w="1px" bg={inputBorder} alignSelf="stretch" my="0.5rem" />
+
+                              <InputGroup flex="1">
+                                <Input
+                                  placeholder="Buscar cliente..."
+                                  value={clientSearch}
+                                  onChange={(e) => handleClientSearch(e.target.value)}
+                                  bg="transparent"
+                                  border="none"
+                                  borderRadius="none"
+                                  _focus={{ boxShadow: 'none' }}
+                                  pl="1rem"
+                                  disabled={isUpdating}
+                                  onFocus={() => clientSearch && setShowClientDropdown(true)}
+                                />
+                                <InputRightElement>
+                                  {selectedClient ? (
+                                    <IconButton
+                                      aria-label="Limpiar búsqueda"
+                                      icon={<Text fontSize="sm">✕</Text>}
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={handleClearClientSearch}
+                                      _hover={{}}
+                                    />
+                                  ) : (
+                                    <Icon as={AiOutlineSearch} boxSize="1.25rem" />
+                                  )}
+                                </InputRightElement>
+                              </InputGroup>
+                            </Input>
+
+                            {/* Dropdown de resultados de clientes */}
+                            {showClientDropdown && (
+                              <Box
+                                position="absolute"
+                                top="100%"
+                                left={0}
+                                right={0}
+                                mt={1}
+                                bg={dropdownBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="md"
+                                boxShadow="lg"
+                                maxH="200px"
+                                overflowY="auto"
+                                zIndex={20}
+                              >
+                                {(() => {
+                                  const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
+                                  const isSearching = !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                  const searchCompleted = !isTyping && !isSearching && debouncedClientSearch.length >= 2;
+
+                                  if (isTyping || isSearching) {
+                                    return (
+                                      <Flex p={3} justify="center" align="center" gap={2}>
+                                        <Spinner size="sm" />
+                                        <Text fontSize="sm" color="gray.500">
+                                          Buscando clientes...
+                                        </Text>
+                                      </Flex>
+                                    );
+                                  }
+
+                                  if (searchCompleted && clientsSearch?.length > 0) {
+                                    return (
+                                      <List>
+                                        {clientsSearch.map((client: any) => (
+                                          <ListItem
+                                            key={client.id}
+                                            cursor="pointer"
+                                            _hover={{ bg: hoverBg }}
+                                            onClick={() => handleClientSelect(client)}
+                                            transition="background-color 0.2s ease"
+                                          >
+                                            <Box p={3}>
+                                              <Text fontSize="sm" fontWeight="medium">
+                                                {client.name}
+                                              </Text>
+                                              <Text fontSize="xs" color="gray.500">
+                                                {client.rut && `RUT: ${client.rut}`}
+                                                {client.contactName && ` - Contacto: ${client.contactName}`}
+                                              </Text>
+                                            </Box>
+                                          </ListItem>
+                                        ))}
+                                      </List>
+                                    );
+                                  }
+
+                                  if (searchCompleted && clientsSearch?.length === 0) {
+                                    return (
+                                      <Text p={3} fontSize="sm" color="gray.500">
+                                        No se encontraron clientes
+                                      </Text>
+                                    );
+                                  }
+
+                                  return null;
+                                })()}
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Select de entregas pendientes del cliente seleccionado */}
+                          {selectedClient && (
+                            <Box mt="1rem">
+                              <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                Entregas pendientes de {selectedClient.name}:
+                              </Text>
+                              <Select
+                                placeholder="Seleccione una entrega para agregar"
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleAddClientDelivery(Number(e.target.value));
+                                    e.target.value = ''; // Reset select
+                                  }
+                                }}
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                isDisabled={isUpdating || clientPendingDeliveries.length === 0}
+                              >
+                                {clientPendingDeliveries.map((delivery: Delivery) => (
+                                  <option key={delivery.id} value={delivery.id}>
+                                    Entrega #{delivery.id}
+                                  </option>
+                                ))}
+                              </Select>
+                              {clientPendingDeliveries.length === 0 && (
+                                <Text fontSize="xs" color="gray.500" mt="0.25rem">
+                                  Este cliente no tiene entregas pendientes disponibles.
+                                </Text>
+                              )}
+                            </Box>
+                          )}
 
                           {selectedDeliveries.length > 0 && (
                             <Box mt="1rem">

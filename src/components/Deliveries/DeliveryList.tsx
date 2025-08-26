@@ -36,6 +36,7 @@ type DeliveryListProps = {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  showPagination?: boolean;
 };
 
 export const DeliveryList = ({
@@ -47,6 +48,7 @@ export const DeliveryList = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
+  showPagination = true,
 }: DeliveryListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -211,18 +213,20 @@ export const DeliveryList = ({
               ))}
             </VStack>
           </Box>
-          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
-            <Text fontSize="sm" fontWeight="medium">
-              Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
-            </Text>
-            <Pagination
-              currentPage={currentPage}
-              pageSize={pageSize}
-              hasNextPage={hasNextPage}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
-            />
-          </Flex>
+          {showPagination && (
+            <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+              <Text fontSize="sm" fontWeight="medium">
+                Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
+              </Text>
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+              />
+            </Flex>
+          )}
         </>
       ) : (
         <>
@@ -294,19 +298,21 @@ export const DeliveryList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm" fontWeight="medium">
-              Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
-            </Text>
-            <Pagination
-              currentPage={currentPage}
-              pageSize={pageSize}
-              hasNextPage={hasNextPage}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
-              isLoading={false}
-            />
-          </Flex>
+          {showPagination && (
+            <Flex justifyContent="space-between" alignItems="center">
+              <Text fontSize="sm" fontWeight="medium">
+                Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
+              </Text>
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={false}
+              />
+            </Flex>
+          )}
         </>
       )}
     </>

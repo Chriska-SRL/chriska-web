@@ -138,7 +138,7 @@ const ClientEditForm = ({
   const handleSubmit = (values: any) => {
     const updatedClient = {
       ...values,
-      location: {
+      clientLocation: {
         latitude: Number(values.latitude) || 0,
         longitude: Number(values.longitude) || 0,
       },

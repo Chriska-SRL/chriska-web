@@ -11,7 +11,7 @@ import { OrderRequest } from '@/entities/orderRequest';
 export const OrderRequests = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string | undefined>();
   const [filterClientId, setFilterClientId] = useState<number | undefined>();
   const [filterUserId, setFilterUserId] = useState<number | undefined>();

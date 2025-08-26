@@ -138,7 +138,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
   const handleSubmit = (values: any) => {
     const newClient = {
       ...values,
-      location: {
+      clientLocation: {
         latitude: Number(values.latitude) || 0,
         longitude: Number(values.longitude) || 0,
       },

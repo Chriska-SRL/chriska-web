@@ -12,7 +12,6 @@ import {
   Flex,
   IconButton,
   useToast,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { FaCopy } from 'react-icons/fa';
 import { useEffect, useState } from 'react';

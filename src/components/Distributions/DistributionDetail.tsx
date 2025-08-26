@@ -18,6 +18,7 @@ import {
   Icon,
   SimpleGrid,
   Divider,
+  Badge,
 } from '@chakra-ui/react';
 import { FiEye, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
@@ -27,6 +28,8 @@ import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteDistribution } from '@/hooks/distribution';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { useRouter } from 'next/navigation';
+import { getStatusLabel, getStatusColor } from '@/enums/status.enum';
 
 type DistributionDetailProps = {
   distribution: Distribution;
@@ -36,6 +39,7 @@ type DistributionDetailProps = {
 export const DistributionDetail = ({ distribution, setDistributions }: DistributionDetailProps) => {
   const canEditDistributions = useUserStore((s) => s.hasPermission(Permission.EDIT_DISTRIBUTIONS));
   const canDeleteDistributions = useUserStore((s) => s.hasPermission(Permission.DELETE_DISTRIBUTIONS));
+  const router = useRouter();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -121,16 +125,30 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                         Entregas ({distribution.deliveries.length})
                       </Text>
                     </HStack>
-                    <Button
-                      leftIcon={<FiMap />}
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        // TODO: Abrir mapa con direcciones
-                      }}
-                    >
-                      Ver mapa
-                    </Button>
+                    <HStack spacing="0.5rem">
+                      <Button
+                        leftIcon={<FiEye />}
+                        size="sm"
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={() => {
+                          onClose();
+                          router.push(`/entregas?distribution=${distribution.id}`);
+                        }}
+                      >
+                        Ir a entregas
+                      </Button>
+                      <Button
+                        leftIcon={<FiMap />}
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          // TODO: Abrir mapa con direcciones
+                        }}
+                      >
+                        Ver mapa
+                      </Button>
+                    </HStack>
                   </HStack>
                   <Box
                     p="0.5rem 1rem"
@@ -146,9 +164,19 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                         <Box key={delivery.id}>
                           {index > 0 && <Divider my="0.25rem" />}
                           <Box py="0.25rem">
-                            <Text fontSize="sm" fontWeight="medium">
-                              Entrega #{delivery.id}
-                            </Text>
+                            <HStack justify="space-between" align="center" mb="0.25rem">
+                              <Text fontSize="sm" fontWeight="medium">
+                                Entrega #{delivery.id}
+                              </Text>
+                              <Badge
+                                colorScheme={getStatusColor(delivery.status)}
+                                fontSize="0.6rem"
+                                p="0.125rem 0.375rem"
+                                borderRadius="0.25rem"
+                              >
+                                {getStatusLabel(delivery.status)}
+                              </Badge>
+                            </HStack>
                             <Text fontSize="xs" color={iconColor}>
                               Cliente: {delivery.client?.name || '-'}
                             </Text>
