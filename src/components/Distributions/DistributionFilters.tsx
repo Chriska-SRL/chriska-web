@@ -8,7 +8,6 @@ import {
   IconButton,
   InputGroup,
   InputRightElement,
-  Box,
   Button,
   Popover,
   PopoverTrigger,
@@ -53,7 +52,6 @@ export const DistributionFilters = ({
   const borderInput = useColorModeValue('#f2f2f2', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const hoverResetBg = useColorModeValue('#e0dede', 'gray.600');
-  const dividerColor = useColorModeValue('gray.300', 'gray.600');
   const disabledColor = useColorModeValue('#fafafa', '#202532');
   const popoverBg = useColorModeValue('white', 'gray.800');
   const popoverBorder = useColorModeValue('gray.200', 'gray.600');
@@ -122,10 +120,7 @@ export const DistributionFilters = ({
   }, [filterId]);
 
   const hasActiveFilters =
-    filterUser !== undefined ||
-    filterVehicle !== undefined ||
-    filterDate !== undefined ||
-    filterId !== '';
+    filterUser !== undefined || filterVehicle !== undefined || filterDate !== undefined || filterId !== '';
 
   const activeSelectFilters = [
     filterUser !== undefined ? 1 : 0,

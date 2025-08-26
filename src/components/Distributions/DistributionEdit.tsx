@@ -36,13 +36,10 @@ import { Delivery } from '@/entities/delivery';
 import { useUpdateDistribution } from '@/hooks/distribution';
 import { useGetUsers } from '@/hooks/user';
 import { useGetVehicles } from '@/hooks/vehicle';
-import { useGetZones } from '@/hooks/zone';
 import { useGetDeliveries } from '@/hooks/delivery';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { Status } from '@/enums/status.enum';
 import { Formik, Field } from 'formik';
-import { validate } from '@/utils/validations/validate';
-import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type DistributionEditProps = {
   isOpen: boolean;
@@ -168,15 +165,15 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
 
   const validateForm = (values: any) => {
     const errors: any = {};
-    
+
     if (!values.userId) {
       errors.userId = 'Debe seleccionar un usuario';
     }
-    
+
     if (!values.vehicleId) {
       errors.vehicleId = 'Debe seleccionar un vehículo';
     }
-    
+
     return errors;
   };
 
@@ -241,7 +238,7 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
                 validateOnChange={true}
                 validateOnBlur={false}
               >
-                {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
+                {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                   // Update hasChanges and formik instance
                   useEffect(() => {
                     if (dirty !== hasChanges) {
@@ -319,116 +316,116 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
                           )}
                         </Field>
 
-                <FormControl>
-                  <FormLabel fontWeight="semibold">
-                    <HStack spacing="0.5rem">
-                      <Icon as={FiPackage} boxSize="1rem" />
-                      <Text>Entregas (opcional)</Text>
-                    </HStack>
-                  </FormLabel>
-                  <Select
-                    placeholder="Seleccione una entrega para agregar"
-                    value=""
-                    onChange={(e) => {
-                      const deliveryId = Number(e.target.value);
-                      const delivery = deliveries?.find((d: Delivery) => d.id === deliveryId);
-                      if (delivery && !selectedDeliveries.some((d) => d.id === deliveryId)) {
-                        setSelectedDeliveries((prev) => [
-                          ...prev,
-                          { id: delivery.id, clientName: delivery.client?.name || '' },
-                        ]);
-                        handleFieldChange();
-                      }
-                    }}
-                    bg={inputBg}
-                    border="1px solid"
-                    borderColor={inputBorder}
-                    isDisabled={isUpdating || isLoadingDeliveries}
-                  >
-                    {deliveries
-                      ?.filter(
-                        (delivery: Delivery) =>
-                          (delivery.status === Status.PENDING ||
-                            distribution.deliveries?.some((d) => d.id === delivery.id)) &&
-                          !selectedDeliveries.some((sd) => sd.id === delivery.id),
-                      )
-                      .map((delivery: Delivery) => (
-                        <option key={delivery.id} value={delivery.id}>
-                          Entrega #{delivery.id} - {delivery.client?.name}
-                        </option>
-                      ))}
-                  </Select>
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiPackage} boxSize="1rem" />
+                              <Text>Entregas (opcional)</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Select
+                            placeholder="Seleccione una entrega para agregar"
+                            value=""
+                            onChange={(e) => {
+                              const deliveryId = Number(e.target.value);
+                              const delivery = deliveries?.find((d: Delivery) => d.id === deliveryId);
+                              if (delivery && !selectedDeliveries.some((d) => d.id === deliveryId)) {
+                                setSelectedDeliveries((prev) => [
+                                  ...prev,
+                                  { id: delivery.id, clientName: delivery.client?.name || '' },
+                                ]);
+                                handleFieldChange();
+                              }
+                            }}
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            isDisabled={isUpdating || isLoadingDeliveries}
+                          >
+                            {deliveries
+                              ?.filter(
+                                (delivery: Delivery) =>
+                                  (delivery.status === Status.PENDING ||
+                                    distribution.deliveries?.some((d) => d.id === delivery.id)) &&
+                                  !selectedDeliveries.some((sd) => sd.id === delivery.id),
+                              )
+                              .map((delivery: Delivery) => (
+                                <option key={delivery.id} value={delivery.id}>
+                                  Entrega #{delivery.id} - {delivery.client?.name}
+                                </option>
+                              ))}
+                          </Select>
 
-                  {selectedDeliveries.length > 0 && (
-                    <Box mt="1rem">
-                      <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                        Entregas seleccionadas ({selectedDeliveries.length}):
-                      </Text>
-                      <Box
-                        maxH="150px"
-                        overflowY="auto"
-                        border="1px solid"
-                        borderColor={inputBorder}
-                        borderRadius="md"
-                        p="0.5rem 1rem"
-                      >
-                        <Stack spacing="0">
-                          {selectedDeliveries.map((delivery, index) => (
-                            <Box key={delivery.id}>
-                              {index > 0 && <Divider my="0.25rem" />}
-                              <Flex align="center" justify="space-between" py="0.25rem">
-                                <Box flex="1">
-                                  <Text fontSize="sm" fontWeight="medium">
-                                    Entrega #{delivery.id}
-                                  </Text>
-                                  <Text fontSize="xs" color={textColor}>
-                                    {delivery.clientName}
-                                  </Text>
-                                </Box>
-                                <HStack spacing="0.5rem">
-                                  {selectedDeliveries.length > 1 && (
-                                    <>
-                                      <IconButton
-                                        aria-label="Mover arriba"
-                                        icon={<FaChevronUp />}
-                                        size="sm"
-                                        variant="ghost"
-                                        colorScheme="blue"
-                                        onClick={() => moveDeliveryUp(index)}
-                                        isDisabled={isUpdating || index === 0}
-                                      />
-                                      <IconButton
-                                        aria-label="Mover abajo"
-                                        icon={<FaChevronDown />}
-                                        size="sm"
-                                        variant="ghost"
-                                        colorScheme="blue"
-                                        onClick={() => moveDeliveryDown(index)}
-                                        isDisabled={isUpdating || index === selectedDeliveries.length - 1}
-                                      />
-                                    </>
-                                  )}
-                                  <IconButton
-                                    aria-label="Remover entrega"
-                                    icon={<FaTimes />}
-                                    size="sm"
-                                    variant="ghost"
-                                    color="red.500"
-                                    onClick={() => {
-                                      setSelectedDeliveries((prev) => prev.filter((d) => d.id !== delivery.id));
-                                      handleFieldChange();
-                                    }}
-                                    isDisabled={isUpdating}
-                                  />
-                                </HStack>
-                              </Flex>
+                          {selectedDeliveries.length > 0 && (
+                            <Box mt="1rem">
+                              <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                Entregas seleccionadas ({selectedDeliveries.length}):
+                              </Text>
+                              <Box
+                                maxH="150px"
+                                overflowY="auto"
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="md"
+                                p="0.5rem 1rem"
+                              >
+                                <Stack spacing="0">
+                                  {selectedDeliveries.map((delivery, index) => (
+                                    <Box key={delivery.id}>
+                                      {index > 0 && <Divider my="0.25rem" />}
+                                      <Flex align="center" justify="space-between" py="0.25rem">
+                                        <Box flex="1">
+                                          <Text fontSize="sm" fontWeight="medium">
+                                            Entrega #{delivery.id}
+                                          </Text>
+                                          <Text fontSize="xs" color={textColor}>
+                                            {delivery.clientName}
+                                          </Text>
+                                        </Box>
+                                        <HStack spacing="0.5rem">
+                                          {selectedDeliveries.length > 1 && (
+                                            <>
+                                              <IconButton
+                                                aria-label="Mover arriba"
+                                                icon={<FaChevronUp />}
+                                                size="sm"
+                                                variant="ghost"
+                                                colorScheme="blue"
+                                                onClick={() => moveDeliveryUp(index)}
+                                                isDisabled={isUpdating || index === 0}
+                                              />
+                                              <IconButton
+                                                aria-label="Mover abajo"
+                                                icon={<FaChevronDown />}
+                                                size="sm"
+                                                variant="ghost"
+                                                colorScheme="blue"
+                                                onClick={() => moveDeliveryDown(index)}
+                                                isDisabled={isUpdating || index === selectedDeliveries.length - 1}
+                                              />
+                                            </>
+                                          )}
+                                          <IconButton
+                                            aria-label="Remover entrega"
+                                            icon={<FaTimes />}
+                                            size="sm"
+                                            variant="ghost"
+                                            color="red.500"
+                                            onClick={() => {
+                                              setSelectedDeliveries((prev) => prev.filter((d) => d.id !== delivery.id));
+                                              handleFieldChange();
+                                            }}
+                                            isDisabled={isUpdating}
+                                          />
+                                        </HStack>
+                                      </Flex>
+                                    </Box>
+                                  ))}
+                                </Stack>
+                              </Box>
                             </Box>
-                          ))}
-                        </Stack>
-                      </Box>
-                    </Box>
-                  )}
-                </FormControl>
+                          )}
+                        </FormControl>
 
                         <Field name="observations">
                           {({ field }: any) => (

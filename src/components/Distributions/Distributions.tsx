@@ -40,8 +40,16 @@ export const Distributions = () => {
   useEffect(() => {
     if (data) {
       setDistributions(data);
+      setIsFilterLoading(false);
     }
   }, [data]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    if (filterId || filterUser || filterVehicle || filterDate) {
+      setIsFilterLoading(true);
+    }
+  }, [filterId, filterUser, filterVehicle, filterDate]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -88,7 +96,7 @@ export const Distributions = () => {
 
       <DistributionList
         distributions={distributions}
-        isLoading={isLoading}
+        isLoading={isLoading || isFilterLoading}
         error={error}
         setDistributions={setDistributions}
         currentPage={currentPage}

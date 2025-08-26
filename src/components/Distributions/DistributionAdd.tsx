@@ -49,8 +49,6 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { Formik, Field } from 'formik';
-import { validate } from '@/utils/validations/validate';
-import { validateEmpty } from '@/utils/validations/validateEmpty';
 
 type DistributionAddProps = {
   isLoading: boolean;
@@ -78,9 +76,6 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
 
   const toast = useToast();
 
-  const [observations, setObservations] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   const [selectedZones, setSelectedZones] = useState<{ id: number; name: string }[]>([]);
   const [clientSearch, setClientSearch] = useState('');
   const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
@@ -192,9 +187,9 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
   }, []);
 
   const resetForm = () => {
-    setObservations('');
-    setSelectedUserId(null);
-    setSelectedVehicleId(null);
+    // setObservations('');
+    // setSelectedUserId(null);
+    // setSelectedVehicleId(null);
     setSelectedZones([]);
     setSelectedClients([]);
     setClientSearch('');
@@ -232,19 +227,19 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
 
   const validateForm = (values: any) => {
     const errors: any = {};
-    
+
     if (!values.userId) {
       errors.userId = 'Debe seleccionar un usuario';
     }
-    
+
     if (!values.vehicleId) {
       errors.vehicleId = 'Debe seleccionar un vehículo';
     }
-    
+
     if (selectedZones.length === 0 && selectedClients.length === 0) {
       errors.zones = 'Debe seleccionar al menos una zona o un cliente';
     }
-    
+
     return errors;
   };
 
@@ -325,6 +320,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                 userId: '',
                 vehicleId: '',
                 observations: '',
+                zones: '', // Campo dummy para validación
               }}
               validate={validateForm}
               onSubmit={handleSubmit}
@@ -332,7 +328,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
               validateOnChange={true}
               validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Update hasChanges based on form dirty state and formik instance
                 useEffect(() => {
                   if (dirty !== hasChanges) {
@@ -358,7 +354,6 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                               placeholder="Seleccione un usuario"
                               onChange={(e) => {
                                 setFieldValue('userId', e.target.value);
-                                setSelectedUserId(e.target.value ? Number(e.target.value) : null);
                               }}
                               bg={inputBg}
                               border="1px solid"
@@ -390,7 +385,6 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                               placeholder="Seleccione un vehículo"
                               onChange={(e) => {
                                 setFieldValue('vehicleId', e.target.value);
-                                setSelectedVehicleId(e.target.value ? Number(e.target.value) : null);
                               }}
                               bg={inputBg}
                               border="1px solid"
@@ -415,178 +409,252 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                             <Text>Zonas</Text>
                           </HStack>
                         </FormLabel>
-                <Select
-                  placeholder="Seleccione una zona para agregar"
-                  value=""
-                  onChange={handleZoneSelect}
-                  bg={inputBg}
-                  border="1px solid"
-                  borderColor={inputBorder}
-                >
-                  {zones
-                    ?.filter((zone: Zone) => !selectedZones.some((sz) => sz.id === zone.id))
-                    .map((zone: Zone) => (
-                      <option key={zone.id} value={zone.id}>
-                        {zone.name}
-                      </option>
-                    ))}
-                </Select>
+                        <Select
+                          placeholder="Seleccione una zona para agregar"
+                          value=""
+                          onChange={handleZoneSelect}
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                        >
+                          {zones
+                            ?.filter((zone: Zone) => !selectedZones.some((sz) => sz.id === zone.id))
+                            .map((zone: Zone) => (
+                              <option key={zone.id} value={zone.id}>
+                                {zone.name}
+                              </option>
+                            ))}
+                        </Select>
 
-                {selectedZones.length > 0 && (
-                  <Box mt="1rem">
-                    <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                      Zonas seleccionadas ({selectedZones.length}):
-                    </Text>
-                    <Box
-                      maxH="150px"
-                      overflowY="auto"
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      borderRadius="md"
-                      p="0.5rem 1rem"
-                    >
-                      <Stack spacing="0">
-                        {selectedZones.map((zone, index) => (
-                          <Box key={zone.id}>
-                            {index > 0 && <Divider my="0.25rem" />}
-                            <Flex align="center" justify="space-between" py="0.25rem">
-                              <Box flex="1">
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {zone.name}
-                                </Text>
-                              </Box>
-                              <IconButton
-                                aria-label="Remover zona"
-                                icon={<FaTimes />}
-                                size="sm"
-                                variant="ghost"
-                                color="red.500"
-                                onClick={() => handleRemoveZone(zone.id)}
-                              />
-                            </Flex>
+                        {selectedZones.length > 0 && (
+                          <Box mt="1rem">
+                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                              Zonas seleccionadas ({selectedZones.length}):
+                            </Text>
+                            <Box
+                              maxH="150px"
+                              overflowY="auto"
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              borderRadius="md"
+                              p="0.5rem 1rem"
+                            >
+                              <Stack spacing="0">
+                                {selectedZones.map((zone, index) => (
+                                  <Box key={zone.id}>
+                                    {index > 0 && <Divider my="0.25rem" />}
+                                    <Flex align="center" justify="space-between" py="0.25rem">
+                                      <Box flex="1">
+                                        <Text fontSize="sm" fontWeight="medium">
+                                          {zone.name}
+                                        </Text>
+                                      </Box>
+                                      <IconButton
+                                        aria-label="Remover zona"
+                                        icon={<FaTimes />}
+                                        size="sm"
+                                        variant="ghost"
+                                        color="red.500"
+                                        onClick={() => handleRemoveZone(zone.id)}
+                                      />
+                                    </Flex>
+                                  </Box>
+                                ))}
+                              </Stack>
+                            </Box>
                           </Box>
-                        ))}
-                      </Stack>
-                    </Box>
-                  </Box>
-                )}
+                        )}
                         <FormErrorMessage>{errors.zones}</FormErrorMessage>
                       </FormControl>
 
-              <FormControl>
-                <FormLabel fontWeight="semibold">
-                  <HStack spacing="0.5rem">
-                    <Icon as={FiUser} boxSize="1rem" />
-                    <Text>Clientes</Text>
-                  </HStack>
-                </FormLabel>
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiUser} boxSize="1rem" />
+                            <Text>Clientes</Text>
+                          </HStack>
+                        </FormLabel>
 
-                {/* Buscador de clientes */}
-                <Box position="relative" ref={clientSearchRef}>
-                  <Flex bg={inputBg} borderRadius="md" overflow="hidden" borderWidth="1px" borderColor={inputBorder}>
-                    <Select
-                      value={clientSearchType}
-                      onChange={(e) =>
-                        setClientSearchType(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')
-                      }
-                      bg="transparent"
-                      border="none"
-                      color={textColor}
-                      w="auto"
-                      minW="7rem"
-                      maxW="8rem"
-                      borderRadius="none"
-                      _focus={{ boxShadow: 'none' }}
-                    >
-                      <option value="name">Nombre</option>
-                      <option value="rut">RUT</option>
-                      <option value="razonSocial">Razón social</option>
-                      <option value="contactName">Contacto</option>
-                    </Select>
+                        {/* Buscador de clientes */}
+                        <Box position="relative" ref={clientSearchRef}>
+                          <Flex
+                            bg={inputBg}
+                            borderRadius="md"
+                            overflow="hidden"
+                            borderWidth="1px"
+                            borderColor={inputBorder}
+                          >
+                            <Select
+                              value={clientSearchType}
+                              onChange={(e) =>
+                                setClientSearchType(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')
+                              }
+                              bg="transparent"
+                              border="none"
+                              color={textColor}
+                              w="auto"
+                              minW="7rem"
+                              maxW="8rem"
+                              borderRadius="none"
+                              _focus={{ boxShadow: 'none' }}
+                            >
+                              <option value="name">Nombre</option>
+                              <option value="rut">RUT</option>
+                              <option value="razonSocial">Razón social</option>
+                              <option value="contactName">Contacto</option>
+                            </Select>
 
-                    <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+                            <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
 
-                    <InputGroup flex="1">
-                      <Input
-                        placeholder="Buscar cliente..."
-                        value={clientSearch}
-                        onChange={(e) => handleClientSearch(e.target.value)}
-                        bg="transparent"
-                        border="none"
-                        borderRadius="none"
-                        _placeholder={{ color: textColor }}
-                        color={textColor}
-                        _focus={{ boxShadow: 'none' }}
-                        pl="1rem"
-                        onFocus={() => clientSearch && setShowClientDropdown(true)}
-                      />
-                      <InputRightElement>
-                        <IconButton
-                          aria-label="Buscar"
-                          icon={<AiOutlineSearch size="1.25rem" />}
-                          size="sm"
-                          variant="ghost"
-                          color={textColor}
-                          _hover={{}}
-                          onClick={handleClearClientSearch}
-                        />
-                      </InputRightElement>
-                    </InputGroup>
-                  </Flex>
+                            <InputGroup flex="1">
+                              <Input
+                                placeholder="Buscar cliente..."
+                                value={clientSearch}
+                                onChange={(e) => handleClientSearch(e.target.value)}
+                                bg="transparent"
+                                border="none"
+                                borderRadius="none"
+                                _placeholder={{ color: textColor }}
+                                color={textColor}
+                                _focus={{ boxShadow: 'none' }}
+                                pl="1rem"
+                                onFocus={() => clientSearch && setShowClientDropdown(true)}
+                              />
+                              <InputRightElement>
+                                <IconButton
+                                  aria-label="Buscar"
+                                  icon={<AiOutlineSearch size="1.25rem" />}
+                                  size="sm"
+                                  variant="ghost"
+                                  color={textColor}
+                                  _hover={{}}
+                                  onClick={handleClearClientSearch}
+                                />
+                              </InputRightElement>
+                            </InputGroup>
+                          </Flex>
 
-                  {/* Dropdown de resultados de clientes */}
-                  {showClientDropdown && (
-                    <Box
-                      position="absolute"
-                      top="100%"
-                      left={0}
-                      right={0}
-                      mt={1}
-                      bg={dropdownBg}
-                      border="1px solid"
-                      borderColor={dropdownBorder}
-                      borderRadius="md"
-                      boxShadow="lg"
-                      maxH="300px"
-                      overflowY="auto"
-                      zIndex={20}
-                    >
-                      {(() => {
-                        const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
-                        const isSearching = !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
-                        const searchCompleted =
-                          !isTyping &&
-                          !isSearching &&
-                          debouncedClientSearch.length >= 2 &&
-                          lastClientSearchTerm === debouncedClientSearch;
+                          {/* Dropdown de resultados de clientes */}
+                          {showClientDropdown && (
+                            <Box
+                              position="absolute"
+                              top="100%"
+                              left={0}
+                              right={0}
+                              mt={1}
+                              bg={dropdownBg}
+                              border="1px solid"
+                              borderColor={dropdownBorder}
+                              borderRadius="md"
+                              boxShadow="lg"
+                              maxH="300px"
+                              overflowY="auto"
+                              zIndex={20}
+                            >
+                              {(() => {
+                                const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
+                                const isSearching =
+                                  !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                const searchCompleted =
+                                  !isTyping &&
+                                  !isSearching &&
+                                  debouncedClientSearch.length >= 2 &&
+                                  lastClientSearchTerm === debouncedClientSearch;
 
-                        if (isTyping || isSearching) {
-                          return (
-                            <Flex p={3} justify="center" align="center" gap={2}>
-                              <Spinner size="sm" />
-                              <Text fontSize="sm" color="gray.500">
-                                Buscando clientes...
-                              </Text>
-                            </Flex>
-                          );
-                        }
+                                if (isTyping || isSearching) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando clientes...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
 
-                        if (searchCompleted && clientsSearch?.length > 0) {
-                          return (
-                            <List spacing={0}>
-                              {clientsSearch.map((client: any, index: number) => {
-                                const isSelected = selectedClients.some((c) => c.id === client.id);
-                                return (
-                                  <Fragment key={client.id}>
-                                    <ListItem
-                                      p="0.75rem"
-                                      cursor="pointer"
-                                      _hover={{ bg: hoverBg }}
-                                      transition="background-color 0.2s ease"
-                                      opacity={isSelected ? 0.5 : 1}
-                                      onClick={() => !isSelected && handleClientSelect(client)}
-                                    >
-                                      <Box>
+                                if (searchCompleted && clientsSearch?.length > 0) {
+                                  return (
+                                    <List spacing={0}>
+                                      {clientsSearch.map((client: any, index: number) => {
+                                        const isSelected = selectedClients.some((c) => c.id === client.id);
+                                        return (
+                                          <Fragment key={client.id}>
+                                            <ListItem
+                                              p="0.75rem"
+                                              cursor="pointer"
+                                              _hover={{ bg: hoverBg }}
+                                              transition="background-color 0.2s ease"
+                                              opacity={isSelected ? 0.5 : 1}
+                                              onClick={() => !isSelected && handleClientSelect(client)}
+                                            >
+                                              <Box>
+                                                <Text fontSize="sm" fontWeight="medium">
+                                                  {client.name}
+                                                </Text>
+                                                <Text fontSize="xs" color={textColor}>
+                                                  {client.rut && `RUT: ${client.rut}`}
+                                                  {client.contactName && ` - Contacto: ${client.contactName}`}
+                                                </Text>
+                                                {isSelected && (
+                                                  <Text fontSize="xs" color="green.500">
+                                                    Seleccionado
+                                                  </Text>
+                                                )}
+                                              </Box>
+                                            </ListItem>
+                                            {index < clientsSearch.length - 1 && <Divider />}
+                                          </Fragment>
+                                        );
+                                      })}
+                                    </List>
+                                  );
+                                }
+
+                                if (searchCompleted && clientsSearch?.length === 0) {
+                                  return (
+                                    <Text p={3} fontSize="sm" color="gray.500">
+                                      No se encontraron clientes
+                                    </Text>
+                                  );
+                                }
+
+                                if (debouncedClientSearch.length >= 2 && (!searchCompleted || isLoadingClientsSearch)) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando clientes...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
+
+                                return null;
+                              })()}
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Lista de clientes seleccionados */}
+                        {selectedClients.length > 0 && (
+                          <Box mt="1rem">
+                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                              Clientes seleccionados ({selectedClients.length}):
+                            </Text>
+                            <Box
+                              maxH="150px"
+                              overflowY="auto"
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              borderRadius="md"
+                              p="0.5rem 1rem"
+                            >
+                              <Stack spacing="0">
+                                {selectedClients.map((client, index) => (
+                                  <Box key={client.id}>
+                                    {index > 0 && <Divider my="0.25rem" />}
+                                    <Flex align="center" justify="space-between" py="0.25rem">
+                                      <Box flex="1">
                                         <Text fontSize="sm" fontWeight="medium">
                                           {client.name}
                                         </Text>
@@ -594,90 +662,23 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                                           {client.rut && `RUT: ${client.rut}`}
                                           {client.contactName && ` - Contacto: ${client.contactName}`}
                                         </Text>
-                                        {isSelected && (
-                                          <Text fontSize="xs" color="green.500">
-                                            Seleccionado
-                                          </Text>
-                                        )}
                                       </Box>
-                                    </ListItem>
-                                    {index < clientsSearch.length - 1 && <Divider />}
-                                  </Fragment>
-                                );
-                              })}
-                            </List>
-                          );
-                        }
-
-                        if (searchCompleted && clientsSearch?.length === 0) {
-                          return (
-                            <Text p={3} fontSize="sm" color="gray.500">
-                              No se encontraron clientes
-                            </Text>
-                          );
-                        }
-
-                        if (debouncedClientSearch.length >= 2 && (!searchCompleted || isLoadingClientsSearch)) {
-                          return (
-                            <Flex p={3} justify="center" align="center" gap={2}>
-                              <Spinner size="sm" />
-                              <Text fontSize="sm" color="gray.500">
-                                Buscando clientes...
-                              </Text>
-                            </Flex>
-                          );
-                        }
-
-                        return null;
-                      })()}
-                    </Box>
-                  )}
-                </Box>
-
-                {/* Lista de clientes seleccionados */}
-                {selectedClients.length > 0 && (
-                  <Box mt="1rem">
-                    <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
-                      Clientes seleccionados ({selectedClients.length}):
-                    </Text>
-                    <Box
-                      maxH="150px"
-                      overflowY="auto"
-                      border="1px solid"
-                      borderColor={inputBorder}
-                      borderRadius="md"
-                      p="0.5rem 1rem"
-                    >
-                      <Stack spacing="0">
-                        {selectedClients.map((client, index) => (
-                          <Box key={client.id}>
-                            {index > 0 && <Divider my="0.25rem" />}
-                            <Flex align="center" justify="space-between" py="0.25rem">
-                              <Box flex="1">
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {client.name}
-                                </Text>
-                                <Text fontSize="xs" color={textColor}>
-                                  {client.rut && `RUT: ${client.rut}`}
-                                  {client.contactName && ` - Contacto: ${client.contactName}`}
-                                </Text>
-                              </Box>
-                              <IconButton
-                                aria-label="Remover cliente"
-                                icon={<FaTimes />}
-                                size="sm"
-                                variant="ghost"
-                                color="red.500"
-                                onClick={() => handleRemoveClient(client.id)}
-                              />
-                            </Flex>
+                                      <IconButton
+                                        aria-label="Remover cliente"
+                                        icon={<FaTimes />}
+                                        size="sm"
+                                        variant="ghost"
+                                        color="red.500"
+                                        onClick={() => handleRemoveClient(client.id)}
+                                      />
+                                    </Flex>
+                                  </Box>
+                                ))}
+                              </Stack>
+                            </Box>
                           </Box>
-                        ))}
-                      </Stack>
-                    </Box>
-                  </Box>
-                )}
-              </FormControl>
+                        )}
+                      </FormControl>
 
                       <Field name="observations">
                         {({ field }: any) => (
@@ -693,7 +694,6 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                               placeholder="Ingrese observaciones adicionales"
                               onChange={(e) => {
                                 setFieldValue('observations', e.target.value);
-                                setObservations(e.target.value);
                               }}
                               bg={inputBg}
                               border="1px solid"

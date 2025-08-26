@@ -135,10 +135,9 @@ export const DistributionList = ({
                         <Text color={textColor}>Zonas</Text>
                       </HStack>
                       <Text fontWeight="semibold" noOfLines={2} maxW="10rem">
-                        {distribution.zones?.map(zone => zone.name).join(', ') || '-'}
+                        {distribution.zones?.map((zone) => zone.name).join(', ') || '-'}
                       </Text>
                     </HStack>
-
                   </VStack>
 
                   <Box position="absolute" top="0rem" right="0.25rem">
@@ -182,9 +181,7 @@ export const DistributionList = ({
                   <Th textAlign="center" w="12rem">
                     Vehículo
                   </Th>
-                  <Th textAlign="center">
-                    Zonas
-                  </Th>
+                  <Th textAlign="center">Zonas</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -200,9 +197,7 @@ export const DistributionList = ({
                     <Td textAlign="center">{distribution.user?.name || '-'}</Td>
                     <Td textAlign="center">{distribution.vehicle?.plate || '-'}</Td>
                     <Td textAlign="center">
-                      <Text noOfLines={2}>
-                        {distribution.zones?.map(zone => zone.name).join(', ') || '-'}
-                      </Text>
+                      <Text noOfLines={2}>{distribution.zones?.map((zone) => zone.name).join(', ') || '-'}</Text>
                     </Td>
                     <Td textAlign="center" pr="2rem">
                       <DistributionDetail distribution={distribution} setDistributions={setDistributions} />
