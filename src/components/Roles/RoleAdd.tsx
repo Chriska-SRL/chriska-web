@@ -24,7 +24,6 @@ import {
   AccordionPanel,
   AccordionIcon,
   Flex,
-  Stack,
   useColorModeValue,
   FormErrorMessage,
   useMediaQuery,
@@ -147,7 +146,7 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '3xl' }}
+        size={{ base: 'xs', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -185,127 +184,123 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
 
                 return (
                   <form id="role-add-form" onSubmit={handleSubmit}>
-                    <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">
-                      <Box flex="1" minW={0}>
-                        <FormControl>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiShield} boxSize="1rem" />
-                              <Text>Permisos</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
-                            <Accordion allowMultiple>
-                              {Object.entries(groupedPermissions).map(([group, perms]) => (
-                                <AccordionItem key={group}>
-                                  <h2>
-                                    <AccordionButton>
-                                      <Box flex="1" textAlign="left" fontWeight="semibold">
-                                        {group}
-                                      </Box>
-                                      <HStack spacing="0.75rem" onClick={(e) => e.stopPropagation()}>
-                                        <Checkbox
-                                          isChecked={perms.every((perm) => values.permissions.includes(perm.id))}
-                                          isIndeterminate={
-                                            perms.some((perm) => values.permissions.includes(perm.id)) &&
-                                            !perms.every((perm) => values.permissions.includes(perm.id))
-                                          }
-                                          onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            const groupPermIds = perms.map((perm) => perm.id);
-                                            const updated = checked
-                                              ? [...new Set([...values.permissions, ...groupPermIds])]
-                                              : values.permissions.filter((p) => !groupPermIds.includes(p));
-                                            setFieldValue('permissions', updated);
-                                          }}
-                                          disabled={isLoading}
-                                          size="md"
-                                        />
-                                        <Text fontSize="sm" color={textColor}>
-                                          {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
-                                          {isMobile ? 'selec.' : 'seleccionados'}
-                                        </Text>
-                                      </HStack>
-                                      <AccordionIcon />
-                                    </AccordionButton>
-                                  </h2>
-                                  <AccordionPanel pb={4}>
-                                    <Flex wrap="wrap" gap="0.75rem">
-                                      {perms.map((perm) => (
-                                        <Checkbox
-                                          key={perm.id}
-                                          id={`perm-${modalId}-${perm.id}`}
-                                          isChecked={values.permissions.includes(perm.id)}
-                                          onChange={(e) => {
-                                            const checked = e.target.checked;
-                                            const updated = checked
-                                              ? [...values.permissions, perm.id]
-                                              : values.permissions.filter((p) => p !== perm.id);
-                                            setFieldValue('permissions', updated);
-                                          }}
-                                          disabled={isLoading}
-                                        >
-                                          {perm.label}
-                                        </Checkbox>
-                                      ))}
-                                    </Flex>
-                                  </AccordionPanel>
-                                </AccordionItem>
-                              ))}
-                            </Accordion>
-                          </Box>
-                        </FormControl>
-                      </Box>
+                    <VStack spacing="1.5rem" align="stretch">
+                      <Field name="name" validate={validate}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiUser} boxSize="1rem" />
+                                <Text>Nombre</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el nombre del rol"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                      <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
-                        <Field name="name" validate={validate}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiUser} boxSize="1rem" />
-                                  <Text>Nombre</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el nombre del rol"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.name}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                      <Field name="description" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Descripción</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese una descripción del rol"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              resize="vertical"
+                              minH="8rem"
+                              rows={4}
+                            />
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese una descripción del rol"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                                resize="vertical"
-                                minH="8rem"
-                                rows={4}
-                              />
-                              <FormErrorMessage>{errors.description}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-                      </VStack>
-                    </Stack>
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiShield} boxSize="1rem" />
+                            <Text>Permisos</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Box overflowY="auto" pr="0.5rem">
+                          <Accordion allowMultiple>
+                            {Object.entries(groupedPermissions).map(([group, perms]) => (
+                              <AccordionItem key={group}>
+                                <h2>
+                                  <AccordionButton>
+                                    <Box flex="1" textAlign="left" fontWeight="semibold">
+                                      {group}
+                                    </Box>
+                                    <HStack spacing="0.75rem" onClick={(e) => e.stopPropagation()} pr="0.5rem">
+                                      <Checkbox
+                                        isChecked={perms.every((perm) => values.permissions.includes(perm.id))}
+                                        isIndeterminate={
+                                          perms.some((perm) => values.permissions.includes(perm.id)) &&
+                                          !perms.every((perm) => values.permissions.includes(perm.id))
+                                        }
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          const groupPermIds = perms.map((perm) => perm.id);
+                                          const updated = checked
+                                            ? [...new Set([...values.permissions, ...groupPermIds])]
+                                            : values.permissions.filter((p) => !groupPermIds.includes(p));
+                                          setFieldValue('permissions', updated);
+                                        }}
+                                        disabled={isLoading}
+                                        size="md"
+                                      />
+                                      <Text fontSize="sm" color={textColor}>
+                                        {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
+                                        {isMobile ? 'selec.' : 'seleccionados'}
+                                      </Text>
+                                    </HStack>
+                                    <AccordionIcon />
+                                  </AccordionButton>
+                                </h2>
+                                <AccordionPanel pb={4}>
+                                  <Flex wrap="wrap" gap="0.75rem">
+                                    {perms.map((perm) => (
+                                      <Checkbox
+                                        key={perm.id}
+                                        id={`perm-${modalId}-${perm.id}`}
+                                        isChecked={values.permissions.includes(perm.id)}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          const updated = checked
+                                            ? [...values.permissions, perm.id]
+                                            : values.permissions.filter((p) => p !== perm.id);
+                                          setFieldValue('permissions', updated);
+                                        }}
+                                        disabled={isLoading}
+                                      >
+                                        {perm.label}
+                                      </Checkbox>
+                                    ))}
+                                  </Flex>
+                                </AccordionPanel>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                        </Box>
+                      </FormControl>
+                    </VStack>
                   </form>
                 );
               }}

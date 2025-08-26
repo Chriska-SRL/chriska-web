@@ -23,7 +23,6 @@ import {
   AccordionPanel,
   AccordionIcon,
   Flex,
-  Stack,
   useMediaQuery,
 } from '@chakra-ui/react';
 import { FiEye, FiUser, FiFileText, FiShield } from 'react-icons/fi';
@@ -117,7 +116,7 @@ export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDeta
         onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: '3xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -132,56 +131,52 @@ export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDeta
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
-            <Stack direction={{ base: 'column', md: 'row' }} spacing="2rem" align="stretch">
-              <Box flex="1" minW={0}>
-                <Box>
-                  <HStack mb="0.5rem" spacing="0.5rem">
-                    <Icon as={FiShield} boxSize="1rem" color={iconColor} />
-                    <Text color={labelColor} fontWeight="semibold">
-                      Permisos
-                    </Text>
-                  </HStack>
-                  <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto" pr="0.5rem">
-                    <Accordion allowMultiple>
-                      {Object.entries(groupedPermissions).map(([group, perms]) => (
-                        <AccordionItem key={group}>
-                          <h2>
-                            <AccordionButton>
-                              <Box flex="1" textAlign="left" fontWeight="semibold">
-                                {group}
-                              </Box>
-                              <Text fontSize="sm" color={textColor} mx="1rem">
-                                {perms.filter((perm) => role.permissions?.includes(perm.id)).length}{' '}
-                                {isMobile ? 'asign.' : 'asignados'}
-                              </Text>
-                              <AccordionIcon />
-                            </AccordionButton>
-                          </h2>
-                          <AccordionPanel pb={4}>
-                            <Flex wrap="wrap" gap="0.75rem">
-                              {perms.map((perm) => (
-                                <Checkbox
-                                  key={perm.id}
-                                  isChecked={role.permissions?.includes(perm.id) || false}
-                                  isDisabled={true}
-                                >
-                                  {perm.label}
-                                </Checkbox>
-                              ))}
-                            </Flex>
-                          </AccordionPanel>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </Box>
+            <VStack spacing="1.5rem" align="stretch">
+              {detailField('Nombre', role.name, FiUser)}
+              {detailField('Descripción', role.description, FiFileText)}
+
+              <Box>
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiShield} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Permisos
+                  </Text>
+                </HStack>
+                <Box overflowY="auto" pr="0.5rem">
+                  <Accordion allowMultiple>
+                    {Object.entries(groupedPermissions).map(([group, perms]) => (
+                      <AccordionItem key={group}>
+                        <h2>
+                          <AccordionButton>
+                            <Box flex="1" textAlign="left" fontWeight="semibold">
+                              {group}
+                            </Box>
+                            <Text fontSize="sm" color={textColor} mx="1rem">
+                              {perms.filter((perm) => role.permissions?.includes(perm.id)).length}{' '}
+                              {isMobile ? 'asign.' : 'asignados'}
+                            </Text>
+                            <AccordionIcon />
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel pb={4}>
+                          <Flex wrap="wrap" gap="0.75rem">
+                            {perms.map((perm) => (
+                              <Checkbox
+                                key={perm.id}
+                                isChecked={role.permissions?.includes(perm.id) || false}
+                                isDisabled={true}
+                              >
+                                {perm.label}
+                              </Checkbox>
+                            ))}
+                          </Flex>
+                        </AccordionPanel>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </Box>
               </Box>
-
-              <VStack flex="1" spacing="1rem" align="stretch" minW={0}>
-                {detailField('Nombre', role.name, FiUser)}
-                {detailField('Descripción', role.description, FiFileText)}
-              </VStack>
-            </Stack>
+            </VStack>
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
