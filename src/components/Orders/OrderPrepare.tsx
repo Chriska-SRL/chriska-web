@@ -408,7 +408,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
       quantity: product.actualQuantity,
-      weight: product.unitType === UnitType.KILO ? (product.weight ?? 0) / 1000 : undefined,
+      weight: product.unitType === UnitType.KILO ? (product.weight ?? 0) : undefined,
     }));
 
     const orderData: any = {
@@ -748,7 +748,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
+                                              const newValue = Math.max(0.5, product.actualQuantity - 0.5);
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -798,7 +798,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.1;
+                                              const newValue = product.actualQuantity + 0.5;
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -949,7 +949,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
+                                              const newValue = Math.max(0.5, product.actualQuantity - 0.5);
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -999,7 +999,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.1;
+                                              const newValue = product.actualQuantity + 0.5;
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({

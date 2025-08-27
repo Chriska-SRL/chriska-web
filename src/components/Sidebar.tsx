@@ -142,8 +142,10 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const visibleItems = sidebarItems.filter((item) => hasPermission(item.Permission));
 
   const handleNavigate = (path: string) => {
-    setLoadingPage(path);
-    router.push(`/${path}`);
+    if (currentPage !== path) {
+      setLoadingPage(path);
+      router.push(`/${path}`);
+    }
   };
 
   const renderSidebarContent = () => (

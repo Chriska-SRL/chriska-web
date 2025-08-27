@@ -39,7 +39,7 @@ export default function MapUruguay() {
           if (typeof vectorLayers === 'string') {
             try {
               layers = JSON.parse(vectorLayers);
-            } catch (e) {
+            } catch {
               layers = null;
             }
           } else if (Array.isArray(vectorLayers)) {

@@ -70,7 +70,7 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
         }),
       );
       setShelveProps(undefined);
-      handleClose();
+      onClose();
     }
   }, [data]);
 
@@ -112,13 +112,12 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
   };
 
   const handleSubmit = (values: { id: number; name: string; description: string }) => {
-    const newShelve = {
+    const updatedShelve = {
       id: values.id,
       name: values.name,
       description: values.description,
-      warehouseId: shelve.warehouse.id,
     };
-    setShelveProps(newShelve);
+    setShelveProps(updatedShelve);
   };
 
   return (
