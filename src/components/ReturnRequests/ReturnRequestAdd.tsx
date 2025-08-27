@@ -46,15 +46,23 @@ import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 type ReturnRequestAddProps = {
   isLoading: boolean;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
+  preselectedClientId?: number;
+  forceOpen?: boolean;
 };
 
 type ReturnRequestAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
+  preselectedClientId?: number;
 };
 
-const ReturnRequestAddModal = ({ isOpen, onClose, setReturnRequests }: ReturnRequestAddModalProps) => {
+const ReturnRequestAddModal = ({
+  isOpen,
+  onClose,
+  setReturnRequests,
+  preselectedClientId,
+}: ReturnRequestAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -78,6 +86,7 @@ const ReturnRequestAddModal = ({ isOpen, onClose, setReturnRequests }: ReturnReq
   const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
   const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
+  const [isLoadingPreselectedClient, setIsLoadingPreselectedClient] = useState(false);
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
   // Estados para la búsqueda de entregas (después de seleccionar cliente)
@@ -122,6 +131,34 @@ const ReturnRequestAddModal = ({ isOpen, onClose, setReturnRequests }: ReturnReq
 
   const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
   const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
+
+  // Efecto para preseleccionar cliente cuando se pasa como prop
+  useEffect(() => {
+    if (preselectedClientId && !selectedClient && isOpen) {
+      setIsLoadingPreselectedClient(true);
+      // Iniciar búsqueda para encontrar el cliente por ID
+      setClientSearch('*'); // Búsqueda que traerá todos los clientes
+    }
+  }, [preselectedClientId, selectedClient, isOpen]);
+
+  // Efecto para seleccionar cliente cuando aparece en los resultados de búsqueda
+  useEffect(() => {
+    if (
+      preselectedClientId &&
+      !selectedClient &&
+      clientsSearch &&
+      clientsSearch.length > 0 &&
+      isLoadingPreselectedClient
+    ) {
+      const foundClient = clientsSearch.find((c) => c.id === preselectedClientId);
+      if (foundClient) {
+        setSelectedClient({ id: foundClient.id, name: foundClient.name });
+        setShowClientDropdown(false);
+        setClientSearch('');
+        setIsLoadingPreselectedClient(false);
+      }
+    }
+  }, [preselectedClientId, selectedClient, clientsSearch, isLoadingPreselectedClient]);
 
   // Actualizar el término de búsqueda cuando los datos cambien
   useEffect(() => {
@@ -303,7 +340,24 @@ const ReturnRequestAddModal = ({ isOpen, onClose, setReturnRequests }: ReturnReq
                           </FormLabel>
 
                           <Box position="relative" ref={clientSearchRef}>
-                            {selectedClient ? (
+                            {isLoadingPreselectedClient ? (
+                              <Flex
+                                h="40px"
+                                px="0.75rem"
+                                bg={inputBg}
+                                borderRadius="md"
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                align="center"
+                                justify="center"
+                                gap="0.5rem"
+                              >
+                                <Spinner size="sm" />
+                                <Text fontSize="sm" color={textColor}>
+                                  Cargando cliente...
+                                </Text>
+                              </Flex>
+                            ) : selectedClient ? (
                               <Flex
                                 h="40px"
                                 px="0.75rem"
@@ -568,13 +622,26 @@ const ReturnRequestAddModal = ({ isOpen, onClose, setReturnRequests }: ReturnReq
   );
 };
 
-export const ReturnRequestAdd = ({ isLoading, setReturnRequests }: ReturnRequestAddProps) => {
+export const ReturnRequestAdd = ({
+  isLoading,
+  setReturnRequests,
+  preselectedClientId,
+  forceOpen,
+}: ReturnRequestAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const hasPermission = useUserStore((state) => state.hasPermission);
+
+  // Abrir automáticamente si forceOpen es true
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
+
   const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const buttonHover = useColorModeValue('#e0dede', 'gray.500');
 
-  if (!hasPermission(Permission.CREATE_ORDER_REQUESTS)) {
+  if (!hasPermission(Permission.CREATE_RETURN_REQUESTS)) {
     return null;
   }
 
@@ -591,7 +658,14 @@ export const ReturnRequestAdd = ({ isLoading, setReturnRequests }: ReturnRequest
         Nuevo
       </Button>
 
-      {isOpen && <ReturnRequestAddModal isOpen={isOpen} onClose={onClose} setReturnRequests={setReturnRequests} />}
+      {isOpen && (
+        <ReturnRequestAddModal
+          isOpen={isOpen}
+          onClose={onClose}
+          setReturnRequests={setReturnRequests}
+          preselectedClientId={preselectedClientId}
+        />
+      )}
     </>
   );
 };

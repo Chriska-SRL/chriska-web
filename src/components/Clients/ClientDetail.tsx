@@ -18,6 +18,7 @@ import {
   Icon,
   SimpleGrid,
   Flex,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FiEye,
@@ -44,7 +45,9 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa6';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import MapPreview from '../MapPreview';
+import { MapViewModal } from '../MapViewModal';
 
 type ClientDetailProps = {
   client: Client;
@@ -61,6 +64,11 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+  const { isOpen: isMapOpen, onOpen: openMap, onClose: closeMap } = useDisclosure();
+
+  // Estados de carga para navegación
+  const [isNavigatingToOrders, setIsNavigatingToOrders] = useState(false);
+  const [isNavigatingToReturns, setIsNavigatingToReturns] = useState(false);
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -69,15 +77,31 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
   const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const handleClose = useCallback(() => {
+    // No permitir cerrar si se está navegando
+    if (isNavigatingToOrders || isNavigatingToReturns) {
+      return;
+    }
     onClose();
     onModalClose?.();
-  }, [onClose, onModalClose]);
+  }, [onClose, onModalClose, isNavigatingToOrders, isNavigatingToReturns]);
 
   useEffect(() => {
     if (forceOpen) {
       onOpen();
     }
   }, [forceOpen, onOpen]);
+
+  const handleNavigateToOrders = async () => {
+    setIsNavigatingToOrders(true);
+    await router.push(`/pedidos?client=${client.id}&add=true`);
+    // El estado se mantendrá hasta que el componente se desmonte
+  };
+
+  const handleNavigateToReturns = async () => {
+    setIsNavigatingToReturns(true);
+    await router.push(`/devoluciones?client=${client.id}&add=true`);
+    // El estado se mantendrá hasta que el componente se desmonte
+  };
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, onClick?: () => void) => (
     <Box w="100%">
@@ -155,7 +179,14 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: 'xs', md: 'xl' }}
+        isCentered
+        closeOnOverlayClick={!(isNavigatingToOrders || isNavigatingToReturns)}
+        closeOnEsc={!(isNavigatingToOrders || isNavigatingToReturns)}
+      >
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -197,8 +228,25 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
               {/* Fila 5: Email (completo) */}
               {detailField('Correo electrónico', client.email, FiMail)}
 
-              {/* Fila 6: Ubicación (completo) */}
-              {detailField('Ubicación', `${client.location.latitude}, ${client.location.longitude}`, FiMap)}
+              {/* Fila 6: Ubicación con preview del mapa */}
+              <Box w="100%">
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiMap} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Ubicación
+                  </Text>
+                </HStack>
+                <VStack spacing="0.5rem" align="stretch">
+                  <Box bg={inputBg} border="1px solid" borderColor={inputBorder} borderRadius="md" p="0.5rem">
+                    <MapPreview
+                      lat={client.location.latitude}
+                      lng={client.location.longitude}
+                      height="15rem"
+                      onClick={openMap}
+                    />
+                  </Box>
+                </VStack>
+              </Box>
 
               {/* Fila 7: Horario (completo) */}
               {detailField('Horario', client.schedule, FiClock)}
@@ -252,31 +300,37 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
               <HStack spacing="0.5rem" w="100%">
                 <Button
                   flex="1"
-                  leftIcon={<FaPlus />}
-                  onClick={() => {
-                    handleClose();
-                  }}
+                  leftIcon={isNavigatingToOrders ? <Spinner size="xs" /> : <FaPlus />}
+                  onClick={handleNavigateToOrders}
                   colorScheme="green"
                   variant="outline"
                   size="sm"
+                  isLoading={isNavigatingToOrders}
+                  loadingText="Redirigiendo..."
                 >
-                  Crear orden
+                  Crear pedido
                 </Button>
                 <Button
                   flex="1"
-                  leftIcon={<FaPlus />}
-                  onClick={() => {
-                    handleClose();
-                  }}
+                  leftIcon={isNavigatingToReturns ? <Spinner size="xs" /> : <FaPlus />}
+                  onClick={handleNavigateToReturns}
                   colorScheme="orange"
                   variant="outline"
                   size="sm"
+                  isLoading={isNavigatingToReturns}
+                  loadingText="Redirigiendo..."
                 >
                   Crear devolución
                 </Button>
               </HStack>
               <HStack spacing="0.5rem" w="100%">
-                <Button variant="ghost" size="sm" onClick={handleClose} flex="1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClose}
+                  flex="1"
+                  disabled={isNavigatingToOrders || isNavigatingToReturns}
+                >
                   Cerrar
                 </Button>
                 {canDeleteClients && (
@@ -311,6 +365,14 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
       </Modal>
 
       <ClientEdit isOpen={isEditOpen} onClose={closeEdit} client={client} setClients={setClients} />
+
+      <MapViewModal
+        isOpen={isMapOpen}
+        onClose={closeMap}
+        lat={client.location.latitude}
+        lng={client.location.longitude}
+        title={`Ubicación de ${client.name}`}
+      />
     </>
   );
 };

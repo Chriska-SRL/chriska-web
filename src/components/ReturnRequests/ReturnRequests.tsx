@@ -7,8 +7,13 @@ import { ReturnRequestAdd } from './ReturnRequestAdd';
 import { ReturnRequestList } from './ReturnRequestList';
 import { useGetReturnRequests } from '@/hooks/returnRequest';
 import { ReturnRequest } from '@/entities/returnRequest';
+import { useSearchParams } from 'next/navigation';
 
 export const ReturnRequests = () => {
+  const searchParams = useSearchParams();
+  const clientIdParam = searchParams.get('client');
+  const shouldAddParam = searchParams.get('add');
+
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -75,7 +80,14 @@ export const ReturnRequests = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Devoluciones
         </Text>
-        {isMobile && <ReturnRequestAdd isLoading={isLoading} setReturnRequests={setReturnRequests} />}
+        {isMobile && (
+          <ReturnRequestAdd
+            isLoading={isLoading}
+            setReturnRequests={setReturnRequests}
+            preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+            forceOpen={shouldAddParam === 'true'}
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -86,7 +98,12 @@ export const ReturnRequests = () => {
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <ReturnRequestAdd isLoading={isLoading} setReturnRequests={setReturnRequests} />
+            <ReturnRequestAdd
+              isLoading={isLoading}
+              setReturnRequests={setReturnRequests}
+              preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+              forceOpen={shouldAddParam === 'true'}
+            />
           </>
         )}
       </Flex>

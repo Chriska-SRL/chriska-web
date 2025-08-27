@@ -22,6 +22,7 @@ import {
   HStack,
   Icon,
   SimpleGrid,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
@@ -49,6 +50,7 @@ import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { QualificationSelector } from '@/components/QualificationSelector';
 import { BankOptions } from '@/enums/bank.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { LocationPickerModal } from '@/components/LocationPickerModal';
 
 type ClientEditProps = {
   isOpen: boolean;
@@ -81,6 +83,14 @@ const ClientEditForm = ({
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(client.bankAccounts || []);
+
+  // Modal para selección de ubicación
+  const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
+  const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
+  const [currentCoords, setCurrentCoords] = useState({
+    lat: client.location?.latitude || -34.9011,
+    lng: client.location?.longitude || -56.1645,
+  });
 
   const handleClose = () => {
     setClientProps(undefined);
@@ -203,6 +213,24 @@ const ClientEditForm = ({
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
                 }, [dirty, resetForm]);
+
+                const handleLocationConfirm = (lat: number, lng: number) => {
+                  setFieldValue('latitude', lat);
+                  setFieldValue('longitude', lng);
+                  setCurrentCoords({ lat, lng });
+                };
+
+                // Actualizar handler para el modal
+                useEffect(() => {
+                  setLocationHandler(() => handleLocationConfirm);
+                }, [setFieldValue]);
+
+                // Actualizar coordenadas actuales cuando cambian los valores del formulario
+                useEffect(() => {
+                  if (values.latitude && values.longitude) {
+                    setCurrentCoords({ lat: Number(values.latitude), lng: Number(values.longitude) });
+                  }
+                }, [values.latitude, values.longitude]);
 
                 return (
                   <form id="client-edit-form" onSubmit={handleSubmit}>
@@ -402,56 +430,48 @@ const ClientEditForm = ({
                           )}
                         </Field>
 
-                        {/* Fila 6: Ubicación (Latitud - Longitud) */}
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                          <Field name="latitude" validate={validateEmpty}>
-                            {({ field }: any) => (
-                              <FormControl isInvalid={submitCount > 0 && touched.latitude && !!errors.latitude}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiMap} boxSize="1rem" />
-                                    <Text>Latitud</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  step="any"
-                                  placeholder="Ingrese la latitud"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  disabled={isLoading}
-                                />
-                                <FormErrorMessage>{errors.latitude}</FormErrorMessage>
-                              </FormControl>
-                            )}
-                          </Field>
-
-                          <Field name="longitude" validate={validateEmpty}>
-                            {({ field }: any) => (
-                              <FormControl isInvalid={submitCount > 0 && touched.longitude && !!errors.longitude}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiMap} boxSize="1rem" />
-                                    <Text>Longitud</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Input
-                                  {...field}
-                                  type="number"
-                                  step="any"
-                                  placeholder="Ingrese la longitud"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  disabled={isLoading}
-                                />
-                                <FormErrorMessage>{errors.longitude}</FormErrorMessage>
-                              </FormControl>
-                            )}
-                          </Field>
-                        </SimpleGrid>
+                        {/* Fila 6: Ubicación */}
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiMap} boxSize="1rem" />
+                              <Text>Ubicación</Text>
+                            </HStack>
+                          </FormLabel>
+                          <VStack spacing="0.5rem" align="stretch">
+                            <HStack
+                              p="0.75rem"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              borderRadius="md"
+                              justify="space-between"
+                            >
+                              <VStack spacing="0.25rem" align="start">
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {values.latitude && values.longitude
+                                    ? `Lat: ${Number(values.latitude).toFixed(6)}, Lng: ${Number(values.longitude).toFixed(6)}`
+                                    : 'No se ha seleccionado ubicación'}
+                                </Text>
+                                {values.latitude && values.longitude && (
+                                  <Text fontSize="xs" color="gray.500">
+                                    Haz clic en "Seleccionar en mapa" para cambiar
+                                  </Text>
+                                )}
+                              </VStack>
+                              <Button
+                                size="sm"
+                                leftIcon={<FiMapPin />}
+                                onClick={openLocationModal}
+                                disabled={isLoading}
+                                colorScheme="blue"
+                                variant="outline"
+                              >
+                                Seleccionar en mapa
+                              </Button>
+                            </HStack>
+                          </VStack>
+                        </FormControl>
 
                         {/* Fila 7: Horario (completo) */}
                         <Field name="schedule" validate={validateEmpty}>
@@ -679,6 +699,14 @@ const ClientEditForm = ({
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        onConfirm={locationHandler || (() => {})}
+        initialLat={currentCoords.lat}
+        initialLng={currentCoords.lng}
+      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

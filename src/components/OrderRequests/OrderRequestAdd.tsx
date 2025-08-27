@@ -55,15 +55,23 @@ import { Status } from '@/enums/status.enum';
 type OrderRequestAddProps = {
   isLoading: boolean;
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+  preselectedClientId?: number;
+  forceOpen?: boolean;
 };
 
 type OrderRequestAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+  preselectedClientId?: number;
 };
 
-const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderRequestAddModalProps) => {
+const OrderRequestAddModal = ({
+  isOpen,
+  onClose,
+  setOrderRequests,
+  preselectedClientId,
+}: OrderRequestAddModalProps) => {
   const toast = useToast();
   const user = useUserStore((state) => state.user);
 
@@ -96,6 +104,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
   const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
+  const [isLoadingPreselectedClient, setIsLoadingPreselectedClient] = useState(false);
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
   // Estados para la búsqueda de productos
@@ -167,6 +176,34 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
 
   const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
+
+  // Efecto para preseleccionar cliente cuando se pasa como prop
+  useEffect(() => {
+    if (preselectedClientId && !selectedClient && isOpen) {
+      setIsLoadingPreselectedClient(true);
+      // Iniciar búsqueda para encontrar el cliente por ID
+      setClientSearch('*'); // Búsqueda que traerá todos los clientes
+    }
+  }, [preselectedClientId, selectedClient, isOpen]);
+
+  // Efecto para seleccionar cliente cuando aparece en los resultados de búsqueda
+  useEffect(() => {
+    if (
+      preselectedClientId &&
+      !selectedClient &&
+      clientsSearch &&
+      clientsSearch.length > 0 &&
+      isLoadingPreselectedClient
+    ) {
+      const foundClient = clientsSearch.find((c) => c.id === preselectedClientId);
+      if (foundClient) {
+        setSelectedClient({ id: foundClient.id, name: foundClient.name });
+        setShowClientDropdown(false);
+        setClientSearch('');
+        setIsLoadingPreselectedClient(false);
+      }
+    }
+  }, [preselectedClientId, selectedClient, clientsSearch, isLoadingPreselectedClient]);
 
   // Filtros de búsqueda de productos
   const productFilters = useMemo(() => {
@@ -481,7 +518,24 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
 
                           {/* Búsqueda de clientes */}
                           <Box position="relative" ref={clientSearchRef}>
-                            {selectedClient ? (
+                            {isLoadingPreselectedClient ? (
+                              <Flex
+                                h="40px"
+                                px="0.75rem"
+                                bg={inputBg}
+                                borderRadius="md"
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                align="center"
+                                justify="center"
+                                gap="0.5rem"
+                              >
+                                <Spinner size="sm" />
+                                <Text fontSize="sm" color={textColor}>
+                                  Cargando cliente...
+                                </Text>
+                              </Flex>
+                            ) : selectedClient ? (
                               <Flex
                                 h="40px"
                                 px="0.75rem"
@@ -1563,9 +1617,21 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   );
 };
 
-export const OrderRequestAdd = ({ isLoading, setOrderRequests }: OrderRequestAddProps) => {
+export const OrderRequestAdd = ({
+  isLoading,
+  setOrderRequests,
+  preselectedClientId,
+  forceOpen,
+}: OrderRequestAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const hasPermission = useUserStore((state) => state.hasPermission);
+
+  // Abrir automáticamente si forceOpen es true
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
 
   const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const buttonHover = useColorModeValue('#e0dede', 'gray.500');
@@ -1587,7 +1653,14 @@ export const OrderRequestAdd = ({ isLoading, setOrderRequests }: OrderRequestAdd
         Nuevo
       </Button>
 
-      {isOpen && <OrderRequestAddModal isOpen={isOpen} onClose={onClose} setOrderRequests={setOrderRequests} />}
+      {isOpen && (
+        <OrderRequestAddModal
+          isOpen={isOpen}
+          onClose={onClose}
+          setOrderRequests={setOrderRequests}
+          preselectedClientId={preselectedClientId}
+        />
+      )}
     </>
   );
 };

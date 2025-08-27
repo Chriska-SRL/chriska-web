@@ -12,7 +12,7 @@ import { Permission } from '@/enums/permission.enum';
 const ReturnRequestsPage: NextPage = () => {
   const router = useRouter();
   const isHydrated = useUserStore((s) => s.isHydrated);
-  const canViewReturnRequests = useUserStore((s) => s.hasPermission(Permission.VIEW_ORDER_REQUESTS)); // Assuming similar permission
+  const canViewReturnRequests = useUserStore((s) => s.hasPermission(Permission.VIEW_RETURN_REQUESTS));
 
   useEffect(() => {
     if (isHydrated && !canViewReturnRequests) {

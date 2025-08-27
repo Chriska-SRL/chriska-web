@@ -7,8 +7,13 @@ import { OrderRequestAdd } from './OrderRequestAdd';
 import { OrderRequestList } from './OrderRequestList';
 import { useGetOrderRequests } from '@/hooks/orderRequest';
 import { OrderRequest } from '@/entities/orderRequest';
+import { useSearchParams } from 'next/navigation';
 
 export const OrderRequests = () => {
+  const searchParams = useSearchParams();
+  const clientIdParam = searchParams.get('client');
+  const shouldAddParam = searchParams.get('add');
+
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -75,7 +80,14 @@ export const OrderRequests = () => {
         <Text fontSize="1.5rem" fontWeight="bold">
           Pedidos
         </Text>
-        {isMobile && <OrderRequestAdd isLoading={isLoading} setOrderRequests={setOrderRequests} />}
+        {isMobile && (
+          <OrderRequestAdd
+            isLoading={isLoading}
+            setOrderRequests={setOrderRequests}
+            preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+            forceOpen={shouldAddParam === 'true'}
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -86,7 +98,12 @@ export const OrderRequests = () => {
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <OrderRequestAdd isLoading={isLoading} setOrderRequests={setOrderRequests} />
+            <OrderRequestAdd
+              isLoading={isLoading}
+              setOrderRequests={setOrderRequests}
+              preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+              forceOpen={shouldAddParam === 'true'}
+            />
           </>
         )}
       </Flex>
