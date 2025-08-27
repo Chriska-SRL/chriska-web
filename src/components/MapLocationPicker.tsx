@@ -52,7 +52,7 @@ export default function MapLocationPicker({
           if (typeof vectorLayers === 'string') {
             try {
               layers = JSON.parse(vectorLayers);
-            } catch (e) {
+            } catch {
               layers = null;
             }
           } else if (Array.isArray(vectorLayers)) {
@@ -214,12 +214,14 @@ export default function MapLocationPicker({
           position: 'absolute',
           top: '10px',
           left: '10px',
-          background: 'rgba(255, 255, 255, 0.9)',
+          background: 'rgba(255, 255, 255, 0.95)',
           padding: '8px 12px',
           borderRadius: '4px',
           fontSize: '14px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           zIndex: 1000,
+          color: '#2d3748',
+          fontWeight: '500',
         }}
       >
         Haz clic en el mapa o arrastra el marcador para seleccionar la ubicación

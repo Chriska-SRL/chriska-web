@@ -37,7 +37,6 @@ export const LocationPickerModal = ({
   const [selectedLng, setSelectedLng] = useState(initialLng);
 
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const coordsBg = useColorModeValue('gray.50', 'whiteAlpha.50');
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setSelectedLat(lat);
@@ -75,36 +74,21 @@ export const LocationPickerModal = ({
         </ModalHeader>
 
         <ModalBody p="0" flex="1" overflow="hidden">
-          <VStack spacing="0" h="100%">
-            {/* Coordenadas seleccionadas */}
-            <Box w="100%" p="1rem" bg={coordsBg} borderBottom="1px solid" borderColor={inputBorder}>
-              <HStack justify="center" spacing="2rem">
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Latitud:</strong> {selectedLat.toFixed(6)}
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  <strong>Longitud:</strong> {selectedLng.toFixed(6)}
-                </Text>
-              </HStack>
-            </Box>
-
-            {/* Mapa */}
-            <Box flex="1" w="100%" minH="400px">
-              <MapLocationPicker
-                onLocationSelect={handleLocationSelect}
-                initialLat={selectedLat}
-                initialLng={selectedLng}
-              />
-            </Box>
-          </VStack>
+          <Box h="100%" w="100%" minH="400px">
+            <MapLocationPicker
+              onLocationSelect={handleLocationSelect}
+              initialLat={selectedLat}
+              initialLng={selectedLng}
+            />
+          </Box>
         </ModalBody>
 
         <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
           <HStack spacing="0.5rem">
-            <Button variant="ghost" onClick={handleClose} size="sm" leftIcon={<FiX />}>
+            <Button variant="ghost" onClick={handleClose} size="sm">
               Cancelar
             </Button>
-            <Button colorScheme="blue" onClick={handleConfirm} size="sm" leftIcon={<FiCheck />}>
+            <Button leftIcon={<FiCheck />} onClick={handleConfirm} colorScheme="blue" variant="outline" size="sm">
               Confirmar ubicación
             </Button>
           </HStack>
