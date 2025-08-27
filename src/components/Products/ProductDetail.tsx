@@ -165,9 +165,10 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
 
               {detailField('Nombre', product.name, FiPackage)}
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing="0.75rem">
                 {detailField('Precio', `$${product.price}`, FiDollarSign)}
                 {detailField('Unidad', getUnitTypeLabel(product.unitType), FiGrid)}
+                {detailField('Peso estimado', product.estimatedWeight ? `${product.estimatedWeight}g` : '—', FiBox)}
               </SimpleGrid>
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">

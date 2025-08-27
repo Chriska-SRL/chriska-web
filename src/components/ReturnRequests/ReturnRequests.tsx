@@ -5,13 +5,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { ReturnRequestFilters } from './ReturnRequestFilters';
 import { ReturnRequestAdd } from './ReturnRequestAdd';
 import { ReturnRequestList } from './ReturnRequestList';
+import { ReturnRequestEdit } from './ReturnRequestEdit';
 import { useGetReturnRequests } from '@/hooks/returnRequest';
 import { ReturnRequest } from '@/entities/returnRequest';
 import { useSearchParams } from 'next/navigation';
 
 export const ReturnRequests = () => {
   const searchParams = useSearchParams();
-  const clientIdParam = searchParams.get('client');
+  const deliveryIdParam = searchParams.get('deliveryId');
   const shouldAddParam = searchParams.get('add');
 
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
@@ -23,6 +24,7 @@ export const ReturnRequests = () => {
   const [filterFromDate, setFilterFromDate] = useState<string>('');
   const [filterToDate, setFilterToDate] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
+  const [editingReturnRequest, setEditingReturnRequest] = useState<ReturnRequest | null>(null);
 
   const filters = useMemo(() => {
     const result: { status?: string; clientId?: number; userId?: number; fromDate?: string; toDate?: string } = {};
@@ -84,8 +86,9 @@ export const ReturnRequests = () => {
           <ReturnRequestAdd
             isLoading={isLoading}
             setReturnRequests={setReturnRequests}
-            preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+            preselectedDeliveryId={deliveryIdParam ? Number(deliveryIdParam) : undefined}
             forceOpen={shouldAddParam === 'true'}
+            onReturnRequestCreated={setEditingReturnRequest}
           />
         )}
       </Flex>
@@ -101,8 +104,9 @@ export const ReturnRequests = () => {
             <ReturnRequestAdd
               isLoading={isLoading}
               setReturnRequests={setReturnRequests}
-              preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+              preselectedDeliveryId={deliveryIdParam ? Number(deliveryIdParam) : undefined}
               forceOpen={shouldAddParam === 'true'}
+              onReturnRequestCreated={setEditingReturnRequest}
             />
           </>
         )}
@@ -120,6 +124,15 @@ export const ReturnRequests = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       />
+
+      {editingReturnRequest && (
+        <ReturnRequestEdit
+          isOpen={!!editingReturnRequest}
+          onClose={() => setEditingReturnRequest(null)}
+          returnRequest={editingReturnRequest}
+          setReturnRequests={setReturnRequests}
+        />
+      )}
     </>
   );
 };

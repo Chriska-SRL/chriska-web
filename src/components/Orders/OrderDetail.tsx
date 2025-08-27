@@ -323,7 +323,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                         );
                         const requestedQuantity = requestedItem?.quantity || 0;
                         const actualQuantity = item.quantity;
-                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity * 1000 : null;
+                        const weight = item.product?.unitType === UnitType.KILO ? item.weight || 0 : null;
 
                         return (
                           <Box

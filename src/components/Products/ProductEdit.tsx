@@ -65,6 +65,7 @@ interface ProductEditFormValues {
   name: string;
   price: number;
   unitType: string;
+  estimatedWeight: number;
   description: string;
   temperatureCondition: string;
   observations: string;
@@ -196,6 +197,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     name: string;
     price: number;
     unitType: string;
+    estimatedWeight: number;
     description: string;
     temperatureCondition: string;
     observations: string;
@@ -247,6 +249,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                 name: product?.name ?? '',
                 price: product?.price ?? 0,
                 unitType: product?.unitType ?? '',
+                estimatedWeight: product?.estimatedWeight ?? 0,
                 description: product?.description ?? '',
                 temperatureCondition: product?.temperatureCondition ?? '',
                 observations: product?.observations ?? '',
@@ -417,6 +420,27 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           <FormErrorMessage>{errors.price}</FormErrorMessage>
                         </FormControl>
                       </SimpleGrid>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiPackage} boxSize="1rem" />
+                            <Text>Peso estimado (g)</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Input}
+                          name="estimatedWeight"
+                          type="number"
+                          step="1"
+                          placeholder="Ingrese el peso estimado en gramos"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                        />
+                        <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                      </FormControl>
 
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
                         <FormControl>

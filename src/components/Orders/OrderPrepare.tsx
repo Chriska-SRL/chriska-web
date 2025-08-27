@@ -219,7 +219,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: item.product.unitType,
           requestedQuantity: requestedQuantity,
           actualQuantity: item.quantity,
-          weight: item.product.unitType === UnitType.KILO ? 0 : undefined,
+          weight: item.product.unitType === UnitType.KILO ? item.product.estimatedWeight || 0 : undefined,
           stock: item.product.stock,
           availableStock: item.product.availableStock,
           isOriginalFromOrder: wasInOriginalOrder,
@@ -277,7 +277,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
             unitType: product.unitType,
             requestedQuantity: originalItem.quantity,
             actualQuantity: originalItem.quantity,
-            weight: product.unitType === UnitType.KILO ? 0 : undefined,
+            weight: product.unitType === UnitType.KILO ? product.estimatedWeight || 0 : undefined,
             stock: product.stock,
             availableStock: product.availableStock,
             isOriginalFromOrder: true,
@@ -293,7 +293,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: product.unitType,
           requestedQuantity: 0,
           actualQuantity: 1,
-          weight: product.unitType === UnitType.KILO ? 0 : undefined,
+          weight: product.unitType === UnitType.KILO ? product.estimatedWeight || 0 : undefined,
           stock: product.stock,
           availableStock: product.availableStock,
           isOriginalFromOrder: false,
@@ -748,7 +748,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.5, product.actualQuantity - 0.5);
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? Math.max(0.5, product.actualQuantity - 0.5)
+                                                  : Math.max(1, product.actualQuantity - 1);
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -763,10 +766,14 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             value={quantityInputs[product.id] ?? product.actualQuantity}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const regex = /^\d*\.?\d*$/;
+                                              const regex =
+                                                product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                               if (regex.test(value) || value === '') {
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                const numValue = parseFloat(value);
+                                                const numValue =
+                                                  product.unitType === UnitType.KILO
+                                                    ? parseFloat(value)
+                                                    : parseInt(value, 10);
                                                 if (!isNaN(numValue) && numValue >= 0) {
                                                   handleQuantityChange(product.id, numValue);
                                                 } else if (value === '' || value === '.') {
@@ -775,7 +782,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               }
                                             }}
                                             onBlur={(e) => {
-                                              const value = parseFloat(e.target.value);
+                                              const value =
+                                                product.unitType === UnitType.KILO
+                                                  ? parseFloat(e.target.value)
+                                                  : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
                                                 handleQuantityChange(product.id, 1);
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
@@ -798,7 +808,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.5;
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? product.actualQuantity + 0.5
+                                                  : product.actualQuantity + 1;
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -949,7 +962,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.5, product.actualQuantity - 0.5);
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? Math.max(0.5, product.actualQuantity - 0.5)
+                                                  : Math.max(1, product.actualQuantity - 1);
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
@@ -964,10 +980,14 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             value={quantityInputs[product.id] ?? product.actualQuantity}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const regex = /^\d*\.?\d*$/;
+                                              const regex =
+                                                product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                               if (regex.test(value) || value === '') {
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                const numValue = parseFloat(value);
+                                                const numValue =
+                                                  product.unitType === UnitType.KILO
+                                                    ? parseFloat(value)
+                                                    : parseInt(value, 10);
                                                 if (!isNaN(numValue) && numValue >= 0) {
                                                   handleQuantityChange(product.id, numValue);
                                                 } else if (value === '' || value === '.') {
@@ -976,7 +996,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               }
                                             }}
                                             onBlur={(e) => {
-                                              const value = parseFloat(e.target.value);
+                                              const value =
+                                                product.unitType === UnitType.KILO
+                                                  ? parseFloat(e.target.value)
+                                                  : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
                                                 handleQuantityChange(product.id, 1);
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
@@ -999,7 +1022,10 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.5;
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? product.actualQuantity + 0.5
+                                                  : product.actualQuantity + 1;
                                               const rounded = parseFloat(newValue.toFixed(1));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({

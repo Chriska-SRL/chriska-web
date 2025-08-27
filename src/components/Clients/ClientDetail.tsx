@@ -68,7 +68,6 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   // Estados de carga para navegación
   const [isNavigatingToOrders, setIsNavigatingToOrders] = useState(false);
-  const [isNavigatingToReturns, setIsNavigatingToReturns] = useState(false);
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -78,12 +77,12 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   const handleClose = useCallback(() => {
     // No permitir cerrar si se está navegando
-    if (isNavigatingToOrders || isNavigatingToReturns) {
+    if (isNavigatingToOrders) {
       return;
     }
     onClose();
     onModalClose?.();
-  }, [onClose, onModalClose, isNavigatingToOrders, isNavigatingToReturns]);
+  }, [onClose, onModalClose, isNavigatingToOrders]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -94,12 +93,6 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
   const handleNavigateToOrders = async () => {
     setIsNavigatingToOrders(true);
     await router.push(`/pedidos?client=${client.id}&add=true`);
-    // El estado se mantendrá hasta que el componente se desmonte
-  };
-
-  const handleNavigateToReturns = async () => {
-    setIsNavigatingToReturns(true);
-    await router.push(`/devoluciones?client=${client.id}&add=true`);
     // El estado se mantendrá hasta que el componente se desmonte
   };
 
@@ -184,8 +177,8 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
         onClose={handleClose}
         size={{ base: 'xs', md: 'xl' }}
         isCentered
-        closeOnOverlayClick={!(isNavigatingToOrders || isNavigatingToReturns)}
-        closeOnEsc={!(isNavigatingToOrders || isNavigatingToReturns)}
+        closeOnOverlayClick={!isNavigatingToOrders}
+        closeOnEsc={!isNavigatingToOrders}
       >
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
@@ -297,40 +290,20 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             <VStack spacing="0.5rem" w="100%">
+              <Button
+                w="100%"
+                leftIcon={isNavigatingToOrders ? <Spinner size="xs" /> : <FaPlus />}
+                onClick={handleNavigateToOrders}
+                colorScheme="blue"
+                variant="outline"
+                size="sm"
+                isLoading={isNavigatingToOrders}
+                loadingText="Redirigiendo..."
+              >
+                Crear pedido
+              </Button>
               <HStack spacing="0.5rem" w="100%">
-                <Button
-                  flex="1"
-                  leftIcon={isNavigatingToOrders ? <Spinner size="xs" /> : <FaPlus />}
-                  onClick={handleNavigateToOrders}
-                  colorScheme="green"
-                  variant="outline"
-                  size="sm"
-                  isLoading={isNavigatingToOrders}
-                  loadingText="Redirigiendo..."
-                >
-                  Crear pedido
-                </Button>
-                <Button
-                  flex="1"
-                  leftIcon={isNavigatingToReturns ? <Spinner size="xs" /> : <FaPlus />}
-                  onClick={handleNavigateToReturns}
-                  colorScheme="orange"
-                  variant="outline"
-                  size="sm"
-                  isLoading={isNavigatingToReturns}
-                  loadingText="Redirigiendo..."
-                >
-                  Crear devolución
-                </Button>
-              </HStack>
-              <HStack spacing="0.5rem" w="100%">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClose}
-                  flex="1"
-                  disabled={isNavigatingToOrders || isNavigatingToReturns}
-                >
+                <Button variant="ghost" size="sm" onClick={handleClose} flex="1" disabled={isNavigatingToOrders}>
                   Cerrar
                 </Button>
                 {canDeleteClients && (

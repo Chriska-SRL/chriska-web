@@ -51,6 +51,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { Status } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderRequestAddProps = {
   isLoading: boolean;
@@ -117,6 +118,8 @@ const OrderRequestAddModal = ({
       name: string;
       price: number;
       imageUrl?: string;
+      unitType?: string;
+      estimatedWeight?: number;
       quantity: number;
       discount?: number;
       discountId?: string;
@@ -287,6 +290,8 @@ const OrderRequestAddModal = ({
           name: product.name,
           price: product.price || 0,
           imageUrl: product.imageUrl,
+          unitType: product.unitType,
+          estimatedWeight: product.estimatedWeight,
           quantity: 1.0,
           discount: 0,
           isLoadingDiscount: true,
@@ -939,7 +944,11 @@ const OrderRequestAddModal = ({
                                           ? product.discount || 0
                                           : 0;
                                       const effectivePrice = product.price * (1 - discountToApply / 100);
-                                      const subtotal = product.quantity * effectivePrice;
+                                      // Calculate subtotal based on unitType
+                                      const subtotal =
+                                        product.unitType === UnitType.KILO
+                                          ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                          : product.quantity * effectivePrice;
                                       return (
                                         <Box
                                           key={product.id}
@@ -1012,6 +1021,12 @@ const OrderRequestAddModal = ({
                                                   </Text>
                                                 )}
                                               </HStack>
+                                              {/* Mostrar peso estimado para productos por kilo */}
+                                              {product.unitType === UnitType.KILO && (
+                                                <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                                  Peso estimado: {product.estimatedWeight || 0}g
+                                                </Text>
+                                              )}
                                             </Box>
 
                                             {/* Controles de cantidad */}
@@ -1151,13 +1166,22 @@ const OrderRequestAddModal = ({
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => {
-                                                      const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
+                                                      if (product.unitType === UnitType.KILO) {
+                                                        const newValue = Math.max(0.5, product.quantity - 0.5);
+                                                        const rounded = parseFloat(newValue.toFixed(1));
+                                                        handleProductQuantityChange(product.id, rounded);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: rounded.toString(),
+                                                        }));
+                                                      } else {
+                                                        const newValue = Math.max(1, product.quantity - 1);
+                                                        handleProductQuantityChange(product.id, newValue);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: newValue.toString(),
+                                                        }));
+                                                      }
                                                     }}
                                                     borderRightRadius={0}
                                                   />
@@ -1166,10 +1190,14 @@ const OrderRequestAddModal = ({
                                                     value={quantityInputs[product.id] ?? product.quantity}
                                                     onChange={(e) => {
                                                       const value = e.target.value;
-                                                      const regex = /^\d*\.?\d*$/;
+                                                      const regex =
+                                                        product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                                       if (regex.test(value) || value === '') {
                                                         setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                        const numValue = parseFloat(value);
+                                                        const numValue =
+                                                          product.unitType === UnitType.KILO
+                                                            ? parseFloat(value)
+                                                            : parseInt(value, 10);
                                                         if (!isNaN(numValue) && numValue >= 0) {
                                                           handleProductQuantityChange(product.id, numValue);
                                                         } else if (value === '' || value === '.') {
@@ -1178,7 +1206,10 @@ const OrderRequestAddModal = ({
                                                       }
                                                     }}
                                                     onBlur={(e) => {
-                                                      const value = parseFloat(e.target.value);
+                                                      const value =
+                                                        product.unitType === UnitType.KILO
+                                                          ? parseFloat(e.target.value)
+                                                          : parseInt(e.target.value, 10);
                                                       if (isNaN(value) || value <= 0) {
                                                         handleProductQuantityChange(product.id, 1);
                                                         setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
@@ -1201,13 +1232,22 @@ const OrderRequestAddModal = ({
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => {
-                                                      const newValue = product.quantity + 0.1;
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
+                                                      if (product.unitType === UnitType.KILO) {
+                                                        const newValue = product.quantity + 0.5;
+                                                        const rounded = parseFloat(newValue.toFixed(1));
+                                                        handleProductQuantityChange(product.id, rounded);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: rounded.toString(),
+                                                        }));
+                                                      } else {
+                                                        const newValue = product.quantity + 1;
+                                                        handleProductQuantityChange(product.id, newValue);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: newValue.toString(),
+                                                        }));
+                                                      }
                                                     }}
                                                     borderLeftRadius={0}
                                                   />
@@ -1310,6 +1350,12 @@ const OrderRequestAddModal = ({
                                                     </Text>
                                                   )}
                                                 </HStack>
+                                                {/* Mostrar peso estimado para productos por kilo */}
+                                                {product.unitType === UnitType.KILO && (
+                                                  <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                                    Peso estimado: {product.estimatedWeight || 0}g
+                                                  </Text>
+                                                )}
                                               </Box>
                                             </Flex>
 
@@ -1324,13 +1370,22 @@ const OrderRequestAddModal = ({
                                                       size="sm"
                                                       variant="outline"
                                                       onClick={() => {
-                                                        const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                        const rounded = parseFloat(newValue.toFixed(1));
-                                                        handleProductQuantityChange(product.id, rounded);
-                                                        setQuantityInputs((prev) => ({
-                                                          ...prev,
-                                                          [product.id]: rounded.toString(),
-                                                        }));
+                                                        if (product.unitType === UnitType.KILO) {
+                                                          const newValue = Math.max(0.5, product.quantity - 0.5);
+                                                          const rounded = parseFloat(newValue.toFixed(1));
+                                                          handleProductQuantityChange(product.id, rounded);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: rounded.toString(),
+                                                          }));
+                                                        } else {
+                                                          const newValue = Math.max(1, product.quantity - 1);
+                                                          handleProductQuantityChange(product.id, newValue);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: newValue.toString(),
+                                                          }));
+                                                        }
                                                       }}
                                                       borderRightRadius={0}
                                                     />
@@ -1339,13 +1394,17 @@ const OrderRequestAddModal = ({
                                                       value={quantityInputs[product.id] ?? product.quantity}
                                                       onChange={(e) => {
                                                         const value = e.target.value;
-                                                        const regex = /^\d*\.?\d*$/;
+                                                        const regex =
+                                                          product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                                         if (regex.test(value) || value === '') {
                                                           setQuantityInputs((prev) => ({
                                                             ...prev,
                                                             [product.id]: value,
                                                           }));
-                                                          const numValue = parseFloat(value);
+                                                          const numValue =
+                                                            product.unitType === UnitType.KILO
+                                                              ? parseFloat(value)
+                                                              : parseInt(value, 10);
                                                           if (!isNaN(numValue) && numValue >= 0) {
                                                             handleProductQuantityChange(product.id, numValue);
                                                           } else if (value === '' || value === '.') {
@@ -1354,7 +1413,10 @@ const OrderRequestAddModal = ({
                                                         }
                                                       }}
                                                       onBlur={(e) => {
-                                                        const value = parseFloat(e.target.value);
+                                                        const value =
+                                                          product.unitType === UnitType.KILO
+                                                            ? parseFloat(e.target.value)
+                                                            : parseInt(e.target.value, 10);
                                                         if (isNaN(value) || value <= 0) {
                                                           handleProductQuantityChange(product.id, 1);
                                                           setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
@@ -1377,13 +1439,22 @@ const OrderRequestAddModal = ({
                                                       size="sm"
                                                       variant="outline"
                                                       onClick={() => {
-                                                        const newValue = product.quantity + 0.1;
-                                                        const rounded = parseFloat(newValue.toFixed(1));
-                                                        handleProductQuantityChange(product.id, rounded);
-                                                        setQuantityInputs((prev) => ({
-                                                          ...prev,
-                                                          [product.id]: rounded.toString(),
-                                                        }));
+                                                        if (product.unitType === UnitType.KILO) {
+                                                          const newValue = product.quantity + 0.5;
+                                                          const rounded = parseFloat(newValue.toFixed(1));
+                                                          handleProductQuantityChange(product.id, rounded);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: rounded.toString(),
+                                                          }));
+                                                        } else {
+                                                          const newValue = product.quantity + 1;
+                                                          handleProductQuantityChange(product.id, newValue);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: newValue.toString(),
+                                                          }));
+                                                        }
                                                       }}
                                                       borderLeftRadius={0}
                                                     />
@@ -1551,7 +1622,14 @@ const OrderRequestAddModal = ({
                                                 ? product.discount || 0
                                                 : 0;
                                             const effectivePrice = product.price * (1 - discountToApply / 100);
-                                            return total + product.quantity * effectivePrice;
+                                            // Calculate based on unitType
+                                            const productTotal =
+                                              product.unitType === UnitType.KILO
+                                                ? product.quantity *
+                                                  ((product.estimatedWeight || 0) / 1000) *
+                                                  effectivePrice
+                                                : product.quantity * effectivePrice;
+                                            return total + productTotal;
                                           }, 0)
                                           .toFixed(2)}
                                       </Text>

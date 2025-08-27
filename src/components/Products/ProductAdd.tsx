@@ -186,6 +186,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
     name: string;
     price: number;
     unitType: string;
+    estimatedWeight: number;
     description: string;
     temperatureCondition: string;
     observations: string;
@@ -199,6 +200,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
       name: values.name,
       price: values.price,
       unitType: values.unitType,
+      estimatedWeight: values.estimatedWeight,
       description: values.description,
       temperatureCondition: values.temperatureCondition,
       observations: values.observations,
@@ -250,6 +252,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                     name: '',
                     price: 0,
                     unitType: '',
+                    estimatedWeight: 0,
                     description: '',
                     temperatureCondition: '',
                     observations: '',
@@ -485,6 +488,32 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                               )}
                             </Field>
                           </Stack>
+
+                          <Field name="estimatedWeight">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}
+                              >
+                                <FormLabel fontWeight="semibold">
+                                  <HStack spacing="0.5rem">
+                                    <Icon as={FiPackage} boxSize="1rem" />
+                                    <Text>Peso estimado (g)</Text>
+                                  </HStack>
+                                </FormLabel>
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  step="1"
+                                  placeholder="Ingrese el peso estimado en gramos"
+                                  bg={inputBg}
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                  disabled={isLoading}
+                                />
+                                <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
 
                           <Field name="temperatureCondition" validate={validate}>
                             {({ field }: any) => (

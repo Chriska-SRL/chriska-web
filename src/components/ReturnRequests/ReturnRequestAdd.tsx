@@ -15,30 +15,14 @@ import {
   VStack,
   useColorModeValue,
   FormErrorMessage,
-  Text,
-  HStack,
-  Icon,
-  InputGroup,
-  InputRightElement,
-  List,
-  ListItem,
   Input,
-  Box,
-  Flex,
-  Select,
-  Divider,
-  IconButton,
-  Spinner,
+  HStack,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
-import { FiUsers, FiTruck } from 'react-icons/fi';
-import { AiOutlineSearch } from 'react-icons/ai';
-import { useState, useEffect, useRef, useMemo, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 import { ReturnRequest } from '@/entities/returnRequest';
 import { useAddReturnRequest } from '@/hooks/returnRequest';
-import { useGetClients } from '@/hooks/client';
-import { useGetConfirmedDeliveriesByClient } from '@/hooks/delivery';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -46,32 +30,30 @@ import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 type ReturnRequestAddProps = {
   isLoading: boolean;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
-  preselectedClientId?: number;
+  preselectedDeliveryId?: number;
   forceOpen?: boolean;
+  onReturnRequestCreated?: (returnRequest: ReturnRequest) => void;
 };
 
 type ReturnRequestAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
-  preselectedClientId?: number;
+  preselectedDeliveryId?: number;
+  onReturnRequestCreated?: (returnRequest: ReturnRequest) => void;
 };
 
 const ReturnRequestAddModal = ({
   isOpen,
   onClose,
   setReturnRequests,
-  preselectedClientId,
+  preselectedDeliveryId,
+  onReturnRequestCreated,
 }: ReturnRequestAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
-  const dropdownBg = useColorModeValue('white', 'gray.800');
-  const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
-  const hoverBg = useColorModeValue('gray.100', 'gray.700');
-  const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
   const [returnRequestProps, setReturnRequestProps] = useState<{
     deliveryId: number;
@@ -79,136 +61,21 @@ const ReturnRequestAddModal = ({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<{ dirty: boolean; resetForm: () => void } | null>(null);
 
-  // Estados para la búsqueda de clientes
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
-  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
-  const [isLoadingPreselectedClient, setIsLoadingPreselectedClient] = useState(false);
-  const clientSearchRef = useRef<HTMLDivElement>(null);
-
-  // Estados para la búsqueda de entregas (después de seleccionar cliente)
-  const [selectedDelivery, setSelectedDelivery] = useState<{ id: number; client: string } | null>(null);
-
-  // Hook para obtener entregas confirmadas del cliente seleccionado
-  const { data: confirmedDeliveries = [], isLoading: isLoadingDeliveries } = useGetConfirmedDeliveriesByClient(
-    selectedClient?.id,
-  );
-
   const { data, isLoading, fieldError } = useAddReturnRequest(returnRequestProps);
-
-  // Debounce para búsqueda de clientes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedClientSearch(clientSearch);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [clientSearch]);
-
-  // Filtros de búsqueda de clientes
-  const clientFilters = useMemo(() => {
-    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
-    const filters: any = {};
-    switch (clientSearchType) {
-      case 'name':
-        filters.name = debouncedClientSearch;
-        break;
-      case 'rut':
-        filters.rut = debouncedClientSearch;
-        break;
-      case 'razonSocial':
-        filters.razonSocial = debouncedClientSearch;
-        break;
-      case 'contactName':
-        filters.contactName = debouncedClientSearch;
-        break;
-    }
-    return filters;
-  }, [debouncedClientSearch, clientSearchType]);
-
-  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
-  const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
-
-  // Efecto para preseleccionar cliente cuando se pasa como prop
-  useEffect(() => {
-    if (preselectedClientId && !selectedClient && isOpen) {
-      setIsLoadingPreselectedClient(true);
-      // Iniciar búsqueda para encontrar el cliente por ID
-      setClientSearch('*'); // Búsqueda que traerá todos los clientes
-    }
-  }, [preselectedClientId, selectedClient, isOpen]);
-
-  // Efecto para seleccionar cliente cuando aparece en los resultados de búsqueda
-  useEffect(() => {
-    if (
-      preselectedClientId &&
-      !selectedClient &&
-      clientsSearch &&
-      clientsSearch.length > 0 &&
-      isLoadingPreselectedClient
-    ) {
-      const foundClient = clientsSearch.find((c) => c.id === preselectedClientId);
-      if (foundClient) {
-        setSelectedClient({ id: foundClient.id, name: foundClient.name });
-        setShowClientDropdown(false);
-        setClientSearch('');
-        setIsLoadingPreselectedClient(false);
-      }
-    }
-  }, [preselectedClientId, selectedClient, clientsSearch, isLoadingPreselectedClient]);
-
-  // Actualizar el término de búsqueda cuando los datos cambien
-  useEffect(() => {
-    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
-      setLastClientSearchTerm(debouncedClientSearch);
-    }
-  }, [isLoadingClientsSearch, debouncedClientSearch]);
-
-  // Handle click outside to close client dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Funciones para manejar búsqueda de clientes
-  const handleClientSearch = (value: string) => {
-    setClientSearch(value);
-    if (value.length >= 2) {
-      setShowClientDropdown(true);
-    } else {
-      setShowClientDropdown(false);
-    }
-  };
-
-  const handleClearClientSearch = () => {
-    setSelectedClient(null);
-    setClientSearch('');
-    setShowClientDropdown(false);
-    // Limpiar entrega seleccionada cuando se deselecciona el cliente
-    setSelectedDelivery(null);
-  };
 
   // Handle successful creation
   useEffect(() => {
     if (data && returnRequestProps) {
       setReturnRequests((prev) => [...prev, data]);
       setReturnRequestProps(undefined);
-      setSelectedClient(null);
-      setSelectedDelivery(null);
-      setClientSearch('');
       if (formikInstance) {
         formikInstance.resetForm();
       }
       onClose();
+      // Llamar al callback para abrir el edit
+      if (onReturnRequestCreated) {
+        onReturnRequestCreated(data);
+      }
       toast({
         title: 'Devolución creada',
         description: 'La devolución ha sido creada exitosamente',
@@ -248,25 +115,22 @@ const ReturnRequestAddModal = ({
 
   const handleConfirmClose = () => {
     setShowConfirmDialog(false);
-    setSelectedClient(null);
-    setSelectedDelivery(null);
-    setClientSearch('');
     if (formikInstance) {
       formikInstance.resetForm();
     }
     onClose();
   };
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: { deliveryId: string }) => {
     const formData = {
-      deliveryId: selectedDelivery?.id || values.deliveryId,
+      deliveryId: parseInt(values.deliveryId),
     };
 
     setReturnRequestProps(formData);
   };
 
   const initialValues = {
-    deliveryId: '',
+    deliveryId: preselectedDeliveryId ? preselectedDeliveryId.toString() : '',
   };
 
   return (
@@ -274,7 +138,7 @@ const ReturnRequestAddModal = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'xs', md: 'sm' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -297,21 +161,23 @@ const ReturnRequestAddModal = ({
             <Formik
               initialValues={initialValues}
               onSubmit={handleSubmit}
-              validate={() => {
+              validate={(values) => {
                 const errors: any = {};
 
-                if (!selectedClient?.id) {
-                  errors.client = 'El cliente es requerido';
-                }
-
-                if (!selectedDelivery?.id) {
-                  errors.deliveryId = 'La entrega es requerida';
+                if (!values.deliveryId) {
+                  errors.deliveryId = 'El ID de la entrega es requerido';
+                } else if (isNaN(Number(values.deliveryId))) {
+                  errors.deliveryId = 'El ID debe ser un número válido';
+                } else if (Number(values.deliveryId) <= 0) {
+                  errors.deliveryId = 'El ID debe ser un número positivo';
+                } else if (!Number.isInteger(Number(values.deliveryId))) {
+                  errors.deliveryId = 'El ID debe ser un número entero';
                 }
 
                 return errors;
               }}
               validateOnChange={true}
-              validateOnBlur={true}
+              validateOnBlur={false}
             >
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie
@@ -319,269 +185,24 @@ const ReturnRequestAddModal = ({
                   setFormikInstance({ dirty: formik.dirty, resetForm: formik.resetForm });
                 }, [formik.dirty, formik.resetForm]);
 
-                // Revalidar cuando cambie el cliente o la entrega seleccionada
-                useEffect(() => {
-                  if (formik.submitCount > 0) {
-                    formik.validateForm();
-                  }
-                }, [selectedClient?.id, selectedDelivery?.id, formik.submitCount]);
-
                 return (
                   <>
                     <form id="return-request-form" onSubmit={formik.handleSubmit}>
                       <VStack spacing="1rem" align="stretch">
-                        {/* Búsqueda de Cliente */}
-                        <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiUsers} boxSize="1rem" />
-                              <Text>Cliente</Text>
-                            </HStack>
-                          </FormLabel>
-
-                          <Box position="relative" ref={clientSearchRef}>
-                            {isLoadingPreselectedClient ? (
-                              <Flex
-                                h="40px"
-                                px="0.75rem"
-                                bg={inputBg}
-                                borderRadius="md"
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                align="center"
-                                justify="center"
-                                gap="0.5rem"
-                              >
-                                <Spinner size="sm" />
-                                <Text fontSize="sm" color={textColor}>
-                                  Cargando cliente...
-                                </Text>
-                              </Flex>
-                            ) : selectedClient ? (
-                              <Flex
-                                h="40px"
-                                px="0.75rem"
-                                bg={inputBg}
-                                borderRadius="md"
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                align="center"
-                                justify="space-between"
-                              >
-                                <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                  {selectedClient.name}
-                                </Text>
-                                <IconButton
-                                  aria-label="Limpiar cliente"
-                                  icon={<Text fontSize="sm">✕</Text>}
-                                  size="xs"
-                                  variant="ghost"
-                                  onClick={handleClearClientSearch}
-                                  color={textColor}
-                                  _hover={{}}
-                                  ml="0.5rem"
-                                />
-                              </Flex>
-                            ) : (
-                              <Box>
-                                <Flex
-                                  bg={inputBg}
-                                  borderRadius="md"
-                                  overflow="hidden"
-                                  borderWidth="1px"
-                                  borderColor={inputBorder}
-                                >
-                                  <Select
-                                    value={clientSearchType}
-                                    onChange={(e) =>
-                                      setClientSearchType(
-                                        e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName',
-                                      )
-                                    }
-                                    bg="transparent"
-                                    border="none"
-                                    color={textColor}
-                                    w={{ base: '6rem', md: 'auto' }}
-                                    minW={{ base: '6rem', md: '7rem' }}
-                                    borderRadius="none"
-                                    _focus={{ boxShadow: 'none' }}
-                                    fontSize={{ base: 'xs', md: 'sm' }}
-                                  >
-                                    <option value="name">Nombre</option>
-                                    <option value="rut">RUT</option>
-                                    <option value="razonSocial">Razón social</option>
-                                    <option value="contactName">Contacto</option>
-                                  </Select>
-
-                                  <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
-
-                                  <InputGroup flex="1">
-                                    <Input
-                                      placeholder="Buscar cliente..."
-                                      value={clientSearch}
-                                      onChange={(e) => handleClientSearch(e.target.value)}
-                                      bg="transparent"
-                                      border="none"
-                                      borderRadius="none"
-                                      _placeholder={{ color: textColor }}
-                                      color={textColor}
-                                      _focus={{ boxShadow: 'none' }}
-                                      pl="1rem"
-                                      onFocus={() => clientSearch && setShowClientDropdown(true)}
-                                    />
-                                    <InputRightElement>
-                                      <AiOutlineSearch color="gray" />
-                                    </InputRightElement>
-                                  </InputGroup>
-                                </Flex>
-
-                                {/* Dropdown de resultados de clientes */}
-                                {showClientDropdown && (
-                                  <Box
-                                    position="absolute"
-                                    top="100%"
-                                    left={0}
-                                    right={0}
-                                    mt={1}
-                                    bg={dropdownBg}
-                                    border="1px solid"
-                                    borderColor={dropdownBorder}
-                                    borderRadius="md"
-                                    boxShadow="lg"
-                                    maxH="400px"
-                                    overflowY="auto"
-                                    zIndex={20}
-                                  >
-                                    {(() => {
-                                      const isTyping =
-                                        clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
-                                      const isSearching =
-                                        !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
-                                      const searchCompleted =
-                                        !isTyping &&
-                                        !isSearching &&
-                                        debouncedClientSearch.length >= 2 &&
-                                        lastClientSearchTerm === debouncedClientSearch;
-
-                                      if (isTyping || isSearching) {
-                                        return (
-                                          <Flex p={3} justify="center" align="center" gap={2}>
-                                            <Spinner size="sm" />
-                                            <Text fontSize="sm" color="gray.500">
-                                              Buscando clientes...
-                                            </Text>
-                                          </Flex>
-                                        );
-                                      }
-
-                                      if (searchCompleted && clientsSearch?.length > 0) {
-                                        return (
-                                          <List spacing={0}>
-                                            {clientsSearch.map((client: any, index: number) => (
-                                              <Fragment key={client.id}>
-                                                <ListItem
-                                                  p="0.75rem"
-                                                  cursor="pointer"
-                                                  _hover={{ bg: hoverBg }}
-                                                  transition="background-color 0.2s ease"
-                                                  onClick={() => {
-                                                    setSelectedClient({ id: client.id, name: client.name });
-                                                    setClientSearch('');
-                                                    setShowClientDropdown(false);
-                                                  }}
-                                                >
-                                                  <Box>
-                                                    <Text fontSize="sm" fontWeight="medium">
-                                                      {client.name}
-                                                    </Text>
-                                                    <Text fontSize="xs" color={textColor}>
-                                                      {client.rut && `RUT: ${client.rut}`}
-                                                      {client.contactName && ` - Contacto: ${client.contactName}`}
-                                                    </Text>
-                                                  </Box>
-                                                </ListItem>
-                                                {index < clientsSearch.length - 1 && <Divider />}
-                                              </Fragment>
-                                            ))}
-                                          </List>
-                                        );
-                                      }
-
-                                      if (searchCompleted && clientsSearch?.length === 0) {
-                                        return (
-                                          <Text p={3} fontSize="sm" color="gray.500">
-                                            No se encontraron clientes
-                                          </Text>
-                                        );
-                                      }
-
-                                      return null;
-                                    })()}
-                                  </Box>
-                                )}
-                              </Box>
-                            )}
-                          </Box>
-                          <FormErrorMessage>
-                            {!selectedClient?.id && formik.submitCount > 0 && 'El cliente es requerido'}
-                          </FormErrorMessage>
-                        </FormControl>
-
-                        {/* Selección de Entrega */}
-                        <FormControl isInvalid={!selectedDelivery?.id && formik.submitCount > 0 && !!selectedClient}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiTruck} boxSize="1rem" />
-                              <Text>Entrega</Text>
-                            </HStack>
-                          </FormLabel>
-
-                          {selectedClient ? (
-                            <Select
-                              placeholder={isLoadingDeliveries ? 'Cargando entregas...' : 'Selecciona una entrega...'}
-                              value={selectedDelivery?.id || ''}
-                              onChange={(e) => {
-                                const deliveryId = parseInt(e.target.value);
-                                const delivery = confirmedDeliveries.find((d) => d.id === deliveryId);
-                                if (delivery) {
-                                  setSelectedDelivery({ id: delivery.id, client: delivery.client?.name || '' });
-                                  formik.setFieldValue('deliveryId', delivery.id);
-                                } else {
-                                  setSelectedDelivery(null);
-                                  formik.setFieldValue('deliveryId', '');
-                                }
-                              }}
-                              bg={inputBg}
-                              borderColor={inputBorder}
-                            >
-                              {confirmedDeliveries.map((delivery) => (
-                                <option key={delivery.id} value={delivery.id}>
-                                  #{delivery.id} - {new Date(delivery.date).toLocaleDateString('es-ES')}
-                                </option>
-                              ))}
-                            </Select>
-                          ) : (
-                            <Box
-                              px="0.75rem"
-                              py="0.5rem"
-                              bg={inputBg}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              color={textColor}
-                              fontSize="sm"
-                              fontStyle="italic"
-                            >
-                              Primero selecciona un cliente para ver sus entregas disponibles
-                            </Box>
-                          )}
-
-                          <FormErrorMessage>
-                            {!selectedDelivery?.id &&
-                              formik.submitCount > 0 &&
-                              selectedClient &&
-                              'La entrega es requerida'}
-                          </FormErrorMessage>
+                        <FormControl isInvalid={!!formik.errors.deliveryId && formik.submitCount > 0}>
+                          <FormLabel fontWeight="semibold">ID de la entrega</FormLabel>
+                          <Input
+                            name="deliveryId"
+                            placeholder="Ingresa el ID de la entrega"
+                            value={formik.values.deliveryId}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            bg={inputBg}
+                            borderColor={inputBorder}
+                            type="number"
+                            min="1"
+                          />
+                          <FormErrorMessage>{formik.errors.deliveryId}</FormErrorMessage>
                         </FormControl>
                       </VStack>
                     </form>
@@ -625,8 +246,9 @@ const ReturnRequestAddModal = ({
 export const ReturnRequestAdd = ({
   isLoading,
   setReturnRequests,
-  preselectedClientId,
+  preselectedDeliveryId,
   forceOpen,
+  onReturnRequestCreated,
 }: ReturnRequestAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const hasPermission = useUserStore((state) => state.hasPermission);
@@ -663,7 +285,8 @@ export const ReturnRequestAdd = ({
           isOpen={isOpen}
           onClose={onClose}
           setReturnRequests={setReturnRequests}
-          preselectedClientId={preselectedClientId}
+          preselectedDeliveryId={preselectedDeliveryId}
+          onReturnRequestCreated={onReturnRequestCreated}
         />
       )}
     </>
