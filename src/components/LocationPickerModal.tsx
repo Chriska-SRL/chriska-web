@@ -11,12 +11,11 @@ import {
   HStack,
   Text,
   useColorModeValue,
-  VStack,
   Box,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import MapLocationPicker from './MapLocationPicker';
-import { FiMapPin, FiCheck, FiX } from 'react-icons/fi';
+import { FiMapPin, FiCheck } from 'react-icons/fi';
 
 type LocationPickerModalProps = {
   isOpen: boolean;
