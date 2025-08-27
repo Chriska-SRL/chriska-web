@@ -246,7 +246,7 @@ const StockMovementAddModal = ({
     if (canSetCustomDate) {
       movementData.date = values.date;
     }
-    
+
     setMovementProps(movementData);
   };
 

@@ -109,7 +109,7 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
       (delivery: Delivery) =>
         delivery.client?.id === selectedClient.id &&
         delivery.status === Status.PENDING &&
-        !selectedDeliveries.some((sd) => sd.id === delivery.id)
+        !selectedDeliveries.some((sd) => sd.id === delivery.id),
     );
   }, [selectedClient, deliveries, selectedDeliveries]);
 
@@ -281,10 +281,7 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
   const handleAddClientDelivery = (deliveryId: number) => {
     const delivery = clientPendingDeliveries.find((d) => d.id === deliveryId);
     if (delivery && !selectedDeliveries.some((d) => d.id === deliveryId)) {
-      setSelectedDeliveries((prev) => [
-        ...prev,
-        { id: delivery.id, clientName: delivery.client?.name || '' },
-      ]);
+      setSelectedDeliveries((prev) => [...prev, { id: delivery.id, clientName: delivery.client?.name || '' }]);
       handleFieldChange();
     }
   };
@@ -498,8 +495,10 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
                               >
                                 {(() => {
                                   const isTyping = clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
-                                  const isSearching = !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
-                                  const searchCompleted = !isTyping && !isSearching && debouncedClientSearch.length >= 2;
+                                  const isSearching =
+                                    !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                  const searchCompleted =
+                                    !isTyping && !isSearching && debouncedClientSearch.length >= 2;
 
                                   if (isTyping || isSearching) {
                                     return (

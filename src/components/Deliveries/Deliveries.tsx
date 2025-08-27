@@ -36,7 +36,7 @@ export const Deliveries = () => {
   const { data, isLoading, error } = useGetDeliveries(
     distributionId ? undefined : currentPage,
     distributionId ? undefined : pageSize,
-    distributionId ? undefined : filters
+    distributionId ? undefined : filters,
   );
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
 

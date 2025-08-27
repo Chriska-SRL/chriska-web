@@ -193,11 +193,11 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   // Ahora PENDING también usa el descuento almacenado
 
   const detailField = (
-    label: string, 
-    value: string | number | null | undefined, 
-    icon?: any, 
+    label: string,
+    value: string | number | null | undefined,
+    icon?: any,
     onClick?: () => void,
-    isLoading?: boolean
+    isLoading?: boolean,
   ) => (
     <Box w="100%">
       <HStack mb="0.5rem" spacing="0.5rem">
@@ -226,26 +226,12 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         position="relative"
       >
         {value ?? '—'}
-        {onClick && (
-          isLoading ? (
-            <Spinner 
-              position="absolute" 
-              right="1rem" 
-              top="50%" 
-              transform="translateY(-50%)" 
-              size="sm" 
-            />
+        {onClick &&
+          (isLoading ? (
+            <Spinner position="absolute" right="1rem" top="50%" transform="translateY(-50%)" size="sm" />
           ) : (
-            <Icon 
-              as={FiEye} 
-              position="absolute" 
-              right="1rem" 
-              top="50%" 
-              transform="translateY(-50%)" 
-              boxSize="1rem" 
-            />
-          )
-        )}
+            <Icon as={FiEye} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+          ))}
       </Box>
     </Box>
   );
@@ -283,13 +269,19 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Cliente', delivery.client?.name, FiUsers, async () => {
-                  if (delivery.client?.id) {
-                    setRedirectingToClient(true);
-                    onClose();
-                    router.push(`/clientes?open=${delivery.client.id}`);
-                  }
-                }, redirectingToClient)}
+                {detailField(
+                  'Cliente',
+                  delivery.client?.name,
+                  FiUsers,
+                  async () => {
+                    if (delivery.client?.id) {
+                      setRedirectingToClient(true);
+                      onClose();
+                      router.push(`/clientes?open=${delivery.client.id}`);
+                    }
+                  },
+                  redirectingToClient,
+                )}
                 {detailField('Usuario', delivery.user?.name, FiUser)}
               </Stack>
 
