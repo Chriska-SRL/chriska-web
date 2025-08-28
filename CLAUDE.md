@@ -87,3 +87,256 @@ The system manages:
 - Image upload functionality with modal preview
 - Responsive design with mobile-first approach
 - Cookie-based session management with automatic cleanup
+
+## Filter System Transformation (Dropdown to Input-based)
+
+This section documents the complete process for transforming filter components from dropdown-based client search to simple input-based search patterns.
+
+### Overview
+
+Currently, OrderRequest, Order, Delivery, and ReturnRequest filters use a complex dropdown system for client selection. The desired transformation is to simplify this to an input-based search similar to ProductFilters, where users can type and press Enter to search by name without selecting specific items from a dropdown.
+
+### Current Pattern (Dropdown-based)
+
+The existing filter components use:
+- Complex dropdown state management with debounced search
+- `selectedClient` state storing `{ id: number; name: string }`
+- `onFilterChange` callback with `{ clientId?: number }`
+- `useGetClients` hook for dropdown population
+- Client selection from dropdown results
+
+### Target Pattern (Input-based)
+
+The desired pattern (like ProductFilters) uses:
+- Simple input field with local state
+- Parent component manages filter state via props
+- Enter key triggers search
+- No client selection - searches show all matching results
+
+### Complete Transformation Checklist
+
+**CRITICAL**: All steps must be completed in order. Missing backend changes will cause "loading forever" issues.
+
+#### Step 1: Update Service Layer
+File: `src/services/{entity}.ts` (e.g., `src/services/orderRequest.ts`)
+
+```typescript
+// Add new filter parameters to existing type
+type OrderRequestFilters = {
+  status?: string;
+  clientId?: number;  // Keep for backward compatibility
+  userId?: number;
+  fromDate?: string;
+  toDate?: string;
+  // Add new search parameters
+  name?: string;
+  rut?: string;
+  razonSocial?: string;
+  contactName?: string;
+};
+
+// Update URLSearchParams construction in getOrderRequests
+if (filters?.name) {
+  params.append('filters[Name]', filters.name);
+}
+if (filters?.rut) {
+  params.append('filters[Rut]', filters.rut);
+}
+if (filters?.razonSocial) {
+  params.append('filters[RazonSocial]', filters.razonSocial);
+}
+if (filters?.contactName) {
+  params.append('filters[ContactName]', filters.contactName);
+}
+```
+
+#### Step 2: Update Hook Layer
+File: `src/hooks/{entity}.ts` (e.g., `src/hooks/orderRequest.ts`)
+
+```typescript
+// Update filter type to match service
+type OrderRequestFilters = {
+  status?: string;
+  clientId?: number;
+  userId?: number;
+  fromDate?: string;
+  toDate?: string;
+  name?: string;
+  rut?: string;
+  razonSocial?: string;
+  contactName?: string;
+};
+
+// Update memoizedFilters dependencies
+const memoizedFilters = useMemo(
+  () => filters,
+  [
+    filters?.status, 
+    filters?.clientId, 
+    filters?.userId, 
+    filters?.fromDate, 
+    filters?.toDate,
+    // Add new dependencies
+    filters?.name,
+    filters?.rut,
+    filters?.razonSocial,
+    filters?.contactName
+  ],
+);
+```
+
+#### Step 3: Update Parent Component State
+File: `src/app/{entity}/page.tsx` (e.g., `src/app/orderrequests/page.tsx`)
+
+```typescript
+// Replace clientId-based state with search-based state
+const [filters, setFilters] = useState<{
+  status?: string;
+  userId?: number;
+  fromDate?: string;
+  toDate?: string;
+  // Replace clientId with search fields
+  clientSearch?: string;
+  clientSearchParam?: 'name' | 'rut' | 'razonSocial' | 'contactName';
+}>({});
+
+// Update handleFilterChange to map search fields to service parameters
+const handleFilterChange = useCallback((newFilters: any) => {
+  const mappedFilters: any = {
+    status: newFilters.status,
+    userId: newFilters.userId,
+    fromDate: newFilters.fromDate,
+    toDate: newFilters.toDate,
+  };
+  
+  // Map search fields to service parameters
+  if (newFilters.clientSearch && newFilters.clientSearchParam) {
+    mappedFilters[newFilters.clientSearchParam] = newFilters.clientSearch;
+  }
+  
+  setFilters(mappedFilters);
+}, []);
+```
+
+#### Step 4: Update Filter Component Props
+File: `src/components/{Entity}/{Entity}Filters.tsx`
+
+```typescript
+// Change props interface
+type OrderRequestFiltersProps = {
+  onFilterChange: (filters: {
+    status?: string;
+    userId?: number;
+    fromDate?: string;
+    toDate?: string;
+    clientSearch?: string;
+    clientSearchParam?: 'name' | 'rut' | 'razonSocial' | 'contactName';
+  }) => void;
+  disabled?: boolean;
+};
+
+// Replace complex dropdown logic with simple input pattern
+const [clientSearch, setClientSearch] = useState('');
+const [clientSearchParam, setClientSearchParam] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
+const [inputValue, setInputValue] = useState('');
+
+const handleSearch = useCallback(() => {
+  if (inputValue.length >= 2 || inputValue.length === 0) {
+    setClientSearch(inputValue);
+  }
+}, [inputValue]);
+
+const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    handleSearch();
+  }
+}, [handleSearch]);
+
+// Update useEffect to send new format
+useEffect(() => {
+  onFilterChange({
+    status: status || undefined,
+    userId: userId ? Number(userId) : undefined,
+    fromDate: fromDate || undefined,
+    toDate: toDate || undefined,
+    clientSearch: clientSearch || undefined,
+    clientSearchParam: clientSearchParam,
+  });
+}, [status, userId, fromDate, toDate, clientSearch, clientSearchParam, onFilterChange]);
+```
+
+#### Step 5: Update Filter Component UI
+Replace dropdown UI with simple input:
+
+```typescript
+// Remove complex dropdown state and UI
+// Replace with simple input similar to ProductFilters
+<Flex bg={disabled ? disabledColor : bgInput} borderRadius="md" overflow="hidden">
+  <Select
+    value={clientSearchParam}
+    onChange={(e) => setClientSearchParam(e.target.value as 'name' | 'rut' | 'razonSocial' | 'contactName')}
+    bg="transparent"
+    border="none"
+    color={textColor}
+    w="auto"
+    minW="7rem"
+    borderRadius="none"
+    _focus={{ boxShadow: 'none' }}
+    disabled={disabled}
+  >
+    <option value="name">Nombre</option>
+    <option value="rut">RUT</option>
+    <option value="razonSocial">Razón social</option>
+    <option value="contactName">Contacto</option>
+  </Select>
+
+  <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+  <InputGroup flex="1">
+    <Input
+      placeholder="Buscar cliente..."
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
+      onKeyPress={handleKeyPress}
+      bg="transparent"
+      border="none"
+      borderRadius="none"
+      _placeholder={{ color: textColor }}
+      color={textColor}
+      _focus={{ boxShadow: 'none' }}
+      pl="1rem"
+      disabled={disabled}
+    />
+    <InputRightElement>
+      <IconButton
+        aria-label="Buscar"
+        icon={<AiOutlineSearch size="1.25rem" />}
+        size="sm"
+        variant="ghost"
+        color={textColor}
+        onClick={handleSearch}
+        disabled={disabled}
+      />
+    </InputRightElement>
+  </InputGroup>
+</Flex>
+```
+
+### Common Pitfalls
+
+1. **Missing Backend Changes**: Only updating UI without modifying services/hooks causes infinite loading
+2. **Wrong Filter Mapping**: Not properly mapping clientSearch + clientSearchParam to the correct service parameters
+3. **Incomplete Dependencies**: Missing new filter fields in useMemo dependencies breaks reactivity
+4. **State Structure Mismatch**: Parent component state not matching what child component sends
+
+### Verification Steps
+
+1. Test search with 2+ characters and Enter key
+2. Verify network requests include correct filter parameters
+3. Test parameter switching (name/rut/razonSocial/contactName)
+4. Test reset functionality clears all fields
+5. Test with advanced filters combination
+
+### Reference Implementation
+
+See `src/components/Products/ProductFilters.tsx` for the target pattern implementation.

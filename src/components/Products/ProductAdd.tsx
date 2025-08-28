@@ -22,7 +22,6 @@ import {
   Text,
   HStack,
   Icon,
-  Stack,
   Checkbox,
   SimpleGrid,
 } from '@chakra-ui/react';

@@ -105,7 +105,14 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
       delivery.productItems?.reduce((total, item) => {
         // Para todos los estados: calcular precio original sin descuento
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        return total + item.quantity * originalPrice;
+        
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + (weight / 1000) * originalPrice;
+        } else {
+          return total + item.quantity * originalPrice;
+        }
       }, 0) || 0
     );
   };
@@ -116,7 +123,14 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         // Para todos los estados: usar descuentos almacenados
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
         const discountAmount = originalPrice - item.unitPrice;
-        return total + item.quantity * discountAmount;
+        
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + (weight / 1000) * discountAmount;
+        } else {
+          return total + item.quantity * discountAmount;
+        }
       }, 0) || 0
     );
   };
@@ -372,7 +386,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                         const weight = item.product?.unitType === UnitType.KILO ? item.weight || 0 : null;
 
                         // Para todos los estados: el unitPrice ya tiene el descuento aplicado
-                        const total = actualQuantity * item.unitPrice;
+                        // Calculate total based on unitType
+                        const total = item.product?.unitType === UnitType.KILO 
+                          ? (weight / 1000) * item.unitPrice 
+                          : actualQuantity * item.unitPrice;
 
                         return (
                           <Box

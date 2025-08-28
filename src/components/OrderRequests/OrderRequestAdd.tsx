@@ -137,6 +137,16 @@ const OrderRequestAddModal = ({
 
   const { data, isLoading, fieldError } = useAddOrderRequest(orderRequestProps);
 
+  useEffect(() => {
+    if (isLoading && orderRequestProps) {
+      const timeout = setTimeout(() => {
+        setOrderRequestProps(undefined);
+      }, 30000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading, orderRequestProps]);
+
   // Debounce para búsqueda de clientes
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -410,6 +420,7 @@ const OrderRequestAddModal = ({
         duration: 4000,
         isClosable: true,
       });
+      setOrderRequestProps(undefined);
     }
   }, [fieldError, toast]);
 
@@ -437,6 +448,14 @@ const OrderRequestAddModal = ({
   }, []);
 
   const handleSubmit = async (values: Partial<OrderRequest>) => {
+    if (!selectedClient?.id) {
+      return;
+    }
+
+    if (!selectedProducts || selectedProducts.length === 0) {
+      return;
+    }
+
     const orderRequestData = {
       observations: values.observations,
       date: values.date,
@@ -927,7 +946,9 @@ const OrderRequestAddModal = ({
                                 )}
                               </Box>
 
-                              <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
+                              {formik.errors.productItems && formik.submitCount > 0 && (
+                                <FormErrorMessage>Debe agregar al menos un producto</FormErrorMessage>
+                              )}
 
                               {/* Lista de productos seleccionados */}
                               {selectedProducts.length > 0 && (
@@ -1030,7 +1051,7 @@ const OrderRequestAddModal = ({
                                             </Box>
 
                                             {/* Controles de cantidad */}
-                                            <VStack spacing="0.25rem" align="stretch" px="1rem">
+                                            <VStack spacing="0.25rem" align="stretch">
                                               <HStack spacing="0.5rem">
                                                 {isQuantityExceedsStock(product) ? (
                                                   <Popover

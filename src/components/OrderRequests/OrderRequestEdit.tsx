@@ -46,6 +46,7 @@ import { useUpdateOrderRequest } from '@/hooks/orderRequest';
 import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderRequestEditProps = {
   orderRequest: OrderRequest;
@@ -81,6 +82,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       name: string;
       price: number;
       imageUrl?: string;
+      unitType?: string;
+      estimatedWeight?: number;
       quantity: number;
       discount?: number;
       discountId?: string;
@@ -113,6 +116,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           name: item.product.name,
           price: item.unitPrice,
           imageUrl: item.product.imageUrl,
+          unitType: item.product.unitType,
+          estimatedWeight: item.product.estimatedWeight,
           quantity: item.quantity,
           discount: 0,
           minQuantityForDiscount: undefined,
@@ -221,6 +226,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           name: product.name,
           price: product.price || 0,
           imageUrl: product.imageUrl,
+          unitType: product.unitType,
+          estimatedWeight: product.estimatedWeight,
           quantity: 1.0,
           discount: 0,
           isLoadingDiscount: true,
@@ -616,7 +623,10 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                     ? product.discount || 0
                                     : 0;
                                 const effectivePrice = product.price * (1 - discountToApply / 100);
-                                const subtotal = product.quantity * effectivePrice;
+                                const subtotal =
+                                  product.unitType === UnitType.KILO
+                                    ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                    : product.quantity * effectivePrice;
                                 return (
                                   <Box
                                     key={product.id}
@@ -688,6 +698,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             </Text>
                                           )}
                                         </HStack>
+                                        {product.unitType === UnitType.KILO && (
+                                          <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                            Peso estimado: {product.estimatedWeight || 0}g
+                                          </Text>
+                                        )}
                                       </Box>
 
                                       {/* Controles de cantidad */}
@@ -826,7 +841,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                const step = product.unitType === UnitType.KILO ? 0.5 : 1;
+                                                const newValue = Math.max(step, product.quantity - step);
                                                 const rounded = parseFloat(newValue.toFixed(1));
                                                 handleProductQuantityChange(product.id, rounded);
                                                 setQuantityInputs((prev) => ({
@@ -876,7 +892,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const newValue = product.quantity + 0.1;
+                                                const step = product.unitType === UnitType.KILO ? 0.5 : 1;
+                                                const newValue = product.quantity + step;
                                                 const rounded = parseFloat(newValue.toFixed(1));
                                                 handleProductQuantityChange(product.id, rounded);
                                                 setQuantityInputs((prev) => ({
@@ -982,6 +999,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               </Text>
                                             )}
                                           </HStack>
+                                          {product.unitType === UnitType.KILO && (
+                                            <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                              Peso estimado: {product.estimatedWeight || 0}g
+                                            </Text>
+                                          )}
                                         </Box>
                                       </Flex>
 
@@ -996,7 +1018,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const newValue = Math.max(0.1, product.quantity - 0.1);
+                                                  const step = product.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const newValue = Math.max(step, product.quantity - step);
                                                   const rounded = parseFloat(newValue.toFixed(1));
                                                   handleProductQuantityChange(product.id, rounded);
                                                   setQuantityInputs((prev) => ({
@@ -1046,7 +1069,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const newValue = product.quantity + 0.1;
+                                                  const step = product.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const newValue = product.quantity + step;
                                                   const rounded = parseFloat(newValue.toFixed(1));
                                                   handleProductQuantityChange(product.id, rounded);
                                                   setQuantityInputs((prev) => ({
@@ -1214,7 +1238,12 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                           ? product.discount || 0
                                           : 0;
                                       const effectivePrice = product.price * (1 - discountToApply / 100);
-                                      return total + product.quantity * effectivePrice;
+                                      // Calculate based on unitType
+                                      const productTotal =
+                                        product.unitType === UnitType.KILO
+                                          ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                          : product.quantity * effectivePrice;
+                                      return total + productTotal;
                                     }, 0)
                                     .toFixed(2)}
                                 </Text>

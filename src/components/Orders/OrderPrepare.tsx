@@ -219,7 +219,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: item.product.unitType,
           requestedQuantity: requestedQuantity,
           actualQuantity: item.quantity,
-          weight: item.product.unitType === UnitType.KILO ? item.product.estimatedWeight || 0 : undefined,
+          weight: item.product.unitType === UnitType.KILO ? item.weight || 0 : undefined,
           stock: item.product.stock,
           availableStock: item.product.availableStock,
           isOriginalFromOrder: wasInOriginalOrder,
@@ -277,7 +277,8 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
             unitType: product.unitType,
             requestedQuantity: originalItem.quantity,
             actualQuantity: originalItem.quantity,
-            weight: product.unitType === UnitType.KILO ? product.estimatedWeight || 0 : undefined,
+            weight:
+              product.unitType === UnitType.KILO ? originalItem.weight || product.estimatedWeight || 0 : undefined,
             stock: product.stock,
             availableStock: product.availableStock,
             isOriginalFromOrder: true,
@@ -372,7 +373,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   }, [fieldError, toast]);
 
   const initialValues = {
-    crates: order.crates || 0,
+    crates: order.crates || 1,
     observations: order.observations || '',
   };
 

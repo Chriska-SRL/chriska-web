@@ -334,7 +334,9 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         </ModalContent>
       </Modal>
 
-      <ProductEdit isOpen={isEditOpen} onClose={closeEdit} product={product} setProducts={setProducts} />
+      {isEditOpen && (
+        <ProductEdit isOpen={isEditOpen} onClose={closeEdit} product={product} setProducts={setProducts} />
+      )}
     </>
   );
 };

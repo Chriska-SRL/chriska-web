@@ -52,6 +52,7 @@ import { useToast } from '@chakra-ui/react';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { getStatusLabel, Status } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderRequestDetailProps = {
   orderRequest: OrderRequest;
@@ -97,12 +98,15 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   const calculateSubtotal = () => {
     return (
       orderRequest.productItems?.reduce((total, item) => {
-        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-          // Para pending: usar precios actuales
-          return total + item.quantity * item.unitPrice;
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const estimatedWeight = item.product?.estimatedWeight || 0;
+          return total + quantity * (estimatedWeight / 1000) * basePrice;
         } else {
-          // Para confirmados: item.unitPrice es el precio original
-          return total + item.quantity * item.unitPrice;
+          return total + quantity * basePrice;
         }
       }, 0) || 0
     );
@@ -111,6 +115,19 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   const calculateDiscount = () => {
     return (
       orderRequest.productItems?.reduce((total, item) => {
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+
+        // Calculate base amount considering unitType
+        const baseAmount = (() => {
+          if (item.product?.unitType === UnitType.KILO) {
+            const estimatedWeight = item.product?.estimatedWeight || 0;
+            return quantity * (estimatedWeight / 1000) * basePrice;
+          } else {
+            return quantity * basePrice;
+          }
+        })();
+
         if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
           // Para pending: usar descuentos actuales del endpoint con lógica de cantidad mínima
           const productDiscount = productDiscounts[item.product.id];
@@ -118,15 +135,14 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
             const minQuantity = productDiscount.discount.productQuantity;
             if (item.quantity >= minQuantity) {
               // Solo aplicar descuento si se cumple la cantidad mínima
-              return total + (item.quantity * item.unitPrice * productDiscount.discount.percentage) / 100;
+              return total + (baseAmount * productDiscount.discount.percentage) / 100;
             }
           }
           return total; // Sin descuento si no se cumple la cantidad mínima
         } else {
           // Para confirmados: item.unitPrice es el precio original, item.discount es el porcentaje
           if (item.discount > 0) {
-            const discountAmount = item.unitPrice * (item.discount / 100);
-            return total + item.quantity * discountAmount;
+            return total + (baseAmount * item.discount) / 100;
           }
           return total; // Sin descuento aplicado
         }
@@ -363,14 +379,16 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                       const productDiscount = productDiscounts[item.product.id];
                       const isLoadingDiscount = productDiscount?.loading || false;
 
-                      // Calcular subtotal basado en el estado del pedido
+                      // Calcular subtotal basado en unitType
                       const subtotal = (() => {
-                        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                          // Para pending: usar precio actual
-                          return item.quantity * item.unitPrice;
+                        const basePrice = item.unitPrice;
+                        const quantity = item.quantity;
+
+                        if (item.product?.unitType === UnitType.KILO) {
+                          const estimatedWeight = item.product?.estimatedWeight || 0;
+                          return quantity * (estimatedWeight / 1000) * basePrice;
                         } else {
-                          // Para confirmados: item.unitPrice es el precio original
-                          return item.quantity * item.unitPrice;
+                          return quantity * basePrice;
                         }
                       })();
 
@@ -408,7 +426,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                       return (
                         <Box
                           key={index}
-                          p={{ base: '0.75rem', md: '0.75rem 1.5rem' }}
+                          p={{ base: '0.75rem', md: '0.75rem 1rem' }}
                           border="1px solid"
                           borderColor={inputBorder}
                           borderRadius="md"
@@ -502,6 +520,11 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                     </Text>
                                   )}
                                 </HStack>
+                                {item.product?.unitType === UnitType.KILO && (
+                                  <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                    Peso estimado: {item.product?.estimatedWeight || 0}g
+                                  </Text>
+                                )}
                               </Box>
                             </Flex>
 
