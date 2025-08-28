@@ -148,10 +148,6 @@ const ClientEditForm = ({
   const handleSubmit = (values: any) => {
     const updatedClient = {
       ...values,
-      clientLocation: {
-        latitude: Number(values.latitude) || 0,
-        longitude: Number(values.longitude) || 0,
-      },
       zoneId: values.zoneId,
       bankAccounts: bankAccounts,
     };

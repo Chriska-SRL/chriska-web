@@ -54,19 +54,19 @@ const addLocationToBody = async (body: any, method: Method): Promise<any> => {
   }
 
   // For JSON bodies
-  if (body && body.location) {
+  if (body && body.auditLocation) {
     return body;
   }
 
   if (!body) {
     return {
-      location,
+      auditLocation: location,
     };
   }
 
   return {
     ...body,
-    location,
+    auditLocation: location,
   };
 };
 
