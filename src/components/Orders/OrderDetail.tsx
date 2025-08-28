@@ -629,7 +629,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
-            <Text>¡Orden preparada exitosamente!</Text>
+            <Text>Orden preparada exitosamente</Text>
           </ModalHeader>
 
           <ModalBody py="1.5rem">

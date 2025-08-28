@@ -583,7 +583,7 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
-            <Text>¡Devolución actualizada exitosamente!</Text>
+            <Text>Devolución actualizada exitosamente</Text>
           </ModalHeader>
 
           <ModalBody py="1.5rem">
