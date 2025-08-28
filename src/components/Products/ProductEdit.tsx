@@ -272,7 +272,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                   <form id="product-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" align="start">
-                        <Box flexShrink={0} w={{ base: '100%', md: '10.25rem' }}>
+                        <Box flexShrink={0} w={{ base: '100%', md: '10.5rem' }}>
                           <Box w="100%" aspectRatio="1" borderRadius="md">
                             <ProductImageUpload
                               product={{
@@ -285,7 +285,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           </Box>
                         </Box>
 
-                        <VStack spacing="1rem" align="stretch" flex="1" justify="start">
+                        <VStack spacing="1.5rem" align="stretch" flex="1" justify="start">
                           <FormControl isInvalid={submitCount > 0 && touched.internalCode && !!errors.internalCode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
@@ -350,50 +350,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Descripción</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="description"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          validate={validate}
-                          rows={2}
-                        />
-                        <FormErrorMessage>{errors.description}</FormErrorMessage>
-                      </FormControl>
-
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiPackage} boxSize="1rem" />
-                              <Text>Unidad</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Field
-                            as={Select}
-                            name="unitType"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            placeholder="Seleccione una opción"
-                            disabled={isLoading}
-                            validate={validate}
-                          >
-                            <option value="Kilo">Kilos</option>
-                            <option value="Unit">Unidades</option>
-                          </Field>
-                          <FormErrorMessage>{errors.unitType}</FormErrorMessage>
-                        </FormControl>
-
+                      <SimpleGrid columns={{ base: 1, md: 3 }} spacing="0.75rem">
                         <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
@@ -419,30 +376,127 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           />
                           <FormErrorMessage>{errors.price}</FormErrorMessage>
                         </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Text>Unidad</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="unitType"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una opción"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            <option value="Kilo">Kilos</option>
+                            <option value="Unit">Unidades</option>
+                          </Field>
+                          <FormErrorMessage>{errors.unitType}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiBox} boxSize="1rem" />
+                              <Text>Peso estimado</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="estimatedWeight"
+                            type="number"
+                            step="1"
+                            placeholder="Ingrese el peso estimado en gramos"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            disabled={isLoading}
+                          />
+                          <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                        </FormControl>
                       </SimpleGrid>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}>
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiTag} boxSize="1rem" />
+                              <Text>Marca</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="brandId"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una marca"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            {brands?.map((brand) => (
+                              <option key={brand.id} value={brand.id}>
+                                {brand.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <FormErrorMessage>{errors.brandId}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                          isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}
+                        >
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiThermometer} boxSize="1rem" />
+                              <Text>Condición de temperatura</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="temperatureCondition"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una opción"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            <option value="Cold">Frío</option>
+                            <option value="Frozen">Congelado</option>
+                            <option value="Ambient">Natural</option>
+                          </Field>
+                          <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
+                        </FormControl>
+                      </SimpleGrid>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiPackage} boxSize="1rem" />
-                            <Text>Peso estimado (g)</Text>
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Descripción</Text>
                           </HStack>
                         </FormLabel>
                         <Field
-                          as={Input}
-                          name="estimatedWeight"
-                          type="number"
-                          step="1"
-                          placeholder="Ingrese el peso estimado en gramos"
+                          as={Textarea}
+                          name="description"
                           bg={inputBg}
                           border="1px solid"
                           borderColor={inputBorder}
                           disabled={isLoading}
+                          validate={validate}
+                          rows={2}
                         />
-                        <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
 
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                         <FormControl>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
@@ -494,78 +548,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         </FormControl>
                       </SimpleGrid>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Marca</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="brandId"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          placeholder="Seleccione una marca"
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          {brands?.map((brand) => (
-                            <option key={brand.id} value={brand.id}>
-                              {brand.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <FormErrorMessage>{errors.brandId}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl
-                        isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}
-                      >
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiThermometer} boxSize="1rem" />
-                            <Text>Condición de temperatura</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="temperatureCondition"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          placeholder="Seleccione una opción"
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          <option value="Cold">Frío</option>
-                          <option value="Frozen">Congelado</option>
-                          <option value="Ambient">Natural</option>
-                        </Field>
-                        <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Observaciones</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="observations"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          rows={2}
-                        />
-                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                      </FormControl>
-
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                         <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
@@ -685,6 +668,25 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             </Box>
                           )}
                         </FieldArray>
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Text>Observaciones</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="observations"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                          rows={2}
+                        />
+                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
                       </FormControl>
                     </VStack>
                   </form>

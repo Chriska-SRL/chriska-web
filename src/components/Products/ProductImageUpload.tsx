@@ -39,7 +39,7 @@ export const ProductImageUpload = ({ product, onImageChange, editable = false }:
 
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
   const overlayBg = useColorModeValue('blackAlpha.600', 'blackAlpha.700');
-  const placeholderBg = useColorModeValue('gray.50', 'whiteAlpha.50');
+  const placeholderBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const placeholderColor = useColorModeValue('gray.500', 'gray.400');
 
   useEffect(() => {

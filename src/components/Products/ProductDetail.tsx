@@ -23,7 +23,6 @@ import {
 import {
   FiInfo,
   FiHash,
-  FiBarChart2,
   FiPackage,
   FiDollarSign,
   FiGrid,
@@ -69,7 +68,6 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBorderColor = useColorModeValue('gray.300', 'whiteAlpha.400');
-  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const handleClose = useCallback(() => {
     onClose();
@@ -82,10 +80,16 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
     }
   }, [forceOpen, onOpen]);
 
-  const detailField = (label: string, value: string | number | null | undefined, icon?: any, onClick?: () => void) => (
+  const detailField = (
+    label: string,
+    value: string | number | null | undefined,
+    icon?: any,
+    expandable?: boolean,
+    onClick?: () => void,
+  ) => (
     <Box w="100%">
       <HStack mb="0.5rem" spacing="0.5rem">
-        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        {icon && <Icon as={icon} boxSize="1rem" />}
         <Text color={labelColor} fontWeight="semibold">
           {label}
         </Text>
@@ -97,6 +101,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         border="1px solid"
         borderColor={inputBorder}
         borderRadius="md"
+        h={expandable ? undefined : '2.5rem'}
         minH="2.5rem"
         maxH="10rem"
         overflowY="auto"
@@ -114,6 +119,8 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         onClick={onClick}
         transition="all 0.2s"
         position="relative"
+        display={expandable ? undefined : 'flex'}
+        alignItems={expandable ? undefined : 'center'}
       >
         {value ?? '—'}
         {onClick && (
@@ -151,19 +158,19 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
               <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" align="start">
-                <Box flexShrink={0} w={{ base: '100%', md: '10.25rem' }}>
+                <Box flexShrink={0} w={{ base: '100%', md: '10.5rem' }}>
                   <Box w="100%" aspectRatio="1" borderRadius="md">
                     <ProductImageUpload product={product} editable={false} />
                   </Box>
                 </Box>
 
-                <VStack spacing="1rem" align="stretch" flex="1" justify="start">
-                  {detailField('Código interno', product.internalCode, FiHash)}
-                  {detailField('Código de barras', product.barcode, FiBarChart2)}
+                <VStack spacing="1.5rem" align="stretch" flex="1" justify="start">
+                  {detailField('Código interno', product.internalCode, FiPackage)}
+                  {detailField('Código de barras', product.barcode, FiHash)}
                 </VStack>
               </Flex>
 
-              {detailField('Nombre', product.name, FiPackage)}
+              {detailField('Nombre', product.name, FiTag)}
 
               <SimpleGrid columns={{ base: 1, md: 3 }} spacing="0.75rem">
                 {detailField('Precio', `$${product.price}`, FiDollarSign)}
@@ -172,14 +179,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
               </SimpleGrid>
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Stock total', product.stock?.toString() || '0', FiPackage)}
-                {detailField('Stock disponible', product.availableStock?.toString() || '0', FiBox)}
-              </SimpleGrid>
-
-              {detailField('Descripción', product.description, FiFileText)}
-
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Marca', product.brand.name, FiTag, () => {
+                {detailField('Marca', product.brand.name, FiTag, false, () => {
                   handleClose();
                   router.push(`/marcas?open=${product.brand.id}`);
                 })}
@@ -190,14 +190,21 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 )}
               </SimpleGrid>
 
+              {detailField('Descripción', product.description, FiFileText, true)}
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Stock total', product.stock?.toString() || '0', FiBox)}
+                {detailField('Stock disponible', product.availableStock?.toString() || '0', FiBox)}
+              </SimpleGrid>
+
               <Divider />
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Categoría', product.subCategory.category.name, FiGrid, () => {
+                {detailField('Categoría', product.subCategory.category.name, FiGrid, false, () => {
                   handleClose();
                   router.push(`/categorias?open=${product.subCategory.category.id}&type=category`);
                 })}
-                {detailField('Subcategoría', product.subCategory.name, FiGrid, () => {
+                {detailField('Subcategoría', product.subCategory.name, FiGrid, false, () => {
                   handleClose();
                   router.push(`/categorias?open=${product.subCategory.id}&type=subcategory`);
                 })}
@@ -205,7 +212,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
 
               {product.shelve && (
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                  {detailField('Depósito', product.shelve.warehouse.name, FiBox, () => {
+                  {detailField('Depósito', product.shelve.warehouse.name, FiBox, false, () => {
                     handleClose();
                     router.push(`/depositos?open=${product.shelve.warehouse.id}`);
                   })}
@@ -218,7 +225,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
               {product.suppliers && product.suppliers.length > 0 && (
                 <Box>
                   <HStack mb="0.5rem" spacing="0.5rem">
-                    <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
+                    <Icon as={FiTruck} boxSize="1rem" />
                     <Text fontSize="lg" fontWeight="bold" color={labelColor}>
                       Proveedores
                     </Text>
@@ -261,7 +268,6 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                             top="50%"
                             transform="translateY(-50%)"
                             boxSize="0.875rem"
-                            color={iconColor}
                           />
                         </Box>
                       ))}
@@ -272,7 +278,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
 
               <Divider />
 
-              {detailField('Observaciones', product.observations, FiFileText)}
+              {detailField('Observaciones', product.observations, FiFileText, true)}
             </VStack>
           </ModalBody>
 
