@@ -125,6 +125,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
       bankAccounts: values.bankAccounts || [],
     };
 
+    // Agregar la ubicación como location
+    if (values.latitude && values.longitude) {
+      submitData.location = {
+        latitude: values.latitude,
+        longitude: values.longitude,
+      };
+    }
+
     // Eliminar latitude y longitude del objeto principal
     delete submitData.latitude;
     delete submitData.longitude;
