@@ -26,6 +26,7 @@ import { Pagination } from '../Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getStatusLabel, getStatusColor } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderRequestListProps = {
   orderRequests: OrderRequest[];
@@ -69,13 +70,41 @@ export const OrderRequestList = ({
     }
   };
 
-  const calculateTotal = (orderRequest: OrderRequest) => {
+  const calculateSubtotal = (orderRequest: OrderRequest) => {
     return (
       orderRequest.productItems?.reduce((total, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - item.discount / 100);
-        return total + itemTotal;
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+        if (item.product?.unitType === UnitType.KILO) {
+          const estimatedWeight = item.product?.estimatedWeight || 0;
+          return total + quantity * (estimatedWeight / 1000) * basePrice;
+        } else {
+          return total + quantity * basePrice;
+        }
       }, 0) || 0
     );
+  };
+
+  const calculateDiscount = (orderRequest: OrderRequest) => {
+    return (
+      orderRequest.productItems?.reduce((total, item) => {
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+        const baseAmount = (() => {
+          if (item.product?.unitType === UnitType.KILO) {
+            const estimatedWeight = item.product?.estimatedWeight || 0;
+            return quantity * (estimatedWeight / 1000) * basePrice;
+          } else {
+            return quantity * basePrice;
+          }
+        })();
+        return total + (baseAmount * item.discount) / 100;
+      }, 0) || 0
+    );
+  };
+
+  const calculateTotal = (orderRequest: OrderRequest) => {
+    return calculateSubtotal(orderRequest) - calculateDiscount(orderRequest);
   };
 
   if (error)

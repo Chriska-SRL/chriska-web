@@ -26,6 +26,7 @@ import { Pagination } from '../Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getStatusLabel, getStatusColor } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type DeliveryListProps = {
   deliveries: Delivery[];
@@ -81,8 +82,12 @@ export const DeliveryList = ({
   const calculateTotal = (delivery: Delivery) => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - item.discount / 100);
-        return total + itemTotal;
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + ((weight || 0) / 1000) * item.unitPrice;
+        } else {
+          return total + item.quantity * item.unitPrice;
+        }
       }, 0) || 0
     );
   };
