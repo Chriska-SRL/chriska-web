@@ -65,8 +65,10 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
   const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
   const { isOpen: isCancelDialogOpen, onOpen: openCancelDialog, onClose: closeCancelDialog } = useDisclosure();
+  const { isOpen: isConfirmEditModal, onOpen: openConfirmEditModal, onClose: closeConfirmEditModal } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
+  const [updatedReturnRequestData, setUpdatedReturnRequestData] = useState<ReturnRequest | null>(null);
   const {
     data: statusData,
     isLoading: statusLoading,
@@ -143,6 +145,26 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
     // Don't reset actionType immediately - let useEffect handle it
   }, [returnRequest.id, actionType, closeConfirmDialog, closeCancelDialog]);
 
+  // Handler para cuando se actualiza una devolución (igual al patrón de OrderDetail)
+  const handleReturnRequestUpdated = useCallback(
+    (updatedReturnRequest: ReturnRequest) => {
+      setUpdatedReturnRequestData(updatedReturnRequest);
+      openConfirmEditModal();
+    },
+    [openConfirmEditModal],
+  );
+
+  const handleConfirmUpdatedReturnRequest = useCallback(() => {
+    if (updatedReturnRequestData) {
+      setStatusProps({ id: updatedReturnRequestData.id, status: Status.CONFIRMED });
+    }
+    // No cerrar el modal inmediatamente - se cerrará cuando la confirmación sea exitosa
+  }, [updatedReturnRequestData]);
+
+  const handleContinueEditing = useCallback(() => {
+    closeConfirmEditModal();
+  }, [closeConfirmEditModal]);
+
   const openConfirmStatusDialog = (type: 'confirm' | 'cancel') => {
     setActionType(type);
     if (type === 'confirm') {
@@ -180,8 +202,14 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
       onClose();
       setStatusProps(undefined);
       setActionType(null);
+
+      // Si estamos confirmando después de editar, también cerrar ese modal
+      if (isConfirmEditModal) {
+        closeConfirmEditModal();
+        setUpdatedReturnRequestData(null);
+      }
     }
-  }, [statusData, statusProps, returnRequests, setReturnRequests, toast]);
+  }, [statusData, statusProps, returnRequests, setReturnRequests, toast, isConfirmEditModal, closeConfirmEditModal]);
 
   // Handle status change error
   useEffect(() => {
@@ -546,8 +574,44 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
           isOpen={isEditOpen}
           onClose={closeEdit}
           setReturnRequests={setReturnRequests}
+          onReturnRequestUpdated={handleReturnRequestUpdated}
         />
       )}
+
+      {/* Modal de confirmación post-actualización */}
+      <Modal isOpen={isConfirmEditModal} onClose={handleContinueEditing} size="md" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
+            <Text>¡Devolución actualizada exitosamente!</Text>
+          </ModalHeader>
+
+          <ModalBody py="1.5rem">
+            <Text fontSize="0.95rem" color="gray.600" _dark={{ color: 'gray.400' }}>
+              ¿Deseas confirmar la devolución directamente?
+            </Text>
+          </ModalBody>
+
+          <ModalFooter borderTop="1px solid" borderColor={inputBorder} pt="0.75rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleContinueEditing} size="sm">
+                Más tarde
+              </Button>
+              <Button
+                leftIcon={<FiCheckCircle />}
+                colorScheme="green"
+                variant="outline"
+                onClick={handleConfirmUpdatedReturnRequest}
+                size="sm"
+                isLoading={statusLoading}
+                loadingText="Confirmando..."
+              >
+                Confirmar devolución
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 };

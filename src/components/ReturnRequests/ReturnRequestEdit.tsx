@@ -32,7 +32,6 @@ import { FiFileText } from 'react-icons/fi';
 import { FaCheck } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { ReturnRequest } from '@/entities/returnRequest';
-import { useUpdateReturnRequest } from '@/hooks/returnRequest';
 import { useGetDeliveryById } from '@/hooks/delivery';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
@@ -42,13 +41,22 @@ type ReturnRequestEditProps = {
   isOpen: boolean;
   onClose: () => void;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
+  onReturnRequestUpdated?: (returnRequest: ReturnRequest) => void;
+  skipConfirmModal?: boolean;
 };
 
 const validationSchema = Yup.object({
   observations: Yup.string().max(500, 'Las observaciones no pueden exceder 500 caracteres'),
 });
 
-export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnRequests }: ReturnRequestEditProps) => {
+export const ReturnRequestEdit = ({
+  returnRequest,
+  isOpen,
+  onClose,
+  setReturnRequests,
+  onReturnRequestUpdated,
+  skipConfirmModal = false,
+}: ReturnRequestEditProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -65,7 +73,44 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
   const [selectedProducts, setSelectedProducts] = useState<{ [productId: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
-  const { data, isLoading, fieldError } = useUpdateReturnRequest(returnRequestProps);
+  // Using manual hook instead of useFetch to debug the issue
+  const [data, setData] = useState<ReturnRequest>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<any>();
+  const [hasExecuted, setHasExecuted] = useState(false);
+
+  useEffect(() => {
+    if (!returnRequestProps || hasExecuted) return;
+
+    const executeRequest = async () => {
+      setHasExecuted(true);
+      setIsLoading(true);
+      setFieldError(undefined);
+
+      try {
+        const { updateReturnRequest } = await import('@/services/returnRequest');
+        const result = await updateReturnRequest(returnRequestProps);
+        setData(result);
+      } catch (err: any) {
+        try {
+          const parsed = JSON.parse(err.message);
+          setFieldError(parsed);
+        } catch {
+          setFieldError({ error: err.message || 'Error al actualizar devolución' });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    executeRequest();
+  }, [returnRequestProps, hasExecuted]);
+
+  // Reset hasExecuted when returnRequestProps changes to a new object
+  useEffect(() => {
+    setHasExecuted(false);
+  }, [returnRequestProps]);
+
   const { data: deliveryData, isLoading: isLoadingDelivery } = useGetDeliveryById(returnRequest.delivery?.id);
 
   // Function to get original delivered quantity for a product
@@ -150,7 +195,6 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
       observations: values.observations,
       productItems: selectedProductItems,
     };
-
     setReturnRequestProps(formData);
   };
 
@@ -167,8 +211,13 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
         duration: 3000,
         isClosable: true,
       });
+
+      // Notificar al padre que la devolución fue actualizada
+      if (onReturnRequestUpdated && !skipConfirmModal) {
+        onReturnRequestUpdated(data);
+      }
     }
-  }, [data, returnRequestProps, setReturnRequests, onClose, toast]);
+  }, [data, returnRequestProps, setReturnRequests, onClose, toast, onReturnRequestUpdated, skipConfirmModal]);
 
   // Handle errors
   useEffect(() => {
