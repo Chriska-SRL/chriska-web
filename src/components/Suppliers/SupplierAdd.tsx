@@ -26,7 +26,7 @@ import {
 } from '@chakra-ui/react';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
-import { FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign } from 'react-icons/fi';
+import { FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { BankAccount } from '@/entities/bankAccount';
@@ -36,6 +36,7 @@ import { Permission } from '@/enums/permission.enum';
 import { BankOptions } from '@/enums/bank.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { LocationPickerModal } from '@/components/LocationPickerModal';
 
 type SupplierAddProps = {
   isLoading: boolean;
@@ -58,6 +59,12 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
   const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
+  const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
+  const [currentCoords, setCurrentCoords] = useState({
+    lat: undefined as number | undefined,
+    lng: undefined as number | undefined,
+  });
+  const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
   const { data, isLoading, error, fieldError } = useAddSupplier(supplierProps);
 
   const handleClose = () => {
@@ -113,10 +120,24 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
   }, [error, fieldError, toast]);
 
   const handleSubmit = (values: any) => {
-    setSupplierProps({
+    const submitData: any = {
       ...values,
       bankAccounts: values.bankAccounts || [],
-    });
+    };
+
+    // Agregar la ubicación como supplierLocation
+    if (values.latitude && values.longitude) {
+      submitData.supplierLocation = {
+        latitude: values.latitude,
+        longitude: values.longitude,
+      };
+    }
+
+    // Eliminar latitude y longitude del objeto principal
+    delete submitData.latitude;
+    delete submitData.longitude;
+
+    setSupplierProps(submitData);
   };
 
   const validateForm = (values: any) => {
@@ -130,9 +151,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
     const addressError = validateEmpty(values.address);
     if (addressError) errors.address = addressError;
-
-    const mapsAddressError = validateEmpty(values.mapsAddress);
-    if (mapsAddressError) errors.mapsAddress = mapsAddressError;
 
     const contactNameError = validateEmpty(values.contactName);
     if (contactNameError) errors.contactName = contactNameError;
@@ -190,10 +208,11 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                 rut: '',
                 razonSocial: '',
                 address: '',
-                mapsAddress: '',
                 phone: '',
                 contactName: '',
                 email: '',
+                latitude: null,
+                longitude: null,
                 bankAccounts: [],
                 observations: '',
               }}
@@ -203,7 +222,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
               validateOnChange={true}
               validateOnBlur={false}
             >
-              {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount }) => {
+              {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount, setFieldValue }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -302,51 +321,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                         )}
                       </Field>
 
-                      <Field name="mapsAddress">
-                        {({ field }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiMapPin} boxSize="1rem" />
-                                <Text>Dirección Maps</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder="Ingrese la dirección para Maps"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
-                        <Field name="phone">
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiPhone} boxSize="1rem" />
-                                  <Text>Teléfono</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el teléfono"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
                         <Field name="contactName">
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
@@ -365,6 +340,28 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 disabled={isLoading}
                               />
                               <FormErrorMessage>{errors.contactName}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        <Field name="phone">
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiPhone} boxSize="1rem" />
+                                  <Text>Teléfono</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el teléfono"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
@@ -391,6 +388,59 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                           </FormControl>
                         )}
                       </Field>
+
+                      {/* Ubicación */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMap} boxSize="1rem" />
+                            <Text>Ubicación</Text>
+                          </HStack>
+                        </FormLabel>
+                        <VStack spacing="0.5rem" align="stretch">
+                          <HStack
+                            p="0.75rem"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            justify="space-between"
+                          >
+                            <VStack spacing="0.25rem" align="start">
+                              <Text fontSize="sm" fontWeight="medium">
+                                {values.latitude && values.longitude
+                                  ? `Lat: ${Number(values.latitude).toFixed(6)}, Lng: ${Number(values.longitude).toFixed(6)}`
+                                  : 'No se ha seleccionado ubicación'}
+                              </Text>
+                              {values.latitude && values.longitude && (
+                                <Text fontSize="xs" color="gray.500">
+                                  Haz clic en "Seleccionar en mapa" para cambiar
+                                </Text>
+                              )}
+                            </VStack>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiMapPin />}
+                              onClick={() => {
+                                setLocationHandler(() => (lat: number, lng: number) => {
+                                  setFieldValue('latitude', lat);
+                                  setFieldValue('longitude', lng);
+                                });
+                                setCurrentCoords({
+                                  lat: values.latitude || undefined,
+                                  lng: values.longitude || undefined,
+                                });
+                                openLocationModal();
+                              }}
+                              disabled={isLoading}
+                              colorScheme="blue"
+                              variant="outline"
+                            >
+                              Seleccionar en mapa
+                            </Button>
+                          </HStack>
+                        </VStack>
+                      </FormControl>
 
                       <FormControl>
                         <FormLabel fontWeight="semibold">
@@ -536,6 +586,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        onConfirm={locationHandler || (() => {})}
+        initialLat={currentCoords.lat}
+        initialLng={currentCoords.lng}
+      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

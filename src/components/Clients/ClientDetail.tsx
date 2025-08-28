@@ -289,12 +289,14 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <VStack spacing="0.5rem" w="100%">
+            <HStack spacing="0.5rem" w="100%" justify="flex-end">
+              <Button variant="ghost" size="sm" onClick={handleClose} disabled={isNavigatingToOrders}>
+                Cerrar
+              </Button>
               <Button
-                w="100%"
                 leftIcon={isNavigatingToOrders ? <Spinner size="xs" /> : <FaPlus />}
                 onClick={handleNavigateToOrders}
-                colorScheme="blue"
+                colorScheme="green"
                 variant="outline"
                 size="sm"
                 isLoading={isNavigatingToOrders}
@@ -302,37 +304,31 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
               >
                 Crear pedido
               </Button>
-              <HStack spacing="0.5rem" w="100%">
-                <Button variant="ghost" size="sm" onClick={handleClose} flex="1" disabled={isNavigatingToOrders}>
-                  Cerrar
+              {canDeleteClients && (
+                <GenericDelete
+                  item={{ id: client.id, name: client.name }}
+                  useDeleteHook={useDeleteClient}
+                  setItems={setClients}
+                  onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
+                />
+              )}
+              {canEditClients && (
+                <Button
+                  leftIcon={<FaEdit />}
+                  onClick={() => {
+                    openEdit();
+                    handleClose();
+                  }}
+                  colorScheme="blue"
+                  variant="outline"
+                  size="sm"
+                >
+                  Editar
                 </Button>
-                {canDeleteClients && (
-                  <GenericDelete
-                    item={{ id: client.id, name: client.name }}
-                    useDeleteHook={useDeleteClient}
-                    setItems={setClients}
-                    onDeleted={handleClose}
-                    size="sm"
-                    variant="outline"
-                  />
-                )}
-                {canEditClients && (
-                  <Button
-                    leftIcon={<FaEdit />}
-                    onClick={() => {
-                      openEdit();
-                      handleClose();
-                    }}
-                    colorScheme="blue"
-                    variant="outline"
-                    size="sm"
-                    flex="1"
-                  >
-                    Editar
-                  </Button>
-                )}
-              </HStack>
-            </VStack>
+              )}
+            </HStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

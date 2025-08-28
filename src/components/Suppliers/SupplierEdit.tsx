@@ -21,17 +21,20 @@ import {
   HStack,
   Text,
   Icon,
+  Stack,
 } from '@chakra-ui/react';
 import { Supplier } from '@/entities/supplier';
 import { BankAccount } from '@/entities/bankAccount';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaCheck, FaPlus, FaTrash, FaTimes } from 'react-icons/fa';
-import { FiUser, FiHash, FiFileText, FiMapPin, FiPhone, FiMail, FiCreditCard } from 'react-icons/fi';
+import { FiUser, FiHash, FiFileText, FiMapPin, FiPhone, FiMail, FiCreditCard, FiMap } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { useUpdateSupplier } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { BankOptions } from '@/enums/bank.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { useDisclosure } from '@chakra-ui/react';
+import { LocationPickerModal } from '@/components/LocationPickerModal';
 
 type SupplierEditProps = {
   isOpen: boolean;
@@ -46,6 +49,12 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
+  const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
+  const [currentCoords, setCurrentCoords] = useState({
+    lat: undefined as number | undefined,
+    lng: undefined as number | undefined,
+  });
+  const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
   const { data, isLoading, error, fieldError } = useUpdateSupplier(supplierProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -87,10 +96,24 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   }, [error, fieldError]);
 
   const handleSubmit = (values: any) => {
-    setSupplierProps({
+    const submitData: any = {
       ...values,
       bankAccounts: values.bankAccounts || [],
-    });
+    };
+
+    // Agregar la ubicación como supplierLocation
+    if (values.latitude && values.longitude) {
+      submitData.supplierLocation = {
+        latitude: values.latitude,
+        longitude: values.longitude,
+      };
+    }
+
+    // Eliminar latitude y longitude del objeto principal
+    delete submitData.latitude;
+    delete submitData.longitude;
+
+    setSupplierProps(submitData);
   };
 
   const handleClose = () => {
@@ -141,10 +164,11 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                 rut: supplier?.rut ?? '',
                 razonSocial: supplier?.razonSocial ?? '',
                 address: supplier?.address ?? '',
-                mapsAddress: supplier?.mapsAddress ?? '',
                 phone: supplier?.phone ?? '',
                 contactName: supplier?.contactName ?? '',
                 email: supplier?.email ?? '',
+                latitude: supplier?.location?.latitude ?? null,
+                longitude: supplier?.location?.longitude ?? null,
                 bankAccounts: supplier?.bankAccounts ?? [],
                 observations: supplier?.observations ?? '',
               }}
@@ -161,9 +185,6 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
 
                 const addressError = validateEmpty(values.address);
                 if (addressError) errors.address = addressError;
-
-                const mapsAddressError = validateEmpty(values.mapsAddress);
-                if (mapsAddressError) errors.mapsAddress = mapsAddressError;
 
                 const contactNameError = validateEmpty(values.contactName);
                 if (contactNameError) errors.contactName = contactNameError;
@@ -193,7 +214,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
               validateOnChange
               validateOnBlur={false}
             >
-              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm }) => {
+              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm, values, setFieldValue }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -201,43 +222,47 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
 
                 return (
                   <form id="supplier-edit-form" onSubmit={handleSubmit}>
-                    <VStack spacing="0.75rem">
-                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiUser} boxSize="1rem" />
-                            <Text>Nombre</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="name"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                        />
-                        <FormErrorMessage>{errors.name}</FormErrorMessage>
-                      </FormControl>
+                    <VStack spacing="1rem" align="stretch">
+                      {/* Fila 1: Nombre y RUT */}
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiUser} boxSize="1rem" />
+                              <Text>Nombre</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="name"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            h="2.75rem"
+                          />
+                          <FormErrorMessage>{errors.name}</FormErrorMessage>
+                        </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiHash} boxSize="1rem" />
-                            <Text>RUT</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="rut"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                        />
-                        <FormErrorMessage>{errors.rut}</FormErrorMessage>
-                      </FormControl>
+                        <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiHash} boxSize="1rem" />
+                              <Text>RUT</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="rut"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            h="2.75rem"
+                          />
+                          <FormErrorMessage>{errors.rut}</FormErrorMessage>
+                        </FormControl>
+                      </Stack>
 
+                      {/* Fila 2: Razón Social (completo) */}
                       <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
@@ -256,6 +281,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                         <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                       </FormControl>
 
+                      {/* Fila 3: Dirección (completo) */}
                       <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
@@ -274,60 +300,46 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                         <FormErrorMessage>{errors.address}</FormErrorMessage>
                       </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.mapsAddress && !!errors.mapsAddress}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiMapPin} boxSize="1rem" />
-                            <Text>Dirección Maps</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="mapsAddress"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                        />
-                        <FormErrorMessage>{errors.mapsAddress}</FormErrorMessage>
-                      </FormControl>
+                      {/* Fila 4: Persona de contacto y Teléfono */}
+                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiUser} boxSize="1rem" />
+                              <Text>Persona de contacto</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="contactName"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            h="2.75rem"
+                          />
+                          <FormErrorMessage>{errors.contactName}</FormErrorMessage>
+                        </FormControl>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiPhone} boxSize="1rem" />
-                            <Text>Teléfono</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="phone"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                        />
-                        <FormErrorMessage>{errors.phone}</FormErrorMessage>
-                      </FormControl>
+                        <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiPhone} boxSize="1rem" />
+                              <Text>Teléfono</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="phone"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            h="2.75rem"
+                          />
+                          <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                        </FormControl>
+                      </Stack>
 
-                      <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiUser} boxSize="1rem" />
-                            <Text>Persona de contacto</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Input}
-                          name="contactName"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          h="2.75rem"
-                        />
-                        <FormErrorMessage>{errors.contactName}</FormErrorMessage>
-                      </FormControl>
-
+                      {/* Fila 5: Email (completo) */}
                       <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
@@ -344,6 +356,59 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           h="2.75rem"
                         />
                         <FormErrorMessage>{errors.email}</FormErrorMessage>
+                      </FormControl>
+
+                      {/* Ubicación */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMap} boxSize="1rem" />
+                            <Text>Ubicación</Text>
+                          </HStack>
+                        </FormLabel>
+                        <VStack spacing="0.5rem" align="stretch">
+                          <HStack
+                            p="0.75rem"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            justify="space-between"
+                          >
+                            <VStack spacing="0.25rem" align="start">
+                              <Text fontSize="sm" fontWeight="medium">
+                                {values.latitude && values.longitude
+                                  ? `Lat: ${Number(values.latitude).toFixed(6)}, Lng: ${Number(values.longitude).toFixed(6)}`
+                                  : 'No se ha seleccionado ubicación'}
+                              </Text>
+                              {values.latitude && values.longitude && (
+                                <Text fontSize="xs" color="gray.500">
+                                  Haz clic en "Seleccionar en mapa" para cambiar
+                                </Text>
+                              )}
+                            </VStack>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiMapPin />}
+                              onClick={() => {
+                                setLocationHandler(() => (lat: number, lng: number) => {
+                                  setFieldValue('latitude', lat);
+                                  setFieldValue('longitude', lng);
+                                });
+                                setCurrentCoords({
+                                  lat: values.latitude || undefined,
+                                  lng: values.longitude || undefined,
+                                });
+                                openLocationModal();
+                              }}
+                              disabled={isLoading}
+                              colorScheme="blue"
+                              variant="outline"
+                            >
+                              Seleccionar en mapa
+                            </Button>
+                          </HStack>
+                        </VStack>
                       </FormControl>
 
                       <FormControl>
@@ -489,6 +554,14 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        onConfirm={locationHandler || (() => {})}
+        initialLat={currentCoords.lat}
+        initialLng={currentCoords.lng}
+      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

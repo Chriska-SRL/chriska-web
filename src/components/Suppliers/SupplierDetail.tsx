@@ -19,7 +19,7 @@ import {
   Divider,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign } from 'react-icons/fi';
+import { FiEye, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
@@ -28,6 +28,8 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useEffect, useCallback } from 'react';
+import MapPreview from '../MapPreview';
+import { MapViewModal } from '../MapViewModal';
 
 type SupplierDetailProps = {
   supplier: Supplier;
@@ -42,6 +44,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+  const { isOpen: isMapOpen, onOpen: openMap, onClose: closeMap } = useDisclosure();
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -121,15 +124,52 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
 
               {detailField('Razón Social', supplier.razonSocial, FiFileText)}
 
-              {detailField('Dirección', supplier.address, FiHome)}
-              {detailField('Dirección Maps', supplier.mapsAddress, FiMapPin)}
+              {detailField('Dirección', supplier.address, FiMapPin)}
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Teléfono', supplier.phone, FiPhone)}
                 {detailField('Persona de contacto', supplier.contactName, FiUser)}
+                {detailField('Teléfono', supplier.phone, FiPhone)}
               </SimpleGrid>
 
               {detailField('Email', supplier.email, FiMail)}
+
+              {/* Ubicación con preview del mapa */}
+              <Box w="100%">
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiMap} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Ubicación
+                  </Text>
+                </HStack>
+                <VStack spacing="0.5rem" align="stretch">
+                  {supplier.location ? (
+                    <Box bg={inputBg} border="1px solid" borderColor={inputBorder} borderRadius="md" p="0.5rem">
+                      <MapPreview
+                        lat={supplier.location.latitude}
+                        lng={supplier.location.longitude}
+                        height="15rem"
+                        onClick={openMap}
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      px="1rem"
+                      py="0.5rem"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      borderRadius="md"
+                      minH="2.75rem"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      <Text color="gray.500" fontSize="sm">
+                        No se ha configurado ubicación
+                      </Text>
+                    </Box>
+                  )}
+                </VStack>
+              </Box>
 
               <Divider />
 
@@ -210,6 +250,16 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
       </Modal>
 
       <SupplierEdit isOpen={isEditOpen} onClose={closeEdit} supplier={supplier} setSuppliers={setSuppliers} />
+
+      {supplier?.location && (
+        <MapViewModal
+          isOpen={isMapOpen}
+          onClose={closeMap}
+          lat={supplier.location.latitude}
+          lng={supplier.location.longitude}
+          title={`Ubicación de ${supplier.name}`}
+        />
+      )}
     </>
   );
 };
