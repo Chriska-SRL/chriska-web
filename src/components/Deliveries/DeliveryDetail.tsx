@@ -105,7 +105,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
       delivery.productItems?.reduce((total, item) => {
         // Para todos los estados: calcular precio original sin descuento
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        
+
         // Calculate based on unitType
         if (item.product?.unitType === UnitType.KILO) {
           const weight = item.weight || item.product?.estimatedWeight || 0;
@@ -123,7 +123,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         // Para todos los estados: usar descuentos almacenados
         const originalPrice = item.unitPrice / (1 - item.discount / 100);
         const discountAmount = originalPrice - item.unitPrice;
-        
+
         // Calculate based on unitType
         if (item.product?.unitType === UnitType.KILO) {
           const weight = item.weight || item.product?.estimatedWeight || 0;
@@ -387,9 +387,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
 
                         // Para todos los estados: el unitPrice ya tiene el descuento aplicado
                         // Calculate total based on unitType
-                        const total = item.product?.unitType === UnitType.KILO 
-                          ? (weight / 1000) * item.unitPrice 
-                          : actualQuantity * item.unitPrice;
+                        const total =
+                          item.product?.unitType === UnitType.KILO
+                            ? ((weight || 0) / 1000) * item.unitPrice
+                            : actualQuantity * item.unitPrice;
 
                         return (
                           <Box

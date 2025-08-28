@@ -42,7 +42,7 @@ export const ReturnRequests = () => {
   const [filterToDate, setFilterToDate] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [editingReturnRequest, setEditingReturnRequest] = useState<ReturnRequest | null>(null);
-  
+
   // Modal de confirmación para confirmar devolución
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [returnRequestToConfirm, setReturnRequestToConfirm] = useState<ReturnRequest | null>(null);
@@ -60,12 +60,12 @@ export const ReturnRequests = () => {
 
   const { data, isLoading, error } = useGetReturnRequests(currentPage, pageSize, filters);
   const [returnRequests, setReturnRequests] = useState<ReturnRequest[]>([]);
-  
+
   // Hook para cambiar status de devolución
-  const { 
-    data: confirmData, 
-    isLoading: isConfirming, 
-    fieldError: confirmError 
+  const {
+    data: confirmData,
+    isLoading: isConfirming,
+    fieldError: confirmError,
   } = useChangeReturnRequestStatus(confirmStatusProps);
 
   useEffect(() => {
@@ -114,9 +114,9 @@ export const ReturnRequests = () => {
   // Handler para confirmar la devolución
   const handleConfirmReturn = () => {
     if (returnRequestToConfirm) {
-      setConfirmStatusProps({ 
-        id: returnRequestToConfirm.id, 
-        status: 'Confirmada' 
+      setConfirmStatusProps({
+        id: returnRequestToConfirm.id,
+        status: 'Confirmada',
       });
     }
   };
@@ -135,7 +135,7 @@ export const ReturnRequests = () => {
       setShowConfirmModal(false);
       setReturnRequestToConfirm(null);
       setConfirmStatusProps(undefined);
-      
+
       toast({
         title: 'Devolución confirmada',
         description: 'La devolución ha sido confirmada exitosamente',
@@ -240,15 +240,11 @@ export const ReturnRequests = () => {
           </ModalBody>
           <ModalFooter>
             <HStack spacing="0.75rem">
-              <Button 
-                variant="outline" 
-                onClick={handleCancelConfirm}
-                disabled={isConfirming}
-              >
+              <Button variant="outline" onClick={handleCancelConfirm} disabled={isConfirming}>
                 Ahora no
               </Button>
-              <Button 
-                colorScheme="green" 
+              <Button
+                colorScheme="green"
                 onClick={handleConfirmReturn}
                 isLoading={isConfirming}
                 loadingText="Confirmando..."
