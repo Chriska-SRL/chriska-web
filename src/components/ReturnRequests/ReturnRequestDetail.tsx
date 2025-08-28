@@ -32,7 +32,7 @@ import {
 import { ReturnRequest } from '@/entities/returnRequest';
 import { useGetDeliveryById } from '@/hooks/delivery';
 import {
-  FiEye,
+  FiInfo,
   FiEdit,
   FiCheckCircle,
   FiUsers,
@@ -208,7 +208,7 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

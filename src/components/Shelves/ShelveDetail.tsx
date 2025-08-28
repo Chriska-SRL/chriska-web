@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText, FiPackage } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText, FiPackage } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteShelve } from '@/hooks/shelve';
@@ -115,7 +115,7 @@ export const ShelveDetail = ({
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}

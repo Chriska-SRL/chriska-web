@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiMail, FiUser, FiShield, FiActivity } from 'react-icons/fi';
+import { FiInfo, FiMail, FiUser, FiShield, FiActivity } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { User } from '@/entities/user';
 import { UserEdit } from './UserEdit';
@@ -75,7 +75,7 @@ export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

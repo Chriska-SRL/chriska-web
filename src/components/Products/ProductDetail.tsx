@@ -21,7 +21,7 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import {
-  FiEye,
+  FiInfo,
   FiHash,
   FiBarChart2,
   FiPackage,
@@ -117,7 +117,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
       >
         {value ?? '—'}
         {onClick && (
-          <Icon as={FiEye} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+          <Icon as={FiInfo} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
         )}
       </Box>
     </Box>
@@ -127,7 +127,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
@@ -255,7 +255,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                             {supplier.name}
                           </Text>
                           <Icon
-                            as={FiEye}
+                            as={FiInfo}
                             position="absolute"
                             right="0.5rem"
                             top="50%"

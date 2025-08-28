@@ -20,7 +20,7 @@ import {
   HStack,
   Divider,
 } from '@chakra-ui/react';
-import { FiEye, FiMapPin, FiFileText, FiCalendar } from 'react-icons/fi';
+import { FiInfo, FiMapPin, FiFileText, FiCalendar } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { useEffect } from 'react';
 import { Zone } from '@/entities/zone';
@@ -168,7 +168,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

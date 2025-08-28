@@ -30,7 +30,7 @@ import {
 } from '@chakra-ui/react';
 import { Delivery } from '@/entities/delivery';
 import {
-  FiEye,
+  FiInfo,
   FiCheckCircle,
   FiUsers,
   FiUser,
@@ -237,7 +237,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
           (isLoading ? (
             <Spinner position="absolute" right="1rem" top="50%" transform="translateY(-50%)" size="sm" />
           ) : (
-            <Icon as={FiEye} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+            <Icon as={FiInfo} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
           ))}
       </Box>
     </Box>
@@ -247,7 +247,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

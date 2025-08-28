@@ -25,7 +25,7 @@ import {
   Flex,
   useMediaQuery,
 } from '@chakra-ui/react';
-import { FiEye, FiUser, FiFileText, FiShield } from 'react-icons/fi';
+import { FiInfo, FiUser, FiFileText, FiShield } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Role } from '@/entities/role';
 import { RoleEdit } from './RoleEdit';
@@ -109,7 +109,7 @@ export const RoleDetail = ({ role, setRoles, forceOpen, onModalClose }: RoleDeta
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}

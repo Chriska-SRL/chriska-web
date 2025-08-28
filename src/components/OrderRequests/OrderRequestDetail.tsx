@@ -30,7 +30,7 @@ import {
 } from '@chakra-ui/react';
 import { OrderRequest } from '@/entities/orderRequest';
 import {
-  FiEye,
+  FiInfo,
   FiEdit,
   FiCheckCircle,
   FiUsers,
@@ -268,7 +268,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

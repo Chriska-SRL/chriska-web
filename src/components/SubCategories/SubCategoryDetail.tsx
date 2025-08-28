@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
 import { useDeleteSubCategory } from '@/hooks/subcategory';
@@ -115,7 +115,7 @@ export const SubCategoryDetail = ({
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}

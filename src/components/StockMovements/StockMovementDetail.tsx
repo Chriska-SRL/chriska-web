@@ -19,7 +19,7 @@ import {
   Divider,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiCalendar, FiHash, FiTag, FiFileText, FiPackage, FiUser } from 'react-icons/fi';
+import { FiInfo, FiCalendar, FiHash, FiTag, FiFileText, FiPackage, FiUser } from 'react-icons/fi';
 import { StockMovement } from '@/entities/stockMovement';
 import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
 import { useEffect, useCallback } from 'react';
@@ -90,7 +90,7 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}

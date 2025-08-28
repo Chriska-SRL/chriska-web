@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
 import { CategoryEdit } from './CategoryEdit';
@@ -91,7 +91,7 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

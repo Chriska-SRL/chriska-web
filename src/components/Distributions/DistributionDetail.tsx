@@ -20,7 +20,7 @@ import {
   Divider,
   Badge,
 } from '@chakra-ui/react';
-import { FiEye, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage, FiMap } from 'react-icons/fi';
+import { FiInfo, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Distribution } from '@/entities/distribution';
 import { DistributionEdit } from './DistributionEdit';
@@ -80,7 +80,7 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
@@ -127,7 +127,7 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                     </HStack>
                     <HStack spacing="0.5rem">
                       <Button
-                        leftIcon={<FiEye />}
+                        leftIcon={<FiInfo />}
                         size="sm"
                         variant="outline"
                         colorScheme="blue"

@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiPackage, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiPackage, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Warehouse } from '@/entities/warehouse';
 import { WarehouseEdit } from './WarehouseEdit';
@@ -89,7 +89,7 @@ export const WarehouseDetail = ({ warehouse, setWarehouses, forceOpen, onModalCl
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

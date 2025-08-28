@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Brand } from '@/entities/brand';
 import { BrandEdit } from './BrandEdit';
@@ -89,7 +89,7 @@ export const BrandDetail = ({ brand, setBrands, forceOpen, onModalClose }: Brand
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

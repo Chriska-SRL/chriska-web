@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { VehicleCost } from '@/entities/vehicleCost';
 import { VehicleCostEdit } from './VehicleCostEdit';
@@ -78,7 +78,7 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

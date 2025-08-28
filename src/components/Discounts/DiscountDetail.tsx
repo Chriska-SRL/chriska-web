@@ -21,7 +21,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import {
-  FiEye,
+  FiInfo,
   FiPercent,
   FiCalendar,
   FiPackage,
@@ -153,7 +153,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}

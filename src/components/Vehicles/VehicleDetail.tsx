@@ -17,7 +17,7 @@ import {
   Icon,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiHash, FiTag, FiTruck, FiBox } from 'react-icons/fi';
+import { FiInfo, FiHash, FiTag, FiTruck, FiBox } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleEdit } from './VehicleEdit';
@@ -75,7 +75,7 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

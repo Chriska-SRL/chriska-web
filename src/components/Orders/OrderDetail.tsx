@@ -29,7 +29,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { Order } from '@/entities/order';
-import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
+import { FiInfo, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
 import { OrderPrepare } from './OrderPrepare';
 import { useChangeOrderStatus } from '@/hooks/order';
 import { format } from 'date-fns';
@@ -234,7 +234,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"

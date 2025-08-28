@@ -19,7 +19,7 @@ import {
   Divider,
   HStack,
 } from '@chakra-ui/react';
-import { FiEye, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
+import { FiInfo, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
@@ -94,7 +94,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
