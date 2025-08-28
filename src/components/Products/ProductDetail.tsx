@@ -68,6 +68,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
   const hoverBgIcon = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
   const hoverBorderColor = useColorModeValue('gray.300', 'whiteAlpha.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const handleClose = useCallback(() => {
     onClose();
@@ -89,7 +90,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
   ) => (
     <Box w="100%">
       <HStack mb="0.5rem" spacing="0.5rem">
-        {icon && <Icon as={icon} boxSize="1rem" />}
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
         <Text color={labelColor} fontWeight="semibold">
           {label}
         </Text>
@@ -225,7 +226,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
               {product.suppliers && product.suppliers.length > 0 && (
                 <Box>
                   <HStack mb="0.5rem" spacing="0.5rem">
-                    <Icon as={FiTruck} boxSize="1rem" />
+                    <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
                     <Text fontSize="lg" fontWeight="bold" color={labelColor}>
                       Proveedores
                     </Text>
@@ -268,6 +269,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                             top="50%"
                             transform="translateY(-50%)"
                             boxSize="0.875rem"
+                            color={iconColor}
                           />
                         </Box>
                       ))}

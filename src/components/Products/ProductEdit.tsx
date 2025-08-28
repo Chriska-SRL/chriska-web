@@ -84,6 +84,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
   const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
   const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.imageUrl || null);
@@ -289,7 +290,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           <FormControl isInvalid={submitCount > 0 && touched.internalCode && !!errors.internalCode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiPackage} boxSize="1rem" />
+                                <Icon as={FiPackage} boxSize="1rem" color={iconColor} />
                                 <Text>Código interno</Text>
                               </HStack>
                             </FormLabel>
@@ -307,7 +308,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           <FormControl isInvalid={submitCount > 0 && touched.barcode && !!errors.barcode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiHash} boxSize="1rem" />
+                                <Icon as={FiHash} boxSize="1rem" color={iconColor} />
                                 <Text>Código de barras</Text>
                               </HStack>
                             </FormLabel>
@@ -334,7 +335,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
+                            <Icon as={FiTag} boxSize="1rem" color={iconColor} />
                             <Text>Nombre</Text>
                           </HStack>
                         </FormLabel>
@@ -354,7 +355,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiDollarSign} boxSize="1rem" />
+                              <Icon as={FiDollarSign} boxSize="1rem" color={iconColor} />
                               <Text>Precio</Text>
                             </HStack>
                           </FormLabel>
@@ -380,7 +381,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                               <Text>Unidad</Text>
                             </HStack>
                           </FormLabel>
@@ -403,7 +404,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" />
+                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                               <Text>Peso estimado</Text>
                             </HStack>
                           </FormLabel>
@@ -426,7 +427,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiTag} boxSize="1rem" />
+                              <Icon as={FiTag} boxSize="1rem" color={iconColor} />
                               <Text>Marca</Text>
                             </HStack>
                           </FormLabel>
@@ -454,7 +455,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         >
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiThermometer} boxSize="1rem" />
+                              <Icon as={FiThermometer} boxSize="1rem" color={iconColor} />
                               <Text>Condición de temperatura</Text>
                             </HStack>
                           </FormLabel>
@@ -479,7 +480,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
                             <Text>Descripción</Text>
                           </HStack>
                         </FormLabel>
@@ -500,7 +501,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                               <Text>Categoría</Text>
                             </HStack>
                           </FormLabel>
@@ -524,7 +525,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                               <Text>Subcategoría</Text>
                             </HStack>
                           </FormLabel>
@@ -552,7 +553,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" />
+                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                               <Text>Depósito</Text>
                             </HStack>
                           </FormLabel>
@@ -581,7 +582,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" />
+                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                               <Text>Estantería</Text>
                             </HStack>
                           </FormLabel>
@@ -608,7 +609,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiTruck} boxSize="1rem" />
+                            <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
                             <Text>Proveedores</Text>
                           </HStack>
                         </FormLabel>
@@ -673,7 +674,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
+                            <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
                             <Text>Observaciones</Text>
                           </HStack>
                         </FormLabel>
