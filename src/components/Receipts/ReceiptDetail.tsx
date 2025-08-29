@@ -132,7 +132,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Detalle del recibo #{receipt.id}
+            Detalle del pago #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -152,7 +152,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
               </Button>
               {canDeleteReceipts && (
                 <GenericDelete
-                  item={{ id: receipt.id, name: `recibo #${receipt.id}` }}
+                  item={{ id: receipt.id, name: `pago #${receipt.id}` }}
                   useDeleteHook={useDeleteReceipt}
                   setItems={setReceipts}
                   onDeleted={onClose}

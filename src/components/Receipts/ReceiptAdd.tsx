@@ -23,11 +23,21 @@ import {
   NumberInput,
   NumberInputField,
   Textarea,
+  Box,
+  Flex,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+  List,
+  ListItem,
+  Spinner,
+  Divider,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
-import { useEffect, useState } from 'react';
+import { AiOutlineSearch } from 'react-icons/ai';
+import { useEffect, useState, useRef, Fragment, useMemo, useCallback } from 'react';
 import { Receipt } from '@/entities/receipt';
 import { useAddReceipt } from '@/hooks/receipt';
 import { useGetClients } from '@/hooks/client';
@@ -58,12 +68,104 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const [receiptProps, setReceiptProps] = useState<Partial<Receipt>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
+
+  // Estados para la búsqueda de clientes
+  const [clientSearch, setClientSearch] = useState('');
+  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
+  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
+  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
+  const clientSearchRef = useRef<HTMLDivElement>(null);
+
   const { data, isLoading, error, fieldError } = useAddReceipt(receiptProps);
-  const { data: clients } = useGetClients(1, 100);
+
+  // Colores y variables de estilo
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const dropdownBg = useColorModeValue('white', 'gray.800');
+  const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
+  const hoverBg = useColorModeValue('gray.100', 'gray.700');
+  const dividerColor = useColorModeValue('gray.300', 'gray.600');
+
+  // Debounce para búsqueda de clientes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedClientSearch(clientSearch);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [clientSearch]);
+
+  // Filtros de búsqueda de clientes
+  const clientFilters = useMemo(() => {
+    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
+    const filters: any = {};
+    switch (clientSearchType) {
+      case 'name':
+        filters.name = debouncedClientSearch;
+        break;
+      case 'rut':
+        filters.rut = debouncedClientSearch;
+        break;
+      case 'razonSocial':
+        filters.razonSocial = debouncedClientSearch;
+        break;
+      case 'contactName':
+        filters.contactName = debouncedClientSearch;
+        break;
+    }
+    return filters;
+  }, [debouncedClientSearch, clientSearchType]);
+
+  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
+  const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
+
+  // Actualizar el término de búsqueda cuando se completa la búsqueda
+  useEffect(() => {
+    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
+      setLastClientSearchTerm(debouncedClientSearch);
+    }
+  }, [isLoadingClientsSearch, debouncedClientSearch]);
+
+  // Funciones para manejar búsqueda de clientes
+  const handleClientSearch = useCallback((value: string) => {
+    setClientSearch(value);
+    if (value.length >= 2) {
+      setShowClientDropdown(true);
+    } else {
+      setShowClientDropdown(false);
+    }
+  }, []);
+
+  const handleClientSelect = useCallback((client: any) => {
+    setSelectedClient({ id: client.id, name: client.name });
+    setClientSearch('');
+    setShowClientDropdown(false);
+  }, []);
+
+  const handleClearClientSearch = useCallback(() => {
+    setSelectedClient(null);
+    setClientSearch('');
+    setShowClientDropdown(false);
+  }, []);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
+        setShowClientDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleClose = () => {
     setReceiptProps(undefined);
     setShowConfirmDialog(false);
+    // Limpiar estados de búsqueda de cliente
+    setSelectedClient(null);
+    setClientSearch('');
+    setShowClientDropdown(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
@@ -81,8 +183,8 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo creado',
-        description: 'El recibo ha sido creado correctamente.',
+        title: 'Pago creado',
+        description: 'El pago ha sido creado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -116,7 +218,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const handleSubmit = (values: any) => {
     const newReceipt = {
       ...values,
-      clientId: Number(values.clientId),
+      clientId: selectedClient?.id || 0,
       amount: Number(values.amount),
       date: values.date || new Date().toISOString().split('T')[0],
     };
@@ -126,8 +228,8 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const validateForm = (values: any) => {
     const errors: any = {};
 
-    const clientIdError = validateEmpty(values.clientId);
-    if (clientIdError) errors.clientId = 'Debe seleccionar un cliente';
+    // Validar cliente seleccionado en lugar del campo del formulario
+    if (!selectedClient) errors.clientId = 'Debe seleccionar un cliente';
 
     const amountError = validateEmpty(values.amount);
     if (amountError) errors.amount = amountError;
@@ -162,7 +264,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Nuevo recibo
+            Nuevo pago
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -190,29 +292,168 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                   <form id="receipt-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="clientId">
-                        {({ field }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched.clientId && !!errors.clientId}>
+                        {() => (
+                          <FormControl isInvalid={submitCount > 0 && !selectedClient}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUsers} boxSize="1rem" />
                                 <Text>Cliente</Text>
                               </HStack>
                             </FormLabel>
-                            <Select
-                              {...field}
-                              placeholder="Seleccionar cliente"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            >
-                              {clients?.map((client) => (
-                                <option key={client.id} value={client.id}>
-                                  {client.name}
-                                </option>
-                              ))}
-                            </Select>
-                            <FormErrorMessage>{errors.clientId}</FormErrorMessage>
+
+                            {/* Cliente seleccionado */}
+                            {selectedClient && (
+                              <Flex
+                                p="0.5rem"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                borderRadius="md"
+                                align="center"
+                                justify="space-between"
+                                mb="0.5rem"
+                              >
+                                <Text fontSize="sm">{selectedClient.name}</Text>
+                                <IconButton
+                                  aria-label="Quitar cliente"
+                                  icon={<Text fontSize="lg">×</Text>}
+                                  size="xs"
+                                  variant="ghost"
+                                  onClick={handleClearClientSearch}
+                                  isDisabled={isLoading}
+                                />
+                              </Flex>
+                            )}
+
+                            {/* Buscador de clientes */}
+                            {!selectedClient && (
+                              <Box position="relative" ref={clientSearchRef}>
+                                <Flex
+                                  bg={inputBg}
+                                  borderRadius="md"
+                                  overflow="hidden"
+                                  border="1px solid"
+                                  borderColor={inputBorder}
+                                >
+                                  <Select
+                                    value={clientSearchType}
+                                    onChange={(e) => setClientSearchType(e.target.value as any)}
+                                    bg="transparent"
+                                    border="none"
+                                    color={textColor}
+                                    w="auto"
+                                    minW="7rem"
+                                    borderRadius="none"
+                                    _focus={{ boxShadow: 'none' }}
+                                    isDisabled={isLoading}
+                                  >
+                                    <option value="name">Nombre</option>
+                                    <option value="rut">RUT</option>
+                                    <option value="razonSocial">Razón social</option>
+                                    <option value="contactName">Contacto</option>
+                                  </Select>
+
+                                  <Box w="1px" bg={dividerColor} alignSelf="stretch" my="0.5rem" />
+
+                                  <InputGroup flex="1">
+                                    <Input
+                                      placeholder="Buscar cliente..."
+                                      value={clientSearch}
+                                      onChange={(e) => handleClientSearch(e.target.value)}
+                                      bg="transparent"
+                                      border="none"
+                                      borderRadius="none"
+                                      _placeholder={{ color: textColor }}
+                                      color={textColor}
+                                      _focus={{ boxShadow: 'none' }}
+                                      pl="1rem"
+                                      isDisabled={isLoading}
+                                    />
+                                    <InputRightElement>
+                                      <IconButton
+                                        aria-label="Buscar"
+                                        icon={<AiOutlineSearch size="1.25rem" />}
+                                        size="sm"
+                                        variant="ghost"
+                                        color={textColor}
+                                        onClick={() => setShowClientDropdown(!showClientDropdown)}
+                                        isDisabled={isLoading || clientSearch.length < 2}
+                                      />
+                                    </InputRightElement>
+                                  </InputGroup>
+                                </Flex>
+
+                                {/* Dropdown de resultados */}
+                                {showClientDropdown && (
+                                  <Box
+                                    position="absolute"
+                                    top="100%"
+                                    left={0}
+                                    right={0}
+                                    mt="0.25rem"
+                                    bg={dropdownBg}
+                                    border="1px solid"
+                                    borderColor={dropdownBorder}
+                                    borderRadius="md"
+                                    boxShadow="lg"
+                                    maxH="15rem"
+                                    overflowY="auto"
+                                    zIndex={1000}
+                                  >
+                                    {clientSearch.length < 2 ? (
+                                      <Text p="1rem" fontSize="sm" color={textColor} textAlign="center">
+                                        Escribe al menos 2 caracteres para buscar
+                                      </Text>
+                                    ) : isLoadingClientsSearch ? (
+                                      <Flex justify="center" align="center" p="1rem">
+                                        <Spinner size="sm" />
+                                        <Text ml="0.5rem" fontSize="sm" color={textColor}>
+                                          Buscando clientes...
+                                        </Text>
+                                      </Flex>
+                                    ) : clientsSearch && clientsSearch.length > 0 ? (
+                                      <List>
+                                        {clientsSearch.map((client, index) => (
+                                          <Fragment key={client.id}>
+                                            {index > 0 && <Divider />}
+                                            <ListItem
+                                              p="0.75rem"
+                                              cursor="pointer"
+                                              _hover={{ bg: hoverBg }}
+                                              onClick={() => handleClientSelect(client)}
+                                            >
+                                              <Text fontSize="sm" fontWeight="medium">
+                                                {client.name}
+                                              </Text>
+                                              {client.rut && (
+                                                <Text fontSize="xs" color={textColor}>
+                                                  RUT: {client.rut}
+                                                </Text>
+                                              )}
+                                              {client.razonSocial && (
+                                                <Text fontSize="xs" color={textColor}>
+                                                  Razón Social: {client.razonSocial}
+                                                </Text>
+                                              )}
+                                            </ListItem>
+                                          </Fragment>
+                                        ))}
+                                      </List>
+                                    ) : (
+                                      <Text p="1rem" fontSize="sm" color={textColor} textAlign="center">
+                                        No se encontraron clientes para "{lastClientSearchTerm}"
+                                      </Text>
+                                    )}
+                                  </Box>
+                                )}
+                              </Box>
+                            )}
+
+                            {submitCount > 0 && !selectedClient && (
+                              <Text color="red.500" fontSize="sm" mt="0.25rem">
+                                Debe seleccionar un cliente
+                              </Text>
+                            )}
                           </FormControl>
                         )}
                       </Field>
@@ -331,7 +572,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Crear recibo
+                Crear pago
               </Button>
             </HStack>
           </ModalFooter>

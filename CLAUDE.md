@@ -99,6 +99,7 @@ Currently, OrderRequest, Order, Delivery, and ReturnRequest filters use a comple
 ### Current Pattern (Dropdown-based)
 
 The existing filter components use:
+
 - Complex dropdown state management with debounced search
 - `selectedClient` state storing `{ id: number; name: string }`
 - `onFilterChange` callback with `{ clientId?: number }`
@@ -108,6 +109,7 @@ The existing filter components use:
 ### Target Pattern (Input-based)
 
 The desired pattern (like ProductFilters) uses:
+
 - Simple input field with local state
 - Parent component manages filter state via props
 - Enter key triggers search
@@ -118,13 +120,14 @@ The desired pattern (like ProductFilters) uses:
 **CRITICAL**: All steps must be completed in order. Missing backend changes will cause "loading forever" issues.
 
 #### Step 1: Update Service Layer
+
 File: `src/services/{entity}.ts` (e.g., `src/services/orderRequest.ts`)
 
 ```typescript
 // Add new filter parameters to existing type
 type OrderRequestFilters = {
   status?: string;
-  clientId?: number;  // Keep for backward compatibility
+  clientId?: number; // Keep for backward compatibility
   userId?: number;
   fromDate?: string;
   toDate?: string;
@@ -151,6 +154,7 @@ if (filters?.contactName) {
 ```
 
 #### Step 2: Update Hook Layer
+
 File: `src/hooks/{entity}.ts` (e.g., `src/hooks/orderRequest.ts`)
 
 ```typescript
@@ -171,21 +175,22 @@ type OrderRequestFilters = {
 const memoizedFilters = useMemo(
   () => filters,
   [
-    filters?.status, 
-    filters?.clientId, 
-    filters?.userId, 
-    filters?.fromDate, 
+    filters?.status,
+    filters?.clientId,
+    filters?.userId,
+    filters?.fromDate,
     filters?.toDate,
     // Add new dependencies
     filters?.name,
     filters?.rut,
     filters?.razonSocial,
-    filters?.contactName
+    filters?.contactName,
   ],
 );
 ```
 
 #### Step 3: Update Parent Component State
+
 File: `src/app/{entity}/page.tsx` (e.g., `src/app/orderrequests/page.tsx`)
 
 ```typescript
@@ -208,17 +213,18 @@ const handleFilterChange = useCallback((newFilters: any) => {
     fromDate: newFilters.fromDate,
     toDate: newFilters.toDate,
   };
-  
+
   // Map search fields to service parameters
   if (newFilters.clientSearch && newFilters.clientSearchParam) {
     mappedFilters[newFilters.clientSearchParam] = newFilters.clientSearch;
   }
-  
+
   setFilters(mappedFilters);
 }, []);
 ```
 
 #### Step 4: Update Filter Component Props
+
 File: `src/components/{Entity}/{Entity}Filters.tsx`
 
 ```typescript
@@ -246,11 +252,14 @@ const handleSearch = useCallback(() => {
   }
 }, [inputValue]);
 
-const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    handleSearch();
-  }
-}, [handleSearch]);
+const handleKeyPress = useCallback(
+  (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  },
+  [handleSearch],
+);
 
 // Update useEffect to send new format
 useEffect(() => {
@@ -266,6 +275,7 @@ useEffect(() => {
 ```
 
 #### Step 5: Update Filter Component UI
+
 Replace dropdown UI with simple input:
 
 ```typescript

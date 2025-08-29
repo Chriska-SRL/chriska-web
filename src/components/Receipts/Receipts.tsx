@@ -49,7 +49,7 @@ export const Receipts = () => {
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
-          Recibos
+          Pagos
         </Text>
         {isMobile && <ReceiptAdd isLoading={isLoading} setReceipts={setReceipts} />}
       </Flex>

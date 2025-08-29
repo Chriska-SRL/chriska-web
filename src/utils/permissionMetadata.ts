@@ -55,12 +55,6 @@ export const PERMISSIONS_METADATA = [
   { id: Permission.EDIT_PURCHASES, label: 'Editar compras', group: 'Compras' },
   { id: Permission.VIEW_PURCHASES, label: 'Ver compras', group: 'Compras' },
 
-  // Ventas
-  { id: Permission.CREATE_SALES, label: 'Crear ventas', group: 'Ventas' },
-  { id: Permission.DELETE_SALES, label: 'Eliminar ventas', group: 'Ventas' },
-  { id: Permission.EDIT_SALES, label: 'Editar ventas', group: 'Ventas' },
-  { id: Permission.VIEW_SALES, label: 'Ver ventas', group: 'Ventas' },
-
   // Pedidos
   { id: Permission.CREATE_ORDERS, label: 'Crear pedidos', group: 'Pedidos' },
   { id: Permission.DELETE_ORDERS, label: 'Eliminar pedidos', group: 'Pedidos' },
@@ -78,6 +72,7 @@ export const PERMISSIONS_METADATA = [
   { id: Permission.DELETE_STOCK_MOVEMENTS, label: 'Eliminar movimientos de stock', group: 'Movimientos de stock' },
   { id: Permission.EDIT_STOCK_MOVEMENTS, label: 'Editar movimientos de stock', group: 'Movimientos de stock' },
   { id: Permission.VIEW_STOCK_MOVEMENTS, label: 'Ver movimientos de stock', group: 'Movimientos de stock' },
+  { id: Permission.CREATE_PRODUCT_WITHDATE, label: 'Crear producto con fecha', group: 'Movimientos de stock' },
 
   // Vehículos
   { id: Permission.CREATE_VEHICLES, label: 'Crear vehículos', group: 'Vehículos' },
@@ -85,15 +80,51 @@ export const PERMISSIONS_METADATA = [
   { id: Permission.EDIT_VEHICLES, label: 'Editar vehículos', group: 'Vehículos' },
   { id: Permission.VIEW_VEHICLES, label: 'Ver vehículos', group: 'Vehículos' },
 
-  // Pagos
-  { id: Permission.CREATE_PAYMENTS, label: 'Crear pagos', group: 'Pagos' },
-  { id: Permission.DELETE_PAYMENTS, label: 'Eliminar pagos', group: 'Pagos' },
-  { id: Permission.EDIT_PAYMENTS, label: 'Editar pagos', group: 'Pagos' },
-  { id: Permission.VIEW_PAYMENTS, label: 'Ver pagos', group: 'Pagos' },
+  // Marcas
+  { id: Permission.CREATE_BRANDS, label: 'Crear marcas', group: 'Marcas' },
+  { id: Permission.DELETE_BRANDS, label: 'Eliminar marcas', group: 'Marcas' },
+  { id: Permission.EDIT_BRANDS, label: 'Editar marcas', group: 'Marcas' },
+  { id: Permission.VIEW_BRANDS, label: 'Ver marcas', group: 'Marcas' },
 
-  // Cobros
-  { id: Permission.CREATE_COLLECTIONS, label: 'Crear cobros', group: 'Cobros' },
-  { id: Permission.DELETE_COLLECTIONS, label: 'Eliminar cobros', group: 'Cobros' },
-  { id: Permission.EDIT_COLLECTIONS, label: 'Editar cobros', group: 'Cobros' },
-  { id: Permission.VIEW_COLLECTIONS, label: 'Ver cobros', group: 'Cobros' },
+  // Descuentos
+  { id: Permission.CREATE_DISCOUNTS, label: 'Crear descuentos', group: 'Descuentos' },
+  { id: Permission.DELETE_DISCOUNTS, label: 'Eliminar descuentos', group: 'Descuentos' },
+  { id: Permission.EDIT_DISCOUNTS, label: 'Editar descuentos', group: 'Descuentos' },
+  { id: Permission.VIEW_DISCOUNTS, label: 'Ver descuentos', group: 'Descuentos' },
+
+  // Solicitudes de pedido
+  { id: Permission.CREATE_ORDER_REQUESTS, label: 'Crear solicitudes de pedido', group: 'Solicitudes de pedido' },
+  { id: Permission.DELETE_ORDER_REQUESTS, label: 'Eliminar solicitudes de pedido', group: 'Solicitudes de pedido' },
+  { id: Permission.EDIT_ORDER_REQUESTS, label: 'Editar solicitudes de pedido', group: 'Solicitudes de pedido' },
+  { id: Permission.VIEW_ORDER_REQUESTS, label: 'Ver solicitudes de pedido', group: 'Solicitudes de pedido' },
+
+  // Solicitudes de devolución
+  {
+    id: Permission.CREATE_RETURN_REQUESTS,
+    label: 'Crear solicitudes de devolución',
+    group: 'Solicitudes de devolución',
+  },
+  {
+    id: Permission.DELETE_RETURN_REQUESTS,
+    label: 'Eliminar solicitudes de devolución',
+    group: 'Solicitudes de devolución',
+  },
+  {
+    id: Permission.EDIT_RETURN_REQUESTS,
+    label: 'Editar solicitudes de devolución',
+    group: 'Solicitudes de devolución',
+  },
+  { id: Permission.VIEW_RETURN_REQUESTS, label: 'Ver solicitudes de devolución', group: 'Solicitudes de devolución' },
+
+  // Distribuciones
+  { id: Permission.ADD_DISTRIBUTIONS, label: 'Agregar distribuciones', group: 'Distribuciones' },
+  { id: Permission.DELETE_DISTRIBUTIONS, label: 'Eliminar distribuciones', group: 'Distribuciones' },
+  { id: Permission.EDIT_DISTRIBUTIONS, label: 'Editar distribuciones', group: 'Distribuciones' },
+  { id: Permission.VIEW_DISTRIBUTIONS, label: 'Ver distribuciones', group: 'Distribuciones' },
+
+  // Recibos
+  { id: Permission.CREATE_RECEIPTS, label: 'Crear recibos', group: 'Recibos' },
+  { id: Permission.DELETE_RECEIPTS, label: 'Eliminar recibos', group: 'Recibos' },
+  { id: Permission.EDIT_RECEIPTS, label: 'Editar recibos', group: 'Recibos' },
+  { id: Permission.VIEW_RECEIPTS, label: 'Ver recibos', group: 'Recibos' },
 ];

@@ -89,7 +89,7 @@ export const ReceiptList = ({
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron recibos.
+          No se encontraron pagos.
         </Text>
         <Text fontSize="sm" color={emptyTextColor}>
           Intenta con otros parámetros.
@@ -179,7 +179,7 @@ export const ReceiptList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -253,7 +253,7 @@ export const ReceiptList = ({
           </TableContainer>
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
