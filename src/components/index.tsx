@@ -85,3 +85,10 @@ export * from './Discounts/DiscountEdit';
 export * from './Discounts/DiscountList';
 // export * from './Discounts/DiscountFilters'; // Temporarily disabled to debug requests
 export * from './Discounts/DiscountDetail';
+
+export * from './Receipts/Receipts';
+export * from './Receipts/ReceiptAdd';
+export * from './Receipts/ReceiptEdit';
+export * from './Receipts/ReceiptList';
+export * from './Receipts/ReceiptFilters';
+export * from './Receipts/ReceiptDetail';
