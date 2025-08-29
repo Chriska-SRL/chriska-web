@@ -29,12 +29,7 @@ import { useGetClients } from '@/hooks/client';
 import { PaymentMethodOptions } from '@/enums/paymentMethod.enum';
 
 type ReceiptFiltersProps = {
-  onFilterChange: (filters: {
-    clientId?: number;
-    paymentMethod?: string;
-    fromDate?: string;
-    toDate?: string;
-  }) => void;
+  onFilterChange: (filters: { clientId?: number; paymentMethod?: string; fromDate?: string; toDate?: string }) => void;
   disabled?: boolean;
 };
 
@@ -139,7 +134,6 @@ export const ReceiptFilters = ({ onFilterChange, disabled = false }: ReceiptFilt
     setToDate(e.target.value);
   };
 
-
   const handleResetFilters = () => {
     setSelectedClient(null);
     setClientSearch('');
@@ -158,17 +152,12 @@ export const ReceiptFilters = ({ onFilterChange, disabled = false }: ReceiptFilt
     });
   }, [selectedClient, paymentMethod, fromDate, toDate, onFilterChange]);
 
-  const hasActiveFilters =
-    selectedClient !== null ||
-    paymentMethod !== '' ||
-    fromDate !== '' ||
-    toDate !== '';
+  const hasActiveFilters = selectedClient !== null || paymentMethod !== '' || fromDate !== '' || toDate !== '';
 
-  const activeSelectFilters = [
-    paymentMethod !== '' ? 1 : 0,
-    fromDate !== '' ? 1 : 0,
-    toDate !== '' ? 1 : 0,
-  ].reduce((a, b) => a + b, 0);
+  const activeSelectFilters = [paymentMethod !== '' ? 1 : 0, fromDate !== '' ? 1 : 0, toDate !== '' ? 1 : 0].reduce(
+    (a, b) => a + b,
+    0,
+  );
 
   // Click outside handler
   useEffect(() => {

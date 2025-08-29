@@ -38,14 +38,12 @@ export const Receipts = () => {
     }
   }, [filters]);
 
-  const handleFilterChange = useCallback((newFilters: {
-    clientId?: number;
-    paymentMethod?: string;
-    fromDate?: string;
-    toDate?: string;
-  }) => {
-    setFilters(newFilters);
-  }, []);
+  const handleFilterChange = useCallback(
+    (newFilters: { clientId?: number; paymentMethod?: string; fromDate?: string; toDate?: string }) => {
+      setFilters(newFilters);
+    },
+    [],
+  );
 
   return (
     <>
@@ -59,10 +57,7 @@ export const Receipts = () => {
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <ReceiptFilters
-          onFilterChange={handleFilterChange}
-          disabled={isLoading || isFilterLoading}
-        />
+        <ReceiptFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
         {!isMobile && (
           <>
             <Divider orientation="vertical" />

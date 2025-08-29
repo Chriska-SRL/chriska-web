@@ -18,7 +18,7 @@ import {
   HStack,
   Badge,
 } from '@chakra-ui/react';
-import { FiInfo, FiHash, FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Receipt } from '@/entities/receipt';
 import { ReceiptEdit } from './ReceiptEdit';

@@ -76,6 +76,7 @@ export enum Permission {
   DELETE_STOCK_MOVEMENTS = 50,
   EDIT_STOCK_MOVEMENTS = 51,
   VIEW_STOCK_MOVEMENTS = 52,
+  CREATE_PRODUCT_WITHDATE = 69,
 
   // Vehículos
   CREATE_VEHICLES = 53,
@@ -100,9 +101,6 @@ export enum Permission {
   DELETE_BRANDS = 66,
   EDIT_BRANDS = 67,
   VIEW_BRANDS = 68,
-
-  // Additional permissions
-  CREATE_PRODUCT_WITHDATE = 69,
 
   //Discounts
   CREATE_DISCOUNTS = 70,

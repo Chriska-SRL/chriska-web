@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Receipt } from '@/entities/receipt';
-import {
-  addReceipt,
-  deleteReceipt,
-  getReceiptById,
-  getReceipts,
-  updateReceipt,
-} from '@/services/receipt';
+import { addReceipt, deleteReceipt, getReceiptById, getReceipts, updateReceipt } from '@/services/receipt';
 import { useFetch } from '@/utils/useFetch';
 
 export const useGetReceipts = (
@@ -39,14 +33,7 @@ export const useGetReceipts = (
     };
 
     fetchReceipts();
-  }, [
-    page,
-    pageSize,
-    filters?.clientId,
-    filters?.paymentMethod,
-    filters?.fromDate,
-    filters?.toDate,
-  ]);
+  }, [page, pageSize, filters?.clientId, filters?.paymentMethod, filters?.fromDate, filters?.toDate]);
 
   return { data, isLoading, error };
 };

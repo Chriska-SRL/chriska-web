@@ -182,7 +182,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
               validateOnChange={true}
               validateOnBlur={false}
             >
-              {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
