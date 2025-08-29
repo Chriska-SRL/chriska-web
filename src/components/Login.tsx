@@ -170,11 +170,11 @@ export const Login = () => {
 
                 <Box mt="1.5rem">
                   <Progress
-                    h={(isLoading || isRedirecting) ? '4px' : '1px'}
+                    h={isLoading || isRedirecting ? '4px' : '1px'}
                     mb="1.5rem"
                     size="xs"
                     isIndeterminate={isLoading || isRedirecting}
-                    colorScheme={isRedirecting ? "green" : "blue"}
+                    colorScheme={isRedirecting ? 'green' : 'blue'}
                   />
                   <HStack spacing="0.5rem">
                     <Button
@@ -186,12 +186,7 @@ export const Login = () => {
                       flex="1"
                       opacity={isRedirecting ? 0.8 : 1}
                     >
-                      {isRedirecting 
-                        ? 'Redirigiendo...' 
-                        : isLoading 
-                          ? 'Iniciando sesión...' 
-                          : 'Iniciar sesión'
-                      }
+                      {isRedirecting ? 'Redirigiendo...' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                     </Button>
 
                     <IconButton
