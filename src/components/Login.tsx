@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { FiCode } from 'react-icons/fi';
 import { Formik, Field } from 'formik';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLogin } from '@/hooks/login';
 import { useUserStore } from '@/stores/useUserStore';
 import { Login as LoginValues } from '@/entities/login';
@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 export const Login = () => {
   const router = useRouter();
   const toast = useToast();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { performLogin, performDevLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
@@ -53,23 +54,44 @@ export const Login = () => {
   }, [error, fieldError, toast]);
 
   const handleLoginSuccess = () => {
+    const user = useUserStore.getState().user;
+    setIsRedirecting(true);
+
+    // Mostrar toast de éxito pero no bloquear la redirección
     toast({
       title: 'Inicio de sesión exitoso',
       description: 'Redirigiendo...',
       status: 'success',
-      duration: 1500,
+      duration: 2000,
       isClosable: true,
     });
 
-    setTimeout(() => {
-      const user = useUserStore.getState().user;
-
+    // Redirección inmediata y robusta
+    try {
+      if (typeof window !== 'undefined') {
+        const redirectUrl = user?.needsPasswordChange ? '/cambiar-contrasena' : '/';
+        window.location.replace(redirectUrl);
+      } else {
+        // Fallback para SSR
+        if (user?.needsPasswordChange) {
+          router.push('/cambiar-contrasena');
+        } else {
+          router.push('/');
+        }
+      }
+    } catch (error) {
+      console.error('Error during login redirect:', error);
+      // Fallback en caso de error
       if (user?.needsPasswordChange) {
         router.push('/cambiar-contrasena');
       } else {
         router.push('/');
       }
-    }, 100);
+    } finally {
+      // Este finally puede no ejecutarse debido a window.location.replace
+      // pero está aquí como precaución
+      setIsRedirecting(false);
+    }
   };
 
   const handleSubmit = async (values: LoginValues) => {
@@ -127,7 +149,7 @@ export const Login = () => {
                     name="username"
                     type="text"
                     variant="filled"
-                    disabled={isLoading}
+                    disabled={isLoading || isRedirecting}
                     autoCapitalize="none"
                   />
                   <FormErrorMessage>{errors.username}</FormErrorMessage>
@@ -141,40 +163,47 @@ export const Login = () => {
                     name="password"
                     type="password"
                     variant="filled"
-                    disabled={isLoading}
+                    disabled={isLoading || isRedirecting}
                   />
                   <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 
                 <Box mt="1.5rem">
                   <Progress
-                    h={isLoading ? '4px' : '1px'}
+                    h={(isLoading || isRedirecting) ? '4px' : '1px'}
                     mb="1.5rem"
                     size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
+                    isIndeterminate={isLoading || isRedirecting}
+                    colorScheme={isRedirecting ? "green" : "blue"}
                   />
                   <HStack spacing="0.5rem">
                     <Button
                       type="submit"
-                      isDisabled={isLoading}
+                      isDisabled={isLoading || isRedirecting}
                       bg={btnBg}
                       color="white"
                       _hover={{ backgroundColor: btnHover }}
                       flex="1"
+                      opacity={isRedirecting ? 0.8 : 1}
                     >
-                      {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                      {isRedirecting 
+                        ? 'Redirigiendo...' 
+                        : isLoading 
+                          ? 'Iniciando sesión...' 
+                          : 'Iniciar sesión'
+                      }
                     </Button>
 
                     <IconButton
                       onClick={handleDevLogin}
-                      isDisabled={isLoading}
+                      isDisabled={isLoading || isRedirecting}
                       bg={devBtnBg}
                       color="white"
                       _hover={{ backgroundColor: devBtnHover }}
                       icon={<FiCode />}
                       aria-label="Login de desarrollo"
                       size="md"
+                      opacity={isRedirecting ? 0.8 : 1}
                     />
                   </HStack>
                 </Box>
