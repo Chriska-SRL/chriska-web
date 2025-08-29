@@ -34,8 +34,6 @@ import {
   FiPhone,
   FiMail,
   FiFileText,
-  FiStar,
-  FiBox,
   FiCreditCard,
   FiUsers,
   FiMap,
@@ -48,7 +46,6 @@ import { useGetZones } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { QualificationSelector } from '@/components/QualificationSelector';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { BankOptions } from '@/enums/bank.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -194,8 +191,6 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                 contactName: '',
                 email: '',
                 observations: '',
-                qualification: '3',
-                loanedCrates: 0,
                 zoneId: '',
               }}
               onSubmit={handleSubmit}
@@ -489,48 +484,6 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                           </FormControl>
                         )}
                       </Field>
-
-                      {/* Fila 8: Cajones prestados - Calificación */}
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <Field name="loanedCrates" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.loanedCrates && !!errors.loanedCrates}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiBox} boxSize="1rem" />
-                                  <Text>Cajones prestados</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                type="number"
-                                min="0"
-                                placeholder="Ingrese la cantidad de cajones prestados"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.loanedCrates}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
-                        <FormControl>
-                          <FormLabel fontWeight="semibold" mb="0.75rem">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiStar} boxSize="1rem" />
-                              <Text>Calificación</Text>
-                            </HStack>
-                          </FormLabel>
-                          <QualificationSelector
-                            value={values.qualification}
-                            onChange={(value) => setFieldValue('qualification', value)}
-                            size="2.25rem"
-                            spacing="0.75rem"
-                          />
-                        </FormControl>
-                      </SimpleGrid>
 
                       <FormControl>
                         <FormLabel fontWeight="semibold">

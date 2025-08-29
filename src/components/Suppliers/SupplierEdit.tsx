@@ -98,16 +98,12 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
   const handleSubmit = (values: any) => {
     const submitData: any = {
       ...values,
-      bankAccounts: values.bankAccounts || [],
-    };
-
-    // Agregar la ubicación como location
-    if (values.latitude && values.longitude) {
-      submitData.location = {
+      location: {
         latitude: values.latitude,
         longitude: values.longitude,
-      };
-    }
+      },
+      bankAccounts: values.bankAccounts || [],
+    };
 
     // Eliminar latitude y longitude del objeto principal
     delete submitData.latitude;
