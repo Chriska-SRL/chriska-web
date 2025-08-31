@@ -159,7 +159,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -249,13 +249,13 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                           )}
                         </Field>
 
-                        <Field name="rut" validate={validate}>
+                        <Field name="rut">
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
-                                  <Text>RUT</Text>
+                                  <Text>RUT (opcional)</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -402,7 +402,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
-                                <Text>Correo electrónico</Text>
+                                <Text>Correo electrónico (opcional)</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -463,7 +463,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                       </FormControl>
 
                       {/* Fila 7: Horario (completo) */}
-                      <Field name="schedule" validate={validate}>
+                      <Field name="schedule" validate={validateEmpty}>
                         {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
                             <FormLabel fontWeight="semibold">
@@ -489,7 +489,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiCreditCard} boxSize="1rem" />
-                            <Text>Cuentas bancarias</Text>
+                            <Text>Cuentas bancarias (opcional)</Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">

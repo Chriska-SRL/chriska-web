@@ -243,7 +243,7 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -410,19 +410,13 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
           <ModalFooter borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             {returnRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
                 justify={{ base: 'stretch', md: 'flex-end' }}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  w={{ base: '100%', md: 'auto' }}
-                  order={{ base: 3, md: 1 }}
-                >
+                <Button variant="ghost" size="sm" onClick={onClose} w={{ base: '100%', md: 'auto' }}>
                   Cerrar
                 </Button>
 
@@ -436,7 +430,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     isLoading={statusLoading && actionType === 'cancel'}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 2, md: 2 }}
                   >
                     Cancelar
                   </Button>
@@ -452,7 +445,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     isLoading={statusLoading && actionType === 'confirm'}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 1, md: 3 }}
                   >
                     Confirmar
                   </Button>
@@ -470,7 +462,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     }}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 4, md: 4 }}
                   >
                     Editar
                   </Button>
@@ -478,7 +469,7 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
               </Stack>
             ) : (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"

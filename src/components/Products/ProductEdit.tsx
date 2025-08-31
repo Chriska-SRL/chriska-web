@@ -223,7 +223,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -262,6 +262,16 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
               onSubmit={handleSubmit}
               validateOnChange={true}
               validateOnBlur={false}
+              validate={(values) => {
+                const errors: any = {};
+
+                // Validar peso estimado solo si unitType es Kilo
+                if (values.unitType === 'Kilo' && (!values.estimatedWeight || values.estimatedWeight <= 0)) {
+                  errors.estimatedWeight = 'El peso estimado es obligatorio para productos por kilo';
+                }
+
+                return errors;
+              }}
             >
               {({ handleSubmit, errors, touched, submitCount, setFieldValue, dirty, resetForm }) => {
                 // Actualizar la instancia de formik solo cuando cambie
@@ -309,7 +319,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" color={iconColor} />
-                                <Text>Código de barras</Text>
+                                <Text>Código de barras (opcional)</Text>
                               </HStack>
                             </FormLabel>
                             <Field
@@ -320,6 +330,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                               borderColor={inputBorder}
                               disabled={isLoading}
                               validate={(value: any) => {
+                                // Campo opcional - solo validar si se proporciona
                                 if (!value) return undefined;
                                 const barcodeRegex = /^\d{13}$/;
                                 return barcodeRegex.test(value)
@@ -401,26 +412,38 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           <FormErrorMessage>{errors.unitType}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
-                              <Text>Peso estimado</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Field
-                            as={Input}
-                            name="estimatedWeight"
-                            type="number"
-                            step="1"
-                            placeholder="Ingrese el peso estimado en gramos"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            disabled={isLoading}
-                          />
-                          <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
-                        </FormControl>
+                        <Field name="estimatedWeight">
+                          {({ field, form }: any) => (
+                            <FormControl
+                              isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}
+                            >
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiBox} boxSize="1rem" color={iconColor} />
+                                  <Text>
+                                    Peso estimado{' '}
+                                    {form.values.unitType === 'Unit'
+                                      ? '(opcional)'
+                                      : form.values.unitType === 'Kilo'
+                                        ? ''
+                                        : ''}
+                                  </Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="1"
+                                placeholder="Ingrese el peso estimado en gramos"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </SimpleGrid>
 
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
@@ -675,7 +698,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
-                            <Text>Observaciones</Text>
+                            <Text>Observaciones (opcional)</Text>
                           </HStack>
                         </FormLabel>
                         <Field

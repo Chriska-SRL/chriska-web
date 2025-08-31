@@ -428,7 +428,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

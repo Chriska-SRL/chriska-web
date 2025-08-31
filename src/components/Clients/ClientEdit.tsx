@@ -166,7 +166,7 @@ const ClientEditForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -260,13 +260,13 @@ const ClientEditForm = ({
                             )}
                           </Field>
 
-                          <Field name="rut" validate={validate}>
+                          <Field name="rut">
                             {({ field }: any) => (
                               <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiHash} boxSize="1rem" />
-                                    <Text>RUT</Text>
+                                    <Text>RUT (opcional)</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -413,7 +413,7 @@ const ClientEditForm = ({
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMail} boxSize="1rem" />
-                                  <Text>Correo electrónico</Text>
+                                  <Text>Correo electrónico (opcional)</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -542,7 +542,7 @@ const ClientEditForm = ({
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiGrid} boxSize="1rem" />
-                              <Text>Cuentas bancarias</Text>
+                              <Text>Cuentas bancarias (opcional)</Text>
                             </HStack>
                           </FormLabel>
                           <FieldArray name="bankAccounts">

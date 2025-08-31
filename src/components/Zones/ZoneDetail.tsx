@@ -18,6 +18,7 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
   Divider,
 } from '@chakra-ui/react';
 import { FiInfo, FiMapPin, FiFileText, FiCalendar } from 'react-icons/fi';
@@ -32,7 +33,7 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { Day, getDayLabel } from '@/enums/day.enum';
 
-const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY];
 
 // Mapeo para convertir días en español a inglés
 const spanishToEnglishDayMap: Record<string, Day> = {
@@ -42,6 +43,7 @@ const spanishToEnglishDayMap: Record<string, Day> = {
   Jueves: Day.THURSDAY,
   Viernes: Day.FRIDAY,
   Sábado: Day.SATURDAY,
+  Domingo: Day.SUNDAY,
 };
 
 const convertDaysToEnglish = (days: string[]): Day[] => {
@@ -175,7 +177,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -205,7 +207,13 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
               </Button>
@@ -233,7 +241,7 @@ export const ZoneDetail = ({ zone, setZones, forceOpen, onModalClose }: ZoneDeta
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -58,6 +58,7 @@ type OrderRequestAddProps = {
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
   preselectedClientId?: number;
   forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
 type OrderRequestAddModalProps = {
@@ -65,6 +66,7 @@ type OrderRequestAddModalProps = {
   onClose: () => void;
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
   preselectedClientId?: number;
+  onModalClose?: () => void;
 };
 
 const OrderRequestAddModal = ({
@@ -72,6 +74,7 @@ const OrderRequestAddModal = ({
   onClose,
   setOrderRequests,
   preselectedClientId,
+  onModalClose,
 }: OrderRequestAddModalProps) => {
   const toast = useToast();
   const user = useUserStore((state) => state.user);
@@ -385,6 +388,10 @@ const OrderRequestAddModal = ({
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
+    // Llamar a la función para limpiar la URL si está disponible
+    if (onModalClose) {
+      onModalClose();
+    }
     onClose();
   };
 
@@ -407,9 +414,13 @@ const OrderRequestAddModal = ({
       });
       setOrderRequestProps(undefined);
       setOrderRequests((prev) => [...prev, data]);
+      // Limpiar URL si está disponible
+      if (onModalClose) {
+        onModalClose();
+      }
       onClose();
     }
-  }, [data, setOrderRequests, toast, onClose]);
+  }, [data, setOrderRequests, toast, onClose, onModalClose]);
 
   useEffect(() => {
     if (fieldError) {
@@ -476,7 +487,7 @@ const OrderRequestAddModal = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '2xl' }}
+        size={{ base: 'full', md: '2xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -1721,6 +1732,7 @@ export const OrderRequestAdd = ({
   setOrderRequests,
   preselectedClientId,
   forceOpen,
+  onModalClose,
 }: OrderRequestAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const hasPermission = useUserStore((state) => state.hasPermission);
@@ -1758,6 +1770,7 @@ export const OrderRequestAdd = ({
           onClose={onClose}
           setOrderRequests={setOrderRequests}
           preselectedClientId={preselectedClientId}
+          onModalClose={onModalClose}
         />
       )}
     </>

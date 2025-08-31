@@ -19,6 +19,7 @@ import {
   SimpleGrid,
   Flex,
   Spinner,
+  Stack,
 } from '@chakra-ui/react';
 import {
   FiInfo,
@@ -175,7 +176,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={!isNavigatingToOrders}
         closeOnEsc={!isNavigatingToOrders}
@@ -289,7 +290,13 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem" w="100%" justify="flex-end">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose} disabled={isNavigatingToOrders}>
                 Cerrar
               </Button>
@@ -328,7 +335,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

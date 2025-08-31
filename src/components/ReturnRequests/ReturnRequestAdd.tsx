@@ -138,7 +138,7 @@ const ReturnRequestAddModal = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'sm' }}
+        size={{ base: 'full', md: 'sm' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

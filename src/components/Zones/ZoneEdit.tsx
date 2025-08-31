@@ -41,7 +41,7 @@ type ZoneEditProps = {
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY];
 
 // Mapeo para convertir días en español a inglés
 const spanishToEnglishDayMap: Record<string, Day> = {
@@ -51,6 +51,7 @@ const spanishToEnglishDayMap: Record<string, Day> = {
   Jueves: Day.THURSDAY,
   Viernes: Day.FRIDAY,
   Sábado: Day.SATURDAY,
+  Domingo: Day.SUNDAY,
 };
 
 const convertDaysToEnglish = (days: string[]): Day[] => {
@@ -155,7 +156,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

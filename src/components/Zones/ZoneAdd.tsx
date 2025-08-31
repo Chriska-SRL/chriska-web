@@ -45,7 +45,7 @@ type ZoneFormValues = {
   deliveryDays: Day[];
 };
 
-const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY];
 
 type ZoneAddProps = {
   isLoading: boolean;
@@ -178,7 +178,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'lg' }}
+        size={{ base: 'full', md: 'lg' }}
         isCentered
         closeOnOverlayClick={step === 'image'}
         onOverlayClick={handleOverlayClick}

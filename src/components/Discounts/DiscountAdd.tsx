@@ -40,7 +40,7 @@ import {
 } from '@chakra-ui/react';
 import { FaPlus, FaTimes, FaCheck } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { FiPercent, FiCalendar, FiPackage, FiMapPin, FiTag, FiFileText, FiCheckCircle, FiGrid } from 'react-icons/fi';
+import { FiPercent, FiCalendar, FiPackage, FiMapPin, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
 import { Field, Formik } from 'formik';
 import { useEffect, useState, useMemo, useRef, Fragment, useCallback } from 'react';
 import { Discount } from '@/entities/discount';
@@ -54,7 +54,6 @@ import { useGetBrands } from '@/hooks/brand';
 import { useGetCategories } from '@/hooks/category';
 import { useGetSubCategories } from '@/hooks/subcategory';
 import { useGetZones } from '@/hooks/zone';
-import { DiscountStatusOptions } from '@/enums/discountStatus.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type DiscountAddProps = {
@@ -368,13 +367,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   }, []);
 
   const handleSubmit = useCallback(
-    (values: {
-      description: string;
-      expirationDate: string;
-      productQuantity: number;
-      percentage: number;
-      status: string;
-    }) => {
+    (values: { description: string; expirationDate: string; productQuantity: number; percentage: number }) => {
       // Prevent double submission
       if (isLoading || discountProps) return;
 
@@ -384,7 +377,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
         expirationDate: values.expirationDate,
         productQuantity: values.productQuantity,
         percentage: values.percentage,
-        status: values.status,
+        status: 'Available',
       };
 
       // Add product-related fields only when necessary
@@ -420,14 +413,12 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
     ],
   );
 
-  const statusOptions = DiscountStatusOptions;
-
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -452,7 +443,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                 expirationDate: '',
                 productQuantity: 1,
                 percentage: 0,
-                status: 'Available',
                 brandId: '',
                 subCategoryId: '',
                 zoneId: '',
@@ -577,56 +567,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                               </FormControl>
                             )}
                           </Field>
-
-                          <Field name="status" validate={validateEmpty}>
-                            {({ field }: any) => (
-                              <FormControl isInvalid={submitCount > 0 && touched.status && !!errors.status} flex="1">
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiCheckCircle} boxSize="1rem" />
-                                    <Text>Estado</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Select
-                                  {...field}
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  disabled={isLoading}
-                                >
-                                  {statusOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                      {option.label}
-                                    </option>
-                                  ))}
-                                </Select>
-                                <FormErrorMessage>{errors.status}</FormErrorMessage>
-                              </FormControl>
-                            )}
-                          </Field>
                         </Stack>
-
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese la descripción del descuento"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.description}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
 
                         {/* Selector de tipo de productos */}
                         <FormControl>
@@ -1239,6 +1180,29 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                             )}
                           </FormControl>
                         )}
+
+                        {/* Descripción */}
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </VStack>
                     </Box>
                   </form>

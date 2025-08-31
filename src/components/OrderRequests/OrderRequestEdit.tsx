@@ -375,7 +375,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '2xl' }}
+        size={{ base: 'full', md: '2xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleClose}

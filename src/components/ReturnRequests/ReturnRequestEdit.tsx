@@ -63,6 +63,7 @@ export const ReturnRequestEdit = ({
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const labelColor = useColorModeValue('gray.700', 'gray.200');
+  const checkboxBorder = useColorModeValue('gray.400', 'gray.500');
 
   const [returnRequestProps, setReturnRequestProps] = useState<Partial<ReturnRequest>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -248,7 +249,7 @@ export const ReturnRequestEdit = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleClose}
@@ -301,6 +302,13 @@ export const ReturnRequestEdit = ({
                                 onChange={(e) => handleSelectAll(e.target.checked)}
                                 size="md"
                                 colorScheme="blue"
+                                borderColor={checkboxBorder}
+                                sx={{
+                                  '& .chakra-checkbox__control': {
+                                    borderWidth: '2px',
+                                    borderColor: checkboxBorder,
+                                  },
+                                }}
                               />
                             </HStack>
                             <VStack spacing="0.5rem" align="stretch">
@@ -353,6 +361,14 @@ export const ReturnRequestEdit = ({
                                           size="md"
                                           colorScheme="blue"
                                           alignSelf="flex-start"
+                                          borderColor={checkboxBorder}
+                                          sx={{
+                                            opacity: '1 !important',
+                                            '& .chakra-checkbox__control': {
+                                              borderWidth: '2px',
+                                              borderColor: checkboxBorder,
+                                            },
+                                          }}
                                         />
                                       </Flex>
 
@@ -551,6 +567,14 @@ export const ReturnRequestEdit = ({
                                           size="md"
                                           colorScheme="blue"
                                           alignSelf="flex-start"
+                                          borderColor={checkboxBorder}
+                                          sx={{
+                                            opacity: '1 !important',
+                                            '& .chakra-checkbox__control': {
+                                              borderWidth: '2px',
+                                              borderColor: checkboxBorder,
+                                            },
+                                          }}
                                         />
                                       </Flex>
 

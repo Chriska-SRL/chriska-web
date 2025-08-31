@@ -16,6 +16,7 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
 import { FiInfo, FiCalendar, FiTag, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
@@ -85,7 +86,7 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -109,7 +110,13 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={onClose}>
                 Cerrar
               </Button>
@@ -140,7 +147,7 @@ export const VehicleCostDetail = ({ vehicleCost, setVehicleCosts }: VehicleCostD
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

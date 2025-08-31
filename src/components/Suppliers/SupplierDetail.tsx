@@ -18,6 +18,7 @@ import {
   SimpleGrid,
   Divider,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
 import { FiInfo, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
@@ -101,7 +102,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
         onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -216,7 +217,13 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
               </Button>
@@ -244,7 +251,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

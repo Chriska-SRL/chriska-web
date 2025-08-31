@@ -18,6 +18,7 @@ import {
   SimpleGrid,
   Divider,
   HStack,
+  Stack,
   useToast,
 } from '@chakra-ui/react';
 import {
@@ -160,7 +161,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
         onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -176,8 +177,6 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {detailField('Descripción', discount.description, FiFileText)}
-
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                 {detailField('Porcentaje', `${discount.percentage}%`, FiPercent)}
                 {detailField('Cantidad mínima', discount.productQuantity, FiPackage)}
@@ -267,11 +266,19 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
                   )}
                 </Box>
               </Box>
+
+              {detailField('Descripción', discount.description, FiFileText)}
             </VStack>
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
               </Button>
@@ -294,7 +301,7 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -149,7 +149,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
       <Modal
         isOpen={isOpen && !isPasswordModalOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

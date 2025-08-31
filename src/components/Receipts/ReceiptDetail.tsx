@@ -16,6 +16,7 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
   Badge,
 } from '@chakra-ui/react';
 import { FiInfo, FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
@@ -121,7 +122,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -146,7 +147,13 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={onClose}>
                 Cerrar
               </Button>
@@ -174,7 +181,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

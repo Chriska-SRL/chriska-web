@@ -483,7 +483,7 @@ const DiscountEditForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -525,28 +525,6 @@ const DiscountEditForm = ({
                   <form id="discount-edit-form" onSubmit={handleSubmit}>
                     <Box>
                       <VStack spacing="1rem" align="stretch">
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese la descripción del descuento"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.description}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="percentage" validate={validateEmpty}>
                             {({ field }: any) => (
@@ -1298,6 +1276,29 @@ const DiscountEditForm = ({
                             )}
                           </FormControl>
                         )}
+
+                        {/* Descripción */}
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </VStack>
                     </Box>
                   </form>

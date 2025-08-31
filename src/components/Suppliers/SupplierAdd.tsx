@@ -122,12 +122,16 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
   const handleSubmit = (values: any) => {
     const submitData: any = {
       ...values,
-      location: {
-        latitude: values.latitude,
-        longitude: values.longitude,
-      },
       bankAccounts: values.bankAccounts || [],
     };
+
+    // Solo incluir location si se proporcionaron coordenadas
+    if (values.latitude && values.longitude) {
+      submitData.location = {
+        latitude: values.latitude,
+        longitude: values.longitude,
+      };
+    }
 
     // Eliminar latitude y longitude del objeto principal
     delete submitData.latitude;
@@ -165,9 +169,8 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
       errors.phone = 'El teléfono debe contener solo números';
     }
 
-    if (!values.email || values.email.trim() === '') {
-      errors.email = 'Campo obligatorio';
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+    // Validar email solo si se proporciona un valor
+    if (values.email && values.email.trim() !== '' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
       errors.email = 'Email inválido';
     }
 
@@ -179,7 +182,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -370,6 +373,9 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
                                 <Text>Email</Text>
+                                <Text fontSize="sm" color="gray.500">
+                                  (opcional)
+                                </Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -391,6 +397,9 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                           <HStack spacing="0.5rem">
                             <Icon as={FiMap} boxSize="1rem" />
                             <Text>Ubicación</Text>
+                            <Text fontSize="sm" color="gray.500">
+                              (opcional)
+                            </Text>
                           </HStack>
                         </FormLabel>
                         <VStack spacing="0.5rem" align="stretch">
@@ -443,6 +452,9 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                           <HStack spacing="0.5rem">
                             <Icon as={FiDollarSign} boxSize="1rem" />
                             <Text>Cuentas bancarias</Text>
+                            <Text fontSize="sm" color="gray.500">
+                              (opcional)
+                            </Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">

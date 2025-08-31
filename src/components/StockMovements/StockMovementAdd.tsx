@@ -255,7 +255,7 @@ const StockMovementAddModal = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'lg' }}
+        size={{ base: 'full', md: 'lg' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
