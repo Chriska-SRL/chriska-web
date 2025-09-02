@@ -1075,7 +1075,8 @@ const OrderRequestAddModal = ({
                                                         fontWeight="semibold"
                                                         whiteSpace="nowrap"
                                                       >
-                                                        Stock insuficiente
+                                                        Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                        {product.availableStock || 0}
                                                       </PopoverBody>
                                                     </PopoverContent>
                                                   </Popover>
@@ -1502,7 +1503,8 @@ const OrderRequestAddModal = ({
                                                           fontWeight="semibold"
                                                           whiteSpace="nowrap"
                                                         >
-                                                          Stock insuficiente
+                                                          Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                          {product.availableStock || 0}
                                                         </PopoverBody>
                                                       </PopoverContent>
                                                     </Popover>

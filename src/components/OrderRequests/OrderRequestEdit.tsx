@@ -740,7 +740,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   fontWeight="semibold"
                                                   whiteSpace="nowrap"
                                                 >
-                                                  Stock insuficiente
+                                                  Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                  {product.availableStock || 0}
                                                 </PopoverBody>
                                               </PopoverContent>
                                             </Popover>
@@ -1113,7 +1114,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                     fontWeight="semibold"
                                                     whiteSpace="nowrap"
                                                   >
-                                                    Stock insuficiente
+                                                    Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                    {product.availableStock || 0}
                                                   </PopoverBody>
                                                 </PopoverContent>
                                               </Popover>

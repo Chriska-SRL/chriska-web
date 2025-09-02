@@ -22,13 +22,21 @@ import {
   Text,
   HStack,
   Icon,
-  Checkbox,
   SimpleGrid,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  List,
+  ListItem,
+  Spinner,
+  Flex,
+  Divider,
 } from '@chakra-ui/react';
-import { Formik, Field, FieldArray } from 'formik';
-import { FaPlus, FaCheck } from 'react-icons/fa';
+import { Formik, Field } from 'formik';
+import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
 import { FiTag, FiHash, FiFileText, FiGrid, FiThermometer, FiTruck, FiDollarSign, FiBox } from 'react-icons/fi';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { AiOutlineSearch } from 'react-icons/ai';
+import { useEffect, useState, useCallback, useMemo, useRef, Fragment } from 'react';
 import { validate } from '@/utils/validations/validate';
 import { useAddProduct } from '@/hooks/product';
 import { useGetCategories } from '@/hooks/category';
@@ -38,7 +46,6 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { ProductImageUpload } from './ProductImageUpload';
 import { useGetSuppliers } from '@/hooks/supplier';
-import { Supplier } from '@/entities/supplier';
 import { useGetWarehousesSimple } from '@/hooks/warehouse';
 import { useGetShelves } from '@/hooks/shelve';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
@@ -62,10 +69,10 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const successBg = useColorModeValue('green.50', 'green.900');
   const successColor = useColorModeValue('green.600', 'green.200');
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
-  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
-  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
-  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const dropdownBg = useColorModeValue('white', 'gray.800');
+  const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
+  const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   const [step, setStep] = useState<'form' | 'image'>('form');
@@ -74,9 +81,37 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
+  // Estados para la búsqueda de proveedores
+  const [supplierSearch, setSupplierSearch] = useState('');
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<
+    Array<{ id: number; name: string; contactName: string; phone: string }>
+  >([]);
+  const [debouncedSupplierSearch, setDebouncedSupplierSearch] = useState(supplierSearch);
+  const [lastSupplierSearchTerm, setLastSupplierSearchTerm] = useState('');
+  const supplierSearchRef = useRef<HTMLDivElement>(null);
+
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
   const { data: brands = [] } = useGetBrands();
-  const { data: suppliers = [] } = useGetSuppliers(1, 100);
+  // Debounce para búsqueda de proveedores
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSupplierSearch(supplierSearch);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [supplierSearch]);
+
+  // Filtro de búsqueda de proveedores
+  const supplierFilterName = useMemo(() => {
+    return debouncedSupplierSearch && debouncedSupplierSearch.length >= 2 ? debouncedSupplierSearch : undefined;
+  }, [debouncedSupplierSearch]);
+
+  const { data: suppliersSearch = [], isLoading: isLoadingSuppliersSearch } = useGetSuppliers(
+    1,
+    10,
+    supplierFilterName,
+  );
   const { data: warehouses = [], isLoading: isLoadingWarehouses } = useGetWarehousesSimple();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('');
   const selectedCategory = categories.find((cat) => cat.id === Number(selectedCategoryId));
@@ -88,12 +123,65 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
   const { data: shelves = [] } = useGetShelves(1, 100, shelveFilters);
 
+  // Actualizar el término de búsqueda cuando se completa la búsqueda
+  useEffect(() => {
+    if (!isLoadingSuppliersSearch && debouncedSupplierSearch && debouncedSupplierSearch.length >= 2) {
+      setLastSupplierSearchTerm(debouncedSupplierSearch);
+    }
+  }, [isLoadingSuppliersSearch, debouncedSupplierSearch]);
+
+  // Funciones para manejar búsqueda de proveedores
+  const handleSupplierSearch = (value: string) => {
+    setSupplierSearch(value);
+    if (value.length >= 2) {
+      setShowSupplierDropdown(true);
+    } else {
+      setShowSupplierDropdown(false);
+    }
+  };
+
+  const handleSupplierSelect = (supplier: any) => {
+    const isAlreadySelected = selectedSuppliers.some((s) => s.id === supplier.id);
+    if (!isAlreadySelected) {
+      setSelectedSuppliers((prev) => [
+        ...prev,
+        {
+          id: supplier.id,
+          name: supplier.name,
+          contactName: supplier.contactName,
+          phone: supplier.phone,
+        },
+      ]);
+    }
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
+  };
+
+  const handleRemoveSupplier = (supplierId: number) => {
+    setSelectedSuppliers((prev) => prev.filter((s) => s.id !== supplierId));
+  };
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (supplierSearchRef.current && !supplierSearchRef.current.contains(event.target as Node)) {
+        setShowSupplierDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleClose = () => {
     setStep('form');
     setCreatedProduct(null);
     setSelectedCategoryId('');
     setSelectedWarehouseId('');
     setShowConfirmDialog(false);
+    setSelectedSuppliers([]);
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
@@ -223,7 +311,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'full', md: 'xl' }}
+        size={{ base: 'full', md: step === 'form' ? 'xl' : 'sm' }}
         isCentered
         closeOnOverlayClick={step === 'image'}
         onOverlayClick={handleOverlayClick}
@@ -261,7 +349,14 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                     warehouseId: '',
                     shelveId: '',
                   }}
-                  onSubmit={handleSubmit}
+                  onSubmit={(values) => {
+                    // Update supplierIds from selectedSuppliers before submitting
+                    const updatedValues = {
+                      ...values,
+                      supplierIds: selectedSuppliers.map((s) => s.id),
+                    };
+                    handleSubmit(updatedValues);
+                  }}
                   enableReinitialize
                   validateOnChange={true}
                   validateOnBlur={false}
@@ -379,21 +474,14 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                             </Field>
 
                             <Field name="estimatedWeight">
-                              {({ field, form }: any) => (
+                              {({ field }: any) => (
                                 <FormControl
                                   isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}
                                 >
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiBox} boxSize="1rem" color={iconColor} />
-                                      <Text>
-                                        Peso estimado{' '}
-                                        {form.values.unitType === 'Unit'
-                                          ? '(opcional)'
-                                          : form.values.unitType === 'Kilo'
-                                            ? ''
-                                            : ''}
-                                      </Text>
+                                      <Text>Peso estimado</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Input
@@ -496,7 +584,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                           </Field>
 
                           <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                            <Field name="categoryId">
+                            <Field name="categoryId" validate={validate}>
                               {({ field }: any) => (
                                 <FormControl isInvalid={submitCount > 0 && touched.categoryId && !!errors.categoryId}>
                                   <FormLabel fontWeight="semibold">
@@ -634,66 +722,188 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                 <Text>Proveedores</Text>
                               </HStack>
                             </FormLabel>
-                            <FieldArray name="supplierIds">
-                              {({ push, remove, form }) => (
-                                <Box>
-                                  {suppliers && suppliers.length > 0 && (
-                                    <Box
-                                      maxH="15rem"
-                                      overflowY="auto"
+
+                            {/* Búsqueda de proveedores */}
+                            <Box position="relative" ref={supplierSearchRef}>
+                              <Flex
+                                bg={inputBg}
+                                borderRadius="md"
+                                overflow="hidden"
+                                borderWidth="1px"
+                                borderColor={inputBorder}
+                              >
+                                <InputGroup flex="1">
+                                  <Input
+                                    placeholder="Buscar proveedor..."
+                                    value={supplierSearch}
+                                    onChange={(e) => handleSupplierSearch(e.target.value)}
+                                    bg="transparent"
+                                    border="none"
+                                    borderRadius="none"
+                                    _placeholder={{ color: textColor }}
+                                    color={textColor}
+                                    _focus={{ boxShadow: 'none' }}
+                                    onFocus={() => supplierSearch && setShowSupplierDropdown(true)}
+                                  />
+                                  <InputRightElement>
+                                    <IconButton
+                                      aria-label="Buscar"
+                                      icon={<AiOutlineSearch size="1.25rem" />}
+                                      size="sm"
+                                      variant="ghost"
+                                      color={textColor}
+                                      _hover={{}}
+                                    />
+                                  </InputRightElement>
+                                </InputGroup>
+                              </Flex>
+
+                              {/* Dropdown de resultados de proveedores */}
+                              {showSupplierDropdown && (
+                                <Box
+                                  position="absolute"
+                                  top="100%"
+                                  left={0}
+                                  right={0}
+                                  mt={1}
+                                  bg={dropdownBg}
+                                  border="1px solid"
+                                  borderColor={dropdownBorder}
+                                  borderRadius="md"
+                                  boxShadow="lg"
+                                  maxH="400px"
+                                  overflowY="auto"
+                                  zIndex={20}
+                                >
+                                  {(() => {
+                                    const isTyping =
+                                      supplierSearch !== debouncedSupplierSearch && supplierSearch.length >= 2;
+                                    const isSearching =
+                                      !isTyping && isLoadingSuppliersSearch && debouncedSupplierSearch.length >= 2;
+                                    const searchCompleted =
+                                      !isTyping &&
+                                      !isSearching &&
+                                      debouncedSupplierSearch.length >= 2 &&
+                                      lastSupplierSearchTerm === debouncedSupplierSearch;
+
+                                    if (isTyping || isSearching) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando proveedores...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    if (searchCompleted && suppliersSearch?.length > 0) {
+                                      return (
+                                        <List spacing={0}>
+                                          {suppliersSearch.map((supplier: any, index: number) => {
+                                            const isSelected = selectedSuppliers.some((s) => s.id === supplier.id);
+                                            return (
+                                              <Fragment key={supplier.id}>
+                                                <ListItem
+                                                  p="0.75rem"
+                                                  cursor="pointer"
+                                                  _hover={{ bg: hoverBg }}
+                                                  transition="background-color 0.2s ease"
+                                                  opacity={isSelected ? 0.5 : 1}
+                                                  onClick={() => !isSelected && handleSupplierSelect(supplier)}
+                                                >
+                                                  <Box>
+                                                    <Text fontSize="sm" fontWeight="medium">
+                                                      {supplier.name}
+                                                    </Text>
+                                                    <Text fontSize="xs" color={textColor}>
+                                                      {supplier.contactName && `Contacto: ${supplier.contactName}`}
+                                                      {supplier.phone && ` - Tel: ${supplier.phone}`}
+                                                    </Text>
+                                                    {isSelected && (
+                                                      <Text fontSize="xs" color="green.500">
+                                                        Seleccionado
+                                                      </Text>
+                                                    )}
+                                                  </Box>
+                                                </ListItem>
+                                                {index < suppliersSearch.length - 1 && <Divider />}
+                                              </Fragment>
+                                            );
+                                          })}
+                                        </List>
+                                      );
+                                    }
+
+                                    if (searchCompleted && suppliersSearch?.length === 0) {
+                                      return (
+                                        <Text p={3} fontSize="sm" color="gray.500">
+                                          No se encontraron proveedores
+                                        </Text>
+                                      );
+                                    }
+
+                                    if (
+                                      debouncedSupplierSearch.length >= 2 &&
+                                      (!searchCompleted || isLoadingSuppliersSearch)
+                                    ) {
+                                      return (
+                                        <Flex p={3} justify="center" align="center" gap={2}>
+                                          <Spinner size="sm" />
+                                          <Text fontSize="sm" color="gray.500">
+                                            Buscando proveedores...
+                                          </Text>
+                                        </Flex>
+                                      );
+                                    }
+
+                                    return null;
+                                  })()}
+                                </Box>
+                              )}
+                            </Box>
+
+                            {/* Lista de proveedores seleccionados */}
+                            {selectedSuppliers.length > 0 && (
+                              <Box mt="1rem">
+                                <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                                  Proveedores seleccionados ({selectedSuppliers.length}):
+                                </Text>
+                                <VStack spacing="0.5rem" align="stretch">
+                                  {selectedSuppliers.map((supplier) => (
+                                    <Flex
+                                      key={supplier.id}
+                                      p="0.5rem 0.75rem"
                                       border="1px solid"
                                       borderColor={inputBorder}
                                       borderRadius="md"
-                                      p="0.5rem"
+                                      bg={inputBg}
+                                      align="center"
+                                      justify="space-between"
                                     >
-                                      <VStack spacing="0.5rem" align="stretch">
-                                        {suppliers.map((supplier: Supplier) => {
-                                          const isSelected = form.values.supplierIds.includes(supplier.id);
-                                          return (
-                                            <HStack
-                                              key={supplier.id}
-                                              p="0.5rem 1rem"
-                                              bg={isSelected ? selectedBg : inputBg}
-                                              borderRadius="md"
-                                              border="1px solid"
-                                              borderColor={isSelected ? 'blue.400' : 'transparent'}
-                                              spacing="1rem"
-                                              cursor="pointer"
-                                              onClick={() => {
-                                                if (isSelected) {
-                                                  const index = form.values.supplierIds.indexOf(supplier.id);
-                                                  remove(index);
-                                                } else {
-                                                  push(supplier.id);
-                                                }
-                                              }}
-                                              _hover={{
-                                                bg: isSelected ? selectedHoverBg : unselectedHoverBg,
-                                              }}
-                                              transition="all 0.2s"
-                                            >
-                                              <Checkbox
-                                                isChecked={isSelected}
-                                                onChange={() => {}}
-                                                pointerEvents="none"
-                                              />
-                                              <VStack align="start" flex="1" spacing="0">
-                                                <Text fontWeight="semibold" fontSize="sm">
-                                                  {supplier.name}
-                                                </Text>
-                                                <Text fontSize="xs" color={supplierSubtextColor}>
-                                                  {supplier.contactName} - {supplier.phone}
-                                                </Text>
-                                              </VStack>
-                                            </HStack>
-                                          );
-                                        })}
-                                      </VStack>
-                                    </Box>
-                                  )}
-                                </Box>
-                              )}
-                            </FieldArray>
+                                      <Box flex="1">
+                                        <Text fontSize="sm" fontWeight="medium">
+                                          {supplier.name}
+                                        </Text>
+                                        <Text fontSize="xs" color={textColor}>
+                                          {supplier.contactName && `Contacto: ${supplier.contactName}`}
+                                          {supplier.phone && ` - Tel: ${supplier.phone}`}
+                                        </Text>
+                                      </Box>
+                                      <IconButton
+                                        aria-label="Eliminar proveedor"
+                                        icon={<FaTrash />}
+                                        size="sm"
+                                        colorScheme="red"
+                                        variant="ghost"
+                                        onClick={() => handleRemoveSupplier(supplier.id)}
+                                        flexShrink={0}
+                                      />
+                                    </Flex>
+                                  ))}
+                                </VStack>
+                              </Box>
+                            )}
                           </FormControl>
 
                           <Field name="observations">
@@ -762,11 +972,15 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                   </Box>
 
                   {createdProduct && (
-                    <ProductImageUpload
-                      product={createdProduct}
-                      onImageChange={handleImageChange}
-                      editable={!hasImage}
-                    />
+                    <Box w="100%" maxW="20rem" mx="auto">
+                      <Box w="100%" aspectRatio="1" borderRadius="md">
+                        <ProductImageUpload
+                          product={createdProduct}
+                          onImageChange={handleImageChange}
+                          editable={!hasImage}
+                        />
+                      </Box>
+                    </Box>
                   )}
                 </VStack>
               </ModalBody>

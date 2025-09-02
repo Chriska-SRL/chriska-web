@@ -228,54 +228,46 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                 <Box>
                   <HStack mb="0.5rem" spacing="0.5rem">
                     <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
-                    <Text fontSize="lg" fontWeight="bold" color={labelColor}>
+                    <Text color={labelColor} fontWeight="semibold">
                       Proveedores
                     </Text>
                   </HStack>
-                  <Box
-                    px="1rem"
-                    py="0.75rem"
-                    bg={inputBg}
-                    border="1px solid"
-                    borderColor={inputBorder}
-                    borderRadius="md"
-                    maxH="200px"
-                    overflowY="auto"
-                  >
-                    <VStack spacing="0.5rem" align="stretch">
-                      {product.suppliers.map((supplier) => (
-                        <Box
-                          key={supplier.id}
-                          p="0.5rem"
-                          bg="whiteAlpha.50"
-                          borderRadius="md"
-                          cursor="pointer"
-                          _hover={{
-                            bg: hoverBg,
-                          }}
-                          onClick={() => {
-                            handleClose();
-                            router.push(`/proveedores?open=${supplier.id}`);
-                          }}
-                          transition="all 0.2s"
-                          position="relative"
-                        >
+                  <VStack spacing="0.5rem" align="stretch">
+                    {product.suppliers.map((supplier) => (
+                      <Box
+                        key={supplier.id}
+                        px="1rem"
+                        py="0.5rem"
+                        bg={inputBg}
+                        border="1px solid"
+                        borderColor={inputBorder}
+                        borderRadius="md"
+                        minH="3.5rem"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        cursor="pointer"
+                        _hover={{
+                          bg: hoverBg,
+                        }}
+                        onClick={() => {
+                          handleClose();
+                          router.push(`/proveedores?open=${supplier.id}`);
+                        }}
+                        transition="all 0.2s"
+                      >
+                        <VStack align="start" flex="1" spacing="0">
                           <Text fontSize="sm" fontWeight="medium">
                             {supplier.name}
                           </Text>
-                          <Icon
-                            as={FiInfo}
-                            position="absolute"
-                            right="0.5rem"
-                            top="50%"
-                            transform="translateY(-50%)"
-                            boxSize="0.875rem"
-                            color={iconColor}
-                          />
-                        </Box>
-                      ))}
-                    </VStack>
-                  </Box>
+                          <Text fontSize="xs" color={iconColor}>
+                            {supplier.contactName} - {supplier.phone}
+                          </Text>
+                        </VStack>
+                        <Icon as={FiInfo} boxSize="0.875rem" color={iconColor} />
+                      </Box>
+                    ))}
+                  </VStack>
                 </Box>
               )}
 

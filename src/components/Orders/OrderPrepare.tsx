@@ -761,6 +761,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           />
                                           <Input
                                             size="sm"
+                                            p="0"
                                             value={quantityInputs[product.id] ?? product.actualQuantity}
                                             onChange={(e) => {
                                               const value = e.target.value;
