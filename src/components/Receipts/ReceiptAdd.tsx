@@ -65,7 +65,6 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [receiptProps, setReceiptProps] = useState<Partial<Receipt>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
@@ -78,7 +77,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, error, fieldError } = useAddReceipt(receiptProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddReceipt();
 
   // Colores y variables de estilo
   const textColor = useColorModeValue('gray.600', 'gray.300');
@@ -160,7 +159,6 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   }, []);
 
   const handleClose = () => {
-    setReceiptProps(undefined);
     setShowConfirmDialog(false);
     // Limpiar estados de búsqueda de cliente
     setSelectedClient(null);
@@ -189,7 +187,6 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
         duration: 2000,
         isClosable: true,
       });
-      setReceiptProps(undefined);
       setReceipts((prev) => [...prev, data]);
       onClose();
     }
@@ -215,14 +212,14 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const newReceipt = {
       ...values,
       clientId: selectedClient?.id || 0,
       amount: Number(values.amount),
       date: values.date || new Date().toISOString().split('T')[0],
     };
-    setReceiptProps(newReceipt);
+    await mutate(newReceipt);
   };
 
   const validateForm = (values: any) => {

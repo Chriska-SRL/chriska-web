@@ -84,10 +84,9 @@ const StockMovementAddModal = ({
   // Hook para obtener el producto preseleccionado
   const { data: preselectedProduct } = useGetProductById(preselectedProductId);
 
-  const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddStockMovement();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -169,7 +168,6 @@ const StockMovementAddModal = ({
   };
 
   const handleClose = () => {
-    setMovementProps(undefined);
     setProductSearch('');
     setSelectedProduct(null);
     setShowProductDropdown(false);
@@ -198,7 +196,6 @@ const StockMovementAddModal = ({
         duration: 2000,
         isClosable: true,
       });
-      setMovementProps(undefined);
       setStockMovements((prev) => [...prev, data]);
       setProductSearch('');
       setSelectedProduct(null);
@@ -228,7 +225,7 @@ const StockMovementAddModal = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: {
+  const handleSubmit = async (values: {
     date: string;
     quantity: number;
     type: string;
@@ -247,7 +244,7 @@ const StockMovementAddModal = ({
       movementData.date = values.date;
     }
 
-    setMovementProps(movementData);
+    await mutate(movementData);
   };
 
   return (

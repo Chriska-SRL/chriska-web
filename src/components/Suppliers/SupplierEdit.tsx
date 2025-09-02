@@ -46,7 +46,6 @@ type SupplierEditProps = {
 export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: SupplierEditProps) => {
   const toast = useToast();
 
-  const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
@@ -55,7 +54,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
     lng: undefined as number | undefined,
   });
   const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
-  const { data, isLoading, error, fieldError } = useUpdateSupplier(supplierProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateSupplier();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -70,8 +69,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
         isClosable: true,
       });
       setSuppliers((prev) => prev.map((s) => (s.id === data.id ? { ...s, ...data } : s)));
-      setSupplierProps(undefined);
-      onClose();
+      handleClose();
     }
   }, [data]);
 
@@ -95,7 +93,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const submitData: any = {
       ...values,
       bankAccounts: values.bankAccounts || [],
@@ -113,11 +111,10 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
     delete submitData.latitude;
     delete submitData.longitude;
 
-    setSupplierProps(submitData);
+    await mutate(submitData);
   };
 
   const handleClose = () => {
-    setSupplierProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();

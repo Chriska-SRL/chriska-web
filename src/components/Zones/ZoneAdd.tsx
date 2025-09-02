@@ -69,17 +69,15 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
 
   const [step, setStep] = useState<'form' | 'image'>('form');
   const [createdZone, setCreatedZone] = useState<Zone | null>(null);
-  const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
   const [hasImage, setHasImage] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError } = useAddZone(zoneProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddZone();
 
   const handleClose = () => {
     setStep('form');
     setCreatedZone(null);
-    setZoneProps(undefined);
     setHasImage(false);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
@@ -108,7 +106,6 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
       });
 
       setCreatedZone(data);
-      setZoneProps(undefined);
       setZones((prev) => [...prev, data]);
       setStep('image');
     }
@@ -140,8 +137,8 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
     }
   }, [createdZone?.imageUrl]);
 
-  const handleSubmit = (values: ZoneFormValues) => {
-    setZoneProps(values);
+  const handleSubmit = async (values: ZoneFormValues) => {
+    await mutate(values);
   };
 
   const handleImageChange = (newImageUrl: string | null) => {

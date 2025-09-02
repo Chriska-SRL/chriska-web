@@ -33,6 +33,7 @@ import { FaCheck } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { ReturnRequest } from '@/entities/returnRequest';
 import { useGetDeliveryById } from '@/hooks/delivery';
+import { useUpdateReturnRequest } from '@/hooks/returnRequest';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
 
@@ -65,7 +66,6 @@ export const ReturnRequestEdit = ({
   const labelColor = useColorModeValue('gray.700', 'gray.200');
   const checkboxBorder = useColorModeValue('gray.400', 'gray.500');
 
-  const [returnRequestProps, setReturnRequestProps] = useState<Partial<ReturnRequest>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [productQuantities, setProductQuantities] = useState<{ [productId: number]: number }>({});
   const [productWeights, setProductWeights] = useState<{ [productId: number]: number }>({});
@@ -74,43 +74,7 @@ export const ReturnRequestEdit = ({
   const [selectedProducts, setSelectedProducts] = useState<{ [productId: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
-  // Using manual hook instead of useFetch to debug the issue
-  const [data, setData] = useState<ReturnRequest>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [fieldError, setFieldError] = useState<any>();
-  const [hasExecuted, setHasExecuted] = useState(false);
-
-  useEffect(() => {
-    if (!returnRequestProps || hasExecuted) return;
-
-    const executeRequest = async () => {
-      setHasExecuted(true);
-      setIsLoading(true);
-      setFieldError(undefined);
-
-      try {
-        const { updateReturnRequest } = await import('@/services/returnRequest');
-        const result = await updateReturnRequest(returnRequestProps);
-        setData(result);
-      } catch (err: any) {
-        try {
-          const parsed = JSON.parse(err.message);
-          setFieldError(parsed);
-        } catch {
-          setFieldError({ error: err.message || 'Error al actualizar devolución' });
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    executeRequest();
-  }, [returnRequestProps, hasExecuted]);
-
-  // Reset hasExecuted when returnRequestProps changes to a new object
-  useEffect(() => {
-    setHasExecuted(false);
-  }, [returnRequestProps]);
+  const { data, isLoading, fieldError, mutate } = useUpdateReturnRequest();
 
   const { data: deliveryData, isLoading: isLoadingDelivery } = useGetDeliveryById(returnRequest.delivery?.id);
 
@@ -181,7 +145,7 @@ export const ReturnRequestEdit = ({
     }
   }, [returnRequest.productItems, isOpen, deliveryData]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     // Only include selected products in the submission
     const selectedProductItems = Object.entries(productQuantities)
       .filter(([productId]) => selectedProducts[parseInt(productId)])
@@ -196,14 +160,13 @@ export const ReturnRequestEdit = ({
       observations: values.observations,
       productItems: selectedProductItems,
     };
-    setReturnRequestProps(formData);
+    await mutate(formData);
   };
 
   // Handle successful update
   useEffect(() => {
-    if (data && returnRequestProps) {
+    if (data) {
       setReturnRequests((prev) => prev.map((r) => (r.id === data.id ? data : r)));
-      setReturnRequestProps(undefined);
       onClose();
       toast({
         title: 'Devolución actualizada',
@@ -218,11 +181,11 @@ export const ReturnRequestEdit = ({
         onReturnRequestUpdated(data);
       }
     }
-  }, [data, returnRequestProps, setReturnRequests, onClose, toast, onReturnRequestUpdated, skipConfirmModal]);
+  }, [data, setReturnRequests, onClose, toast, onReturnRequestUpdated, skipConfirmModal]);
 
   // Handle errors
   useEffect(() => {
-    if (fieldError && returnRequestProps) {
+    if (fieldError) {
       const errorMessage = fieldError.error || 'Ha ocurrido un error inesperado';
       toast({
         title: 'Error al actualizar devolución',
@@ -231,9 +194,8 @@ export const ReturnRequestEdit = ({
         duration: 5000,
         isClosable: true,
       });
-      setReturnRequestProps(undefined);
     }
-  }, [fieldError, returnRequestProps, toast]);
+  }, [fieldError, toast]);
 
   const handleClose = () => {
     onClose();

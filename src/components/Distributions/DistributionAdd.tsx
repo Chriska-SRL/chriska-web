@@ -126,8 +126,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
 
   const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
 
-  const [addProps, setAddProps] = useState<any>();
-  const { data: addedDistribution, isLoading: isAdding, error, fieldError } = useAddDistribution(addProps);
+  const { data: addedDistribution, isLoading: isAdding, error, fieldError, mutate } = useAddDistribution();
 
   useEffect(() => {
     if (addedDistribution) {
@@ -139,7 +138,6 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
         isClosable: true,
       });
       setDistributions((prev) => [...prev, addedDistribution]);
-      setAddProps(undefined);
       resetForm();
       onClose();
     }
@@ -215,8 +213,8 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
     onClose();
   };
 
-  const handleSubmit = (values: any) => {
-    setAddProps({
+  const handleSubmit = async (values: any) => {
+    await mutate({
       observations: values.observations,
       userId: Number(values.userId),
       vehicleId: Number(values.vehicleId),

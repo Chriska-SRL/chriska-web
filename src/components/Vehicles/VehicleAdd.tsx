@@ -50,13 +50,11 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddVehicle();
 
   const handleClose = () => {
-    setVehicleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -81,7 +79,6 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
         duration: 2000,
         isClosable: true,
       });
-      setVehicleProps(undefined);
       setVehicles((prev) => [...prev, data]);
       onClose();
     }
@@ -107,12 +104,12 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
+  const handleSubmit = async (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
     const vehicle = {
       ...values,
       crateCapacity: Number(values.crateCapacity),
     };
-    setVehicleProps(vehicle);
+    await mutate(vehicle);
   };
 
   return (

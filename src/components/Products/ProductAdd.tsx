@@ -70,10 +70,9 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
 
   const [step, setStep] = useState<'form' | 'image'>('form');
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
-  const [productProps, setProductProps] = useState<Partial<Product>>();
+  const { data, isLoading, error, fieldError, mutate } = useAddProduct();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddProduct(productProps);
 
   const { data: categories = [], isLoading: isLoadingCats } = useGetCategories();
   const { data: brands = [] } = useGetBrands();
@@ -94,7 +93,6 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
     setCreatedProduct(null);
     setSelectedCategoryId('');
     setSelectedWarehouseId('');
-    setProductProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -122,7 +120,6 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
       });
 
       setCreatedProduct(data);
-      setProductProps(undefined);
       setProducts((prev) => [...prev, data]);
       setStep('image');
     }
@@ -182,7 +179,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
     handleClose();
   };
 
-  const handleSubmit = (values: {
+  const handleSubmit = async (values: {
     barcode: string;
     name: string;
     price: number;
@@ -210,7 +207,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
       supplierIds: values.supplierIds,
       shelveId: Number(values.shelveId),
     };
-    setProductProps(product as any);
+    await mutate(product as any);
   };
 
   const [hasImage, setHasImage] = useState(false);

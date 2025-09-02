@@ -51,13 +51,11 @@ const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [brandProps, setBrandProps] = useState<Partial<Brand>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddBrand(brandProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddBrand();
 
   const handleClose = () => {
-    setBrandProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -82,7 +80,6 @@ const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
         duration: 2000,
         isClosable: true,
       });
-      setBrandProps(undefined);
       setBrands((prev) => [...prev, data]);
       onClose();
     }
@@ -108,8 +105,8 @@ const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Brand>) => {
-    setBrandProps(values);
+  const handleSubmit = async (values: Partial<Brand>) => {
+    await mutate(values);
   };
 
   return (

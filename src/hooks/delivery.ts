@@ -7,7 +7,7 @@ import {
   changeDeliveryStatus,
   getConfirmedDeliveriesByClient,
 } from '@/services/delivery';
-import { useFetch } from '@/utils/useFetch';
+import { useMutation } from '@/utils/useFetch';
 
 type DeliveryFilters = {
   status?: string;
@@ -77,8 +77,8 @@ export const useGetDeliveryById = (id?: number) => {
   return { data, isLoading, error, refetch: fetchDelivery };
 };
 
-export const useUpdateDelivery = (props?: Partial<Delivery>) =>
-  useFetch<Partial<Delivery>, Delivery>(updateDelivery, props, { parseFieldError: true });
+export const useUpdateDelivery = () =>
+  useMutation<Partial<Delivery>, Delivery>(updateDelivery, { parseFieldError: true });
 
 export const useChangeDeliveryStatus = (props?: { id: number; status: string }) => {
   const [data, setData] = useState<Delivery>();

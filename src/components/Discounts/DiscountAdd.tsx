@@ -79,22 +79,10 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
-  const [discountProps, setDiscountProps] = useState<{
-    description: string;
-    expirationDate: string;
-    productQuantity: number;
-    percentage: number;
-    status: string;
-    discountProductId: number[];
-    discountClientId: number[];
-    brandId?: string;
-    subCategoryId?: string;
-    zoneId?: string;
-  }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError } = useAddDiscount(discountProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddDiscount();
 
   // Load data using hooks - they handle caching internally
   const { data: brands = [] } = useGetBrands();
@@ -298,7 +286,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
     setClientSearch('');
     setShowProductDropdown(false);
     setShowClientDropdown(false);
-    setDiscountProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -325,7 +312,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
         isClosable: true,
       });
 
-      setDiscountProps(undefined);
       setDiscounts((prev) => [...prev, data]);
       onClose();
     }
@@ -367,9 +353,9 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   }, []);
 
   const handleSubmit = useCallback(
-    (values: { description: string; expirationDate: string; productQuantity: number; percentage: number }) => {
+    async (values: { description: string; expirationDate: string; productQuantity: number; percentage: number }) => {
       // Prevent double submission
-      if (isLoading || discountProps) return;
+      if (isLoading) return;
 
       // Create the discount object with only necessary fields
       const discount: any = {
@@ -398,11 +384,10 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
       }
       // If clientType === 'all', don't send any client-related fields
 
-      setDiscountProps(discount);
+      await mutate(discount);
     },
     [
       isLoading,
-      discountProps,
       productType,
       selectedProducts,
       clientType,
@@ -410,6 +395,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
       selectedBrandId,
       selectedSubCategoryId,
       selectedZoneId,
+      mutate,
     ],
   );
 

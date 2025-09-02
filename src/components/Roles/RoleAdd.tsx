@@ -66,10 +66,9 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const textColor = useColorModeValue('gray.600', 'gray.400');
 
-  const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddRole(roleProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddRole();
 
   const groupedPermissions = PERMISSIONS_METADATA.reduce(
     (acc, perm) => {
@@ -81,7 +80,6 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
   );
 
   const handleClose = () => {
-    setRoleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -106,7 +104,6 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
         duration: 2000,
         isClosable: true,
       });
-      setRoleProps(undefined);
       setRoles((prev) => [...prev, data]);
       onClose();
     }
@@ -132,13 +129,13 @@ const RoleAddModal = ({ isOpen, onClose, setRoles }: RoleAddModalProps) => {
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { name: string; description: string; permissions: number[] }) => {
+  const handleSubmit = async (values: { name: string; description: string; permissions: number[] }) => {
     const role = {
       name: values.name,
       description: values.description,
       permissions: values.permissions,
     };
-    setRoleProps(role);
+    await mutate(role);
   };
 
   return (

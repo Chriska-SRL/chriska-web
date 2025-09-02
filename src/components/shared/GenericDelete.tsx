@@ -15,12 +15,12 @@ import {
 import { FaTrash } from 'react-icons/fa';
 import { useEffect, useState, useRef } from 'react';
 
-type GenericDeleteProps = {
-  item: { id: number; name: string };
+type GenericDeleteProps<T = number> = {
+  item: { id: T; name: string };
   isUpdating?: boolean;
   onDeleted?: () => void;
   setItems: React.Dispatch<React.SetStateAction<any[]>>;
-  useDeleteHook: (id?: number) => {
+  useDeleteHook: (id?: T) => {
     success?: boolean;
     data?: any;
     isLoading: boolean;
@@ -30,7 +30,7 @@ type GenericDeleteProps = {
   variant?: 'solid' | 'outline';
 };
 
-export const GenericDelete = ({
+export const GenericDelete = <T extends number | string = number>({
   item,
   isUpdating,
   onDeleted,
@@ -38,10 +38,10 @@ export const GenericDelete = ({
   useDeleteHook,
   size = 'sm',
   variant = 'outline',
-}: GenericDeleteProps) => {
+}: GenericDeleteProps<T>) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number>();
+  const [deleteId, setDeleteId] = useState<T | undefined>();
   const { success, data, isLoading, error } = useDeleteHook(deleteId);
   const cancelRef = useRef(null);
 

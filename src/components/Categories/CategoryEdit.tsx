@@ -51,16 +51,14 @@ const CategoryEditForm = ({
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }) => {
   const toast = useToast();
-  const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateCategory(categoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateCategory();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const handleClose = () => {
-    setCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -86,10 +84,9 @@ const CategoryEditForm = ({
         isClosable: true,
       });
       setCategories((prev) => prev.map((c) => (c.id === data.id ? data : c)));
-      setCategoryProps(undefined);
       handleClose();
     }
-  }, [data, setCategories, toast, onClose]);
+  }, [data, setCategories, toast]);
 
   useEffect(() => {
     if (fieldError) {
@@ -111,13 +108,13 @@ const CategoryEditForm = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { id: number; name: string; description: string }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string }) => {
     const updatedCategory = {
       id: values.id,
       name: values.name,
       description: values.description,
     };
-    setCategoryProps(updatedCategory);
+    await mutate(updatedCategory);
   };
 
   return (

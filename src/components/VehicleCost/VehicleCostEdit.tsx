@@ -39,10 +39,9 @@ type VehicleCostEditProps = {
 
 export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCostEditProps) => {
   const toast = useToast();
-  const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateVehicleCost(costProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateVehicleCost();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -57,7 +56,6 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
         isClosable: true,
       });
       setCosts((prev) => prev.map((c) => (c.id === data.id ? { ...c, ...data } : c)));
-      setCostProps(undefined);
       onClose();
     }
   }, [data]);
@@ -82,7 +80,7 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { date: string; type: string; amount: string; description: string }) => {
+  const handleSubmit = async (values: { date: string; type: string; amount: string; description: string }) => {
     const updatedCost: Partial<VehicleCost> = {
       id: cost?.id,
       vehicleId: cost?.vehicleId,
@@ -92,11 +90,10 @@ export const VehicleCostEdit = ({ isOpen, onClose, cost, setCosts }: VehicleCost
       description: values.description,
     };
 
-    setCostProps(updatedCost);
+    await mutate(updatedCost);
   };
 
   const handleClose = () => {
-    setCostProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();

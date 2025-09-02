@@ -68,9 +68,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [orderRequestProps, setOrderRequestProps] = useState<Partial<OrderRequest>>();
-
-  const { data, isLoading, fieldError } = useUpdateOrderRequest(orderRequestProps);
+  const { data, isLoading, fieldError, mutate } = useUpdateOrderRequest();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -321,7 +319,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
         duration: 3000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
       onClose();
     }
   }, [data, setOrderRequests, toast, onClose, orderRequest.id]);
@@ -354,7 +351,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       })),
     } as any;
 
-    setOrderRequestProps(orderRequestData);
+    await mutate(orderRequestData);
   };
 
   const handleClose = () => {

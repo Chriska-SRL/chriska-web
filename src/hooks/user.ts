@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/entities/user';
 import { getUsers, addUser, updateUser, deleteUser, passwordReset, temporaryPassword } from '@/services/user';
 import { PasswordReset } from '@/entities/password-reset/password-reset';
-import { useFetch } from '../utils/useFetch';
+import { useFetch, useMutation } from '../utils/useFetch';
 import { PasswordResetResponse } from '@/entities/password-reset/password-reset-response';
 
 type UserFilters = {
@@ -40,11 +40,9 @@ export const useGetUsers = (page: number = 1, pageSize: number = 10, filters?: U
   return { data, isLoading, error };
 };
 
-export const useAddUser = (props?: Partial<User>) =>
-  useFetch<Partial<User>, User>(addUser, props, { parseFieldError: true });
+export const useAddUser = () => useMutation<Partial<User>, User>(addUser, { parseFieldError: true });
 
-export const useUpdateUser = (props?: Partial<User>) =>
-  useFetch<Partial<User>, User>(updateUser, props, { parseFieldError: true });
+export const useUpdateUser = () => useMutation<Partial<User>, User>(updateUser, { parseFieldError: true });
 
 export const useDeleteUser = (id?: number) => useFetch<number, User>(deleteUser, id);
 

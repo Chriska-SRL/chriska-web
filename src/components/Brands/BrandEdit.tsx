@@ -52,10 +52,9 @@ const BrandEditForm = ({
 }) => {
   const toast = useToast();
 
-  const [brandProps, setBrandProps] = useState<Partial<Brand>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateBrand(brandProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateBrand();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -70,7 +69,6 @@ const BrandEditForm = ({
         isClosable: true,
       });
       setBrands((prevBrands) => prevBrands.map((b) => (b.id === data.id ? { ...b, ...data } : b)));
-      setBrandProps(undefined);
       onClose();
     }
   }, [data, setBrands, toast, onClose]);
@@ -95,12 +93,11 @@ const BrandEditForm = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Brand) => {
-    setBrandProps(values);
+  const handleSubmit = async (values: Brand) => {
+    await mutate(values);
   };
 
   const handleClose = () => {
-    setBrandProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();

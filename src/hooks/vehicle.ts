@@ -8,7 +8,7 @@ import {
   getVehicles,
   updateVehicle,
 } from '@/services/vehicle';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 export const useGetVehicles = (
   page: number = 1,
@@ -44,10 +44,8 @@ export const useGetVehicleById = (id: number) => useFetch<number, Vehicle>(getVe
 
 export const useGetVehicleByPlate = (plate: string) => useFetch<string, Vehicle>(getVehicleByPlate, plate);
 
-export const useAddVehicle = (props?: Partial<Vehicle>) =>
-  useFetch<Partial<Vehicle>, Vehicle>(addVehicle, props, { parseFieldError: true });
+export const useAddVehicle = () => useMutation<Partial<Vehicle>, Vehicle>(addVehicle, { parseFieldError: true });
 
-export const useUpdateVehicle = (props?: Partial<Vehicle>) =>
-  useFetch<Partial<Vehicle>, Vehicle>(updateVehicle, props, { parseFieldError: true });
+export const useUpdateVehicle = () => useMutation<Partial<Vehicle>, Vehicle>(updateVehicle, { parseFieldError: true });
 
 export const useDeleteVehicle = (id?: number) => useFetch<number, Vehicle>(deleteVehicle, id);

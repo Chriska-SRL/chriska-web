@@ -69,10 +69,9 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [clientProps, setClientProps] = useState<Partial<Client>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddClient(clientProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddClient();
 
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
 
@@ -85,7 +84,6 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
   const [currentCoords, setCurrentCoords] = useState({ lat: -34.9011, lng: -56.1645 });
 
   const handleClose = () => {
-    setClientProps(undefined);
     setBankAccounts([]);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
@@ -111,7 +109,6 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
         duration: 2000,
         isClosable: true,
       });
-      setClientProps(undefined);
       setBankAccounts([]);
       setClients((prev) => [...prev, data]);
       onClose();
@@ -138,7 +135,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const newClient = {
       ...values,
       location: {
@@ -151,7 +148,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
     // Remove individual latitude/longitude from the object
     delete newClient.latitude;
     delete newClient.longitude;
-    setClientProps(newClient);
+    await mutate(newClient);
   };
 
   return (

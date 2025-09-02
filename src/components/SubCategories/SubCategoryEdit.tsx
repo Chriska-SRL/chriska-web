@@ -40,10 +40,9 @@ type CategoryEditProps = {
 
 export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }: CategoryEditProps) => {
   const toast = useToast();
-  const [subCategoryProps, setSubCategoryProps] = useState<Partial<Category>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateSubCategory(subCategoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateSubCategory();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -67,7 +66,6 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
             : cat,
         ),
       );
-      setSubCategoryProps(undefined);
       onClose();
     }
   }, [data]);
@@ -92,17 +90,16 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { id: number; name: string; description: string }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string }) => {
     const updatedCategory = {
       id: values.id,
       name: values.name,
       description: values.description,
     };
-    setSubCategoryProps(updatedCategory);
+    await mutate(updatedCategory);
   };
 
   const handleClose = () => {
-    setSubCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();

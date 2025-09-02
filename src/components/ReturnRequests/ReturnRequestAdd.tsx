@@ -55,19 +55,15 @@ const ReturnRequestAddModal = ({
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [returnRequestProps, setReturnRequestProps] = useState<{
-    deliveryId: number;
-  }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<{ dirty: boolean; resetForm: () => void } | null>(null);
 
-  const { data, isLoading, fieldError } = useAddReturnRequest(returnRequestProps);
+  const { data, isLoading, fieldError, mutate } = useAddReturnRequest();
 
   // Handle successful creation
   useEffect(() => {
-    if (data && returnRequestProps) {
+    if (data) {
       setReturnRequests((prev) => [...prev, data]);
-      setReturnRequestProps(undefined);
       if (formikInstance) {
         formikInstance.resetForm();
       }
@@ -84,11 +80,11 @@ const ReturnRequestAddModal = ({
         isClosable: true,
       });
     }
-  }, [data, returnRequestProps, setReturnRequests, onClose, toast, formikInstance]);
+  }, [data, setReturnRequests, onClose, toast, formikInstance]);
 
   // Handle errors
   useEffect(() => {
-    if (fieldError && returnRequestProps) {
+    if (fieldError) {
       const errorMessage = fieldError.error || 'Ha ocurrido un error inesperado';
       toast({
         title: 'Error al crear devolución',
@@ -97,9 +93,8 @@ const ReturnRequestAddModal = ({
         duration: 5000,
         isClosable: true,
       });
-      setReturnRequestProps(undefined);
     }
-  }, [fieldError, returnRequestProps, toast]);
+  }, [fieldError, toast]);
 
   const handleClose = () => {
     if (formikInstance?.dirty) {
@@ -121,12 +116,12 @@ const ReturnRequestAddModal = ({
     onClose();
   };
 
-  const handleSubmit = (values: { deliveryId: string }) => {
+  const handleSubmit = async (values: { deliveryId: string }) => {
     const formData = {
       deliveryId: parseInt(values.deliveryId),
     };
 
-    setReturnRequestProps(formData);
+    await mutate(formData);
   };
 
   const initialValues = {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Role } from '@/entities/role';
 import { addRole, deleteRole, getRoles, updateRole } from '@/services/role';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 export const useGetRoles = (page: number = 1, pageSize: number = 10, filterName?: string) => {
   const [data, setData] = useState<Role[]>([]);
@@ -29,10 +29,8 @@ export const useGetRoles = (page: number = 1, pageSize: number = 10, filterName?
   return { data, isLoading, error };
 };
 
-export const useAddRole = (props?: Partial<Role>) =>
-  useFetch<Partial<Role>, Role>(addRole, props, { parseFieldError: true });
+export const useAddRole = () => useMutation<Partial<Role>, Role>(addRole, { parseFieldError: true });
 
-export const useUpdateRole = (props?: Partial<Role>) =>
-  useFetch<Partial<Role>, Role>(updateRole, props, { parseFieldError: true });
+export const useUpdateRole = () => useMutation<Partial<Role>, Role>(updateRole, { parseFieldError: true });
 
 export const useDeleteRole = (id?: number) => useFetch<number, Role>(deleteRole, id);

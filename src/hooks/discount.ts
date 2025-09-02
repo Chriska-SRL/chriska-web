@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Discount } from '@/entities/discount';
 import { getDiscounts, addDiscount, updateDiscount, deleteDiscount } from '@/services/discount';
-import { useFetch } from '../utils/useFetch';
+import { useFetch, useMutation } from '../utils/useFetch';
 
 type DiscountFilters = {
   description?: string;
@@ -53,99 +53,41 @@ export const useGetDiscounts = (page: number = 1, pageSize: number = 10, filters
   return { data, isLoading, error };
 };
 
-export const useAddDiscount = (props?: {
-  description: string;
-  expirationDate: string;
-  productQuantity: number;
-  percentage: number;
-  status: string;
-  discountProductId: number[];
-  discountClientId: number[];
-  brandId?: string;
-  subCategoryId?: string;
-  zoneId?: string;
-}) => {
-  const [isExecuted, setIsExecuted] = useState(false);
-
-  // Solo ejecutar si hay props y no se ha ejecutado antes
-  const shouldExecute = props && !isExecuted;
-
-  const result = useFetch<typeof props, Discount>(
-    (data) => {
-      if (!data) return Promise.reject('No data');
-      setIsExecuted(true);
-      return addDiscount(data);
-    },
-    shouldExecute ? props : undefined,
+export const useAddDiscount = () =>
+  useMutation<
     {
-      parseFieldError: true,
+      description: string;
+      expirationDate: string;
+      productQuantity: number;
+      percentage: number;
+      status: string;
+      discountProductId: number[];
+      discountClientId: number[];
+      brandId?: string;
+      subCategoryId?: string;
+      zoneId?: string;
     },
-  );
+    Discount
+  >(addDiscount, { parseFieldError: true });
 
-  // Reset cuando se limpia props o cuando hay error
-  useEffect(() => {
-    if (!props) {
-      setIsExecuted(false);
-    }
-  }, [props]);
-
-  // Reset cuando hay error para permitir reintento
-  useEffect(() => {
-    if (result.error || result.fieldError) {
-      setIsExecuted(false);
-    }
-  }, [result.error, result.fieldError]);
-
-  return result;
-};
-
-export const useUpdateDiscount = (props?: {
-  id: string;
-  discount: {
-    description?: string;
-    expirationDate?: string;
-    productQuantity?: number;
-    percentage?: number;
-    status?: string;
-    discountProductId?: number[];
-    discountClientId?: number[];
-    brandId?: string;
-    subCategoryId?: string;
-    zoneId?: string;
-  };
-}) => {
-  const [isExecuted, setIsExecuted] = useState(false);
-
-  // Solo ejecutar si hay props y no se ha ejecutado antes
-  const shouldExecute = props && !isExecuted;
-
-  const result = useFetch<typeof props, Discount>(
-    (data) => {
-      if (!data) return Promise.reject('No data');
-      setIsExecuted(true);
-      return updateDiscount(data.id, data.discount);
-    },
-    shouldExecute ? props : undefined,
+export const useUpdateDiscount = () =>
+  useMutation<
     {
-      parseFieldError: true,
+      id: string;
+      discount: {
+        description?: string;
+        expirationDate?: string;
+        productQuantity?: number;
+        percentage?: number;
+        status?: string;
+        discountProductId?: number[];
+        discountClientId?: number[];
+        brandId?: string;
+        subCategoryId?: string;
+        zoneId?: string;
+      };
     },
-  );
-
-  // Reset cuando se limpia props
-  useEffect(() => {
-    if (!props) {
-      setIsExecuted(false);
-    }
-  }, [props]);
-
-  // Reset cuando hay error para permitir reintento
-  useEffect(() => {
-    if (result.error || result.fieldError) {
-      setIsExecuted(false);
-    }
-  }, [result.error, result.fieldError]);
-
-  return result;
-};
+    Discount
+  >((data) => updateDiscount(data.id, data.discount), { parseFieldError: true });
 
 export const useDeleteDiscount = (id?: string) => useFetch<string, Discount>(deleteDiscount, id);

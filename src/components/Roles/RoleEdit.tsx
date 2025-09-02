@@ -50,10 +50,9 @@ type RoleEditProps = {
 export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const toast = useToast();
-  const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateRole();
 
   // Generate unique ID suffix for this modal instance
   const modalId = `edit-${role?.id || 'new'}-${Date.now()}`;
@@ -72,7 +71,6 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
         isClosable: true,
       });
       setRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
-      setRoleProps(undefined);
       handleClose();
     }
   }, [data]);
@@ -107,7 +105,6 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   );
 
   const handleClose = () => {
-    setRoleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -123,14 +120,14 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
     }
   };
 
-  const handleSubmit = (values: { id: number; name: string; description: string; permissions: number[] }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string; permissions: number[] }) => {
     const role = {
       id: values.id,
       name: values.name,
       description: values.description,
       permissions: values.permissions,
     };
-    setRoleProps(role);
+    await mutate(role);
   };
 
   return (

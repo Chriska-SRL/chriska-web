@@ -53,10 +53,9 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [userProps, setUserProps] = useState<Partial<User>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddUser(userProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddUser();
 
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -64,7 +63,6 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const handleClose = () => {
-    setUserProps(undefined);
     setTempPassword(null);
     setIsPasswordModalOpen(false);
     setShowConfirmDialog(false);
@@ -91,7 +89,6 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
         duration: 2000,
         isClosable: true,
       });
-      setUserProps(undefined);
       setUsers((prev) => [...prev, data]);
 
       // Llamar directamente al servicio de contraseña temporal
@@ -133,7 +130,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
+  const handleSubmit = async (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
       username: values.username,
       name: values.name,
@@ -141,7 +138,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
       isEnabled: values.estado === 'Activo',
       roleId: Number(values.roleId),
     };
-    setUserProps(user);
+    await mutate(user);
   };
 
   return (

@@ -18,7 +18,7 @@ import {
   HStack,
   Stack,
 } from '@chakra-ui/react';
-import { FiInfo, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
 import { useDeleteSubCategory } from '@/hooks/subcategory';
@@ -139,7 +139,6 @@ export const SubCategoryDetail = ({
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {detailField('Categoría', subcategory.category?.name, FiGrid)}
               {detailField('Nombre', subcategory.name, FiTag)}
               {detailField('Descripción', subcategory.description, FiFileText)}
             </VStack>

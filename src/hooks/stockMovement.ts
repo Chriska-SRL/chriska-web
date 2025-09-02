@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { StockMovement } from '@/entities/stockMovement';
 import { getStockMovements, getStockMovementById, addStockMovement } from '@/services/stockMovement';
 import { Result } from '@/utils/result';
-import { useFetch } from '@/utils/useFetch';
+import { useMutation } from '@/utils/useFetch';
 
 type StockMovementFilters = {
   Type?: string;
@@ -76,5 +76,5 @@ export const useGetStockMovementById = (id: number): Result<StockMovement> => {
   return { data, isLoading, error };
 };
 
-export const useAddStockMovement = (props?: Partial<StockMovement>) =>
-  useFetch<Partial<StockMovement>, StockMovement>(addStockMovement, props, { parseFieldError: true });
+export const useAddStockMovement = () =>
+  useMutation<Partial<StockMovement>, StockMovement>(addStockMovement, { parseFieldError: true });

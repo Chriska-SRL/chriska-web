@@ -19,7 +19,6 @@ import {
   Divider,
   HStack,
   Stack,
-  useToast,
 } from '@chakra-ui/react';
 import {
   FiInfo,
@@ -32,13 +31,14 @@ import {
   FiCheckCircle,
   FiGrid,
 } from 'react-icons/fi';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit } from 'react-icons/fa';
 import { Discount } from '@/entities/discount';
 import { DiscountEdit } from './DiscountEdit';
+import { GenericDelete } from '../shared/GenericDelete';
 import { useDeleteDiscount } from '@/hooks/discount';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { getDiscountStatusLabel } from '@/enums/discountStatus.enum';
 
@@ -53,14 +53,8 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
   const canEditDiscounts = useUserStore((s) => s.hasPermission(Permission.EDIT_PRODUCTS)); // Asumiendo que se usa el mismo permiso
   const canDeleteDiscounts = useUserStore((s) => s.hasPermission(Permission.DELETE_PRODUCTS)); // Asumiendo que se usa el mismo permiso
 
-  const toast = useToast();
-
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
-  const { isOpen: isDeleteOpen, onOpen: openDelete, onClose: closeDelete } = useDisclosure();
-
-  const [deleteId, setDeleteId] = useState<string>();
-  const { data: deleteResult, isLoading: isDeleting, error: deleteError } = useDeleteDiscount(deleteId);
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -78,42 +72,6 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
       onOpen();
     }
   }, [forceOpen, onOpen]);
-
-  useEffect(() => {
-    if (deleteResult) {
-      toast({
-        title: 'Descuento eliminado',
-        description: 'El descuento ha sido eliminado correctamente.',
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-      });
-      setDiscounts((prev) => prev.filter((d) => d.id !== discount.id));
-      setDeleteId(undefined);
-      closeDelete();
-      handleClose();
-    }
-  }, [deleteResult, setDiscounts, discount.id, toast, closeDelete, handleClose]);
-
-  useEffect(() => {
-    if (deleteError) {
-      toast({
-        title: 'Error al eliminar',
-        description: deleteError,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  }, [deleteError, toast]);
-
-  const handleDelete = () => {
-    openDelete();
-  };
-
-  const confirmDelete = () => {
-    setDeleteId(discount.id);
-  };
 
   const formatDate = (date: string) => {
     try {
@@ -283,9 +241,14 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
                 Cerrar
               </Button>
               {canDeleteDiscounts && (
-                <Button leftIcon={<FaTrash />} onClick={handleDelete} colorScheme="red" variant="outline" size="sm">
-                  Eliminar
-                </Button>
+                <GenericDelete
+                  item={{ id: discount.id, name: discount.description || 'este descuento' }}
+                  useDeleteHook={useDeleteDiscount}
+                  setItems={setDiscounts}
+                  onDeleted={handleClose}
+                  size="sm"
+                  variant="outline"
+                />
               )}
               {canEditDiscounts && (
                 <Button
@@ -307,29 +270,6 @@ export const DiscountDetail = ({ discount, setDiscounts, forceOpen, onModalClose
       </Modal>
 
       <DiscountEdit isOpen={isEditOpen} onClose={closeEdit} discount={discount} setDiscounts={setDiscounts} />
-
-      {/* Modal de confirmación para eliminar */}
-      <Modal isOpen={isDeleteOpen} onClose={closeDelete} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader py="0.75rem">Confirmar eliminación</ModalHeader>
-
-          <ModalBody>
-            <Text>¿Estás seguro de que deseas eliminar el descuento "{discount.description}"?</Text>
-            <Text mt="0.5rem" fontSize="sm" color="gray.500">
-              Esta acción no se puede deshacer.
-            </Text>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={closeDelete}>
-              Cancelar
-            </Button>
-            <Button colorScheme="red" onClick={confirmDelete} isLoading={isDeleting} loadingText="Eliminando...">
-              Eliminar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </>
   );
 };

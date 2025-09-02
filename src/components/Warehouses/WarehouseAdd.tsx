@@ -51,13 +51,11 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddWarehouse(warehouseProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddWarehouse();
 
   const handleClose = () => {
-    setWarehouseProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -82,7 +80,6 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
         duration: 2000,
         isClosable: true,
       });
-      setWarehouseProps(undefined);
       setWarehouses((prev) => [...prev, data]);
       onClose();
     }
@@ -108,8 +105,8 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Warehouse>) => {
-    setWarehouseProps(values);
+  const handleSubmit = async (values: Partial<Warehouse>) => {
+    await mutate(values);
   };
 
   return (

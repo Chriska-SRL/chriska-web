@@ -115,8 +115,7 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
 
   const isLoadingData = isLoadingUsers || isLoadingVehicles || isLoadingDeliveries;
 
-  const [updateProps, setUpdateProps] = useState<any>();
-  const { data: updatedDistribution, isLoading: isUpdating, error, fieldError } = useUpdateDistribution(updateProps);
+  const { data: updatedDistribution, isLoading: isUpdating, error, fieldError, mutate } = useUpdateDistribution();
 
   useEffect(() => {
     if (distribution && isOpen) {
@@ -141,7 +140,6 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
         isClosable: true,
       });
       setDistributions((prev) => prev.map((d) => (d.id === updatedDistribution.id ? updatedDistribution : d)));
-      setUpdateProps(undefined);
       resetForm();
       onClose();
     }
@@ -203,14 +201,13 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
     setSelectedClient(null);
     setShowClientDropdown(false);
     setHasChanges(false);
-    setUpdateProps(undefined);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
   };
 
-  const handleSubmit = (values: any) => {
-    setUpdateProps({
+  const handleSubmit = async (values: any) => {
+    await mutate({
       id: distribution.id,
       observations: values.observations,
       userId: Number(values.userId),

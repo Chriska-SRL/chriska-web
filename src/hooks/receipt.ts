@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Receipt } from '@/entities/receipt';
 import { addReceipt, deleteReceipt, getReceiptById, getReceipts, updateReceipt } from '@/services/receipt';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 export const useGetReceipts = (
   page: number = 1,
@@ -40,10 +40,8 @@ export const useGetReceipts = (
 
 export const useGetReceiptById = (id: number) => useFetch<number, Receipt>(getReceiptById, id);
 
-export const useAddReceipt = (props?: Partial<Receipt>) =>
-  useFetch<Partial<Receipt>, Receipt>(addReceipt, props, { parseFieldError: true });
+export const useAddReceipt = () => useMutation<Partial<Receipt>, Receipt>(addReceipt, { parseFieldError: true });
 
-export const useUpdateReceipt = (props?: Partial<Receipt>) =>
-  useFetch<Partial<Receipt>, Receipt>(updateReceipt, props, { parseFieldError: true });
+export const useUpdateReceipt = () => useMutation<Partial<Receipt>, Receipt>(updateReceipt, { parseFieldError: true });
 
 export const useDeleteReceipt = (id?: number) => useFetch<number, Receipt>(deleteReceipt, id);

@@ -54,13 +54,11 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddSubCategory(subCategoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddSubCategory();
 
   const handleClose = () => {
-    setSubCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -85,7 +83,6 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
         duration: 2000,
         isClosable: true,
       });
-      setSubCategoryProps(undefined);
       setCategories((prev) =>
         prev.map((cat) => (cat.id === category.id ? { ...cat, subCategories: [...cat.subCategories, data] } : cat)),
       );
@@ -113,12 +110,12 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<SubCategory>) => {
+  const handleSubmit = async (values: Partial<SubCategory>) => {
     const subcategory = {
       ...values,
       categoryId: category.id,
     };
-    setSubCategoryProps(subcategory);
+    await mutate(subcategory);
   };
 
   return (

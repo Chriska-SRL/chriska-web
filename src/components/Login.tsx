@@ -15,8 +15,10 @@ import {
   useColorModeValue,
   HStack,
   IconButton,
+  InputGroup,
+  InputRightElement,
 } from '@chakra-ui/react';
-import { FiCode } from 'react-icons/fi';
+import { FiCode, FiEye, FiEyeOff } from 'react-icons/fi';
 import { Formik, Field } from 'formik';
 import { useEffect, useState } from 'react';
 import { useLogin } from '@/hooks/login';
@@ -28,6 +30,7 @@ export const Login = () => {
   const router = useRouter();
   const toast = useToast();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { performLogin, performDevLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
@@ -139,7 +142,7 @@ export const Login = () => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount }) => (
+            {({ handleSubmit, errors, touched, submitCount, values }) => (
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
@@ -157,14 +160,31 @@ export const Login = () => {
 
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
                   <FormLabel htmlFor="password">Contraseña</FormLabel>
-                  <Field
-                    as={Input}
-                    id="password"
-                    name="password"
-                    type="password"
-                    variant="filled"
-                    disabled={isLoading || isRedirecting}
-                  />
+                  <InputGroup>
+                    <Field
+                      as={Input}
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      variant="filled"
+                      disabled={isLoading || isRedirecting}
+                      pr={values.password ? '3rem' : '0.75rem'}
+                    />
+                    {values.password && (
+                      <InputRightElement>
+                        <IconButton
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                          onClick={() => setShowPassword(!showPassword)}
+                          variant="ghost"
+                          size="sm"
+                          disabled={isLoading || isRedirecting}
+                          _hover={{ bg: 'transparent' }}
+                          _active={{ bg: 'transparent' }}
+                        />
+                      </InputRightElement>
+                    )}
+                  </InputGroup>
                   <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 

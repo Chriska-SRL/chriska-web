@@ -86,13 +86,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
   const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.imageUrl || null);
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
   const { data: brands } = useGetBrands();
   const { data: suppliers } = useGetSuppliers(1, 100);
   const { data: warehouses = [], isLoading: isLoadingWarehouses } = useGetWarehousesSimple();
-  const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateProduct();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
   );
@@ -130,7 +129,6 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       setProducts((prevProducts) =>
         prevProducts.map((p) => (p.id === data.id ? { ...p, ...data, imageUrl: currentImageUrl || '' } : p)),
       );
-      setProductProps(undefined);
       handleClose();
     }
   }, [data, currentImageUrl, setProducts, onClose, toast]);
@@ -172,7 +170,6 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   );
 
   const handleClose = () => {
-    setProductProps(undefined);
     setCurrentImageUrl(product?.imageUrl || null);
     setSelectedCategoryId(product?.subCategory?.category?.id ?? null);
     setSelectedWarehouseId(product?.shelve?.warehouse?.id ?? null);
@@ -191,7 +188,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     }
   };
 
-  const handleSubmit = (values: {
+  const handleSubmit = async (values: {
     id: number;
     internalCode: string;
     barcode: string;
@@ -208,7 +205,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     shelveId: number;
   }) => {
     const { supplierIds, ...productData } = values;
-    setProductProps({
+    await mutate({
       ...productData,
       supplierIds: supplierIds,
     } as any);

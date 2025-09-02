@@ -74,10 +74,9 @@ const ClientEditForm = ({
   const toast = useToast();
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
 
-  const [clientProps, setClientProps] = useState<Partial<Client>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateClient(clientProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateClient();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -93,7 +92,6 @@ const ClientEditForm = ({
   });
 
   const handleClose = () => {
-    setClientProps(undefined);
     setShowConfirmDialog(false);
     setBankAccounts(client.bankAccounts || []);
     if (formikInstance && formikInstance.resetForm) {
@@ -120,7 +118,6 @@ const ClientEditForm = ({
         isClosable: true,
       });
       setClients((prevClients) => prevClients.map((c) => (c.id === data.id ? { ...c, ...data } : c)));
-      setClientProps(undefined);
       handleClose();
     }
   }, [data, setClients, toast, onClose]);
@@ -145,7 +142,7 @@ const ClientEditForm = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const updatedClient = {
       ...values,
       location: {
@@ -158,7 +155,7 @@ const ClientEditForm = ({
     // Remove individual latitude/longitude from the object
     delete updatedClient.latitude;
     delete updatedClient.longitude;
-    setClientProps(updatedClient);
+    await mutate(updatedClient);
   };
 
   return (

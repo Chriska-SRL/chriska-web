@@ -56,7 +56,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
+  const { data, isLoading, error, fieldError, mutate } = useAddSupplier();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
@@ -65,10 +65,8 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
     lng: undefined as number | undefined,
   });
   const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
-  const { data, isLoading, error, fieldError } = useAddSupplier(supplierProps);
 
   const handleClose = () => {
-    setSupplierProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -93,7 +91,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
         duration: 2000,
         isClosable: true,
       });
-      setSupplierProps(undefined);
       setSuppliers((prev) => [...prev, data]);
       onClose();
     }
@@ -119,7 +116,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const submitData: any = {
       ...values,
       bankAccounts: values.bankAccounts || [],
@@ -137,7 +134,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
     delete submitData.latitude;
     delete submitData.longitude;
 
-    setSupplierProps(submitData);
+    await mutate(submitData);
   };
 
   const validateForm = (values: any) => {

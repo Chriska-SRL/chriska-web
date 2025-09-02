@@ -74,7 +74,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [orderProps, setOrderProps] = useState<Partial<Order>>();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -104,7 +103,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   const [isInitializingProducts, setIsInitializingProducts] = useState(true);
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, fieldError } = useUpdateOrder(orderProps);
+  const { data, isLoading, fieldError, mutate } = useUpdateOrder();
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
     <Box w="100%">
@@ -232,7 +231,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   }, [order.productItems, selectedProducts.length, orderRequestData]);
 
   const handleClose = () => {
-    setOrderProps(undefined);
     setShowConfirmDialog(false);
     setIsInitializingProducts(true);
     setSelectedProducts([]);
@@ -350,7 +348,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
         duration: 3000,
         isClosable: true,
       });
-      setOrderProps(undefined);
       setOrders((prev) => prev.map((o) => (o.id === data.id ? data : o)));
       onClose();
       // Notificar al padre que la orden fue preparada
@@ -420,7 +417,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       // Aquí podrías cambiar el status a "PROCESSING" o similar
     };
 
-    setOrderProps(orderData);
+    await mutate(orderData);
   };
 
   return (

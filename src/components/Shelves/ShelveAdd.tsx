@@ -54,13 +54,11 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddShelve(shelveProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddShelve();
 
   const handleClose = () => {
-    setShelveProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -85,7 +83,6 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
         duration: 2000,
         isClosable: true,
       });
-      setShelveProps(undefined);
       setWarehouses((prev) =>
         prev.map((w) => {
           if (w.id === warehouse.id) {
@@ -118,12 +115,12 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Shelve>) => {
+  const handleSubmit = async (values: Partial<Shelve>) => {
     const shelve = {
       ...values,
       warehouseId: warehouse.id,
     };
-    setShelveProps(shelve);
+    await mutate(shelve);
   };
 
   return (

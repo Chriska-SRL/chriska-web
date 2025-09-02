@@ -70,11 +70,10 @@ const convertDaysToEnglish = (days: string[]): Day[] => {
 export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => {
   const toast = useToast();
 
-  const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateZone(zoneProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateZone();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -97,7 +96,6 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
       setZones((prevZones) =>
         prevZones.map((z) => (z.id === data.id ? { ...z, ...data, imageUrl: currentImageUrl || null } : z)),
       );
-      setZoneProps(undefined);
       onClose();
     }
   }, [data, currentImageUrl]);
@@ -122,12 +120,11 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Zone) => {
-    setZoneProps(values);
+  const handleSubmit = async (values: Zone) => {
+    await mutate(values);
   };
 
   const handleClose = () => {
-    setZoneProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();

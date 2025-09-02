@@ -9,7 +9,7 @@ import {
   uploadProductImage,
   deleteProductImage,
 } from '@/services/product';
-import { useFetch } from '../utils/useFetch';
+import { useFetch, useMutation } from '../utils/useFetch';
 
 type ProductFilters = {
   name?: string;
@@ -102,11 +102,9 @@ export const useGetProductById = (id?: number) => {
   return { data, isLoading, error };
 };
 
-export const useAddProduct = (props?: Partial<Product>) =>
-  useFetch<Partial<Product>, Product>(addProduct, props, { parseFieldError: true });
+export const useAddProduct = () => useMutation<Partial<Product>, Product>(addProduct, { parseFieldError: true });
 
-export const useUpdateProduct = (props?: Partial<Product>) =>
-  useFetch<Partial<Product>, Product>(updateProduct, props, { parseFieldError: true });
+export const useUpdateProduct = () => useMutation<Partial<Product>, Product>(updateProduct, { parseFieldError: true });
 
 export const useDeleteProduct = (id?: number) => useFetch<number, Product>(deleteProduct, id);
 

@@ -37,14 +37,12 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [receiptProps, setReceiptProps] = useState<Partial<Receipt>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError } = useUpdateReceipt(receiptProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateReceipt();
 
   const handleClose = () => {
-    setReceiptProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -69,7 +67,6 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
         duration: 2000,
         isClosable: true,
       });
-      setReceiptProps(undefined);
       setReceipts((prev) => prev.map((r) => (r.id === data.id ? data : r)));
       onClose();
     }
@@ -95,7 +92,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     const updatedReceipt = {
       id: receipt.id,
       clientId: receipt.client?.id || 0,
@@ -104,7 +101,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
       date: receipt.date,
       notes: values.notes,
     };
-    setReceiptProps(updatedReceipt);
+    await mutate(updatedReceipt);
   };
 
   const validateForm = () => {

@@ -76,22 +76,7 @@ const DiscountEditForm = ({
 }) => {
   const toast = useToast();
 
-  const [updateProps, setUpdateProps] = useState<{
-    id: string;
-    discount: {
-      description: string;
-      expirationDate: string;
-      productQuantity: number;
-      percentage: number;
-      status: string;
-      discountProductId: number[];
-      discountClientId: number[];
-      brandId?: string;
-      subCategoryId?: string;
-      zoneId?: string;
-    };
-  }>();
-  const { data, isLoading, error, fieldError } = useUpdateDiscount(updateProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateDiscount();
 
   // Load data using hooks - they handle caching internally
   const { data: brands = [] } = useGetBrands();
@@ -341,7 +326,6 @@ const DiscountEditForm = ({
     setClientSearch('');
     setShowProductDropdown(false);
     setShowClientDropdown(false);
-    setUpdateProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -368,7 +352,6 @@ const DiscountEditForm = ({
         isClosable: true,
       });
 
-      setUpdateProps(undefined);
       setDiscounts((prev) => prev.map((d) => (d.id === data.id ? data : d)));
       handleClose();
     }
@@ -410,7 +393,7 @@ const DiscountEditForm = ({
   }, []);
 
   const handleSubmit = useCallback(
-    (values: {
+    async (values: {
       description: string;
       expirationDate: string;
       productQuantity: number;
@@ -418,7 +401,7 @@ const DiscountEditForm = ({
       status: string;
     }) => {
       // Prevent double submission
-      if (isLoading || updateProps) return;
+      if (isLoading) return;
 
       // Create the update object with only necessary fields
       const discountUpdate: any = {
@@ -452,11 +435,11 @@ const DiscountEditForm = ({
         discount: discountUpdate,
       };
 
-      setUpdateProps(updateData);
+      await mutate(updateData);
     },
     [
       isLoading,
-      updateProps,
+      mutate,
       productType,
       selectedProducts,
       clientType,

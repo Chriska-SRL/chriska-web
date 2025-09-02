@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from '@/services/supplier';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterName?: string) => {
   const [data, setData] = useState<Supplier[]>([]);
@@ -29,10 +29,9 @@ export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterN
   return { data, isLoading, error };
 };
 
-export const useAddSupplier = (props?: Partial<Supplier>) =>
-  useFetch<Partial<Supplier>, Supplier>(addSupplier, props, { parseFieldError: true });
+export const useAddSupplier = () => useMutation<Partial<Supplier>, Supplier>(addSupplier, { parseFieldError: true });
 
-export const useUpdateSupplier = (props?: Partial<Supplier>) =>
-  useFetch<Partial<Supplier>, Supplier>(updateSupplier, props, { parseFieldError: true });
+export const useUpdateSupplier = () =>
+  useMutation<Partial<Supplier>, Supplier>(updateSupplier, { parseFieldError: true });
 
 export const useDeleteSupplier = (id?: number) => useFetch<number, Supplier>(deleteSupplier, id);

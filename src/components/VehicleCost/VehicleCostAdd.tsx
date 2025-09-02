@@ -55,13 +55,11 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error } = useAddVehicleCost(costProps);
+  const { data, isLoading, error, mutate } = useAddVehicleCost();
 
   const handleClose = () => {
-    setCostProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -86,7 +84,6 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
         duration: 2000,
         isClosable: true,
       });
-      setCostProps(undefined);
       setCosts((prev) => [...prev, data]);
       onClose();
     }
@@ -104,7 +101,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
     }
   }, [error, toast]);
 
-  const handleSubmit = (values: { date: string; type: string; amount: string; description: string }) => {
+  const handleSubmit = async (values: { date: string; type: string; amount: string; description: string }) => {
     const newCost: Partial<VehicleCost> = {
       date: new Date(values.date).toISOString(),
       vehicleId,
@@ -113,7 +110,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
       description: values.description,
     };
 
-    setCostProps(newCost);
+    await mutate(newCost);
   };
 
   return (

@@ -8,7 +8,7 @@ import {
   deleteOrderRequest,
   changeOrderRequestStatus,
 } from '@/services/orderRequest';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 type CreateOrderRequestData = {
   observations?: string;
@@ -64,11 +64,11 @@ export const useGetOrderRequests = (page: number = 1, pageSize: number = 10, fil
 
 export const useGetOrderRequestById = (id?: number) => useFetch<number, OrderRequest>(getOrderRequestById, id);
 
-export const useAddOrderRequest = (props?: CreateOrderRequestData) =>
-  useFetch<CreateOrderRequestData, OrderRequest>(createOrderRequest, props, { parseFieldError: true });
+export const useAddOrderRequest = () =>
+  useMutation<CreateOrderRequestData, OrderRequest>(createOrderRequest, { parseFieldError: true });
 
-export const useUpdateOrderRequest = (props?: Partial<OrderRequest>) =>
-  useFetch<Partial<OrderRequest>, OrderRequest>(updateOrderRequest, props, { parseFieldError: true });
+export const useUpdateOrderRequest = () =>
+  useMutation<Partial<OrderRequest>, OrderRequest>(updateOrderRequest, { parseFieldError: true });
 
 export const useDeleteOrderRequest = (id?: number) => useFetch<number, void>(deleteOrderRequest, id);
 

@@ -7,7 +7,7 @@ import {
   updateDistribution,
   deleteDistribution,
 } from '@/services/distribution';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 type CreateDistributionData = {
   observations?: string;
@@ -52,10 +52,10 @@ export const useGetDistributions = (page: number = 1, pageSize: number = 10, fil
 
 export const useGetDistributionById = (id?: number) => useFetch<number, Distribution>(getDistributionById, id);
 
-export const useAddDistribution = (props?: CreateDistributionData) =>
-  useFetch<CreateDistributionData, Distribution>(addDistribution, props, { parseFieldError: true });
+export const useAddDistribution = () =>
+  useMutation<CreateDistributionData, Distribution>(addDistribution, { parseFieldError: true });
 
-export const useUpdateDistribution = (props?: Partial<Distribution>) =>
-  useFetch<Partial<Distribution>, Distribution>(updateDistribution, props, { parseFieldError: true });
+export const useUpdateDistribution = () =>
+  useMutation<Partial<Distribution>, Distribution>(updateDistribution, { parseFieldError: true });
 
 export const useDeleteDistribution = (id?: number) => useFetch<number, void>(deleteDistribution, id);

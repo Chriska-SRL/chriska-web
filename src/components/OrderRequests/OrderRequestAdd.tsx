@@ -87,17 +87,6 @@ const OrderRequestAddModal = ({
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
-  const [orderRequestProps, setOrderRequestProps] = useState<{
-    observations?: string;
-    date?: string;
-    status?: string;
-    clientId?: number;
-    userId?: number;
-    productItems?: {
-      productId: number;
-      quantity: number;
-    }[];
-  }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
@@ -138,17 +127,7 @@ const OrderRequestAddModal = ({
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, fieldError } = useAddOrderRequest(orderRequestProps);
-
-  useEffect(() => {
-    if (isLoading && orderRequestProps) {
-      const timeout = setTimeout(() => {
-        setOrderRequestProps(undefined);
-      }, 30000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [isLoading, orderRequestProps]);
+  const { data, isLoading, fieldError, mutate } = useAddOrderRequest();
 
   // Debounce para búsqueda de clientes
   useEffect(() => {
@@ -377,7 +356,6 @@ const OrderRequestAddModal = ({
   };
 
   const handleClose = () => {
-    setOrderRequestProps(undefined);
     setShowConfirmDialog(false);
     setSelectedClient(null);
     setClientSearch('');
@@ -412,7 +390,6 @@ const OrderRequestAddModal = ({
         duration: 3000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
       setOrderRequests((prev) => [...prev, data]);
       // Limpiar URL si está disponible
       if (onModalClose) {
@@ -431,7 +408,6 @@ const OrderRequestAddModal = ({
         duration: 4000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
     }
   }, [fieldError, toast]);
 
@@ -479,7 +455,7 @@ const OrderRequestAddModal = ({
       })),
     } as any;
 
-    setOrderRequestProps(orderRequestData);
+    await mutate(orderRequestData);
   };
 
   return (

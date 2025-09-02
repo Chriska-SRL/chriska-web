@@ -51,13 +51,11 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddCategory(categoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddCategory();
 
   const handleClose = () => {
-    setCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -82,7 +80,6 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
         duration: 2000,
         isClosable: true,
       });
-      setCategoryProps(undefined);
       setCategories((prev) => [...prev, data]);
       onClose();
     }
@@ -108,8 +105,8 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Category>) => {
-    setCategoryProps(values);
+  const handleSubmit = async (values: Partial<Category>) => {
+    await mutate(values);
   };
 
   return (

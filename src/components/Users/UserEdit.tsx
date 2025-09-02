@@ -44,10 +44,9 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
   const toast = useToast();
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
-  const [userProps, setUserProps] = useState<Partial<User>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateUser(userProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateUser();
 
   const {
     isOpen: isTempPasswordModalOpen,
@@ -87,7 +86,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
         isClosable: true,
       });
       setUsers((prevUsers) => prevUsers.map((u) => (u.id === data.id ? { ...u, ...data } : u)));
-      setUserProps(undefined);
       onClose();
     }
   }, [data]);
@@ -124,7 +122,13 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
     }
   }, [resetError]);
 
-  const handleSubmit = (values: { id: number; username: string; name: string; roleId: number; estado: string }) => {
+  const handleSubmit = async (values: {
+    id: number;
+    username: string;
+    name: string;
+    roleId: number;
+    estado: string;
+  }) => {
     const user = {
       id: values.id,
       username: values.username,
@@ -132,11 +136,10 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
       isEnabled: values.estado === 'Activo',
       roleId: values.roleId ?? 0,
     };
-    setUserProps(user);
+    await mutate(user);
   };
 
   const handleClose = () => {
-    setUserProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -228,7 +231,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiUser} boxSize="1rem" />
-                            <Text>Nombre</Text>
+                            <Text>Nombre completo</Text>
                           </HStack>
                         </FormLabel>
                         <Field
