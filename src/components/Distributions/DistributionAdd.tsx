@@ -345,6 +345,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUser} boxSize="1rem" />
                                 <Text>Usuario</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -376,6 +377,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTruck} boxSize="1rem" />
                                 <Text>Vehículo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -405,6 +407,7 @@ const DistributionAddModal = ({ isOpen, onClose, setDistributions }: Distributio
                           <HStack spacing="0.5rem">
                             <Icon as={FiMapPin} boxSize="1rem" />
                             <Text>Zonas</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Select

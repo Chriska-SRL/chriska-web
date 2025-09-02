@@ -231,6 +231,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Nombre</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -278,6 +279,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUsers} boxSize="1rem" />
                                   <Text>Razón Social</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -300,6 +302,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
                                   <Text>Zona</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Select
@@ -330,6 +333,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMapPin} boxSize="1rem" />
                                 <Text>Dirección</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -354,6 +358,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Persona de contacto</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -376,6 +381,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPhone} boxSize="1rem" />
                                   <Text>Teléfono</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -399,7 +405,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
-                                <Text>Correo electrónico (opcional)</Text>
+                                <Text>Correo electrónico</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -467,6 +473,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               <HStack spacing="0.5rem">
                                 <Icon as={FiClock} boxSize="1rem" />
                                 <Text>Horario</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input

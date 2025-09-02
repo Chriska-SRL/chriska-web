@@ -235,6 +235,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Nombre</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -257,6 +258,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
                                   <Text>RUT</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -280,6 +282,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Razón Social</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -302,6 +305,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHome} boxSize="1rem" />
                                 <Text>Dirección</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -325,6 +329,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Persona de contacto</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -347,6 +352,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiPhone} boxSize="1rem" />
                                   <Text>Teléfono</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -370,9 +376,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
                                 <Text>Email</Text>
-                                <Text fontSize="sm" color="gray.500">
-                                  (opcional)
-                                </Text>
                               </HStack>
                             </FormLabel>
                             <Input

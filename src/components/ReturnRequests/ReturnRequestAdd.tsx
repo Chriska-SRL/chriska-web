@@ -17,6 +17,7 @@ import {
   FormErrorMessage,
   Input,
   HStack,
+  Text,
 } from '@chakra-ui/react';
 import { Formik } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
@@ -185,7 +186,12 @@ const ReturnRequestAddModal = ({
                     <form id="return-request-form" onSubmit={formik.handleSubmit}>
                       <VStack spacing="1rem" align="stretch">
                         <FormControl isInvalid={!!formik.errors.deliveryId && formik.submitCount > 0}>
-                          <FormLabel fontWeight="semibold">ID de la entrega</FormLabel>
+                          <FormLabel fontWeight="semibold">
+                            ID de la entrega{' '}
+                            <Text color="red.500" as="span">
+                              *
+                            </Text>
+                          </FormLabel>
                           <Input
                             name="deliveryId"
                             placeholder="Ingresa el ID de la entrega"

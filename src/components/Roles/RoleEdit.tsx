@@ -180,6 +180,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                             <HStack spacing="0.5rem">
                               <Icon as={FiShield} boxSize="1rem" />
                               <Text>Nombre</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -201,6 +202,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
                             <HStack spacing="0.5rem">
                               <Icon as={FiFileText} boxSize="1rem" />
                               <Text>Descripción</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field

@@ -43,6 +43,7 @@ import { useGetCategories } from '@/hooks/category';
 import { Product } from '@/entities/product';
 import { useGetBrands } from '@/hooks/brand';
 import { Permission } from '@/enums/permission.enum';
+import { UnitType } from '@/enums/unitType.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { ProductImageUpload } from './ProductImageUpload';
 import { useGetSuppliers } from '@/hooks/supplier';
@@ -371,7 +372,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                     return errors;
                   }}
                 >
-                  {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
+                  {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount, values }) => {
                     // Actualizar la instancia de formik solo cuando cambie
                     useEffect(() => {
                       setFormikInstance({ dirty, resetForm });
@@ -386,7 +387,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiHash} boxSize="1rem" color={iconColor} />
-                                    <Text>Código de barras (opcional)</Text>
+                                    <Text>Código de barras</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -409,6 +410,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiTag} boxSize="1rem" color={iconColor} />
                                     <Text>Nombre</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -432,6 +434,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiDollarSign} boxSize="1rem" color={iconColor} />
                                       <Text>Precio</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Input
@@ -455,6 +458,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                                       <Text>Unidad</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -482,6 +486,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                                       <Text>Peso estimado</Text>
+                                      {values.unitType === UnitType.KILO && <Text color="red.500">*</Text>}
                                     </HStack>
                                   </FormLabel>
                                   <Input
@@ -508,6 +513,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiTag} boxSize="1rem" color={iconColor} />
                                       <Text>Marca</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -539,7 +545,8 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiThermometer} boxSize="1rem" color={iconColor} />
-                                      <Text>Condición de temperatura</Text>
+                                      <Text>Cond. de temperatura</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -567,6 +574,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
                                     <Text>Descripción</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Textarea
@@ -591,6 +599,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                                       <Text>Categoría</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -628,6 +637,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                                       <Text>Subcategoría</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -658,6 +668,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                                       <Text>Depósito</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -693,6 +704,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                                       <Text>Estantería</Text>
+                                      <Text color="red.500">*</Text>
                                     </HStack>
                                   </FormLabel>
                                   <Select
@@ -912,7 +924,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
-                                    <Text>Observaciones (opcional)</Text>
+                                    <Text>Observaciones</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Textarea

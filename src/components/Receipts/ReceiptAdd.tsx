@@ -295,6 +295,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUsers} boxSize="1rem" />
                                 <Text>Cliente</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
 
@@ -462,6 +463,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                               <HStack spacing="0.5rem">
                                 <Icon as={FiCalendar} boxSize="1rem" />
                                 <Text>Fecha</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -484,6 +486,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                               <HStack spacing="0.5rem">
                                 <Icon as={FiDollarSign} boxSize="1rem" />
                                 <Text>Monto</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <NumberInput min={0} precision={2}>
@@ -508,6 +511,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Método de pago</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -537,7 +541,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                             </FormLabel>
                             <Textarea
                               {...field}
-                              placeholder="Ingrese notas adicionales (opcional)"
+                              placeholder="Ingrese notas adicionales"
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}

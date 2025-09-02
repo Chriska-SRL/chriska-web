@@ -201,6 +201,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
                                 <Text>Nombre de usuario</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -223,6 +224,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUser} boxSize="1rem" />
                                 <Text>Nombre completo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -245,6 +247,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiShield} boxSize="1rem" />
                                 <Text>Rol</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -273,6 +276,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiActivity} boxSize="1rem" />
                                 <Text>Estado</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select

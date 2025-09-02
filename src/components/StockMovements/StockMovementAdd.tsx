@@ -301,6 +301,7 @@ const StockMovementAddModal = ({
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiCalendar} boxSize="1rem" />
                                   <Text>Fecha</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -327,6 +328,7 @@ const StockMovementAddModal = ({
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
                                 <Text>Cantidad</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -350,6 +352,7 @@ const StockMovementAddModal = ({
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Tipo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -376,6 +379,7 @@ const StockMovementAddModal = ({
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Producto</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Box position="relative" ref={searchRef}>
@@ -573,6 +577,7 @@ const StockMovementAddModal = ({
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Razón</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea

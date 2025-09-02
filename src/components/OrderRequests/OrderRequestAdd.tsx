@@ -524,6 +524,7 @@ const OrderRequestAddModal = ({
                             <HStack spacing="0.5rem">
                               <Icon as={FiUsers} boxSize="1rem" />
                               <Text>Cliente</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
 
@@ -739,7 +740,12 @@ const OrderRequestAddModal = ({
                             !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
                           }
                         >
-                          <FormLabel fontWeight="semibold">Productos</FormLabel>
+                          <FormLabel fontWeight="semibold">
+                            Productos{' '}
+                            <Text color="red.500" as="span">
+                              *
+                            </Text>
+                          </FormLabel>
 
                           {/* Mostrar mensaje si no hay cliente seleccionado */}
                           {!selectedClient ? (

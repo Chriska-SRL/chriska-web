@@ -458,6 +458,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPercent} boxSize="1rem" />
                                     <Text>Porcentaje (%)</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -503,6 +504,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPackage} boxSize="1rem" />
                                     <Text>Cantidad mínima</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <NumberInput
@@ -539,6 +541,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCalendar} boxSize="1rem" />
                                     <Text>Fecha de vencimiento</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -1175,6 +1178,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
                                   <Text>Descripción</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Textarea

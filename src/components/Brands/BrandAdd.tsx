@@ -159,6 +159,7 @@ const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Nombre</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -181,6 +182,7 @@ const BrandAddModal = ({ isOpen, onClose, setBrands }: BrandAddModalProps) => {
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
