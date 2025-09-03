@@ -139,7 +139,7 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                       >
                         Ir a entregas
                       </Button>
-                      <Button
+                      {/* <Button
                         leftIcon={<FiMap />}
                         size="sm"
                         variant="ghost"
@@ -148,7 +148,7 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                         }}
                       >
                         Ver mapa
-                      </Button>
+                      </Button> */}
                     </HStack>
                   </HStack>
                   <Box
