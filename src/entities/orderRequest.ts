@@ -1,14 +1,6 @@
 import { Client } from './client';
-import { Product } from './product';
+import { ProductItem } from './productItem';
 import { User } from './user';
-
-export type ProductItem = {
-  quantity: number;
-  weight: number;
-  unitPrice: number;
-  discount: number;
-  product: Product;
-};
 
 export type OrderRequest = {
   id: number;
