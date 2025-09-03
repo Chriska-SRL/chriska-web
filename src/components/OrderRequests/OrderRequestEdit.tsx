@@ -730,7 +730,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 border="none"
                                                 fontSize="sm"
                                                 w="fit-content"
-                                                maxW="250px"
                                                 p={0}
                                               >
                                                 <PopoverArrow bg="red.500" />
@@ -774,7 +773,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                     border="none"
                                                     fontSize="sm"
                                                     w="fit-content"
-                                                    maxW="250px"
                                                     p={0}
                                                   >
                                                     <PopoverArrow bg="green.500" />
@@ -1104,7 +1102,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   border="none"
                                                   fontSize="sm"
                                                   w="fit-content"
-                                                  maxW="250px"
                                                   p={0}
                                                 >
                                                   <PopoverArrow bg="red.500" />
@@ -1148,7 +1145,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                       border="none"
                                                       fontSize="sm"
                                                       w="fit-content"
-                                                      maxW="250px"
                                                       p={0}
                                                     >
                                                       <PopoverArrow bg="green.500" />

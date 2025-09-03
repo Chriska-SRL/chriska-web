@@ -1,14 +1,14 @@
 'use client';
 
 import { NextPage } from 'next';
-import { ClientOnly, Content, SideBar, ClientReceipts } from '@/components';
+import { ClientOnly, Content, SideBar, SupplierReceipts } from '@/components';
 import { Flex } from '@chakra-ui/react';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-const ReceiptPage: NextPage = () => {
+const SupplierReceiptPage: NextPage = () => {
   const router = useRouter();
   const isHydrated = useUserStore((s) => s.isHydrated);
   const canViewReceipts = useUserStore((s) => s.hasPermission(Permission.VIEW_RECEIPTS));
@@ -22,13 +22,13 @@ const ReceiptPage: NextPage = () => {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="pagos-de-clientes" />
+        <SideBar currentPage="pagos-a-proveedores" />
         <Content>
-          <ClientReceipts />
+          <SupplierReceipts />
         </Content>
       </Flex>
     </ClientOnly>
   );
 };
 
-export default ReceiptPage;
+export default SupplierReceiptPage;

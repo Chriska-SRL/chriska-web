@@ -109,6 +109,7 @@ const sidebarItems = [
   { path: 'entregas', text: 'Entregas', icon: FiTruck, Permission: Permission.VIEW_DELIVERIES },
   { path: 'devoluciones', text: 'Devoluciones', icon: FiRotateCcw, Permission: Permission.VIEW_ORDER_REQUESTS },
   { path: 'pagos-de-clientes', text: 'Pagos de clientes', icon: FiFileText, Permission: Permission.VIEW_RECEIPTS },
+  { path: 'pagos-a-proveedores', text: 'Pagos a proveedores', icon: FiFileText, Permission: Permission.VIEW_RECEIPTS },
   { path: 'repartos', text: 'Repartos', icon: FiSend, Permission: Permission.VIEW_DISTRIBUTIONS },
   {
     path: 'movimientos-de-stock',

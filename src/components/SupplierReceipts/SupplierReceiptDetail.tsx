@@ -21,22 +21,22 @@ import {
 } from '@chakra-ui/react';
 import { FiInfo, FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
-import { ClientReceipt } from '@/entities/clientReceipt';
-import { ClientReceiptEdit } from './ClientReceiptEdit';
+import { SupplierReceipt } from '@/entities/supplierReceipt';
+import { SupplierReceiptEdit } from './SupplierReceiptEdit';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useDeleteClientReceipt } from '@/hooks/receipt';
+import { useDeleteSupplierReceipt } from '@/hooks/supplierReceipt';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { getPaymentMethodLabel, getPaymentMethodColor } from '@/enums/paymentMethod.enum';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-type ClientReceiptDetailProps = {
-  receipt: ClientReceipt;
-  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
+type SupplierReceiptDetailProps = {
+  receipt: SupplierReceipt;
+  setReceipts: React.Dispatch<React.SetStateAction<SupplierReceipt[]>>;
 };
 
-export const ClientReceiptDetail = ({ receipt, setReceipts }: ClientReceiptDetailProps) => {
+export const SupplierReceiptDetail = ({ receipt, setReceipts }: SupplierReceiptDetailProps) => {
   const canEditReceipts = useUserStore((s) => s.hasPermission(Permission.EDIT_RECEIPTS));
   const canDeleteReceipts = useUserStore((s) => s.hasPermission(Permission.DELETE_RECEIPTS));
 
@@ -133,12 +133,12 @@ export const ClientReceiptDetail = ({ receipt, setReceipts }: ClientReceiptDetai
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Detalle del recibo de cliente #{receipt.id}
+            Detalle del recibo de proveedor #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {detailField('Cliente', receipt.client?.name || 'Sin cliente asignado', FiUsers)}
+              {detailField('Proveedor', receipt.supplier?.name || 'Sin proveedor asignado', FiUsers)}
               {detailField('Fecha', formatDate(receipt.date), FiCalendar)}
               {detailField('Monto', `$${receipt.amount?.toFixed(2) || '0.00'}`, FiDollarSign)}
               {paymentMethodField('Método de pago', receipt.paymentMethod, FiFileText)}
@@ -159,8 +159,8 @@ export const ClientReceiptDetail = ({ receipt, setReceipts }: ClientReceiptDetai
               </Button>
               {canDeleteReceipts && (
                 <GenericDelete
-                  item={{ id: receipt.id, name: `recibo de cliente #${receipt.id}` }}
-                  useDeleteHook={useDeleteClientReceipt}
+                  item={{ id: receipt.id, name: `recibo de proveedor #${receipt.id}` }}
+                  useDeleteHook={useDeleteSupplierReceipt}
                   setItems={setReceipts}
                   onDeleted={onClose}
                   size="sm"
@@ -187,7 +187,7 @@ export const ClientReceiptDetail = ({ receipt, setReceipts }: ClientReceiptDetai
       </Modal>
 
       {isEditOpen && (
-        <ClientReceiptEdit isOpen={isEditOpen} onClose={closeEdit} receipt={receipt} setReceipts={setReceipts} />
+        <SupplierReceiptEdit isOpen={isEditOpen} onClose={closeEdit} receipt={receipt} setReceipts={setReceipts} />
       )}
     </>
   );

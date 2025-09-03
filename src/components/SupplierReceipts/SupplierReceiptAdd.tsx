@@ -38,28 +38,28 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useEffect, useState, useRef, Fragment, useMemo, useCallback } from 'react';
-import { ClientReceipt } from '@/entities/clientReceipt';
-import { useAddClientReceipt } from '@/hooks/receipt';
-import { useGetClients } from '@/hooks/client';
+import { SupplierReceipt } from '@/entities/supplierReceipt';
+import { useAddSupplierReceipt } from '@/hooks/supplierReceipt';
+import { useGetSuppliers } from '@/hooks/supplier';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { PaymentMethodOptions } from '@/enums/paymentMethod.enum';
 
-type ClientReceiptAddProps = {
+type SupplierReceiptAddProps = {
   isLoading: boolean;
-  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
+  setReceipts: React.Dispatch<React.SetStateAction<SupplierReceipt[]>>;
 };
 
-type ClientReceiptAddModalProps = {
+type SupplierReceiptAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
+  setReceipts: React.Dispatch<React.SetStateAction<SupplierReceipt[]>>;
 };
 
 // Componente interno que contiene todos los hooks y lógica del formulario
-const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAddModalProps) => {
+const SupplierReceiptAddModal = ({ isOpen, onClose, setReceipts }: SupplierReceiptAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -68,16 +68,16 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  // Estados para la búsqueda de clientes
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
-  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
-  const clientSearchRef = useRef<HTMLDivElement>(null);
+  // Estados para la búsqueda de proveedores
+  const [supplierSearch, setSupplierSearch] = useState('');
+  const [supplierSearchType, setSupplierSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<{ id: number; name: string } | null>(null);
+  const [debouncedSupplierSearch, setDebouncedSupplierSearch] = useState(supplierSearch);
+  const [lastSupplierSearchTerm, setLastSupplierSearchTerm] = useState('');
+  const supplierSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, error, fieldError, mutate } = useAddClientReceipt();
+  const { data, isLoading, error, fieldError, mutate } = useAddSupplierReceipt();
 
   // Colores y variables de estilo
   const textColor = useColorModeValue('gray.600', 'gray.300');
@@ -86,72 +86,77 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
-  // Debounce para búsqueda de clientes
+  // Debounce para búsqueda de proveedores
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedClientSearch(clientSearch);
+      setDebouncedSupplierSearch(supplierSearch);
     }, 500);
     return () => clearTimeout(timer);
-  }, [clientSearch]);
+  }, [supplierSearch]);
 
-  // Filtros de búsqueda de clientes
-  const clientFilters = useMemo(() => {
-    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
+  // Filtros de búsqueda de proveedores
+  const supplierFilters = useMemo(() => {
+    if (!debouncedSupplierSearch || debouncedSupplierSearch.length < 2) return undefined;
     const filters: any = {};
-    switch (clientSearchType) {
+    switch (supplierSearchType) {
       case 'name':
-        filters.name = debouncedClientSearch;
+        filters.name = debouncedSupplierSearch;
         break;
       case 'rut':
-        filters.rut = debouncedClientSearch;
+        filters.rut = debouncedSupplierSearch;
         break;
       case 'razonSocial':
-        filters.razonSocial = debouncedClientSearch;
+        filters.razonSocial = debouncedSupplierSearch;
         break;
       case 'contactName':
-        filters.contactName = debouncedClientSearch;
+        filters.contactName = debouncedSupplierSearch;
         break;
     }
     return filters;
-  }, [debouncedClientSearch, clientSearchType]);
+  }, [debouncedSupplierSearch, supplierSearchType]);
 
-  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
-  const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
+  const actualSupplierFilters =
+    debouncedSupplierSearch && debouncedSupplierSearch.length >= 2 ? supplierFilters : undefined;
+  const { data: suppliersSearch = [], isLoading: isLoadingSuppliersSearch } = useGetSuppliers(
+    1,
+    10,
+    actualSupplierFilters,
+  );
 
   // Actualizar el término de búsqueda cuando se completa la búsqueda
   useEffect(() => {
-    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
-      setLastClientSearchTerm(debouncedClientSearch);
+    if (!isLoadingSuppliersSearch && debouncedSupplierSearch && debouncedSupplierSearch.length >= 2) {
+      setLastSupplierSearchTerm(debouncedSupplierSearch);
     }
-  }, [isLoadingClientsSearch, debouncedClientSearch]);
+  }, [isLoadingSuppliersSearch, debouncedSupplierSearch]);
 
-  // Funciones para manejar búsqueda de clientes
-  const handleClientSearch = useCallback((value: string) => {
-    setClientSearch(value);
+  // Funciones para manejar búsqueda de proveedores
+  const handleSupplierSearch = useCallback((value: string) => {
+    setSupplierSearch(value);
     if (value.length >= 2) {
-      setShowClientDropdown(true);
+      setShowSupplierDropdown(true);
     } else {
-      setShowClientDropdown(false);
+      setShowSupplierDropdown(false);
     }
   }, []);
 
-  const handleClientSelect = useCallback((client: any) => {
-    setSelectedClient({ id: client.id, name: client.name });
-    setClientSearch('');
-    setShowClientDropdown(false);
+  const handleSupplierSelect = useCallback((supplier: any) => {
+    setSelectedSupplier({ id: supplier.id, name: supplier.name });
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
   }, []);
 
-  const handleClearClientSearch = useCallback(() => {
-    setSelectedClient(null);
-    setClientSearch('');
-    setShowClientDropdown(false);
+  const handleClearSupplierSearch = useCallback(() => {
+    setSelectedSupplier(null);
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
   }, []);
 
   // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
+      if (supplierSearchRef.current && !supplierSearchRef.current.contains(event.target as Node)) {
+        setShowSupplierDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -160,10 +165,10 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
 
   const handleClose = () => {
     setShowConfirmDialog(false);
-    // Limpiar estados de búsqueda de cliente
-    setSelectedClient(null);
-    setClientSearch('');
-    setShowClientDropdown(false);
+    // Limpiar estados de búsqueda de proveedor
+    setSelectedSupplier(null);
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
@@ -181,8 +186,8 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo de cliente creado',
-        description: 'El recibo de cliente ha sido creado correctamente.',
+        title: 'Recibo de proveedor creado',
+        description: 'El recibo de proveedor ha sido creado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -215,7 +220,7 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   const handleSubmit = async (values: any) => {
     const newReceipt = {
       ...values,
-      clientId: selectedClient?.id || 0,
+      supplierId: selectedSupplier?.id || 0,
       amount: Number(values.amount),
       date: values.date || new Date().toISOString().split('T')[0],
     };
@@ -225,8 +230,8 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   const validateForm = (values: any) => {
     const errors: any = {};
 
-    // Validar cliente seleccionado en lugar del campo del formulario
-    if (!selectedClient) errors.clientId = 'Debe seleccionar un cliente';
+    // Validar proveedor seleccionado en lugar del campo del formulario
+    if (!selectedSupplier) errors.supplierId = 'Debe seleccionar un proveedor';
 
     const amountError = validateEmpty(values.amount);
     if (amountError) errors.amount = amountError;
@@ -261,13 +266,13 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Nuevo recibo de cliente
+            Nuevo recibo de proveedor
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{
-                clientId: '',
+                supplierId: '',
                 amount: '',
                 paymentMethod: '',
                 date: new Date().toISOString().split('T')[0],
@@ -288,19 +293,19 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                 return (
                   <form id="receipt-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <Field name="clientId">
+                      <Field name="supplierId">
                         {() => (
-                          <FormControl isInvalid={submitCount > 0 && !selectedClient}>
+                          <FormControl isInvalid={submitCount > 0 && !selectedSupplier}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUsers} boxSize="1rem" />
-                                <Text>Cliente</Text>
+                                <Text>Proveedor</Text>
                                 <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
 
-                            {/* Cliente seleccionado */}
-                            {selectedClient && (
+                            {/* Proveedor seleccionado */}
+                            {selectedSupplier && (
                               <Flex
                                 p="0.5rem 1rem"
                                 bg={inputBg}
@@ -310,21 +315,21 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                                 align="center"
                                 justify="space-between"
                               >
-                                <Text>{selectedClient.name}</Text>
+                                <Text>{selectedSupplier.name}</Text>
                                 <IconButton
-                                  aria-label="Quitar cliente"
+                                  aria-label="Quitar proveedor"
                                   icon={<Text fontSize="lg">×</Text>}
                                   size="xs"
                                   variant="ghost"
-                                  onClick={handleClearClientSearch}
+                                  onClick={handleClearSupplierSearch}
                                   isDisabled={isLoading}
                                 />
                               </Flex>
                             )}
 
-                            {/* Buscador de clientes */}
-                            {!selectedClient && (
-                              <Box position="relative" ref={clientSearchRef}>
+                            {/* Buscador de proveedores */}
+                            {!selectedSupplier && (
+                              <Box position="relative" ref={supplierSearchRef}>
                                 <Flex
                                   bg={inputBg}
                                   borderRadius="md"
@@ -333,8 +338,8 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                                   borderColor={inputBorder}
                                 >
                                   <Select
-                                    value={clientSearchType}
-                                    onChange={(e) => setClientSearchType(e.target.value as any)}
+                                    value={supplierSearchType}
+                                    onChange={(e) => setSupplierSearchType(e.target.value as any)}
                                     bg="transparent"
                                     border="none"
                                     color={textColor}
@@ -354,9 +359,9 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
 
                                   <InputGroup flex="1">
                                     <Input
-                                      placeholder="Buscar cliente..."
-                                      value={clientSearch}
-                                      onChange={(e) => handleClientSearch(e.target.value)}
+                                      placeholder="Buscar proveedor..."
+                                      value={supplierSearch}
+                                      onChange={(e) => handleSupplierSearch(e.target.value)}
                                       bg="transparent"
                                       border="none"
                                       borderRadius="none"
@@ -373,15 +378,15 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                                         size="sm"
                                         variant="ghost"
                                         color={textColor}
-                                        onClick={() => setShowClientDropdown(!showClientDropdown)}
-                                        isDisabled={isLoading || clientSearch.length < 2}
+                                        onClick={() => setShowSupplierDropdown(!showSupplierDropdown)}
+                                        isDisabled={isLoading || supplierSearch.length < 2}
                                       />
                                     </InputRightElement>
                                   </InputGroup>
                                 </Flex>
 
                                 {/* Dropdown de resultados */}
-                                {showClientDropdown && (
+                                {showSupplierDropdown && (
                                   <Box
                                     position="absolute"
                                     top="100%"
@@ -399,61 +404,61 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                                   >
                                     {(() => {
                                       const isTyping =
-                                        clientSearch !== debouncedClientSearch && clientSearch.length >= 2;
+                                        supplierSearch !== debouncedSupplierSearch && supplierSearch.length >= 2;
                                       const isSearching =
-                                        !isTyping && isLoadingClientsSearch && debouncedClientSearch.length >= 2;
+                                        !isTyping && isLoadingSuppliersSearch && debouncedSupplierSearch.length >= 2;
                                       const searchCompleted =
                                         !isTyping &&
                                         !isSearching &&
-                                        debouncedClientSearch.length >= 2 &&
-                                        lastClientSearchTerm === debouncedClientSearch;
+                                        debouncedSupplierSearch.length >= 2 &&
+                                        lastSupplierSearchTerm === debouncedSupplierSearch;
 
                                       if (isTyping || isSearching) {
                                         return (
                                           <Flex justify="center" align="center" p="1rem" gap="0.5rem">
                                             <Spinner size="sm" />
                                             <Text fontSize="sm" color={textColor}>
-                                              Buscando clientes...
+                                              Buscando proveedores...
                                             </Text>
                                           </Flex>
                                         );
                                       }
 
-                                      if (searchCompleted && clientsSearch && clientsSearch.length > 0) {
+                                      if (searchCompleted && suppliersSearch && suppliersSearch.length > 0) {
                                         return (
                                           <List>
-                                            {clientsSearch.map((client, index) => (
-                                              <Fragment key={client.id}>
+                                            {suppliersSearch.map((supplier, index) => (
+                                              <Fragment key={supplier.id}>
                                                 <ListItem
                                                   p="0.75rem"
                                                   cursor="pointer"
                                                   _hover={{ bg: hoverBg }}
-                                                  onClick={() => handleClientSelect(client)}
+                                                  onClick={() => handleSupplierSelect(supplier)}
                                                 >
                                                   <Text fontSize="sm" fontWeight="medium">
-                                                    {client.name}
+                                                    {supplier.name}
                                                   </Text>
                                                   <Text fontSize="xs" color={textColor}>
-                                                    {client.rut && `RUT: ${client.rut}`}
-                                                    {client.contactName && ` - Contacto: ${client.contactName}`}
+                                                    {supplier.rut && `RUT: ${supplier.rut}`}
+                                                    {supplier.contactName && ` - Contacto: ${supplier.contactName}`}
                                                   </Text>
                                                 </ListItem>
-                                                {index < clientsSearch.length - 1 && <Divider />}
+                                                {index < suppliersSearch.length - 1 && <Divider />}
                                               </Fragment>
                                             ))}
                                           </List>
                                         );
                                       }
 
-                                      if (searchCompleted && clientsSearch && clientsSearch.length === 0) {
+                                      if (searchCompleted && suppliersSearch && suppliersSearch.length === 0) {
                                         return (
                                           <Text p="1rem" fontSize="sm" color={textColor} textAlign="center">
-                                            No se encontraron clientes
+                                            No se encontraron proveedores
                                           </Text>
                                         );
                                       }
 
-                                      if (clientSearch.length < 2) {
+                                      if (supplierSearch.length < 2) {
                                         return (
                                           <Text p="1rem" fontSize="sm" color={textColor} textAlign="center">
                                             Escribe al menos 2 caracteres para buscar
@@ -468,9 +473,9 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                               </Box>
                             )}
 
-                            {submitCount > 0 && !selectedClient && (
+                            {submitCount > 0 && !selectedSupplier && (
                               <Text color="red.500" fontSize="sm" mt="0.25rem">
-                                Debe seleccionar un cliente
+                                Debe seleccionar un proveedor
                               </Text>
                             )}
                           </FormControl>
@@ -594,7 +599,7 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Crear recibo de cliente
+                Crear recibo de proveedor
               </Button>
             </HStack>
           </ModalFooter>
@@ -611,7 +616,7 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
 };
 
 // Componente principal que controla la apertura del modal
-export const ClientReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: ClientReceiptAddProps) => {
+export const SupplierReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: SupplierReceiptAddProps) => {
   const canCreateReceipts = useUserStore((s) => s.hasPermission(Permission.CREATE_RECEIPTS));
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -634,7 +639,7 @@ export const ClientReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: 
       </Button>
 
       {/* Solo renderizar el formulario cuando el modal está abierto */}
-      {isOpen && <ClientReceiptAddModal isOpen={isOpen} onClose={onClose} setReceipts={setReceipts} />}
+      {isOpen && <SupplierReceiptAddModal isOpen={isOpen} onClose={onClose} setReceipts={setReceipts} />}
     </>
   );
 };

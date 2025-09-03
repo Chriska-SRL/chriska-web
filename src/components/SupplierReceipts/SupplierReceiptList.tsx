@@ -20,16 +20,16 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { FiCalendar, FiUsers, FiDollarSign, FiFileText } from 'react-icons/fi';
-import { ClientReceipt } from '@/entities/clientReceipt';
-import { ClientReceiptDetail } from './ClientReceiptDetail';
+import { SupplierReceipt } from '@/entities/supplierReceipt';
+import { SupplierReceiptDetail } from './SupplierReceiptDetail';
 import { Pagination } from '@/components/Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getPaymentMethodLabel, getPaymentMethodColor } from '@/enums/paymentMethod.enum';
 
-type ClientReceiptListProps = {
-  receipts: ClientReceipt[];
-  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
+type SupplierReceiptListProps = {
+  receipts: SupplierReceipt[];
+  setReceipts: React.Dispatch<React.SetStateAction<SupplierReceipt[]>>;
   isLoading: boolean;
   error?: string;
   currentPage: number;
@@ -38,7 +38,7 @@ type ClientReceiptListProps = {
   onPageSizeChange: (pageSize: number) => void;
 };
 
-export const ClientReceiptList = ({
+export const SupplierReceiptList = ({
   receipts,
   setReceipts,
   isLoading,
@@ -47,7 +47,7 @@ export const ClientReceiptList = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
-}: ClientReceiptListProps) => {
+}: SupplierReceiptListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -89,7 +89,7 @@ export const ClientReceiptList = ({
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron pagos de clientes.
+          No se encontraron pagos a proveedores.
         </Text>
         <Text fontSize="sm" color={emptyTextColor}>
           Intenta con otros parámetros.
@@ -127,10 +127,10 @@ export const ClientReceiptList = ({
                     <HStack justify="space-between">
                       <HStack spacing="0.5rem">
                         <Icon as={FiUsers} boxSize="0.875rem" color={iconColor} />
-                        <Text color={textColor}>Cliente</Text>
+                        <Text color={textColor}>Proveedor</Text>
                       </HStack>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
-                        {receipt.client?.name || '-'}
+                        {receipt.supplier?.name || '-'}
                       </Text>
                     </HStack>
 
@@ -171,7 +171,7 @@ export const ClientReceiptList = ({
                   </VStack>
 
                   <Box position="absolute" top="0.25rem" right="0.25rem">
-                    <ClientReceiptDetail receipt={receipt} setReceipts={setReceipts} />
+                    <SupplierReceiptDetail receipt={receipt} setReceipts={setReceipts} />
                   </Box>
                 </Box>
               ))}
@@ -179,8 +179,8 @@ export const ClientReceiptList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''} de cliente
-              {receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''} a proveedor
+              {receipts.length !== 1 ? 'es' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -208,7 +208,7 @@ export const ClientReceiptList = ({
                     ID
                   </Th>
                   <Th textAlign="center" w="15rem">
-                    Cliente
+                    Proveedor
                   </Th>
                   <Th textAlign="center" w="10rem">
                     Fecha
@@ -231,7 +231,7 @@ export const ClientReceiptList = ({
                     borderBottomColor={borderBottomColor}
                   >
                     <Td textAlign="center">#{receipt.id}</Td>
-                    <Td textAlign="center">{receipt.client?.name || '-'}</Td>
+                    <Td textAlign="center">{receipt.supplier?.name || '-'}</Td>
                     <Td textAlign="center">{formatDate(receipt.date)}</Td>
                     <Td textAlign="center">${receipt.amount?.toFixed(2) || '0.00'}</Td>
                     <Td textAlign="center">
@@ -245,7 +245,7 @@ export const ClientReceiptList = ({
                       </Badge>
                     </Td>
                     <Td textAlign="center" pr="2rem">
-                      <ClientReceiptDetail receipt={receipt} setReceipts={setReceipts} />
+                      <SupplierReceiptDetail receipt={receipt} setReceipts={setReceipts} />
                     </Td>
                   </Tr>
                 ))}
@@ -254,8 +254,8 @@ export const ClientReceiptList = ({
           </TableContainer>
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''} de cliente
-              {receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''} de proveedor
+              {receipts.length !== 1 ? 'es' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}

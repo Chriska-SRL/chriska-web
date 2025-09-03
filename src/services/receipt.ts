@@ -38,7 +38,8 @@ export const getClientReceipts = (
   return get<ClientReceipt[]>(`${API_URL}/ClientReceipts?${params.toString()}`);
 };
 
-export const getClientReceiptById = (id: number): Promise<ClientReceipt> => get<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);
+export const getClientReceiptById = (id: number): Promise<ClientReceipt> =>
+  get<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);
 
 export const addClientReceipt = (receipt: Partial<ClientReceipt>): Promise<ClientReceipt> =>
   post<ClientReceipt>(`${API_URL}/ClientReceipts`, receipt);
@@ -46,4 +47,5 @@ export const addClientReceipt = (receipt: Partial<ClientReceipt>): Promise<Clien
 export const updateClientReceipt = (receipt: Partial<ClientReceipt>): Promise<ClientReceipt> =>
   put<ClientReceipt>(`${API_URL}/ClientReceipts/${receipt.id}`, receipt);
 
-export const deleteClientReceipt = (id: number): Promise<ClientReceipt> => del<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);
+export const deleteClientReceipt = (id: number): Promise<ClientReceipt> =>
+  del<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);

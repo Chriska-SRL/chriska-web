@@ -92,3 +92,10 @@ export * from './ClientReceipts/ClientReceiptEdit';
 export * from './ClientReceipts/ClientReceiptList';
 export * from './ClientReceipts/ClientReceiptFilters';
 export * from './ClientReceipts/ClientReceiptDetail';
+
+export * from './SupplierReceipts/SupplierReceipts';
+export * from './SupplierReceipts/SupplierReceiptAdd';
+export * from './SupplierReceipts/SupplierReceiptEdit';
+export * from './SupplierReceipts/SupplierReceiptList';
+export * from './SupplierReceipts/SupplierReceiptFilters';
+export * from './SupplierReceipts/SupplierReceiptDetail';
