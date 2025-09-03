@@ -21,7 +21,7 @@ import {
   Divider,
   Badge,
 } from '@chakra-ui/react';
-import { FiInfo, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage, FiMap } from 'react-icons/fi';
+import { FiInfo, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Distribution } from '@/entities/distribution';
 import { DistributionEdit } from './DistributionEdit';
@@ -139,16 +139,6 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                       >
                         Ir a entregas
                       </Button>
-                      {/* <Button
-                        leftIcon={<FiMap />}
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          // TODO: Abrir mapa con direcciones
-                        }}
-                      >
-                        Ver mapa
-                      </Button> */}
                     </HStack>
                   </HStack>
                   <Box
