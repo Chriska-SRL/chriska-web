@@ -20,18 +20,18 @@ import {
 import { Formik, Field } from 'formik';
 import { FaCheck } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
-import { Receipt } from '@/entities/receipt';
-import { useUpdateReceipt } from '@/hooks/receipt';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import { useUpdateClientReceipt } from '@/hooks/receipt';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
-type ReceiptEditProps = {
+type ClientReceiptEditProps = {
   isOpen: boolean;
   onClose: () => void;
-  receipt: Receipt;
-  setReceipts: React.Dispatch<React.SetStateAction<Receipt[]>>;
+  receipt: ClientReceipt;
+  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
 };
 
-export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEditProps) => {
+export const ClientReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ClientReceiptEditProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -40,7 +40,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError, mutate } = useUpdateReceipt();
+  const { data, isLoading, error, fieldError, mutate } = useUpdateClientReceipt();
 
   const handleClose = () => {
     setShowConfirmDialog(false);
@@ -61,8 +61,8 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Pago actualizado',
-        description: 'El pago ha sido actualizado correctamente.',
+        title: 'Recibo de cliente actualizado',
+        description: 'El recibo de cliente ha sido actualizado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -130,7 +130,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Editar pago #{receipt.id}
+            Editar recibo de cliente #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -197,7 +197,7 @@ export const ReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: ReceiptEd
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Actualizar pago
+                Actualizar recibo de cliente
               </Button>
             </HStack>
           </ModalFooter>

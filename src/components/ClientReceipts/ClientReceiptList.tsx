@@ -20,16 +20,16 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { FiCalendar, FiUsers, FiDollarSign, FiFileText } from 'react-icons/fi';
-import { Receipt } from '@/entities/receipt';
-import { ReceiptDetail } from './ReceiptDetail';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import { ClientReceiptDetail } from './ClientReceiptDetail';
 import { Pagination } from '@/components/Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getPaymentMethodLabel, getPaymentMethodColor } from '@/enums/paymentMethod.enum';
 
-type ReceiptListProps = {
-  receipts: Receipt[];
-  setReceipts: React.Dispatch<React.SetStateAction<Receipt[]>>;
+type ClientReceiptListProps = {
+  receipts: ClientReceipt[];
+  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
   isLoading: boolean;
   error?: string;
   currentPage: number;
@@ -38,7 +38,7 @@ type ReceiptListProps = {
   onPageSizeChange: (pageSize: number) => void;
 };
 
-export const ReceiptList = ({
+export const ClientReceiptList = ({
   receipts,
   setReceipts,
   isLoading,
@@ -47,7 +47,7 @@ export const ReceiptList = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
-}: ReceiptListProps) => {
+}: ClientReceiptListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
   const borderColor = useColorModeValue('#f2f2f2', 'gray.700');
@@ -89,7 +89,7 @@ export const ReceiptList = ({
     return (
       <Flex direction="column" align="center" justify="center" h="100%" textAlign="center" p="2rem">
         <Text fontSize="lg" fontWeight="semibold" mb="0.5rem">
-          No se encontraron pagos.
+          No se encontraron pagos de clientes.
         </Text>
         <Text fontSize="sm" color={emptyTextColor}>
           Intenta con otros parámetros.
@@ -118,7 +118,7 @@ export const ReceiptList = ({
                   <HStack spacing="0.75rem" mb="0.5rem" pr="2.5rem">
                     <VStack align="start" spacing="0.125rem" flex="1" minW="0">
                       <Text fontWeight="bold" fontSize="md" noOfLines={2} lineHeight="1.3" wordBreak="break-word">
-                        Recibo #{receipt.id}
+                        Recibo de cliente #{receipt.id}
                       </Text>
                     </VStack>
                   </HStack>
@@ -171,7 +171,7 @@ export const ReceiptList = ({
                   </VStack>
 
                   <Box position="absolute" top="0rem" right="0.25rem">
-                    <ReceiptDetail receipt={receipt} setReceipts={setReceipts} />
+                    <ClientReceiptDetail receipt={receipt} setReceipts={setReceipts} />
                   </Box>
                 </Box>
               ))}
@@ -179,7 +179,8 @@ export const ReceiptList = ({
           </Box>
           <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''} de cliente
+              {receipts.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}
@@ -244,7 +245,7 @@ export const ReceiptList = ({
                       </Badge>
                     </Td>
                     <Td textAlign="center" pr="2rem">
-                      <ReceiptDetail receipt={receipt} setReceipts={setReceipts} />
+                      <ClientReceiptDetail receipt={receipt} setReceipts={setReceipts} />
                     </Td>
                   </Tr>
                 ))}
@@ -253,7 +254,8 @@ export const ReceiptList = ({
           </TableContainer>
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''}
+              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''} de cliente
+              {receipts.length !== 1 ? 's' : ''}
             </Text>
             <Pagination
               currentPage={currentPage}

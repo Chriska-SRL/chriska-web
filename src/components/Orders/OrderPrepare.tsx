@@ -324,7 +324,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   // Función para validar si la cantidad excede el stock disponible
   const isQuantityExceedsStock = (product: any): boolean => {
-    return product.actualQuantity > (product.availableStock || 0) + (product.requestedQuantity || 0); // + cantidad sol
+    return product.actualQuantity > (product.availableStock || 0) + (product.requestedQuantity || 0);
   };
 
   // Click outside handler

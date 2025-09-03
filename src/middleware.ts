@@ -142,7 +142,7 @@ export const config = {
     '/pedidos/:path*',
     '/entregas/:path*',
     '/devoluciones/:path*',
-    '/recibos/:path*',
+    '/pagos-de-clientes/:path*',
     '/descuentos/:path*',
     '/repartos/:path*',
     '/mapa/:path*',

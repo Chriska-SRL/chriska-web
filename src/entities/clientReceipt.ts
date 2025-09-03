@@ -1,6 +1,6 @@
 import { Client } from './client';
 
-export type Receipt = {
+export type ClientReceipt = {
   id: number;
   date: string;
   amount: number;

@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Receipt } from '@/entities/receipt';
-import { addReceipt, deleteReceipt, getReceiptById, getReceipts, updateReceipt } from '@/services/receipt';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import {
+  addClientReceipt,
+  deleteClientReceipt,
+  getClientReceiptById,
+  getClientReceipts,
+  updateClientReceipt,
+} from '@/services/receipt';
 import { useFetch, useMutation } from '@/utils/useFetch';
 
-export const useGetReceipts = (
+export const useGetClientReceipts = (
   page: number = 1,
   pageSize: number = 10,
   filters?: {
@@ -13,17 +19,17 @@ export const useGetReceipts = (
     toDate?: string;
   },
 ) => {
-  const [data, setData] = useState<Receipt[]>([]);
+  const [data, setData] = useState<ClientReceipt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    const fetchReceipts = async () => {
+    const fetchClientReceipts = async () => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        const result = await getReceipts(page, pageSize, filters);
+        const result = await getClientReceipts(page, pageSize, filters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');
@@ -32,16 +38,18 @@ export const useGetReceipts = (
       }
     };
 
-    fetchReceipts();
+    fetchClientReceipts();
   }, [page, pageSize, filters?.clientId, filters?.paymentMethod, filters?.fromDate, filters?.toDate]);
 
   return { data, isLoading, error };
 };
 
-export const useGetReceiptById = (id: number) => useFetch<number, Receipt>(getReceiptById, id);
+export const useGetClientReceiptById = (id: number) => useFetch<number, ClientReceipt>(getClientReceiptById, id);
 
-export const useAddReceipt = () => useMutation<Partial<Receipt>, Receipt>(addReceipt, { parseFieldError: true });
+export const useAddClientReceipt = () =>
+  useMutation<Partial<ClientReceipt>, ClientReceipt>(addClientReceipt, { parseFieldError: true });
 
-export const useUpdateReceipt = () => useMutation<Partial<Receipt>, Receipt>(updateReceipt, { parseFieldError: true });
+export const useUpdateClientReceipt = () =>
+  useMutation<Partial<ClientReceipt>, ClientReceipt>(updateClientReceipt, { parseFieldError: true });
 
-export const useDeleteReceipt = (id?: number) => useFetch<number, Receipt>(deleteReceipt, id);
+export const useDeleteClientReceipt = (id?: number) => useFetch<number, ClientReceipt>(deleteClientReceipt, id);

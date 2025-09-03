@@ -2,16 +2,16 @@
 
 import { Divider, Flex, Text, useMediaQuery } from '@chakra-ui/react';
 import { useEffect, useState, useCallback } from 'react';
-import { ReceiptList } from './ReceiptList';
-import { ReceiptAdd } from './ReceiptAdd';
-import { ReceiptFilters } from './ReceiptFilters';
-import { Receipt } from '@/entities/receipt';
-import { useGetReceipts } from '@/hooks/receipt';
+import { ClientReceiptList } from './ClientReceiptList';
+import { ClientReceiptAdd } from './ClientReceiptAdd';
+import { ClientReceiptFilters } from './ClientReceiptFilters';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import { useGetClientReceipts } from '@/hooks/receipt';
 
-export const Receipts = () => {
+export const ClientReceipts = () => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [receipts, setReceipts] = useState<ClientReceipt[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
@@ -22,7 +22,7 @@ export const Receipts = () => {
     toDate?: string;
   }>({});
 
-  const { data, isLoading, error } = useGetReceipts(page, pageSize, filters);
+  const { data, isLoading, error } = useGetClientReceipts(page, pageSize, filters);
 
   useEffect(() => {
     if (data) {
@@ -49,26 +49,26 @@ export const Receipts = () => {
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
-          Pagos
+          Pagos de clientes
         </Text>
-        {isMobile && <ReceiptAdd isLoading={isLoading} setReceipts={setReceipts} />}
+        {isMobile && <ClientReceiptAdd isLoading={isLoading} setReceipts={setReceipts} />}
       </Flex>
 
       {isMobile && <Divider />}
 
       <Flex direction={{ base: 'column', md: 'row' }} justifyContent="space-between" gap="1rem" w="100%">
-        <ReceiptFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
+        <ClientReceiptFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <ReceiptAdd isLoading={isLoading} setReceipts={setReceipts} />
+            <ClientReceiptAdd isLoading={isLoading} setReceipts={setReceipts} />
           </>
         )}
       </Flex>
 
       {isMobile && <Divider />}
 
-      <ReceiptList
+      <ClientReceiptList
         receipts={isFilterLoading ? [] : receipts}
         isLoading={isLoading || isFilterLoading}
         error={error}

@@ -123,8 +123,8 @@ export const PERMISSIONS_METADATA = [
   { id: Permission.VIEW_DISTRIBUTIONS, label: 'Ver distribuciones', group: 'Distribuciones' },
 
   // Recibos
-  { id: Permission.CREATE_RECEIPTS, label: 'Crear recibos', group: 'Recibos' },
-  { id: Permission.DELETE_RECEIPTS, label: 'Eliminar recibos', group: 'Recibos' },
-  { id: Permission.EDIT_RECEIPTS, label: 'Editar recibos', group: 'Recibos' },
-  { id: Permission.VIEW_RECEIPTS, label: 'Ver recibos', group: 'Recibos' },
+  { id: Permission.CREATE_RECEIPTS, label: 'Crear pagos de clientes', group: 'Pagos de clientes' },
+  { id: Permission.DELETE_RECEIPTS, label: 'Eliminar pagos de clientes', group: 'Pagos de clientes' },
+  { id: Permission.EDIT_RECEIPTS, label: 'Editar pagos de clientes', group: 'Pagos de clientes' },
+  { id: Permission.VIEW_RECEIPTS, label: 'Ver pagos de clientes', group: 'Pagos de clientes' },
 ];

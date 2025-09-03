@@ -28,12 +28,12 @@ import { AiOutlineSearch } from 'react-icons/ai';
 import { useGetClients } from '@/hooks/client';
 import { PaymentMethodOptions } from '@/enums/paymentMethod.enum';
 
-type ReceiptFiltersProps = {
+type ClientReceiptFiltersProps = {
   onFilterChange: (filters: { clientId?: number; paymentMethod?: string; fromDate?: string; toDate?: string }) => void;
   disabled?: boolean;
 };
 
-export const ReceiptFilters = ({ onFilterChange, disabled = false }: ReceiptFiltersProps) => {
+export const ClientReceiptFilters = ({ onFilterChange, disabled = false }: ClientReceiptFiltersProps) => {
   // Búsqueda principal de clientes
   const [clientSearch, setClientSearch] = useState('');
   const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');

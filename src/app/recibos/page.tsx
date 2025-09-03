@@ -1,7 +1,7 @@
 'use client';
 
 import { NextPage } from 'next';
-import { ClientOnly, Content, SideBar, Receipts } from '@/components';
+import { ClientOnly, Content, SideBar, ClientReceipts } from '@/components';
 import { Flex } from '@chakra-ui/react';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
@@ -22,9 +22,9 @@ const ReceiptPage: NextPage = () => {
   return (
     <ClientOnly>
       <Flex>
-        <SideBar currentPage="recibos" />
+        <SideBar currentPage="pagos-de-clientes" />
         <Content>
-          <Receipts />
+          <ClientReceipts />
         </Content>
       </Flex>
     </ClientOnly>

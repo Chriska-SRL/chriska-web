@@ -38,8 +38,8 @@ import { FaPlus, FaCheck } from 'react-icons/fa';
 import { FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useEffect, useState, useRef, Fragment, useMemo, useCallback } from 'react';
-import { Receipt } from '@/entities/receipt';
-import { useAddReceipt } from '@/hooks/receipt';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import { useAddClientReceipt } from '@/hooks/receipt';
 import { useGetClients } from '@/hooks/client';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
@@ -47,19 +47,19 @@ import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { PaymentMethodOptions } from '@/enums/paymentMethod.enum';
 
-type ReceiptAddProps = {
+type ClientReceiptAddProps = {
   isLoading: boolean;
-  setReceipts: React.Dispatch<React.SetStateAction<Receipt[]>>;
+  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
 };
 
-type ReceiptAddModalProps = {
+type ClientReceiptAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  setReceipts: React.Dispatch<React.SetStateAction<Receipt[]>>;
+  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
 };
 
 // Componente interno que contiene todos los hooks y lógica del formulario
-const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps) => {
+const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAddModalProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -77,7 +77,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, error, fieldError, mutate } = useAddReceipt();
+  const { data, isLoading, error, fieldError, mutate } = useAddClientReceipt();
 
   // Colores y variables de estilo
   const textColor = useColorModeValue('gray.600', 'gray.300');
@@ -181,8 +181,8 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Pago creado',
-        description: 'El pago ha sido creado correctamente.',
+        title: 'Recibo de cliente creado',
+        description: 'El recibo de cliente ha sido creado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -261,7 +261,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Nuevo pago
+            Nuevo recibo de cliente
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -573,7 +573,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Crear pago
+                Crear recibo de cliente
               </Button>
             </HStack>
           </ModalFooter>
@@ -590,7 +590,7 @@ const ReceiptAddModal = ({ isOpen, onClose, setReceipts }: ReceiptAddModalProps)
 };
 
 // Componente principal que controla la apertura del modal
-export const ReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: ReceiptAddProps) => {
+export const ClientReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: ClientReceiptAddProps) => {
   const canCreateReceipts = useUserStore((s) => s.hasPermission(Permission.CREATE_RECEIPTS));
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -613,7 +613,7 @@ export const ReceiptAdd = ({ isLoading: isLoadingReceipts, setReceipts }: Receip
       </Button>
 
       {/* Solo renderizar el formulario cuando el modal está abierto */}
-      {isOpen && <ReceiptAddModal isOpen={isOpen} onClose={onClose} setReceipts={setReceipts} />}
+      {isOpen && <ClientReceiptAddModal isOpen={isOpen} onClose={onClose} setReceipts={setReceipts} />}
     </>
   );
 };

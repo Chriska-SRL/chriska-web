@@ -1,16 +1,20 @@
 import { get, post, put, del } from '@/utils/fetcher';
-import { Receipt } from '@/entities/receipt';
+import { ClientReceipt } from '@/entities/clientReceipt';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-type ReceiptFilters = {
+type ClientReceiptFilters = {
   clientId?: number;
   paymentMethod?: string;
   fromDate?: string;
   toDate?: string;
 };
 
-export const getReceipts = (page: number = 1, pageSize: number = 10, filters?: ReceiptFilters): Promise<Receipt[]> => {
+export const getClientReceipts = (
+  page: number = 1,
+  pageSize: number = 10,
+  filters?: ClientReceiptFilters,
+): Promise<ClientReceipt[]> => {
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
@@ -31,15 +35,15 @@ export const getReceipts = (page: number = 1, pageSize: number = 10, filters?: R
     params.append('filters[ToDate]', filters.toDate);
   }
 
-  return get<Receipt[]>(`${API_URL}/Receipts?${params.toString()}`);
+  return get<ClientReceipt[]>(`${API_URL}/ClientReceipts?${params.toString()}`);
 };
 
-export const getReceiptById = (id: number): Promise<Receipt> => get<Receipt>(`${API_URL}/Receipts/${id}`);
+export const getClientReceiptById = (id: number): Promise<ClientReceipt> => get<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);
 
-export const addReceipt = (receipt: Partial<Receipt>): Promise<Receipt> =>
-  post<Receipt>(`${API_URL}/Receipts`, receipt);
+export const addClientReceipt = (receipt: Partial<ClientReceipt>): Promise<ClientReceipt> =>
+  post<ClientReceipt>(`${API_URL}/ClientReceipts`, receipt);
 
-export const updateReceipt = (receipt: Partial<Receipt>): Promise<Receipt> =>
-  put<Receipt>(`${API_URL}/Receipts/${receipt.id}`, receipt);
+export const updateClientReceipt = (receipt: Partial<ClientReceipt>): Promise<ClientReceipt> =>
+  put<ClientReceipt>(`${API_URL}/ClientReceipts/${receipt.id}`, receipt);
 
-export const deleteReceipt = (id: number): Promise<Receipt> => del<Receipt>(`${API_URL}/Receipts/${id}`);
+export const deleteClientReceipt = (id: number): Promise<ClientReceipt> => del<ClientReceipt>(`${API_URL}/ClientReceipts/${id}`);

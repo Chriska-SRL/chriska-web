@@ -21,22 +21,22 @@ import {
 } from '@chakra-ui/react';
 import { FiInfo, FiUsers, FiCalendar, FiDollarSign, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
-import { Receipt } from '@/entities/receipt';
-import { ReceiptEdit } from './ReceiptEdit';
+import { ClientReceipt } from '@/entities/clientReceipt';
+import { ClientReceiptEdit } from './ClientReceiptEdit';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useDeleteReceipt } from '@/hooks/receipt';
+import { useDeleteClientReceipt } from '@/hooks/receipt';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { getPaymentMethodLabel, getPaymentMethodColor } from '@/enums/paymentMethod.enum';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-type ReceiptDetailProps = {
-  receipt: Receipt;
-  setReceipts: React.Dispatch<React.SetStateAction<Receipt[]>>;
+type ClientReceiptDetailProps = {
+  receipt: ClientReceipt;
+  setReceipts: React.Dispatch<React.SetStateAction<ClientReceipt[]>>;
 };
 
-export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
+export const ClientReceiptDetail = ({ receipt, setReceipts }: ClientReceiptDetailProps) => {
   const canEditReceipts = useUserStore((s) => s.hasPermission(Permission.EDIT_RECEIPTS));
   const canDeleteReceipts = useUserStore((s) => s.hasPermission(Permission.DELETE_RECEIPTS));
 
@@ -133,7 +133,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Detalle del pago #{receipt.id}
+            Detalle del recibo de cliente #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -159,8 +159,8 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
               </Button>
               {canDeleteReceipts && (
                 <GenericDelete
-                  item={{ id: receipt.id, name: `pago #${receipt.id}` }}
-                  useDeleteHook={useDeleteReceipt}
+                  item={{ id: receipt.id, name: `recibo de cliente #${receipt.id}` }}
+                  useDeleteHook={useDeleteClientReceipt}
                   setItems={setReceipts}
                   onDeleted={onClose}
                   size="sm"
@@ -187,7 +187,7 @@ export const ReceiptDetail = ({ receipt, setReceipts }: ReceiptDetailProps) => {
       </Modal>
 
       {isEditOpen && (
-        <ReceiptEdit isOpen={isEditOpen} onClose={closeEdit} receipt={receipt} setReceipts={setReceipts} />
+        <ClientReceiptEdit isOpen={isEditOpen} onClose={closeEdit} receipt={receipt} setReceipts={setReceipts} />
       )}
     </>
   );
