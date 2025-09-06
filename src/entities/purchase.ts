@@ -8,4 +8,5 @@ export type Purchase = {
   date: string;
   supplier: Supplier;
   productItems: ProductItem[];
+  status: string;
 };

@@ -99,3 +99,10 @@ export * from './SupplierReceipts/SupplierReceiptEdit';
 export * from './SupplierReceipts/SupplierReceiptList';
 export * from './SupplierReceipts/SupplierReceiptFilters';
 export * from './SupplierReceipts/SupplierReceiptDetail';
+
+export * from './Purchases/Purchases';
+export * from './Purchases/PurchaseAdd';
+export * from './Purchases/PurchaseEdit';
+export * from './Purchases/PurchaseList';
+export * from './Purchases/PurchaseFilters';
+export * from './Purchases/PurchaseDetail';

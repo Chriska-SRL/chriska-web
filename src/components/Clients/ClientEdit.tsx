@@ -149,7 +149,7 @@ const ClientEditForm = ({
         latitude: Number(values.latitude) || 0,
         longitude: Number(values.longitude) || 0,
       },
-      zoneId: values.zoneId,
+      zoneId: values.zoneId ? Number(values.zoneId) : null,
       bankAccounts: bankAccounts,
     };
     // Remove individual latitude/longitude from the object
@@ -198,7 +198,7 @@ const ClientEditForm = ({
                 observations: client.observations || '',
                 qualification: client.qualification,
                 loanedCrates: client.loanedCrates,
-                zoneId: client.zone?.id || 0,
+                zoneId: client.zone?.id ? String(client.zone.id) : '',
               }}
               onSubmit={handleSubmit}
               enableReinitialize
