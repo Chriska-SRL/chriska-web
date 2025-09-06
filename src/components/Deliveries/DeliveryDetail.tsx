@@ -63,7 +63,15 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const { isOpen: isStatusDialogOpen, onOpen: openStatusDialog, onClose: closeStatusDialog } = useDisclosure();
   const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
-  const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
+  const [statusProps, setStatusProps] = useState<{
+    id: number;
+    status: string;
+    additionalData?: {
+      amount?: number;
+      paymentMethod?: string;
+      crates?: number;
+    };
+  }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
   const [redirectingToClient, setRedirectingToClient] = useState(false);
   const [redirectingToReturns, setRedirectingToReturns] = useState(false);

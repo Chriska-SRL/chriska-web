@@ -354,7 +354,7 @@ export const PurchaseEdit = ({ isOpen, onClose, purchase, setPurchases }: Purcha
               initialValues={{
                 supplierId: '',
                 invoiceNumber: purchase.invoiceNumber || '',
-                date: purchase.date ? purchase.date.split('T')[0] : new Date().toISOString().split('T')[0],
+                date: purchase.date || new Date().toISOString(),
                 observations: purchase.observations || '',
               }}
               onSubmit={handleSubmit}

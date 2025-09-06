@@ -80,7 +80,15 @@ export const useGetDeliveryById = (id?: number) => {
 export const useUpdateDelivery = () =>
   useMutation<Partial<Delivery>, Delivery>(updateDelivery, { parseFieldError: true });
 
-export const useChangeDeliveryStatus = (props?: { id: number; status: string }) => {
+export const useChangeDeliveryStatus = (props?: {
+  id: number;
+  status: string;
+  additionalData?: {
+    amount?: number;
+    paymentMethod?: string;
+    crates?: number;
+  };
+}) => {
   const [data, setData] = useState<Delivery>();
   const [isLoading, setIsLoading] = useState(false);
   const [fieldError, setFieldError] = useState<any>();
@@ -95,7 +103,7 @@ export const useChangeDeliveryStatus = (props?: { id: number; status: string }) 
       setFieldError(undefined);
 
       try {
-        const result = await changeDeliveryStatus(props.id, props.status);
+        const result = await changeDeliveryStatus(props.id, props.status, props.additionalData);
         setData(result);
       } catch (err: any) {
         try {
@@ -110,7 +118,7 @@ export const useChangeDeliveryStatus = (props?: { id: number; status: string }) 
     };
 
     executeRequest();
-  }, [props?.id, props?.status, hasExecuted]);
+  }, [props?.id, props?.status, props?.additionalData, hasExecuted]);
 
   // Reset cuando props cambie a undefined
   useEffect(() => {

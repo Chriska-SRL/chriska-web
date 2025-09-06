@@ -121,7 +121,7 @@ export const StockMovementList = ({
                     <HStack justify="space-between">
                       <Text color={textColor}>Razón</Text>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
-                        {mov.reason}
+                        {mov.reason || '—'}
                       </Text>
                     </HStack>
 
@@ -186,7 +186,7 @@ export const StockMovementList = ({
                     <Td textAlign="center">{stockMovement.product.name}</Td>
                     <Td textAlign="center">{stockMovement.quantity}</Td>
                     <Td textAlign="center">{getStockMovementTypeLabel(stockMovement.type)}</Td>
-                    <Td textAlign="center">{stockMovement.reason}</Td>
+                    <Td textAlign="center">{stockMovement.reason || '—'}</Td>
                     <Td textAlign="center" pr="2rem">
                       <StockMovementDetail movement={stockMovement} setMovements={setStockMovements} />
                     </Td>

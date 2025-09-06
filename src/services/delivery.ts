@@ -51,8 +51,20 @@ export const updateDelivery = (delivery: Partial<Delivery>): Promise<Delivery> =
   return put<Delivery>(`${API_URL}/Delivery/${delivery.id}`, delivery);
 };
 
-export const changeDeliveryStatus = (id: number, status: string): Promise<Delivery> => {
-  return put<Delivery>(`${API_URL}/Delivery/changestatus/${id}`, { status });
+export const changeDeliveryStatus = (
+  id: number,
+  status: string,
+  additionalData?: {
+    amount?: number;
+    paymentMethod?: string;
+    crates?: number;
+  },
+): Promise<Delivery> => {
+  const payload = {
+    status,
+    ...additionalData,
+  };
+  return put<Delivery>(`${API_URL}/Delivery/changestatus/${id}`, payload);
 };
 
 export const getConfirmedDeliveriesByClient = (clientId: number): Promise<Delivery[]> => {

@@ -368,7 +368,7 @@ const PurchaseAddModal = ({ isOpen, onClose, setPurchases }: PurchaseAddModalPro
     const newPurchase = {
       ...values,
       supplierId: selectedSupplier?.id || 0,
-      date: values.date || new Date().toISOString().split('T')[0],
+      date: values.date || new Date().toISOString(),
       productItems: selectedProducts.map((p) => ({
         productId: p.id,
         quantity: p.quantity,
@@ -428,7 +428,7 @@ const PurchaseAddModal = ({ isOpen, onClose, setPurchases }: PurchaseAddModalPro
               initialValues={{
                 supplierId: '',
                 invoiceNumber: '',
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toISOString(),
                 observations: '',
               }}
               onSubmit={handleSubmit}
