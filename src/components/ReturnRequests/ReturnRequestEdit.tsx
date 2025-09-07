@@ -36,6 +36,7 @@ import { useGetDeliveryById } from '@/hooks/delivery';
 import { useUpdateReturnRequest } from '@/hooks/returnRequest';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 
 type ReturnRequestEditProps = {
   returnRequest: ReturnRequest;
@@ -313,9 +314,31 @@ export const ReturnRequestEdit = ({
                                           <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                             {item.product?.name || '-'}
                                           </Text>
-                                          <Text fontSize="xs" color={textColor}>
-                                            ${item.product?.price?.toFixed(2) || '-'}
-                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            <VStack spacing="0.1rem" align="flex-start">
+                                              <Text fontSize="xs" color={textColor}>
+                                                Precio: $
+                                                {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                              </Text>
+                                              {(item.discount || 0) > 0 && (
+                                                <Text fontSize="xs" color="green.500" fontWeight="medium">
+                                                  -{item.discount}% desc.
+                                                </Text>
+                                              )}
+                                            </VStack>
+                                            <VStack spacing="0.1rem" align="flex-start">
+                                              <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                                P. efectivo:
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                $
+                                                {(
+                                                  (item.unitPrice || item.product?.price || 0) *
+                                                  (1 - (item.discount || 0) / 100)
+                                                ).toFixed(2)}
+                                              </Text>
+                                            </VStack>
+                                          </HStack>
                                         </Box>
                                         <Checkbox
                                           isChecked={isSelected}
@@ -334,7 +357,7 @@ export const ReturnRequestEdit = ({
                                         />
                                       </Flex>
 
-                                      {/* Second row - quantities and weights */}
+                                      {/* Second row - quantities and weights and subtotal */}
                                       <HStack spacing="0.5rem" justify="space-around">
                                         <VStack spacing="0.25rem" align="center" minW="100px">
                                           <Text fontSize="xs" color={labelColor} fontWeight="medium">
@@ -360,10 +383,10 @@ export const ReturnRequestEdit = ({
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const decrement = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
-                                                const minimum = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                const decrement = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                 const newValue = Math.max(minimum, currentReturnQuantity - decrement);
-                                                const rounded = parseFloat(newValue.toFixed(1));
+                                                const rounded = parseFloat(newValue.toFixed(2));
                                                 setProductQuantities((prev) => ({
                                                   ...prev,
                                                   [item.product.id]: rounded,
@@ -389,7 +412,7 @@ export const ReturnRequestEdit = ({
                                                     item.product?.unitType === UnitType.KILO
                                                       ? parseFloat(value)
                                                       : parseInt(value, 10);
-                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                   if (
                                                     !isNaN(numValue) &&
                                                     numValue >= minimum &&
@@ -407,6 +430,45 @@ export const ReturnRequestEdit = ({
                                                   }
                                                 }
                                               }}
+                                              onBlur={(e) => {
+                                                const value =
+                                                  item.product?.unitType === UnitType.KILO
+                                                    ? parseFloat(e.target.value)
+                                                    : parseInt(e.target.value, 10);
+                                                const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                if (isNaN(value) || value < minimum) {
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: minimum,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: minimum.toString(),
+                                                  }));
+                                                } else if (value > maxQuantity) {
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: maxQuantity,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: maxQuantity.toString(),
+                                                  }));
+                                                } else {
+                                                  const finalValue =
+                                                    item.product?.unitType === UnitType.KILO
+                                                      ? roundToQuarter(value)
+                                                      : value;
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: finalValue,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: finalValue.toString(),
+                                                  }));
+                                                }
+                                              }}
                                               w="3.5rem"
                                               p="0"
                                               textAlign="center"
@@ -421,12 +483,12 @@ export const ReturnRequestEdit = ({
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const increment = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                const increment = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                 const newValue = Math.min(
                                                   maxQuantity,
                                                   currentReturnQuantity + increment,
                                                 );
-                                                const rounded = parseFloat(newValue.toFixed(1));
+                                                const rounded = parseFloat(newValue.toFixed(2));
                                                 setProductQuantities((prev) => ({
                                                   ...prev,
                                                   [item.product.id]: rounded,
@@ -497,6 +559,27 @@ export const ReturnRequestEdit = ({
                                             borderRadius="md"
                                           />
                                         </VStack>
+
+                                        <VStack spacing="0.25rem" align="center" minW="80px">
+                                          <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                            Subtotal
+                                          </Text>
+                                          <Text fontSize="md" fontWeight="bold" color="blue.500">
+                                            $
+                                            {(() => {
+                                              const effectivePrice =
+                                                (item.unitPrice || item.product?.price || 0) *
+                                                (1 - (item.discount || 0) / 100);
+                                              const returnSubtotal =
+                                                item.product?.unitType === UnitType.KILO
+                                                  ? currentReturnQuantity *
+                                                    ((currentReturnWeight || 0) / 1000) *
+                                                    effectivePrice
+                                                  : currentReturnQuantity * effectivePrice;
+                                              return returnSubtotal.toFixed(2);
+                                            })()}
+                                          </Text>
+                                        </VStack>
                                       </HStack>
                                     </VStack>
 
@@ -519,9 +602,31 @@ export const ReturnRequestEdit = ({
                                           <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                             {item.product?.name || '-'}
                                           </Text>
-                                          <Text fontSize="xs" color={textColor}>
-                                            ${item.product?.price?.toFixed(2) || '-'}
-                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            <VStack spacing="0.1rem" align="flex-start">
+                                              <Text fontSize="xs" color={textColor}>
+                                                Precio: $
+                                                {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                              </Text>
+                                              {(item.discount || 0) > 0 && (
+                                                <Text fontSize="xs" color="green.500" fontWeight="medium">
+                                                  -{item.discount}% desc.
+                                                </Text>
+                                              )}
+                                            </VStack>
+                                            <VStack spacing="0.1rem" align="flex-start">
+                                              <Text fontSize="xs" color={textColor} fontWeight="medium">
+                                                P. efectivo:
+                                              </Text>
+                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                $
+                                                {(
+                                                  (item.unitPrice || item.product?.price || 0) *
+                                                  (1 - (item.discount || 0) / 100)
+                                                ).toFixed(2)}
+                                              </Text>
+                                            </VStack>
+                                          </HStack>
                                         </Box>
                                         <Checkbox
                                           isChecked={isSelected}
@@ -587,9 +692,9 @@ export const ReturnRequestEdit = ({
                                                 variant="outline"
                                                 onClick={() => {
                                                   const decrement = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
-                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                   const newValue = Math.max(minimum, currentReturnQuantity - decrement);
-                                                  const rounded = parseFloat(newValue.toFixed(1));
+                                                  const rounded = parseFloat(newValue.toFixed(2));
                                                   setProductQuantities((prev) => ({
                                                     ...prev,
                                                     [item.product.id]: rounded,
@@ -618,7 +723,7 @@ export const ReturnRequestEdit = ({
                                                       item.product?.unitType === UnitType.KILO
                                                         ? parseFloat(value)
                                                         : parseInt(value, 10);
-                                                    const minimum = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                    const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                     if (
                                                       !isNaN(numValue) &&
                                                       numValue >= minimum &&
@@ -636,6 +741,45 @@ export const ReturnRequestEdit = ({
                                                     }
                                                   }
                                                 }}
+                                                onBlur={(e) => {
+                                                  const value =
+                                                    item.product?.unitType === UnitType.KILO
+                                                      ? parseFloat(e.target.value)
+                                                      : parseInt(e.target.value, 10);
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                  if (isNaN(value) || value < minimum) {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: minimum,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: minimum.toString(),
+                                                    }));
+                                                  } else if (value > maxQuantity) {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: maxQuantity,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: maxQuantity.toString(),
+                                                    }));
+                                                  } else {
+                                                    const finalValue =
+                                                      item.product?.unitType === UnitType.KILO
+                                                        ? roundToQuarter(value)
+                                                        : value;
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: finalValue,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: finalValue.toString(),
+                                                    }));
+                                                  }
+                                                }}
                                                 w="3rem"
                                                 p="0"
                                                 textAlign="center"
@@ -650,12 +794,12 @@ export const ReturnRequestEdit = ({
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const increment = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const increment = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
                                                   const newValue = Math.min(
                                                     maxQuantity,
                                                     currentReturnQuantity + increment,
                                                   );
-                                                  const rounded = parseFloat(newValue.toFixed(1));
+                                                  const rounded = parseFloat(newValue.toFixed(2));
                                                   setProductQuantities((prev) => ({
                                                     ...prev,
                                                     [item.product.id]: rounded,
@@ -712,6 +856,30 @@ export const ReturnRequestEdit = ({
                                             />
                                           </VStack>
                                         </Flex>
+
+                                        {/* Subtotal row */}
+                                        <Flex justify="center" align="center" pt="0.5rem">
+                                          <VStack spacing="0.25rem" align="center">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Subtotal de devolución
+                                            </Text>
+                                            <Text fontSize="lg" fontWeight="bold" color="blue.500">
+                                              $
+                                              {(() => {
+                                                const effectivePrice =
+                                                  (item.unitPrice || item.product?.price || 0) *
+                                                  (1 - (item.discount || 0) / 100);
+                                                const returnSubtotal =
+                                                  item.product?.unitType === UnitType.KILO
+                                                    ? currentReturnQuantity *
+                                                      ((currentReturnWeight || 0) / 1000) *
+                                                      effectivePrice
+                                                    : currentReturnQuantity * effectivePrice;
+                                                return returnSubtotal.toFixed(2);
+                                              })()}
+                                            </Text>
+                                          </VStack>
+                                        </Flex>
                                       </VStack>
                                     </VStack>
                                   </Box>
@@ -725,6 +893,44 @@ export const ReturnRequestEdit = ({
                           </Text>
                         )}
                       </FormControl>
+
+                      {/* Total de la devolución */}
+                      {returnRequest.productItems && returnRequest.productItems.length > 0 && (
+                        <Box
+                          p="1rem"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          borderRadius="md"
+                          textAlign="center"
+                        >
+                          <HStack justify="space-between" align="center">
+                            <Text fontSize="lg" fontWeight="semibold">
+                              Total de devolución:
+                            </Text>
+                            <Text fontSize="xl" fontWeight="bold" color="blue.500">
+                              $
+                              {(() => {
+                                let total = 0;
+                                returnRequest.productItems.forEach((item) => {
+                                  const currentReturnQuantity = productQuantities[item.product.id] || 0;
+                                  const currentReturnWeight = productWeights[item.product.id] || 0;
+                                  if (selectedProducts[item.product.id] && currentReturnQuantity > 0) {
+                                    const effectivePrice =
+                                      (item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100);
+                                    const itemSubtotal =
+                                      item.product?.unitType === UnitType.KILO
+                                        ? currentReturnQuantity * ((currentReturnWeight || 0) / 1000) * effectivePrice
+                                        : currentReturnQuantity * effectivePrice;
+                                    total += itemSubtotal;
+                                  }
+                                });
+                                return total.toFixed(2);
+                              })()}
+                            </Text>
+                          </HStack>
+                        </Box>
+                      )}
 
                       {/* Observaciones */}
                       <Field name="observations">

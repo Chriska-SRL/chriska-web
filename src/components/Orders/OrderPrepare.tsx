@@ -49,6 +49,7 @@ import { useUpdateOrder } from '@/hooks/order';
 import { useGetProducts } from '@/hooks/product';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 import type { OrderRequest } from '@/entities/orderRequest';
 
 type OrderPrepareProps = {
@@ -748,9 +749,9 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             onClick={() => {
                                               const newValue =
                                                 product.unitType === UnitType.KILO
-                                                  ? Math.max(0.5, product.actualQuantity - 0.5)
+                                                  ? Math.max(0.25, product.actualQuantity - 0.25)
                                                   : Math.max(1, product.actualQuantity - 1);
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -786,12 +787,19 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                                   ? parseFloat(e.target.value)
                                                   : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
-                                                handleQuantityChange(product.id, 1);
-                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                              } else {
+                                                const defaultValue = product.unitType === UnitType.KILO ? 0.25 : 1;
+                                                handleQuantityChange(product.id, defaultValue);
                                                 setQuantityInputs((prev) => ({
                                                   ...prev,
-                                                  [product.id]: value.toString(),
+                                                  [product.id]: defaultValue.toString(),
+                                                }));
+                                              } else {
+                                                const finalValue =
+                                                  product.unitType === UnitType.KILO ? roundToQuarter(value) : value;
+                                                handleQuantityChange(product.id, finalValue);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: finalValue.toString(),
                                                 }));
                                               }
                                             }}
@@ -809,9 +817,9 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             onClick={() => {
                                               const newValue =
                                                 product.unitType === UnitType.KILO
-                                                  ? product.actualQuantity + 0.5
+                                                  ? product.actualQuantity + 0.25
                                                   : product.actualQuantity + 1;
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -963,9 +971,9 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             onClick={() => {
                                               const newValue =
                                                 product.unitType === UnitType.KILO
-                                                  ? Math.max(0.5, product.actualQuantity - 0.5)
+                                                  ? Math.max(0.25, product.actualQuantity - 0.25)
                                                   : Math.max(1, product.actualQuantity - 1);
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -1000,12 +1008,19 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                                   ? parseFloat(e.target.value)
                                                   : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
-                                                handleQuantityChange(product.id, 1);
-                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                              } else {
+                                                const defaultValue = product.unitType === UnitType.KILO ? 0.25 : 1;
+                                                handleQuantityChange(product.id, defaultValue);
                                                 setQuantityInputs((prev) => ({
                                                   ...prev,
-                                                  [product.id]: value.toString(),
+                                                  [product.id]: defaultValue.toString(),
+                                                }));
+                                              } else {
+                                                const finalValue =
+                                                  product.unitType === UnitType.KILO ? roundToQuarter(value) : value;
+                                                handleQuantityChange(product.id, finalValue);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: finalValue.toString(),
                                                 }));
                                               }
                                             }}
@@ -1023,9 +1038,9 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             onClick={() => {
                                               const newValue =
                                                 product.unitType === UnitType.KILO
-                                                  ? product.actualQuantity + 0.5
+                                                  ? product.actualQuantity + 0.25
                                                   : product.actualQuantity + 1;
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,

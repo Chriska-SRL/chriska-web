@@ -605,6 +605,7 @@ const StockMovementAddModal = ({
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" color={iconColor} />
+                                <Text>Tipo de razón</Text>
                                 <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>

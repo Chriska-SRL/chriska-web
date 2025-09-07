@@ -47,6 +47,7 @@ import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 
 type OrderRequestEditProps = {
   orderRequest: OrderRequest;
@@ -837,14 +838,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const step = product.unitType === UnitType.KILO ? 0.5 : 1;
-                                                const newValue = Math.max(step, product.quantity - step);
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                  const rounded = roundToQuarter(newValue);
+                                                  handleProductQuantityChange(product.id, rounded);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: rounded.toString(),
+                                                  }));
+                                                } else {
+                                                  const newValue = Math.max(1, product.quantity - 1);
+                                                  handleProductQuantityChange(product.id, newValue);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: newValue.toString(),
+                                                  }));
+                                                }
                                               }}
                                               borderRightRadius={0}
                                             />
@@ -865,15 +874,30 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 }
                                               }}
                                               onBlur={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                if (isNaN(value) || value <= 0) {
-                                                  handleProductQuantityChange(product.id, 1);
-                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const value = parseFloat(e.target.value);
+                                                  if (isNaN(value) || value <= 0) {
+                                                    handleProductQuantityChange(product.id, 0.25);
+                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '0.25' }));
+                                                  } else {
+                                                    const rounded = roundToQuarter(value);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  }
                                                 } else {
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: value.toString(),
-                                                  }));
+                                                  const value = parseInt(e.target.value, 10);
+                                                  if (isNaN(value) || value <= 0) {
+                                                    handleProductQuantityChange(product.id, 1);
+                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                  } else {
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: value.toString(),
+                                                    }));
+                                                  }
                                                 }
                                               }}
                                               w="3.5rem"
@@ -888,14 +912,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const step = product.unitType === UnitType.KILO ? 0.5 : 1;
-                                                const newValue = product.quantity + step;
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const newValue = product.quantity + 0.25;
+                                                  const rounded = roundToQuarter(newValue);
+                                                  handleProductQuantityChange(product.id, rounded);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: rounded.toString(),
+                                                  }));
+                                                } else {
+                                                  const newValue = product.quantity + 1;
+                                                  handleProductQuantityChange(product.id, newValue);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: newValue.toString(),
+                                                  }));
+                                                }
                                               }}
                                               borderLeftRadius={0}
                                             />
@@ -1014,14 +1046,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const step = product.unitType === UnitType.KILO ? 0.5 : 1;
-                                                  const newValue = Math.max(step, product.quantity - step);
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                    const rounded = roundToQuarter(newValue);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  } else {
+                                                    const newValue = Math.max(1, product.quantity - 1);
+                                                    handleProductQuantityChange(product.id, newValue);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: newValue.toString(),
+                                                    }));
+                                                  }
                                                 }}
                                                 borderRightRadius={0}
                                               />
@@ -1042,15 +1082,30 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   }
                                                 }}
                                                 onBlur={(e) => {
-                                                  const value = parseFloat(e.target.value);
-                                                  if (isNaN(value) || value <= 0) {
-                                                    handleProductQuantityChange(product.id, 1);
-                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const value = parseFloat(e.target.value);
+                                                    if (isNaN(value) || value <= 0) {
+                                                      handleProductQuantityChange(product.id, 0.25);
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '0.25' }));
+                                                    } else {
+                                                      const rounded = roundToQuarter(value);
+                                                      handleProductQuantityChange(product.id, rounded);
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: rounded.toString(),
+                                                      }));
+                                                    }
                                                   } else {
-                                                    setQuantityInputs((prev) => ({
-                                                      ...prev,
-                                                      [product.id]: value.toString(),
-                                                    }));
+                                                    const value = parseInt(e.target.value, 10);
+                                                    if (isNaN(value) || value <= 0) {
+                                                      handleProductQuantityChange(product.id, 1);
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                    } else {
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: value.toString(),
+                                                      }));
+                                                    }
                                                   }
                                                 }}
                                                 w="3.5rem"
@@ -1065,14 +1120,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const step = product.unitType === UnitType.KILO ? 0.5 : 1;
-                                                  const newValue = product.quantity + step;
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const newValue = product.quantity + 0.25;
+                                                    const rounded = roundToQuarter(newValue);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  } else {
+                                                    const newValue = product.quantity + 1;
+                                                    handleProductQuantityChange(product.id, newValue);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: newValue.toString(),
+                                                    }));
+                                                  }
                                                 }}
                                                 borderLeftRadius={0}
                                               />
