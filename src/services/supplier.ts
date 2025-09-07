@@ -23,6 +23,10 @@ export const updateSupplier = (supplier: Partial<Supplier>): Promise<Supplier> =
   return put<Supplier>(`${API_URL}/Suppliers/${supplier.id}`, supplier);
 };
 
+export const getSupplierById = (id: number): Promise<Supplier> => {
+  return get<Supplier>(`${API_URL}/Suppliers/${id}`);
+};
+
 export const deleteSupplier = (id: number): Promise<Supplier> => {
   return del<Supplier>(`${API_URL}/Suppliers/${id}`);
 };

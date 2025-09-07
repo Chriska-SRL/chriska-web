@@ -18,10 +18,15 @@ import {
   SimpleGrid,
   Divider,
   HStack,
+  Badge,
 } from '@chakra-ui/react';
 import { FiInfo, FiCalendar, FiHash, FiTag, FiFileText, FiPackage, FiUser } from 'react-icons/fi';
 import { StockMovement } from '@/entities/stockMovement';
 import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
+import { 
+  getStockMovementReasonTypeLabel, 
+  getStockMovementReasonTypeColor 
+} from '@/enums/stockMovementReasonType.enum';
 import { useEffect, useCallback } from 'react';
 
 type StockMovementDetailProps = {
@@ -86,6 +91,43 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
     </Box>
   );
 
+  const detailFieldBadge = (label: string, value: string | null | undefined, icon?: any) => (
+    <Box w="100%">
+      <HStack mb="0.5rem" spacing="0.5rem">
+        {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
+        <Text color={labelColor} fontWeight="semibold">
+          {label}
+        </Text>
+      </HStack>
+      <Box
+        px="1rem"
+        py="0.5rem"
+        bg={inputBg}
+        border="1px solid"
+        borderColor={inputBorder}
+        borderRadius="md"
+        minH="2.75rem"
+        display="flex"
+        alignItems="center"
+        transition="all 0.2s"
+      >
+        {value ? (
+          <Badge 
+            colorScheme={getStockMovementReasonTypeColor(value)} 
+            variant="subtle"
+            size="md"
+            px="0.75rem"
+            py="0.25rem"
+          >
+            {getStockMovementReasonTypeLabel(value)}
+          </Badge>
+        ) : (
+          '—'
+        )}
+      </Box>
+    </Box>
+  );
+
   return (
     <>
       <IconButton
@@ -134,6 +176,13 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
               <Divider />
 
               {detailField('Razón', movement.reason, FiFileText)}
+              
+              {movement.reasonType && (
+                <>
+                  <Divider />
+                  {detailFieldBadge('Tipo de Razón', movement.reasonType, FiTag)}
+                </>
+              )}
             </VStack>
           </ModalBody>
 

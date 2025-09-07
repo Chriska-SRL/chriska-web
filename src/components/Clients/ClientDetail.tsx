@@ -18,7 +18,6 @@ import {
   Icon,
   SimpleGrid,
   Flex,
-  Spinner,
   Stack,
 } from '@chakra-ui/react';
 import {
@@ -36,7 +35,7 @@ import {
   FiUsers,
   FiMap,
 } from 'react-icons/fi';
-import { FaEdit, FaStar } from 'react-icons/fa';
+import { FaEdit, FaStar, FaCreditCard } from 'react-icons/fa';
 import { Client } from '@/entities/client';
 import { BankAccount } from '@/entities/bankAccount';
 import { ClientEdit } from './ClientEdit';
@@ -69,6 +68,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   // Estados de carga para navegación
   const [isNavigatingToOrders, setIsNavigatingToOrders] = useState(false);
+  const [isNavigatingToStatements, setIsNavigatingToStatements] = useState(false);
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -78,12 +78,12 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
 
   const handleClose = useCallback(() => {
     // No permitir cerrar si se está navegando
-    if (isNavigatingToOrders) {
+    if (isNavigatingToOrders || isNavigatingToStatements) {
       return;
     }
     onClose();
     onModalClose?.();
-  }, [onClose, onModalClose, isNavigatingToOrders]);
+  }, [onClose, onModalClose, isNavigatingToOrders, isNavigatingToStatements]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -94,6 +94,12 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
   const handleNavigateToOrders = async () => {
     setIsNavigatingToOrders(true);
     await router.push(`/pedidos?client=${client.id}&add=true`);
+    // El estado se mantendrá hasta que el componente se desmonte
+  };
+
+  const handleNavigateToStatements = async () => {
+    setIsNavigatingToStatements(true);
+    await router.push(`/estados-de-cuenta?clientId=${client.id}`);
     // El estado se mantendrá hasta que el componente se desmonte
   };
 
@@ -178,8 +184,8 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
         onClose={handleClose}
         size={{ base: 'full', md: 'xl' }}
         isCentered
-        closeOnOverlayClick={!isNavigatingToOrders}
-        closeOnEsc={!isNavigatingToOrders}
+        closeOnOverlayClick={!isNavigatingToOrders && !isNavigatingToStatements}
+        closeOnEsc={!isNavigatingToOrders && !isNavigatingToStatements}
       >
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
@@ -297,11 +303,27 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
               align="stretch"
               justify={{ base: 'stretch', md: 'flex-end' }}
             >
-              <Button variant="ghost" size="sm" onClick={handleClose} disabled={isNavigatingToOrders}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                disabled={isNavigatingToOrders || isNavigatingToStatements}
+              >
                 Cerrar
               </Button>
               <Button
-                leftIcon={isNavigatingToOrders ? <Spinner size="xs" /> : <FaPlus />}
+                leftIcon={<FaCreditCard />}
+                onClick={handleNavigateToStatements}
+                colorScheme="purple"
+                variant="outline"
+                size="sm"
+                isLoading={isNavigatingToStatements}
+                loadingText="Redirigiendo..."
+              >
+                Estado de cuenta
+              </Button>
+              <Button
+                leftIcon={<FaPlus />}
                 onClick={handleNavigateToOrders}
                 colorScheme="green"
                 variant="outline"
@@ -309,7 +331,7 @@ export const ClientDetail = ({ client, setClients, forceOpen, onModalClose }: Cl
                 isLoading={isNavigatingToOrders}
                 loadingText="Redirigiendo..."
               >
-                Crear pedido
+                Pedido
               </Button>
               {canDeleteClients && (
                 <GenericDelete

@@ -28,9 +28,11 @@ import { useDeleteSupplier } from '@/hooks/supplier';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import MapPreview from '../MapPreview';
 import { MapViewModal } from '../MapViewModal';
+import { useRouter } from 'next/navigation';
+import { FaCreditCard } from 'react-icons/fa';
 
 type SupplierDetailProps = {
   supplier: Supplier;
@@ -42,6 +44,8 @@ type SupplierDetailProps = {
 export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose }: SupplierDetailProps) => {
   const canEditSuppliers = useUserStore((s) => s.hasPermission(Permission.EDIT_SUPPLIERS));
   const canDeleteSuppliers = useUserStore((s) => s.hasPermission(Permission.DELETE_SUPPLIERS));
+  const router = useRouter();
+  const [isNavigatingToStatements, setIsNavigatingToStatements] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
@@ -57,6 +61,17 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
     onClose();
     onModalClose?.();
   }, [onClose, onModalClose]);
+
+  const handleNavigateToStatements = useCallback(async () => {
+    setIsNavigatingToStatements(true);
+    try {
+      await router.push(`/estados-de-cuenta?supplierId=${supplier.id}`);
+    } catch (error) {
+      console.error('Error navigating to statements:', error);
+    } finally {
+      setIsNavigatingToStatements(false);
+    }
+  }, [router, supplier.id]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -226,6 +241,17 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
             >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
+              </Button>
+              <Button
+                leftIcon={<FaCreditCard />}
+                onClick={handleNavigateToStatements}
+                colorScheme="purple"
+                variant="outline"
+                size="sm"
+                isLoading={isNavigatingToStatements}
+                loadingText="Redirigiendo..."
+              >
+                Estado de cuenta
               </Button>
               {canDeleteSuppliers && (
                 <GenericDelete

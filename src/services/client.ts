@@ -44,6 +44,10 @@ export const getClients = (page: number = 1, pageSize: number = 10, filters?: Cl
   return get<Client[]>(`${API_URL}/Clients?${params.toString()}`);
 };
 
+export const getClientById = (id: number): Promise<Client> => {
+  return get<Client>(`${API_URL}/Clients/${id}`);
+};
+
 export const addClient = (client: Partial<Client>): Promise<Client> => {
   return post<Client>(`${API_URL}/Clients`, client);
 };

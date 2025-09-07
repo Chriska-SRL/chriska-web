@@ -1,5 +1,5 @@
 import { Client } from '@/entities/client';
-import { getClients, addClient, updateClient, deleteClient } from '@/services/client';
+import { getClients, getClientById, addClient, updateClient, deleteClient } from '@/services/client';
 import { useFetch, useMutation } from '../utils/useFetch';
 import { useState, useEffect } from 'react';
 
@@ -28,6 +28,8 @@ export const useGetClients = (page: number = 1, pageSize: number = 10, filters?:
 
   return { data, isLoading, error };
 };
+
+export const useGetClientById = (id?: number) => useFetch<number, Client>(getClientById, id);
 
 export const useAddClient = () => useMutation<Partial<Client>, Client>(addClient, { parseFieldError: true });
 

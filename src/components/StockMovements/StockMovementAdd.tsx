@@ -45,6 +45,7 @@ import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
 import { StockMovementTypeOptions } from '@/enums/stockMovementType.enum';
+import { StockMovementReasonTypeOptions } from '@/enums/stockMovementReasonType.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type StockMovementAddProps = {
@@ -230,12 +231,14 @@ const StockMovementAddModal = ({
     quantity: number;
     type: string;
     reason: string;
+    reasonType: string;
     productId: string;
   }) => {
     const movementData: any = {
       quantity: values.quantity,
       type: values.type,
       reason: values.reason,
+      reasonType: values.reasonType || undefined,
       productId: Number(values.productId),
     };
 
@@ -277,6 +280,7 @@ const StockMovementAddModal = ({
                 quantity: 0,
                 type: '',
                 reason: '',
+                reasonType: '',
                 productId: preselectedProductId ? preselectedProductId.toString() : '',
               }}
               onSubmit={handleSubmit}
@@ -590,6 +594,33 @@ const StockMovementAddModal = ({
                               rows={4}
                             />
                             <FormErrorMessage>{errors.reason}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="reasonType">
+                        {({ field }: any) => (
+                          <FormControl>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" color={iconColor} />
+                                <Text>Tipo de Razón (Opcional)</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccione un tipo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              {StockMovementReasonTypeOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </Select>
                           </FormControl>
                         )}
                       </Field>
