@@ -21,10 +21,7 @@ import { StockMovement } from '@/entities/stockMovement';
 import { StockMovementDetail } from './StockMovementDetail';
 import { Pagination } from '../Pagination';
 import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
-import { 
-  getStockMovementReasonTypeLabel, 
-  getStockMovementReasonTypeColor 
-} from '@/enums/stockMovementReasonType.enum';
+import { getStockMovementReasonTypeLabel, getStockMovementReasonTypeColor } from '@/enums/stockMovementReasonType.enum';
 import { Badge } from '@chakra-ui/react';
 
 type StockMovementListProps = {
@@ -133,8 +130,8 @@ export const StockMovementList = ({
                     {mov.reasonType && (
                       <HStack justify="space-between">
                         <Text color={textColor}>Tipo de razón</Text>
-                        <Badge 
-                          colorScheme={getStockMovementReasonTypeColor(mov.reasonType)} 
+                        <Badge
+                          colorScheme={getStockMovementReasonTypeColor(mov.reasonType)}
                           variant="subtle"
                           fontSize="xs"
                         >
@@ -208,10 +205,7 @@ export const StockMovementList = ({
                     <Td textAlign="center">{stockMovement.reason || '—'}</Td>
                     <Td textAlign="center">
                       {stockMovement.reasonType ? (
-                        <Badge 
-                          colorScheme={getStockMovementReasonTypeColor(stockMovement.reasonType)} 
-                          variant="subtle"
-                        >
+                        <Badge colorScheme={getStockMovementReasonTypeColor(stockMovement.reasonType)} variant="subtle">
                           {getStockMovementReasonTypeLabel(stockMovement.reasonType)}
                         </Badge>
                       ) : (

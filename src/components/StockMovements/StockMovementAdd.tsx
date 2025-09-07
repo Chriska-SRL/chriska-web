@@ -78,6 +78,7 @@ const StockMovementAddModal = ({
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
   // Verificar permiso para mostrar el campo de fecha
   const canSetCustomDate = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCT_WITHDATE));
@@ -604,7 +605,7 @@ const StockMovementAddModal = ({
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" color={iconColor} />
-                                <Text>Tipo de Razón (Opcional)</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select

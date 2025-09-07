@@ -154,7 +154,13 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
     });
   };
 
-  const activeFilterCount = [filters.Type, filters.ReasonType, filters.DateFrom, filters.DateTo, filters.CreatedBy].filter(Boolean).length;
+  const activeFilterCount = [
+    filters.Type,
+    filters.ReasonType,
+    filters.DateFrom,
+    filters.DateTo,
+    filters.CreatedBy,
+  ].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0 || filters.ProductId;
 
   return (

@@ -23,10 +23,7 @@ import {
 import { FiInfo, FiCalendar, FiHash, FiTag, FiFileText, FiPackage, FiUser } from 'react-icons/fi';
 import { StockMovement } from '@/entities/stockMovement';
 import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
-import { 
-  getStockMovementReasonTypeLabel, 
-  getStockMovementReasonTypeColor 
-} from '@/enums/stockMovementReasonType.enum';
+import { getStockMovementReasonTypeLabel, getStockMovementReasonTypeColor } from '@/enums/stockMovementReasonType.enum';
 import { useEffect, useCallback } from 'react';
 
 type StockMovementDetailProps = {
@@ -112,8 +109,8 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
         transition="all 0.2s"
       >
         {value ? (
-          <Badge 
-            colorScheme={getStockMovementReasonTypeColor(value)} 
+          <Badge
+            colorScheme={getStockMovementReasonTypeColor(value)}
             variant="subtle"
             size="md"
             px="0.75rem"
@@ -176,7 +173,7 @@ export const StockMovementDetail = ({ movement, forceOpen, onModalClose }: Stock
               <Divider />
 
               {detailField('Razón', movement.reason, FiFileText)}
-              
+
               {movement.reasonType && (
                 <>
                   <Divider />
