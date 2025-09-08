@@ -61,8 +61,8 @@ export const SupplierReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: S
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo de proveedor actualizado',
-        description: 'El recibo de proveedor ha sido actualizado correctamente.',
+        title: 'Pago a proveedor actualizado',
+        description: 'El pago a proveedor ha sido actualizado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -130,7 +130,7 @@ export const SupplierReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: S
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Editar recibo de proveedor #{receipt.id}
+            Editar pago a proveedor #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -165,7 +165,7 @@ export const SupplierReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: S
                             </FormLabel>
                             <Textarea
                               {...field}
-                              placeholder="Ingrese notas adicionales (opcional)"
+                              placeholder="Ingrese notas adicionales "
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}
@@ -197,7 +197,7 @@ export const SupplierReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: S
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Actualizar recibo de proveedor
+                Actualizar pago a proveedor
               </Button>
             </HStack>
           </ModalFooter>

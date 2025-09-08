@@ -150,6 +150,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiHash} boxSize="1rem" />
                             <Text>Matrícula</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -171,6 +172,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiTag} boxSize="1rem" />
                             <Text>Marca</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -192,6 +194,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiTruck} boxSize="1rem" />
                             <Text>Modelo</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -213,6 +216,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Capacidad de cajones</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field

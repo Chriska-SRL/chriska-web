@@ -228,7 +228,7 @@ const DeliveryConfirmForm = ({
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiDollarSign} boxSize="1rem" />
-                                  <Text>Monto recibido (opcional)</Text>
+                                  <Text>Monto recibido </Text>
                                 </HStack>
                               </FormLabel>
                               <NumberInput

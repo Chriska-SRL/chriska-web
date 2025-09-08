@@ -277,7 +277,7 @@ const StockMovementAddModal = ({
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{
-                date: '',
+                date: new Date().toISOString().split('T')[0],
                 quantity: 0,
                 type: '',
                 reason: '',
@@ -379,7 +379,7 @@ const StockMovementAddModal = ({
                         )}
                       </Field>
 
-                      <FormControl>
+                      <FormControl isInvalid={submitCount > 0 && !!errors.productId}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
@@ -573,35 +573,12 @@ const StockMovementAddModal = ({
                           )}
                         </Box>
                         <Field name="productId" validate={validate} style={{ display: 'none' }} />
+                        <FormErrorMessage>{errors.productId}</FormErrorMessage>
                       </FormControl>
 
-                      <Field name="reason" validate={validateEmpty}>
+                      <Field name="reasonType" validate={validateEmpty}>
                         {({ field }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched.reason && !!errors.reason}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiFileText} boxSize="1rem" />
-                                <Text>Razón</Text>
-                                <Text color="red.500">*</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Textarea
-                              {...field}
-                              placeholder="Ingrese la razón del movimiento"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                              rows={4}
-                            />
-                            <FormErrorMessage>{errors.reason}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <Field name="reasonType">
-                        {({ field }: any) => (
-                          <FormControl>
+                          <FormControl isInvalid={submitCount > 0 && touched.reasonType && !!errors.reasonType}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" color={iconColor} />
@@ -623,6 +600,31 @@ const StockMovementAddModal = ({
                                 </option>
                               ))}
                             </Select>
+                            <FormErrorMessage>{errors.reasonType}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      <Field name="reason" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.reason && !!errors.reason}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiFileText} boxSize="1rem" />
+                                <Text>Razón</Text>
+                                <Text color="red.500">*</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Textarea
+                              {...field}
+                              placeholder="Ingrese la razón del movimiento"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                              rows={4}
+                            />
+                            <FormErrorMessage>{errors.reason}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

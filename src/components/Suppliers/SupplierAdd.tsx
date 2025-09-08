@@ -397,9 +397,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                           <HStack spacing="0.5rem">
                             <Icon as={FiMap} boxSize="1rem" />
                             <Text>Ubicación</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              (opcional)
-                            </Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <VStack spacing="0.5rem" align="stretch">
@@ -452,9 +450,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                           <HStack spacing="0.5rem">
                             <Icon as={FiDollarSign} boxSize="1rem" />
                             <Text>Cuentas bancarias</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              (opcional)
-                            </Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">

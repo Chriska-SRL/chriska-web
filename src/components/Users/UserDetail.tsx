@@ -20,12 +20,16 @@ import {
 } from '@chakra-ui/react';
 import { FiInfo, FiMail, FiUser, FiShield, FiActivity } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
+import { IoReload } from 'react-icons/io5';
 import { User } from '@/entities/user';
 import { UserEdit } from './UserEdit';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useDeleteUser } from '@/hooks/user';
+import { useDeleteUser, useTemporaryPassword } from '@/hooks/user';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
+import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
+import { useToast } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 
 type UserDetailProps = {
   user: User;
@@ -35,9 +39,45 @@ type UserDetailProps = {
 export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
   const canEditUsers = useUserStore((s) => s.hasPermission(Permission.EDIT_USERS));
   const canDeleteUsers = useUserStore((s) => s.hasPermission(Permission.DELETE_USERS));
+  const toast = useToast();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+  const {
+    isOpen: isTempPasswordModalOpen,
+    onOpen: openTempPasswordModal,
+    onClose: closeTempPasswordModal,
+  } = useDisclosure();
+
+  const [resetUserId, setResetUserId] = useState<number | undefined>();
+  const { data: resetData, isLoading: isLoadingReset, error: resetError } = useTemporaryPassword(resetUserId);
+
+  useEffect(() => {
+    if (resetData) {
+      openTempPasswordModal();
+    }
+  }, [resetData, openTempPasswordModal]);
+
+  useEffect(() => {
+    if (resetError) {
+      toast({
+        title: 'Error al resetear contraseña',
+        description: resetError,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [resetError, toast]);
+
+  const handleResetPassword = () => {
+    setResetUserId(user.id);
+  };
+
+  const handleCloseTempPasswordModal = () => {
+    closeTempPasswordModal();
+    setResetUserId(undefined);
+  };
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -83,7 +123,7 @@ export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'lg' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -128,18 +168,30 @@ export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
                 />
               )}
               {canEditUsers && (
-                <Button
-                  leftIcon={<FaEdit />}
-                  onClick={() => {
-                    openEdit();
-                    onClose();
-                  }}
-                  colorScheme="blue"
-                  variant="outline"
-                  size="sm"
-                >
-                  Editar
-                </Button>
+                <>
+                  <Button
+                    onClick={handleResetPassword}
+                    isLoading={isLoadingReset}
+                    variant="outline"
+                    colorScheme="orange"
+                    leftIcon={<IoReload />}
+                    size="sm"
+                  >
+                    Restablecer contraseña
+                  </Button>
+                  <Button
+                    leftIcon={<FaEdit />}
+                    onClick={() => {
+                      openEdit();
+                      onClose();
+                    }}
+                    colorScheme="blue"
+                    variant="outline"
+                    size="sm"
+                  >
+                    Editar
+                  </Button>
+                </>
               )}
             </Stack>
           </ModalFooter>
@@ -147,6 +199,12 @@ export const UserDetail = ({ user, setUsers }: UserDetailProps) => {
       </Modal>
 
       {isEditOpen && <UserEdit isOpen={isEditOpen} onClose={closeEdit} user={user} setUsers={setUsers} />}
+
+      <TemporaryPasswordModal
+        isOpen={isTempPasswordModalOpen}
+        onClose={handleCloseTempPasswordModal}
+        password={resetData?.password ?? ''}
+      />
     </>
   );
 };

@@ -253,7 +253,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
-                                  <Text>RUT (opcional)</Text>
+                                  <Text>RUT </Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -272,7 +272,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
 
                       {/* Fila 2: Razón Social - Zona */}
                       <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <Field name="razonSocial" validate={validateEmpty}>
+                        <Field name="razonSocial">
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                               <FormLabel fontWeight="semibold">
@@ -398,7 +398,31 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         </Field>
                       </SimpleGrid>
 
-                      {/* Fila 5: Email (completo) */}
+                      {/* Fila 5: Horario (completo) */}
+                      <Field name="schedule" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiClock} boxSize="1rem" />
+                                <Text>Horario</Text>
+                                <Text color="red.500">*</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese el horario de atención"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{errors.schedule}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
+                      {/* Fila 6: Email (completo) */}
                       <Field name="email" validate={validateEmpty}>
                         {({ field }: any) => (
                           <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
@@ -422,7 +446,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         )}
                       </Field>
 
-                      {/* Fila 6: Ubicación */}
+                      {/* Fila 7: Ubicación */}
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
@@ -465,35 +489,11 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         </VStack>
                       </FormControl>
 
-                      {/* Fila 7: Horario (completo) */}
-                      <Field name="schedule" validate={validateEmpty}>
-                        {({ field }: any) => (
-                          <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiClock} boxSize="1rem" />
-                                <Text>Horario</Text>
-                                <Text color="red.500">*</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder="Ingrese el horario de atención"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{errors.schedule}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiCreditCard} boxSize="1rem" />
-                            <Text>Cuentas bancarias (opcional)</Text>
+                            <Text>Cuentas bancarias </Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">

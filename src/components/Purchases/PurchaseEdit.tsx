@@ -354,12 +354,13 @@ export const PurchaseEdit = ({ isOpen, onClose, purchase, setPurchases }: Purcha
               initialValues={{
                 supplierId: '',
                 invoiceNumber: purchase.invoiceNumber || '',
-                date: purchase.date || new Date().toISOString(),
+                date: purchase.date
+                  ? new Date(purchase.date).toISOString().split('T')[0]
+                  : new Date().toISOString().split('T')[0],
                 observations: purchase.observations || '',
               }}
               onSubmit={handleSubmit}
               validate={validateForm}
-              enableReinitialize
               validateOnChange={true}
               validateOnBlur={false}
             >
@@ -1113,7 +1114,7 @@ export const PurchaseEdit = ({ isOpen, onClose, purchase, setPurchases }: Purcha
                             </FormLabel>
                             <Textarea
                               {...field}
-                              placeholder="Ingrese observaciones adicionales (opcional)"
+                              placeholder="Ingrese observaciones adicionales "
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}

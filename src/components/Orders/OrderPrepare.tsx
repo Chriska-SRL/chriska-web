@@ -376,7 +376,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   };
 
   const validateForm = (values: typeof initialValues) => {
-    const errors: { crates?: string; products?: string; stock?: string } = {};
+    const errors: { crates?: string; products?: string } = {};
 
     if (!values.crates || values.crates <= 0) {
       errors.crates = 'Los cajones deben ser mayor a 0';
@@ -386,11 +386,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       errors.products = 'Debe tener al menos un producto en la lista';
     }
 
-    // Validar stock disponible
-    const hasStockErrors = selectedProducts.some((product) => isQuantityExceedsStock(product));
-    if (hasStockErrors) {
-      errors.stock = 'Algunos productos exceden el stock disponible';
-    }
+    // Removed stock validation - now shows warning only, doesn't prevent submission
 
     return errors;
   };
@@ -640,7 +636,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                       <Divider />
 
                       {/* Lista de productos */}
-                      <FormControl isInvalid={!!(formik.errors as any).products || !!(formik.errors as any).stock}>
+                      <FormControl isInvalid={!!(formik.errors as any).products}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
@@ -650,8 +646,23 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                         {(formik.errors as any).products && (
                           <FormErrorMessage mb="0.5rem">{(formik.errors as any).products}</FormErrorMessage>
                         )}
-                        {(formik.errors as any).stock && (
-                          <FormErrorMessage mb="0.5rem">{(formik.errors as any).stock}</FormErrorMessage>
+                        {/* Show stock warning but don't prevent submission */}
+                        {selectedProducts.some((product) => isQuantityExceedsStock(product)) && (
+                          <Box
+                            mb="0.5rem"
+                            p="0.5rem"
+                            bg="yellow.50"
+                            borderColor="yellow.200"
+                            borderWidth="1px"
+                            borderRadius="md"
+                          >
+                            <HStack spacing="0.5rem">
+                              <Icon as={FaExclamationTriangle} color="yellow.500" />
+                              <Text fontSize="sm" color="yellow.700">
+                                Advertencia: Algunos productos exceden el stock disponible
+                              </Text>
+                            </HStack>
+                          </Box>
                         )}
 
                         {isInitializingProducts ? (

@@ -254,7 +254,7 @@ export const ClientReceiptList = ({
           </TableContainer>
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" fontWeight="medium">
-              Mostrando {receipts.length} recibo{receipts.length !== 1 ? 's' : ''} de cliente
+              Mostrando {receipts.length} pago{receipts.length !== 1 ? 's' : ''} de cliente
               {receipts.length !== 1 ? 's' : ''}
             </Text>
             <Pagination

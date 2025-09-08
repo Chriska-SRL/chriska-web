@@ -428,12 +428,11 @@ const PurchaseAddModal = ({ isOpen, onClose, setPurchases }: PurchaseAddModalPro
               initialValues={{
                 supplierId: '',
                 invoiceNumber: '',
-                date: new Date().toISOString(),
+                date: new Date().toISOString().split('T')[0],
                 observations: '',
               }}
               onSubmit={handleSubmit}
               validate={validateForm}
-              enableReinitialize
               validateOnChange={true}
               validateOnBlur={false}
             >
@@ -1210,7 +1209,7 @@ const PurchaseAddModal = ({ isOpen, onClose, setPurchases }: PurchaseAddModalPro
                             </FormLabel>
                             <Textarea
                               {...field}
-                              placeholder="Ingrese observaciones adicionales (opcional)"
+                              placeholder="Ingrese observaciones adicionales "
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}

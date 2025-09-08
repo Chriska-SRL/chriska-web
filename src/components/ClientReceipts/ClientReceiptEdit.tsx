@@ -61,8 +61,8 @@ export const ClientReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: Cli
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo de cliente actualizado',
-        description: 'El recibo de cliente ha sido actualizado correctamente.',
+        title: 'Pago a cliente actualizado',
+        description: 'El pago de cliente ha sido actualizado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -130,7 +130,7 @@ export const ClientReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: Cli
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Editar recibo de cliente #{receipt.id}
+            Editar pago de cliente #{receipt.id}
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -165,7 +165,7 @@ export const ClientReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: Cli
                             </FormLabel>
                             <Textarea
                               {...field}
-                              placeholder="Ingrese notas adicionales (opcional)"
+                              placeholder="Ingrese notas adicionales "
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}
@@ -197,7 +197,7 @@ export const ClientReceiptEdit = ({ isOpen, onClose, receipt, setReceipts }: Cli
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Actualizar recibo de cliente
+                Actualizar pago de cliente
               </Button>
             </HStack>
           </ModalFooter>

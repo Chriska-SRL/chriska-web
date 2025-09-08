@@ -124,7 +124,7 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
         display={expandable ? undefined : 'flex'}
         alignItems={expandable ? undefined : 'center'}
       >
-        {value ?? '—'}
+        {value && value !== '' ? value : '—'}
         {onClick && (
           <Icon as={FiInfo} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
         )}
@@ -224,14 +224,14 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
 
               <Divider />
 
-              {product.suppliers && product.suppliers.length > 0 && (
-                <Box>
-                  <HStack mb="0.5rem" spacing="0.5rem">
-                    <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
-                    <Text color={labelColor} fontWeight="semibold">
-                      Proveedores
-                    </Text>
-                  </HStack>
+              <Box>
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Proveedores
+                  </Text>
+                </HStack>
+                {product.suppliers && product.suppliers.length > 0 ? (
                   <VStack spacing="0.5rem" align="stretch">
                     {product.suppliers.map((supplier) => (
                       <Box
@@ -268,8 +268,22 @@ export const ProductDetail = ({ product, setProducts, forceOpen, onModalClose }:
                       </Box>
                     ))}
                   </VStack>
-                </Box>
-              )}
+                ) : (
+                  <Box
+                    px="1rem"
+                    py="0.75rem"
+                    bg={inputBg}
+                    border="1px solid"
+                    borderColor={inputBorder}
+                    borderRadius="md"
+                    textAlign="center"
+                  >
+                    <Text fontSize="sm" color={iconColor}>
+                      No hay proveedores asociados a este producto
+                    </Text>
+                  </Box>
+                )}
+              </Box>
 
               <Divider />
 

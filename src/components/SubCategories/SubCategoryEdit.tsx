@@ -158,6 +158,7 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
                           <HStack spacing="0.5rem">
                             <Icon as={FiGrid} boxSize="1rem" />
                             <Text>Nombre</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -179,6 +180,7 @@ export const SubCategoryEdit = ({ isOpen, onClose, subcategory, setCategories }:
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
                             <Text>Descripción</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field

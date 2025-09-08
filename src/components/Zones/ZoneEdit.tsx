@@ -210,6 +210,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiMapPin} boxSize="1rem" />
                             <Text>Nombre</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -229,6 +230,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
                             <Text>Descripción</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field

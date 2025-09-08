@@ -181,8 +181,8 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo de cliente creado',
-        description: 'El recibo de cliente ha sido creado correctamente.',
+        title: 'Pago de cliente creado',
+        description: 'El pago de cliente ha sido creado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -261,7 +261,7 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Nuevo recibo de cliente
+            Nuevo pago de cliente
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -594,7 +594,7 @@ const ClientReceiptAddModal = ({ isOpen, onClose, setReceipts }: ClientReceiptAd
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Crear recibo de cliente
+                Crear pago de cliente
               </Button>
             </HStack>
           </ModalFooter>

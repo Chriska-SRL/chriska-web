@@ -242,6 +242,7 @@ const ClientEditForm = ({
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiUser} boxSize="1rem" />
                                     <Text>Nombre</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -263,7 +264,7 @@ const ClientEditForm = ({
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiHash} boxSize="1rem" />
-                                    <Text>RUT (opcional)</Text>
+                                    <Text>RUT </Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -311,6 +312,7 @@ const ClientEditForm = ({
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiMapPin} boxSize="1rem" />
                                     <Text>Zona</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Select
@@ -341,6 +343,7 @@ const ClientEditForm = ({
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
                                   <Text>Dirección</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -365,6 +368,7 @@ const ClientEditForm = ({
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiUser} boxSize="1rem" />
                                     <Text>Persona de contacto</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -387,6 +391,7 @@ const ClientEditForm = ({
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPhone} boxSize="1rem" />
                                     <Text>Teléfono</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -403,14 +408,38 @@ const ClientEditForm = ({
                           </Field>
                         </SimpleGrid>
 
-                        {/* Fila 5: Email (completo) */}
+                        {/* Fila 5: Horario (completo) */}
+                        <Field name="schedule" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiClock} boxSize="1rem" />
+                                  <Text>Horario</Text>
+                                  <Text color="red.500">*</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el horario de atención"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.schedule}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        {/* Fila 6: Email (completo) */}
                         <Field name="email" validate={validateEmpty}>
                           {({ field }: any) => (
                             <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMail} boxSize="1rem" />
-                                  <Text>Correo electrónico (opcional)</Text>
+                                  <Text>Correo electrónico </Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -427,7 +456,7 @@ const ClientEditForm = ({
                           )}
                         </Field>
 
-                        {/* Fila 6: Ubicación */}
+                        {/* Fila 7: Ubicación */}
                         <FormControl>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
@@ -469,29 +498,6 @@ const ClientEditForm = ({
                             </HStack>
                           </VStack>
                         </FormControl>
-
-                        {/* Fila 7: Horario (completo) */}
-                        <Field name="schedule" validate={validateEmpty}>
-                          {({ field }: any) => (
-                            <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiClock} boxSize="1rem" />
-                                  <Text>Horario</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el horario de atención"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{errors.schedule}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
 
                         {/* Fila 8: Cajones prestados - Calificación */}
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
@@ -539,7 +545,7 @@ const ClientEditForm = ({
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
                               <Icon as={FiGrid} boxSize="1rem" />
-                              <Text>Cuentas bancarias (opcional)</Text>
+                              <Text>Cuentas bancarias </Text>
                             </HStack>
                           </FormLabel>
                           <FieldArray name="bankAccounts">

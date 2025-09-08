@@ -16,7 +16,6 @@ import {
   useToast,
   useColorModeValue,
   FormErrorMessage,
-  useDisclosure,
   HStack,
   Text,
   Icon,
@@ -27,10 +26,8 @@ import { FaCheck, FaTimes } from 'react-icons/fa';
 import { FiUser, FiShield, FiSettings } from 'react-icons/fi';
 import { useGetRoles } from '@/hooks/role';
 import { useEffect, useState } from 'react';
-import { useTemporaryPassword, useUpdateUser } from '@/hooks/user';
+import { useUpdateUser } from '@/hooks/user';
 import { validate } from '@/utils/validations/validate';
-import { TemporaryPasswordModal } from '../TemporaryPasswordModal';
-import { IoReload } from 'react-icons/io5';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type UserEditProps = {
@@ -47,31 +44,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
   const { data, isLoading, error, fieldError, mutate } = useUpdateUser();
-
-  const {
-    isOpen: isTempPasswordModalOpen,
-    onOpen: openTempPasswordModal,
-    onClose: closeTempPasswordModal,
-  } = useDisclosure();
-
-  const [resetUserId, setResetUserId] = useState<number | undefined>();
-  const { data: resetData, isLoading: isLoadingReset, error: resetError } = useTemporaryPassword(resetUserId);
-
-  useEffect(() => {
-    if (resetData) {
-      openTempPasswordModal();
-      // onClose(); Revisar por que no funciona bien
-    }
-  }, [resetData]);
-
-  const handleResetPassword = () => {
-    if (user) setResetUserId(user.id);
-  };
-
-  const handleCloseTempPasswordModal = () => {
-    closeTempPasswordModal();
-    setResetUserId(undefined);
-  };
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -109,18 +81,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
       });
     }
   }, [error, fieldError]);
-
-  useEffect(() => {
-    if (resetError) {
-      toast({
-        title: 'Error al resetear contraseña',
-        description: resetError,
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  }, [resetError]);
 
   const handleSubmit = async (values: {
     id: number;
@@ -209,6 +169,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiUser} boxSize="1rem" />
                             <Text>Nombre de usuario</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -232,6 +193,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiUser} boxSize="1rem" />
                             <Text>Nombre completo</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -257,6 +219,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiShield} boxSize="1rem" />
                             <Text>Rol</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -288,6 +251,7 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiSettings} boxSize="1rem" />
                             <Text>Estado</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -306,18 +270,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
                         </Field>
                         <FormErrorMessage>{errors.estado}</FormErrorMessage>
                       </FormControl>
-
-                      <Button
-                        onClick={handleResetPassword}
-                        isLoading={isLoadingReset}
-                        variant="outline"
-                        colorScheme="blue"
-                        w="100%"
-                        leftIcon={<IoReload />}
-                        mt="0.625rem"
-                      >
-                        Restablecer contraseña
-                      </Button>
                     </VStack>
                   </form>
                 );
@@ -346,12 +298,6 @@ export const UserEdit = ({ isOpen, onClose, user, setUsers }: UserEditProps) => 
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      <TemporaryPasswordModal
-        isOpen={isTempPasswordModalOpen}
-        onClose={handleCloseTempPasswordModal}
-        password={resetData?.password ?? ''}
-      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

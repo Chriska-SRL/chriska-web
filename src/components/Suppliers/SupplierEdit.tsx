@@ -135,7 +135,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'full', md: 'lg' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -230,6 +230,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                             <HStack spacing="0.5rem">
                               <Icon as={FiUser} boxSize="1rem" />
                               <Text>Nombre</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -248,6 +249,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                             <HStack spacing="0.5rem">
                               <Icon as={FiHash} boxSize="1rem" />
                               <Text>RUT</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -268,6 +270,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
                             <Text>Razón Social</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -287,6 +290,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           <HStack spacing="0.5rem">
                             <Icon as={FiMapPin} boxSize="1rem" />
                             <Text>Dirección</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -307,6 +311,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                             <HStack spacing="0.5rem">
                               <Icon as={FiUser} boxSize="1rem" />
                               <Text>Persona de contacto</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -325,6 +330,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                             <HStack spacing="0.5rem">
                               <Icon as={FiPhone} boxSize="1rem" />
                               <Text>Teléfono</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -345,9 +351,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           <HStack spacing="0.5rem">
                             <Icon as={FiMail} boxSize="1rem" />
                             <Text>Email</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              (opcional)
-                            </Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -367,9 +371,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           <HStack spacing="0.5rem">
                             <Icon as={FiMap} boxSize="1rem" />
                             <Text>Ubicación</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              (opcional)
-                            </Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <VStack spacing="0.5rem" align="stretch">
@@ -422,9 +424,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                           <HStack spacing="0.5rem">
                             <Icon as={FiCreditCard} boxSize="1rem" />
                             <Text>Cuentas bancarias</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              (opcional)
-                            </Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">

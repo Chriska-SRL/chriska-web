@@ -186,8 +186,8 @@ const SupplierReceiptAddModal = ({ isOpen, onClose, setReceipts }: SupplierRecei
   useEffect(() => {
     if (data) {
       toast({
-        title: 'Recibo de proveedor creado',
-        description: 'El recibo de proveedor ha sido creado correctamente.',
+        title: 'Pago a proveedor creado',
+        description: 'El pago a proveedor ha sido creado correctamente.',
         status: 'success',
         duration: 2000,
         isClosable: true,
@@ -266,7 +266,7 @@ const SupplierReceiptAddModal = ({ isOpen, onClose, setReceipts }: SupplierRecei
             borderBottom="1px solid"
             borderColor={inputBorder}
           >
-            Nuevo recibo de proveedor
+            Nuevo pago a proveedor
           </ModalHeader>
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
@@ -599,7 +599,7 @@ const SupplierReceiptAddModal = ({ isOpen, onClose, setReceipts }: SupplierRecei
                 leftIcon={<FaCheck />}
                 size="sm"
               >
-                Crear recibo de proveedor
+                Crear pago a proveedor
               </Button>
             </HStack>
           </ModalFooter>

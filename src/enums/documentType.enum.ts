@@ -8,12 +8,12 @@ export enum DocumentType {
 }
 
 export const DocumentTypeLabels: Record<string, string> = {
-  [DocumentType.CLIENT_PAYMENT]: 'Pago de Cliente',
+  [DocumentType.CLIENT_PAYMENT]: 'Pago de cliente',
   [DocumentType.PURCHASE]: 'Compra',
   [DocumentType.SALE]: 'Venta',
-  [DocumentType.SUPPLIER_PAYMENT]: 'Pago a Proveedor',
-  [DocumentType.RETURN_SALE]: 'Devolución de Venta',
-  [DocumentType.RETURN_PURCHASE]: 'Devolución de Compra',
+  [DocumentType.SUPPLIER_PAYMENT]: 'Pago a proveedor',
+  [DocumentType.RETURN_SALE]: 'Devolución de venta',
+  [DocumentType.RETURN_PURCHASE]: 'Devolución de compra',
 };
 
 export const getDocumentTypeLabel = (type: string): string => {

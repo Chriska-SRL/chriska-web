@@ -101,7 +101,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
         wordBreak="break-word"
         transition="all 0.2s"
       >
-        {value ?? '—'}
+        {value && value !== '' ? value : '—'}
       </Box>
     </Box>
   );
