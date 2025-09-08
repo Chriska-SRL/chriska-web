@@ -142,6 +142,40 @@ const ClientEditForm = ({
     }
   }, [error, fieldError, toast]);
 
+  const validateForm = () => {
+    const errors: any = {};
+
+    // Validar cuentas bancarias
+    if (bankAccounts && bankAccounts.length > 0) {
+      const bankAccountsErrors: any = [];
+      bankAccounts.forEach((account: any, index: number) => {
+        const accountErrors: any = {};
+
+        if (!account.accountName || account.accountName.trim() === '') {
+          accountErrors.accountName = 'Campo obligatorio';
+        }
+
+        if (!account.bank || account.bank.trim() === '') {
+          accountErrors.bank = 'Campo obligatorio';
+        }
+
+        if (!account.accountNumber || account.accountNumber.trim() === '') {
+          accountErrors.accountNumber = 'Campo obligatorio';
+        }
+
+        if (Object.keys(accountErrors).length > 0) {
+          bankAccountsErrors[index] = accountErrors;
+        }
+      });
+
+      if (bankAccountsErrors.length > 0) {
+        errors.bankAccounts = bankAccountsErrors;
+      }
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (values: any) => {
     const updatedClient = {
       ...values,
@@ -201,11 +235,22 @@ const ClientEditForm = ({
                 zoneId: client.zone?.id ? String(client.zone.id) : '',
               }}
               onSubmit={handleSubmit}
+              validate={validateForm}
               enableReinitialize
               validateOnChange={true}
               validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
+              {({
+                handleSubmit,
+                values,
+                setFieldValue,
+                dirty,
+                resetForm,
+                errors,
+                touched,
+                submitCount,
+                setFieldError,
+              }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -562,14 +607,31 @@ const ClientEditForm = ({
                                     position="relative"
                                   >
                                     <VStack spacing="0.5rem">
-                                      <FormControl>
+                                      <FormControl
+                                        isInvalid={
+                                          !!(
+                                            submitCount > 0 &&
+                                            (errors as any).bankAccounts?.[index] &&
+                                            ((errors as any).bankAccounts[index] as any)?.accountName
+                                          )
+                                        }
+                                      >
                                         <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
                                         <Input
                                           value={account.accountName}
                                           onChange={(e) => {
-                                            const updatedAccounts = [...bankAccounts];
-                                            updatedAccounts[index].accountName = e.target.value;
-                                            setBankAccounts(updatedAccounts);
+                                            const value = e.target.value;
+                                            // Solo permitir letras, espacios y algunos caracteres especiales
+                                            const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+                                            if (regex.test(value)) {
+                                              const updatedAccounts = [...bankAccounts];
+                                              updatedAccounts[index].accountName = value;
+                                              setBankAccounts(updatedAccounts);
+                                              // Limpiar error si existe
+                                              if ((errors as any).bankAccounts?.[index]?.accountName) {
+                                                setFieldError(`bankAccounts[${index}].accountName`, undefined);
+                                              }
+                                            }
                                           }}
                                           bg={inputBg}
                                           borderColor={inputBorder}
@@ -577,8 +639,23 @@ const ClientEditForm = ({
                                           size="sm"
                                           borderRadius="md"
                                         />
+                                        {submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.accountName && (
+                                            <FormErrorMessage>
+                                              {((errors as any).bankAccounts[index] as any).accountName}
+                                            </FormErrorMessage>
+                                          )}
                                       </FormControl>
-                                      <FormControl>
+                                      <FormControl
+                                        isInvalid={
+                                          !!(
+                                            submitCount > 0 &&
+                                            (errors as any).bankAccounts?.[index] &&
+                                            ((errors as any).bankAccounts[index] as any)?.bank
+                                          )
+                                        }
+                                      >
                                         <FormLabel fontSize="sm">Banco</FormLabel>
                                         <Select
                                           value={account.bank}
@@ -586,6 +663,10 @@ const ClientEditForm = ({
                                             const updatedAccounts = [...bankAccounts];
                                             updatedAccounts[index].bank = e.target.value;
                                             setBankAccounts(updatedAccounts);
+                                            // Limpiar error si existe
+                                            if ((errors as any).bankAccounts?.[index]?.bank) {
+                                              setFieldError(`bankAccounts[${index}].bank`, undefined);
+                                            }
                                           }}
                                           bg={inputBg}
                                           borderColor={inputBorder}
@@ -600,15 +681,39 @@ const ClientEditForm = ({
                                             </option>
                                           ))}
                                         </Select>
+                                        {submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.bank && (
+                                            <FormErrorMessage>
+                                              {((errors as any).bankAccounts[index] as any).bank}
+                                            </FormErrorMessage>
+                                          )}
                                       </FormControl>
-                                      <FormControl>
+                                      <FormControl
+                                        isInvalid={
+                                          !!(
+                                            submitCount > 0 &&
+                                            (errors as any).bankAccounts?.[index] &&
+                                            ((errors as any).bankAccounts[index] as any)?.accountNumber
+                                          )
+                                        }
+                                      >
                                         <FormLabel fontSize="sm">Número de cuenta</FormLabel>
                                         <Input
                                           value={account.accountNumber}
                                           onChange={(e) => {
-                                            const updatedAccounts = [...bankAccounts];
-                                            updatedAccounts[index].accountNumber = e.target.value;
-                                            setBankAccounts(updatedAccounts);
+                                            const value = e.target.value;
+                                            // Solo permitir números, guiones y puntos
+                                            const regex = /^[0-9.-]*$/;
+                                            if (regex.test(value)) {
+                                              const updatedAccounts = [...bankAccounts];
+                                              updatedAccounts[index].accountNumber = value;
+                                              setBankAccounts(updatedAccounts);
+                                              // Limpiar error si existe
+                                              if ((errors as any).bankAccounts?.[index]?.accountNumber) {
+                                                setFieldError(`bankAccounts[${index}].accountNumber`, undefined);
+                                              }
+                                            }
                                           }}
                                           bg={inputBg}
                                           borderColor={inputBorder}
@@ -616,6 +721,13 @@ const ClientEditForm = ({
                                           size="sm"
                                           borderRadius="md"
                                         />
+                                        {submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.accountNumber && (
+                                            <FormErrorMessage>
+                                              {((errors as any).bankAccounts[index] as any).accountNumber}
+                                            </FormErrorMessage>
+                                          )}
                                       </FormControl>
                                     </VStack>
                                     <Button

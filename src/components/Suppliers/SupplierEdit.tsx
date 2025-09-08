@@ -209,12 +209,50 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                   errors.email = 'Email inválido';
                 }
 
+                // Validar cuentas bancarias
+                if (values.bankAccounts && values.bankAccounts.length > 0) {
+                  const bankAccountsErrors: any = [];
+                  values.bankAccounts.forEach((account: any, index: number) => {
+                    const accountErrors: any = {};
+
+                    if (!account.accountName || account.accountName.trim() === '') {
+                      accountErrors.accountName = 'Campo obligatorio';
+                    }
+
+                    if (!account.bank || account.bank.trim() === '') {
+                      accountErrors.bank = 'Campo obligatorio';
+                    }
+
+                    if (!account.accountNumber || account.accountNumber.trim() === '') {
+                      accountErrors.accountNumber = 'Campo obligatorio';
+                    }
+
+                    if (Object.keys(accountErrors).length > 0) {
+                      bankAccountsErrors[index] = accountErrors;
+                    }
+                  });
+
+                  if (bankAccountsErrors.length > 0) {
+                    errors.bankAccounts = bankAccountsErrors;
+                  }
+                }
+
                 return errors;
               }}
               validateOnChange
               validateOnBlur={false}
             >
-              {({ handleSubmit, errors, touched, submitCount, dirty, resetForm, values, setFieldValue }) => {
+              {({
+                handleSubmit,
+                errors,
+                touched,
+                submitCount,
+                dirty,
+                resetForm,
+                values,
+                setFieldValue,
+                setFieldError,
+              }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -441,54 +479,140 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                                   position="relative"
                                 >
                                   <VStack spacing="0.5rem">
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.accountName
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
-                                      <Field
-                                        as={Input}
-                                        name={`bankAccounts.${index}.accountName`}
-                                        bg={inputBg}
-                                        border="1px solid"
-                                        borderColor={inputBorder}
-                                        h="2.5rem"
-                                        size="sm"
-                                        borderRadius="md"
-                                        required
-                                      />
-                                    </FormControl>
-                                    <FormControl>
-                                      <FormLabel fontSize="sm">Banco</FormLabel>
-                                      <Field
-                                        as={Select}
-                                        name={`bankAccounts.${index}.bank`}
-                                        bg={inputBg}
-                                        border="1px solid"
-                                        borderColor={inputBorder}
-                                        h="2.5rem"
-                                        size="sm"
-                                        borderRadius="md"
-                                        required
-                                      >
-                                        <option value="">Seleccionar banco</option>
-                                        {BankOptions.map((bank) => (
-                                          <option key={bank} value={bank}>
-                                            {bank}
-                                          </option>
-                                        ))}
+                                      <Field name={`bankAccounts.${index}.accountName`}>
+                                        {({ field, form }: any) => (
+                                          <Input
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              // Solo permitir letras, espacios y algunos caracteres especiales
+                                              const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+                                              if (regex.test(value)) {
+                                                form.setFieldValue(field.name, value);
+                                                // Clear error if exists
+                                                if ((errors.bankAccounts?.[index] as any)?.accountName) {
+                                                  setFieldError(`bankAccounts[${index}].accountName`, undefined);
+                                                }
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            border="1px solid"
+                                            borderColor={inputBorder}
+                                            h="2.5rem"
+                                            size="sm"
+                                            borderRadius="md"
+                                            required
+                                          />
+                                        )}
                                       </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.accountName && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).accountName}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.bank
+                                        )
+                                      }
+                                    >
+                                      <FormLabel fontSize="sm">Banco</FormLabel>
+                                      <Field name={`bankAccounts.${index}.bank`}>
+                                        {({ field }: any) => (
+                                          <Select
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setFieldValue(`bankAccounts[${index}].bank`, value);
+                                              // Clear error if exists
+                                              if ((errors.bankAccounts?.[index] as any)?.bank) {
+                                                setFieldError(`bankAccounts[${index}].bank`, undefined);
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            border="1px solid"
+                                            borderColor={inputBorder}
+                                            h="2.5rem"
+                                            size="sm"
+                                            borderRadius="md"
+                                            required
+                                          >
+                                            <option value="">Seleccionar banco</option>
+                                            {BankOptions.map((bank) => (
+                                              <option key={bank} value={bank}>
+                                                {bank}
+                                              </option>
+                                            ))}
+                                          </Select>
+                                        )}
+                                      </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.bank && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).bank}
+                                          </FormErrorMessage>
+                                        )}
+                                    </FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.accountNumber
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Número de cuenta</FormLabel>
-                                      <Field
-                                        as={Input}
-                                        name={`bankAccounts.${index}.accountNumber`}
-                                        bg={inputBg}
-                                        border="1px solid"
-                                        borderColor={inputBorder}
-                                        h="2.5rem"
-                                        size="sm"
-                                        borderRadius="md"
-                                        required
-                                      />
+                                      <Field name={`bankAccounts.${index}.accountNumber`}>
+                                        {({ field, form }: any) => (
+                                          <Input
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              // Solo permitir números, guiones y puntos
+                                              const regex = /^[0-9.-]*$/;
+                                              if (regex.test(value)) {
+                                                form.setFieldValue(field.name, value);
+                                                // Clear error if exists
+                                                if ((errors.bankAccounts?.[index] as any)?.accountNumber) {
+                                                  setFieldError(`bankAccounts[${index}].accountNumber`, undefined);
+                                                }
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            border="1px solid"
+                                            borderColor={inputBorder}
+                                            h="2.5rem"
+                                            size="sm"
+                                            borderRadius="md"
+                                            required
+                                          />
+                                        )}
+                                      </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.accountNumber && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).accountNumber}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
                                   </VStack>
                                   <Button
