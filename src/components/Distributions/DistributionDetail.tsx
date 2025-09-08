@@ -21,7 +21,7 @@ import {
   Divider,
   Badge,
 } from '@chakra-ui/react';
-import { FiInfo, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage } from 'react-icons/fi';
+import { FiInfo, FiUser, FiTruck, FiMapPin, FiFileText, FiHash, FiPackage, FiDollarSign } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Distribution } from '@/entities/distribution';
 import { DistributionEdit } from './DistributionEdit';
@@ -116,6 +116,20 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
 
               {detailField('Zonas', distribution.zones?.map((zone) => zone.name).join(', '), FiMapPin)}
 
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Total', distribution.total ? `$${distribution.total.toFixed(2)}` : '—', FiDollarSign)}
+                {detailField(
+                  'Total recibido',
+                  distribution.payments ? `$${distribution.payments.toFixed(2)}` : '—',
+                  FiDollarSign,
+                )}
+              </SimpleGrid>
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                {detailField('Cajones utilizados', distribution.crates?.toString() || '—', FiPackage)}
+                {detailField('Cajones devueltos', distribution.returnedCrates?.toString() || '—', FiPackage)}
+              </SimpleGrid>
+
               {/* Mostrar entregas detalladas */}
               {distribution.deliveries && distribution.deliveries.length > 0 ? (
                 <Box>
@@ -191,7 +205,7 @@ export const DistributionDetail = ({ distribution, setDistributions }: Distribut
                 detailField('Entregas', 'Sin entregas asignadas', FiPackage)
               )}
 
-              {detailField('Observaciones', distribution.observations || 'Sin observaciones', FiFileText)}
+              {detailField('Observaciones', distribution.observations || '—', FiFileText)}
             </VStack>
           </ModalBody>
 

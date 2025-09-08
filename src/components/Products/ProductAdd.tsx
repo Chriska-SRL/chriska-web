@@ -485,7 +485,7 @@ const ProductAddModal = ({ isOpen, onClose, setProducts }: ProductAddModalProps)
                                   <FormLabel fontWeight="semibold">
                                     <HStack spacing="0.5rem">
                                       <Icon as={FiBox} boxSize="1rem" color={iconColor} />
-                                      <Text>Peso estimado</Text>
+                                      <Text>Peso est.</Text>
                                       {values.unitType === UnitType.KILO && <Text color="red.500">*</Text>}
                                     </HStack>
                                   </FormLabel>

@@ -514,7 +514,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             border="1px solid"
                             borderColor={inputBorder}
                             placeholder="Seleccione una opción"
-                            disabled={isLoading}
+                            disabled={true}
                             validate={validate}
                           >
                             <option value="Kilo">Kilos</option>
@@ -531,7 +531,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiBox} boxSize="1rem" color={iconColor} />
-                                  <Text>Peso estimado</Text>
+                                  <Text>Peso est.</Text>
                                   {values.unitType === UnitType.KILO && <Text color="red.500">*</Text>}
                                 </HStack>
                               </FormLabel>

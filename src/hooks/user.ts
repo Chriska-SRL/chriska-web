@@ -49,5 +49,5 @@ export const useDeleteUser = (id?: number) => useFetch<number, User>(deleteUser,
 export const useTemporaryPassword = (userId?: number) =>
   useFetch<number, PasswordResetResponse>(temporaryPassword, userId);
 
-export const usePasswordReset = (props?: PasswordReset) =>
-  useFetch<PasswordReset, PasswordResetResponse>(passwordReset, props, { parseFieldError: true });
+export const usePasswordReset = () =>
+  useMutation<PasswordReset, PasswordResetResponse>(passwordReset, { parseFieldError: true });

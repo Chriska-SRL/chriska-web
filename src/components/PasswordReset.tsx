@@ -15,11 +15,10 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { Formik, Field } from 'formik';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePasswordReset } from '@/hooks/user';
-import { PasswordReset as ResetPassword } from '@/entities/password-reset/password-reset';
 
 export const PasswordReset = () => {
   const router = useRouter();
@@ -30,8 +29,7 @@ export const PasswordReset = () => {
   const clearTempPassword = useUserStore((state) => state.clearTempPassword);
   const logout = useUserStore((state) => state.logout);
 
-  const [resetProps, setResetProps] = useState<ResetPassword>();
-  const { data, isLoading, error, fieldError } = usePasswordReset(resetProps);
+  const { data, isLoading, error, fieldError, mutate } = usePasswordReset();
 
   const bg = useColorModeValue('gray.100', 'gray.900');
   const boxBg = useColorModeValue('white', 'gray.800');
@@ -92,7 +90,7 @@ export const PasswordReset = () => {
     }
   }, [user, tempPassword, logout, router, toast]);
 
-  const handleSubmit = (values: { newPassword: string; confirmPassword: string }) => {
+  const handleSubmit = async (values: { newPassword: string; confirmPassword: string }) => {
     if (!user?.userId || !tempPassword) {
       toast({
         title: 'Sesión expirada',
@@ -107,7 +105,7 @@ export const PasswordReset = () => {
       return;
     }
 
-    setResetProps({
+    await mutate({
       username: user.username,
       oldPassword: tempPassword,
       newPassword: values.newPassword,
@@ -121,7 +119,7 @@ export const PasswordReset = () => {
           Cambiar contraseña
         </Text>
         <Text fontSize="0.875rem" color={titleColor} textAlign="center" pb="1rem" opacity={0.7}>
-          Como es tu primer inicio de sesión, debes cambiar tu contraseña
+          Debes cambiar tu contraseña
         </Text>
         <Box bg={boxBg} boxShadow="lg" borderRadius="0.5rem" p="2rem">
           <Formik

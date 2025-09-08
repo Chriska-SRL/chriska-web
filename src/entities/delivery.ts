@@ -13,5 +13,6 @@ export type Delivery = {
   user: User;
   productItems: ProductItem[];
   crates: number;
+  payment: number;
   order: Order;
 };

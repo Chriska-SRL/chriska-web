@@ -111,15 +111,15 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateSubtotal = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        // Para todos los estados: calcular precio original sin descuento
-        const originalPrice = item.unitPrice / (1 - item.discount / 100);
+        // item.unitPrice es el precio base sin descuento
+        const basePrice = item.unitPrice;
 
         // Calculate based on unitType
         if (item.product?.unitType === UnitType.KILO) {
           const weight = item.weight || item.product?.estimatedWeight || 0;
-          return total + (weight / 1000) * originalPrice;
+          return total + (weight / 1000) * basePrice;
         } else {
-          return total + item.quantity * originalPrice;
+          return total + item.quantity * basePrice;
         }
       }, 0) || 0
     );
@@ -128,9 +128,8 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateDiscount = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        // Para todos los estados: usar descuentos almacenados
-        const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        const discountAmount = originalPrice - item.unitPrice;
+        // item.unitPrice es el precio base, calcular el monto del descuento
+        const discountAmount = item.unitPrice * (item.discount / 100);
 
         // Calculate based on unitType
         if (item.product?.unitType === UnitType.KILO) {
@@ -254,7 +253,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         onClick={onClick && !isLoading ? onClick : undefined}
         position="relative"
       >
-        {value ?? '—'}
+        {value && value !== '' ? value : '—'}
         {onClick &&
           (isLoading ? (
             <Spinner position="absolute" right="1rem" top="50%" transform="translateY(-50%)" size="sm" />
@@ -346,27 +345,46 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 {detailField('Total', `$${(calculateSubtotal() - calculateDiscount()).toFixed(2)}`, FiDollarSign)}
               </Stack>
 
-              {/* Fila 4: Cajones utilizados - Cajones devueltos */}
-              <Stack
-                direction={{ base: 'column', md: 'row' }}
-                spacing="1rem"
-                align={{ base: 'stretch', md: 'flex-start' }}
-              >
-                {detailField(
-                  'Cajones utilizados',
-                  delivery.order?.crates && delivery.order.crates > 0
-                    ? delivery.order.crates.toString()
-                    : 'No definido',
-                  FiPackage,
-                )}
-                {detailField(
-                  'Cajones devueltos',
-                  delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()
-                    ? '-'
-                    : delivery.crates?.toString() || '0',
-                  FiPackage,
-                )}
-              </Stack>
+              {/* Cajones - Layout condicional según estado */}
+              {delivery.status?.toLowerCase() === Status.CONFIRMED.toLowerCase() ? (
+                <>
+                  {/* Para confirmadas: Cajones utilizados y devueltos en la misma fila */}
+                  <Stack
+                    direction={{ base: 'column', md: 'row' }}
+                    spacing="1rem"
+                    align={{ base: 'stretch', md: 'flex-start' }}
+                  >
+                    {detailField(
+                      'Cajones utilizados',
+                      delivery.order?.crates && delivery.order.crates > 0
+                        ? delivery.order.crates.toString()
+                        : 'No definido',
+                      FiPackage,
+                    )}
+                    {detailField('Cajones devueltos', delivery.crates?.toString() || '0', FiPackage)}
+                  </Stack>
+
+                  {/* Monto pagado - fila completa */}
+                  <Stack direction="row" spacing="1rem" align="flex-start">
+                    {detailField(
+                      'Monto pagado por el cliente',
+                      `$${delivery.payment?.toFixed(2) || '0.00'}`,
+                      FiDollarSign,
+                    )}
+                  </Stack>
+                </>
+              ) : (
+                /* Para pending/cancelled: Solo cajones utilizados en fila completa */
+                <Stack direction="row" spacing="1rem" align="flex-start">
+                  {detailField(
+                    'Cajones utilizados',
+                    delivery.order?.crates && delivery.order.crates > 0
+                      ? delivery.order.crates.toString()
+                      : 'No definido',
+                    FiPackage,
+                  )}
+                </Stack>
+              )}
 
               {/* Fila 5: Observaciones */}
               <Stack
@@ -374,7 +392,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
+                {detailField('Observaciones', delivery.observations, FiFileText)}
               </Stack>
 
               <Divider />
@@ -393,12 +411,13 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                         const actualQuantity = item.quantity;
                         const weight = item.product?.unitType === UnitType.KILO ? item.weight || 0 : null;
 
-                        // Para todos los estados: el unitPrice ya tiene el descuento aplicado
+                        // item.unitPrice es el precio base, aplicar descuento si existe
+                        const finalPrice = item.unitPrice * (1 - item.discount / 100);
                         // Calculate total based on unitType
                         const total =
                           item.product?.unitType === UnitType.KILO
-                            ? ((weight || 0) / 1000) * item.unitPrice
-                            : actualQuantity * item.unitPrice;
+                            ? ((weight || 0) / 1000) * finalPrice
+                            : actualQuantity * finalPrice;
 
                         return (
                           <Box
@@ -435,10 +454,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                          ${item.unitPrice.toFixed(2)}
                                         </Text>
                                         <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
+                                          ${(item.unitPrice * (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
                                         <Box
                                           bg="green.500"
@@ -518,10 +537,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                          ${item.unitPrice.toFixed(2)}
                                         </Text>
                                         <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
+                                          ${(item.unitPrice * (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
                                         <Box
                                           bg="green.500"

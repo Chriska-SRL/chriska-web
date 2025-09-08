@@ -31,7 +31,7 @@ import {
   List,
   ListItem,
 } from '@chakra-ui/react';
-import { FaCheck, FaTimes, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 import { FiFileText, FiUser, FiTruck, FiPackage } from 'react-icons/fi';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -233,24 +233,6 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
 
   const handleFieldChange = () => {
     if (!hasChanges) setHasChanges(true);
-  };
-
-  const moveDeliveryUp = (index: number) => {
-    if (index > 0) {
-      const newDeliveries = [...selectedDeliveries];
-      [newDeliveries[index - 1], newDeliveries[index]] = [newDeliveries[index], newDeliveries[index - 1]];
-      setSelectedDeliveries(newDeliveries);
-      handleFieldChange();
-    }
-  };
-
-  const moveDeliveryDown = (index: number) => {
-    if (index < selectedDeliveries.length - 1) {
-      const newDeliveries = [...selectedDeliveries];
-      [newDeliveries[index], newDeliveries[index + 1]] = [newDeliveries[index + 1], newDeliveries[index]];
-      setSelectedDeliveries(newDeliveries);
-      handleFieldChange();
-    }
   };
 
   // Handlers para búsqueda de cliente
@@ -608,42 +590,18 @@ export const DistributionEdit = ({ isOpen, onClose, distribution, setDistributio
                                             {delivery.clientName}
                                           </Text>
                                         </Box>
-                                        <HStack spacing="0.5rem">
-                                          {selectedDeliveries.length > 1 && (
-                                            <>
-                                              <IconButton
-                                                aria-label="Mover arriba"
-                                                icon={<FaChevronUp />}
-                                                size="sm"
-                                                variant="ghost"
-                                                colorScheme="blue"
-                                                onClick={() => moveDeliveryUp(index)}
-                                                isDisabled={isUpdating || index === 0}
-                                              />
-                                              <IconButton
-                                                aria-label="Mover abajo"
-                                                icon={<FaChevronDown />}
-                                                size="sm"
-                                                variant="ghost"
-                                                colorScheme="blue"
-                                                onClick={() => moveDeliveryDown(index)}
-                                                isDisabled={isUpdating || index === selectedDeliveries.length - 1}
-                                              />
-                                            </>
-                                          )}
-                                          <IconButton
-                                            aria-label="Remover entrega"
-                                            icon={<FaTimes />}
-                                            size="sm"
-                                            variant="ghost"
-                                            color="red.500"
-                                            onClick={() => {
-                                              setSelectedDeliveries((prev) => prev.filter((d) => d.id !== delivery.id));
-                                              handleFieldChange();
-                                            }}
-                                            isDisabled={isUpdating}
-                                          />
-                                        </HStack>
+                                        <IconButton
+                                          aria-label="Remover entrega"
+                                          icon={<FaTimes />}
+                                          size="sm"
+                                          variant="ghost"
+                                          color="red.500"
+                                          onClick={() => {
+                                            setSelectedDeliveries((prev) => prev.filter((d) => d.id !== delivery.id));
+                                            handleFieldChange();
+                                          }}
+                                          isDisabled={isUpdating}
+                                        />
                                       </Flex>
                                     </Box>
                                   ))}

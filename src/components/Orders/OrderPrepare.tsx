@@ -202,7 +202,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   // Inicializar productos seleccionados con los productos de la orden
   useEffect(() => {
-    if (order.productItems && selectedProducts.length === 0 && orderRequestData) {
+    if (order.productItems && selectedProducts.length === 0 && orderRequestData && isInitializingProducts) {
       // Usar los descuentos que ya vienen en los items de la orden
       const initialProducts = order.productItems.map((item) => {
         // Buscar la cantidad solicitada en el orderRequest original
@@ -376,7 +376,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   };
 
   const validateForm = (values: typeof initialValues) => {
-    const errors: { crates?: string; products?: string } = {};
+    const errors: { crates?: string; products?: string; weights?: string } = {};
 
     if (!values.crates || values.crates <= 0) {
       errors.crates = 'Los cajones deben ser mayor a 0';
@@ -384,6 +384,15 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
     if (selectedProducts.length === 0) {
       errors.products = 'Debe tener al menos un producto en la lista';
+    }
+
+    // Validate weights for KILO type products
+    const kiloProductsWithoutWeight = selectedProducts.filter(
+      (product) => product.unitType === UnitType.KILO && (!product.weight || product.weight <= 0),
+    );
+
+    if (kiloProductsWithoutWeight.length > 0) {
+      errors.weights = 'Los productos vendidos por kilo deben tener un peso mayor a 0';
     }
 
     // Removed stock validation - now shows warning only, doesn't prevent submission
@@ -636,14 +645,14 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                       <Divider />
 
                       {/* Lista de productos */}
-                      <FormControl isInvalid={!!(formik.errors as any).products}>
+                      <FormControl isInvalid={!!(formik.errors as any).products && formik.submitCount > 0}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Productos a preparar ({selectedProducts.length})</Text>
                           </HStack>
                         </FormLabel>
-                        {(formik.errors as any).products && (
+                        {(formik.errors as any).products && formik.submitCount > 0 && (
                           <FormErrorMessage mb="0.5rem">{(formik.errors as any).products}</FormErrorMessage>
                         )}
                         {/* Show stock warning but don't prevent submission */}
@@ -651,14 +660,14 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                           <Box
                             mb="0.5rem"
                             p="0.5rem"
-                            bg="yellow.50"
-                            borderColor="yellow.200"
+                            bg={useColorModeValue('yellow.50', 'yellow.900')}
+                            borderColor={useColorModeValue('yellow.200', 'yellow.700')}
                             borderWidth="1px"
                             borderRadius="md"
                           >
                             <HStack spacing="0.5rem">
-                              <Icon as={FaExclamationTriangle} color="yellow.500" />
-                              <Text fontSize="sm" color="yellow.700">
+                              <Icon as={FaExclamationTriangle} color={useColorModeValue('yellow.500', 'yellow.300')} />
+                              <Text fontSize="sm" color={useColorModeValue('yellow.700', 'yellow.200')}>
                                 Advertencia: Algunos productos exceden el stock disponible
                               </Text>
                             </HStack>
@@ -710,14 +719,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                               {product.name}
                                             </Text>
-                                            {!product.isOriginalFromOrder && (
-                                              <Badge size="sm" colorScheme="blue" variant="subtle">
-                                                <HStack spacing="0.25rem" align="center">
-                                                  <Icon as={FaPlus} boxSize="0.625rem" />
-                                                  <Text fontSize="xs">Nuevo</Text>
-                                                </HStack>
-                                              </Badge>
-                                            )}
                                           </HStack>
                                           <HStack spacing="0.5rem" align="center">
                                             <Text fontSize="xs" color={textColor} fontWeight="medium">
@@ -853,6 +854,20 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               ? (weightInputs[product.id] ?? product.weight ?? '')
                                               : 'N/A'
                                           }
+                                          borderColor={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? 'red.300'
+                                              : undefined
+                                          }
+                                          _focus={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? { borderColor: 'red.400', boxShadow: '0 0 0 1px red.400' }
+                                              : undefined
+                                          }
                                           onChange={(e) => {
                                             if (product.unitType === UnitType.KILO) {
                                               const value = e.target.value;
@@ -884,6 +899,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           }}
                                           isDisabled={product.unitType !== UnitType.KILO}
                                           w="4rem"
+                                          px="0"
                                           textAlign="center"
                                           borderRadius="md"
                                           bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}
@@ -1073,6 +1089,20 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               ? (weightInputs[product.id] ?? product.weight ?? '')
                                               : 'N/A'
                                           }
+                                          borderColor={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? 'red.300'
+                                              : undefined
+                                          }
+                                          _focus={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? { borderColor: 'red.400', boxShadow: '0 0 0 1px red.400' }
+                                              : undefined
+                                          }
                                           onChange={(e) => {
                                             if (product.unitType === UnitType.KILO) {
                                               const value = e.target.value;
@@ -1104,6 +1134,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           }}
                                           isDisabled={product.unitType !== UnitType.KILO}
                                           w="5rem"
+                                          px="0"
                                           textAlign="center"
                                           borderRadius="md"
                                           bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}

@@ -10,4 +10,8 @@ export type Distribution = {
   vehicle: Vehicle;
   zones: Zone[];
   deliveries: Delivery[];
+  total: number;
+  payments: number;
+  crates: number;
+  returnedCrates: number;
 };
