@@ -147,7 +147,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
                 {detailField('Teléfono', supplier.phone, FiPhone)}
               </SimpleGrid>
 
-              {detailField('Email', supplier.email, FiMail)}
+              {detailField('Correo electrónico', supplier.email, FiMail)}
 
               {/* Ubicación con preview del mapa */}
               <Box w="100%">

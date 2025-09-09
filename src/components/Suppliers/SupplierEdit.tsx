@@ -206,7 +206,7 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                   values.email.trim() !== '' &&
                   !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
                 ) {
-                  errors.email = 'Email inválido';
+                  errors.email = 'Correo electrónico inválido';
                 }
 
                 // Validar cuentas bancarias
@@ -383,12 +383,12 @@ export const SupplierEdit = ({ isOpen, onClose, supplier, setSuppliers }: Suppli
                         </FormControl>
                       </Stack>
 
-                      {/* Fila 5: Email (completo) */}
+                      {/* Fila 5: Correo electrónico (completo) */}
                       <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiMail} boxSize="1rem" />
-                            <Text>Email</Text>
+                            <Text>Correo electrónico</Text>
                             <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>

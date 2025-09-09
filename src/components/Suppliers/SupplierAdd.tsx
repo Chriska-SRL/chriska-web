@@ -168,7 +168,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
     // Validar email solo si se proporciona un valor
     if (values.email && values.email.trim() !== '' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
-      errors.email = 'Email inválido';
+      errors.email = 'Correo electrónico inválido';
     }
 
     // Validar cuentas bancarias
@@ -413,7 +413,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
-                                <Text>Email</Text>
+                                <Text>Correo electrónico</Text>
                               </HStack>
                             </FormLabel>
                             <Input
