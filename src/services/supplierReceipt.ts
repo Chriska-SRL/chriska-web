@@ -28,11 +28,11 @@ export const getSupplierReceipts = (
   }
 
   if (filters?.fromDate) {
-    params.append('filters[FromDate]', filters.fromDate);
+    params.append('filters[DateFrom]', filters.fromDate);
   }
 
   if (filters?.toDate) {
-    params.append('filters[ToDate]', filters.toDate);
+    params.append('filters[DateTo]', filters.toDate);
   }
 
   return get<SupplierReceipt[]>(`${API_URL}/SupplierReceipts?${params.toString()}`);

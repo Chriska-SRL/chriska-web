@@ -1,12 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { addSupplier, deleteSupplier, getSuppliers, getSupplierById, updateSupplier } from '@/services/supplier';
 import { useFetch, useMutation } from '@/utils/useFetch';
 
-export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterName?: string) => {
+type SupplierFilters = {
+  name?: string;
+  rut?: string;
+  razonSocial?: string;
+  contactName?: string;
+};
+
+// Overloaded function for backward compatibility
+export function useGetSuppliers(
+  page: number,
+  pageSize: number,
+  filterName: string,
+): { data: Supplier[]; isLoading: boolean; error?: string };
+export function useGetSuppliers(
+  page: number,
+  pageSize: number,
+  filters: SupplierFilters,
+): { data: Supplier[]; isLoading: boolean; error?: string };
+export function useGetSuppliers(
+  page?: number,
+  pageSize?: number,
+  filtersOrName?: SupplierFilters | string,
+): { data: Supplier[]; isLoading: boolean; error?: string };
+
+export function useGetSuppliers(page: number = 1, pageSize: number = 10, filtersOrName?: SupplierFilters | string) {
   const [data, setData] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+
+  // Convert old filterName format to new filters format for backward compatibility
+  const filters = useMemo(() => {
+    if (!filtersOrName) return undefined;
+    if (typeof filtersOrName === 'string') {
+      return { name: filtersOrName };
+    }
+    return filtersOrName;
+  }, [filtersOrName]);
+
+  const memoizedFilters = useMemo(
+    () => filters,
+    [filters?.name, filters?.rut, filters?.razonSocial, filters?.contactName],
+  );
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -14,7 +52,7 @@ export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterN
       setError(undefined);
 
       try {
-        const result = await getSuppliers(page, pageSize, filterName);
+        const result = await getSuppliers(page, pageSize, memoizedFilters);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Error desconocido');
@@ -24,10 +62,17 @@ export const useGetSuppliers = (page: number = 1, pageSize: number = 10, filterN
     };
 
     fetchSuppliers();
-  }, [page, pageSize, filterName]);
+  }, [
+    page,
+    pageSize,
+    memoizedFilters?.name,
+    memoizedFilters?.rut,
+    memoizedFilters?.razonSocial,
+    memoizedFilters?.contactName,
+  ]);
 
   return { data, isLoading, error };
-};
+}
 
 export const useAddSupplier = () => useMutation<Partial<Supplier>, Supplier>(addSupplier, { parseFieldError: true });
 

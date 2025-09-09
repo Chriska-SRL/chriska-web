@@ -12,10 +12,10 @@ export const getSupplierAccountStatements = async (
   params.append('supplierId', supplierId.toString());
 
   if (filters?.fromDate) {
-    params.append('fromDate', filters.fromDate);
+    params.append('dateFrom', filters.fromDate);
   }
   if (filters?.toDate) {
-    params.append('toDate', filters.toDate);
+    params.append('dateTo', filters.toDate);
   }
 
   const url = `${API_URL}/SupplierAccountStatements/${supplierId}?${params.toString()}`;

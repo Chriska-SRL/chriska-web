@@ -3,13 +3,33 @@ import { get, put, post, del } from '@/utils/fetcher';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const getSuppliers = (page: number = 1, pageSize: number = 10, filterName?: string): Promise<Supplier[]> => {
+type SupplierFilters = {
+  name?: string;
+  rut?: string;
+  razonSocial?: string;
+  contactName?: string;
+};
+
+export const getSuppliers = (
+  page: number = 1,
+  pageSize: number = 10,
+  filters?: SupplierFilters,
+): Promise<Supplier[]> => {
   const params = new URLSearchParams();
   params.append('Page', page.toString());
   params.append('PageSize', pageSize.toString());
 
-  if (filterName) {
-    params.append('filters[Name]', filterName);
+  if (filters?.name) {
+    params.append('filters[Name]', filters.name);
+  }
+  if (filters?.rut) {
+    params.append('filters[Rut]', filters.rut);
+  }
+  if (filters?.razonSocial) {
+    params.append('filters[RazonSocial]', filters.razonSocial);
+  }
+  if (filters?.contactName) {
+    params.append('filters[ContactName]', filters.contactName);
   }
 
   return get<Supplier[]>(`${API_URL}/Suppliers?${params.toString()}`);

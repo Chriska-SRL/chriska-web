@@ -49,6 +49,7 @@ export const PurchaseFilters = ({ onFilterChange, disabled = false }: PurchaseFi
 
   // Filtros avanzados
   const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+  const [invoiceNumberInput, setInvoiceNumberInput] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
@@ -131,8 +132,18 @@ export const PurchaseFilters = ({ onFilterChange, disabled = false }: PurchaseFi
   };
 
   // Handlers para filtros avanzados
-  const handleInvoiceNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInvoiceNumber(e.target.value);
+  const handleInvoiceNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInvoiceNumberInput(e.target.value);
+  };
+
+  const handleInvoiceNumberSearch = () => {
+    setInvoiceNumber(invoiceNumberInput);
+  };
+
+  const handleInvoiceNumberKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleInvoiceNumberSearch();
+    }
   };
 
   const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +159,7 @@ export const PurchaseFilters = ({ onFilterChange, disabled = false }: PurchaseFi
     setSupplierSearch('');
     setShowSupplierDropdown(false);
     setInvoiceNumber('');
+    setInvoiceNumberInput('');
     setFromDate('');
     setToDate('');
   };
@@ -397,21 +409,35 @@ export const PurchaseFilters = ({ onFilterChange, disabled = false }: PurchaseFi
             <PopoverArrow bg={useColorModeValue('white', 'gray.800')} />
             <PopoverBody p="0.75rem">
               <Flex gap="0.75rem" flexDir="column">
-                <Input
-                  placeholder="Filtrar por número de factura"
-                  value={invoiceNumber}
-                  onChange={handleInvoiceNumberChange}
-                  bg={bgInput}
-                  borderColor={borderInput}
-                  color={textColor}
-                  transition="all 0.2s ease"
-                  borderRadius="md"
-                  _focus={{
-                    borderColor: useColorModeValue('blue.400', 'blue.300'),
-                    boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
-                  }}
-                  disabled={disabled}
-                />
+                <InputGroup>
+                  <Input
+                    placeholder="Filtrar por número de factura"
+                    value={invoiceNumberInput}
+                    onChange={handleInvoiceNumberInputChange}
+                    onKeyPress={handleInvoiceNumberKeyPress}
+                    bg={bgInput}
+                    borderColor={borderInput}
+                    color={textColor}
+                    transition="all 0.2s ease"
+                    borderRadius="md"
+                    _focus={{
+                      borderColor: useColorModeValue('blue.400', 'blue.300'),
+                      boxShadow: `0 0 0 1px ${useColorModeValue('rgb(66, 153, 225)', 'rgb(144, 205, 244)')}`,
+                    }}
+                    disabled={disabled}
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      aria-label="Buscar"
+                      icon={<AiOutlineSearch size="1.25rem" />}
+                      size="sm"
+                      variant="ghost"
+                      color={textColor}
+                      onClick={handleInvoiceNumberSearch}
+                      disabled={disabled || !invoiceNumberInput}
+                    />
+                  </InputRightElement>
+                </InputGroup>
 
                 <Input
                   type="date"

@@ -33,11 +33,11 @@ export const getPurchases = (
   }
 
   if (filters?.fromDate) {
-    params.append('filters[FromDate]', filters.fromDate);
+    params.append('filters[DateFrom]', filters.fromDate);
   }
 
   if (filters?.toDate) {
-    params.append('filters[ToDate]', filters.toDate);
+    params.append('filters[DateTo]', filters.toDate);
   }
 
   return get<Purchase[]>(`${API_URL}/Purchases?${params.toString()}`);
