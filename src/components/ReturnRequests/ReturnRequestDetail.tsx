@@ -32,7 +32,7 @@ import {
 import { ReturnRequest } from '@/entities/returnRequest';
 import { useGetDeliveryById } from '@/hooks/delivery';
 import {
-  FiEye,
+  FiInfo,
   FiEdit,
   FiCheckCircle,
   FiUsers,
@@ -65,8 +65,10 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
   const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
   const { isOpen: isCancelDialogOpen, onOpen: openCancelDialog, onClose: closeCancelDialog } = useDisclosure();
+  const { isOpen: isConfirmEditModal, onOpen: openConfirmEditModal, onClose: closeConfirmEditModal } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
+  const [updatedReturnRequestData, setUpdatedReturnRequestData] = useState<ReturnRequest | null>(null);
   const {
     data: statusData,
     isLoading: statusLoading,
@@ -143,6 +145,26 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
     // Don't reset actionType immediately - let useEffect handle it
   }, [returnRequest.id, actionType, closeConfirmDialog, closeCancelDialog]);
 
+  // Handler para cuando se actualiza una devolución (igual al patrón de OrderDetail)
+  const handleReturnRequestUpdated = useCallback(
+    (updatedReturnRequest: ReturnRequest) => {
+      setUpdatedReturnRequestData(updatedReturnRequest);
+      openConfirmEditModal();
+    },
+    [openConfirmEditModal],
+  );
+
+  const handleConfirmUpdatedReturnRequest = useCallback(() => {
+    if (updatedReturnRequestData) {
+      setStatusProps({ id: updatedReturnRequestData.id, status: Status.CONFIRMED });
+    }
+    // No cerrar el modal inmediatamente - se cerrará cuando la confirmación sea exitosa
+  }, [updatedReturnRequestData]);
+
+  const handleContinueEditing = useCallback(() => {
+    closeConfirmEditModal();
+  }, [closeConfirmEditModal]);
+
   const openConfirmStatusDialog = (type: 'confirm' | 'cancel') => {
     setActionType(type);
     if (type === 'confirm') {
@@ -180,8 +202,14 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
       onClose();
       setStatusProps(undefined);
       setActionType(null);
+
+      // Si estamos confirmando después de editar, también cerrar ese modal
+      if (isConfirmEditModal) {
+        closeConfirmEditModal();
+        setUpdatedReturnRequestData(null);
+      }
     }
-  }, [statusData, statusProps, returnRequests, setReturnRequests, toast]);
+  }, [statusData, statusProps, returnRequests, setReturnRequests, toast, isConfirmEditModal, closeConfirmEditModal]);
 
   // Handle status change error
   useEffect(() => {
@@ -208,14 +236,14 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -382,19 +410,13 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
           <ModalFooter borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             {returnRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
                 justify={{ base: 'stretch', md: 'flex-end' }}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  w={{ base: '100%', md: 'auto' }}
-                  order={{ base: 3, md: 1 }}
-                >
+                <Button variant="ghost" size="sm" onClick={onClose} w={{ base: '100%', md: 'auto' }}>
                   Cerrar
                 </Button>
 
@@ -408,7 +430,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     isLoading={statusLoading && actionType === 'cancel'}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 2, md: 2 }}
                   >
                     Cancelar
                   </Button>
@@ -424,7 +445,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     isLoading={statusLoading && actionType === 'confirm'}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 1, md: 3 }}
                   >
                     Confirmar
                   </Button>
@@ -442,7 +462,6 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
                     }}
                     disabled={statusLoading}
                     w={{ base: '100%', md: 'auto' }}
-                    order={{ base: 4, md: 4 }}
                   >
                     Editar
                   </Button>
@@ -450,7 +469,7 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
               </Stack>
             ) : (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
@@ -546,8 +565,44 @@ export const ReturnRequestDetail = ({ returnRequest, setReturnRequests, returnRe
           isOpen={isEditOpen}
           onClose={closeEdit}
           setReturnRequests={setReturnRequests}
+          onReturnRequestUpdated={handleReturnRequestUpdated}
         />
       )}
+
+      {/* Modal de confirmación post-actualización */}
+      <Modal isOpen={isConfirmEditModal} onClose={handleContinueEditing} size="md" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
+            <Text>Devolución actualizada exitosamente</Text>
+          </ModalHeader>
+
+          <ModalBody py="1.5rem">
+            <Text fontSize="0.95rem" color="gray.600" _dark={{ color: 'gray.400' }}>
+              ¿Deseas confirmar la devolución directamente?
+            </Text>
+          </ModalBody>
+
+          <ModalFooter borderTop="1px solid" borderColor={inputBorder} pt="0.75rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleContinueEditing} size="sm">
+                Más tarde
+              </Button>
+              <Button
+                leftIcon={<FiCheckCircle />}
+                colorScheme="green"
+                variant="outline"
+                onClick={handleConfirmUpdatedReturnRequest}
+                size="sm"
+                isLoading={statusLoading}
+                loadingText="Confirmando..."
+              >
+                Confirmar devolución
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 };

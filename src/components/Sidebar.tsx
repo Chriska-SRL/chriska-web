@@ -22,7 +22,7 @@ import { BsPeopleFill } from 'react-icons/bs';
 import { FaCubes, FaTags, FaWarehouse, FaPercent } from 'react-icons/fa';
 import { BiCategoryAlt } from 'react-icons/bi';
 import { MdPlace } from 'react-icons/md';
-import { FiBriefcase, FiPackage, FiCheckCircle, FiTruck, FiRotateCcw } from 'react-icons/fi';
+import { FiBriefcase, FiPackage, FiCheckCircle, FiTruck, FiRotateCcw, FiSend, FiFileText } from 'react-icons/fi';
 import { LuArrowDownUp } from 'react-icons/lu';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
@@ -99,8 +99,8 @@ const sidebarItems = [
   { path: 'productos', text: 'Productos', icon: FaCubes, Permission: Permission.VIEW_PRODUCTS },
   { path: 'descuentos', text: 'Descuentos', icon: FaPercent, Permission: Permission.VIEW_DISCOUNTS },
   { path: 'marcas', text: 'Marcas', icon: FaTags, Permission: Permission.VIEW_BRANDS },
-  { path: 'categorias', text: 'Categorias', icon: BiCategoryAlt, Permission: Permission.VIEW_CATEGORIES },
-  { path: 'vehiculos', text: 'Vehiculos', icon: FaCar, Permission: Permission.VIEW_VEHICLES },
+  { path: 'categorias', text: 'Categorías', icon: BiCategoryAlt, Permission: Permission.VIEW_CATEGORIES },
+  { path: 'vehiculos', text: 'Vehículos', icon: FaCar, Permission: Permission.VIEW_VEHICLES },
   { path: 'clientes', text: 'Clientes', icon: BsPeopleFill, Permission: Permission.VIEW_CLIENTS },
   { path: 'zonas', text: 'Zonas', icon: MdPlace, Permission: Permission.VIEW_ZONES },
   { path: 'proveedores', text: 'Proveedores', icon: FiBriefcase, Permission: Permission.VIEW_SUPPLIERS },
@@ -108,6 +108,10 @@ const sidebarItems = [
   { path: 'ordenes', text: 'Órdenes', icon: FiCheckCircle, Permission: Permission.VIEW_ORDERS },
   { path: 'entregas', text: 'Entregas', icon: FiTruck, Permission: Permission.VIEW_DELIVERIES },
   { path: 'devoluciones', text: 'Devoluciones', icon: FiRotateCcw, Permission: Permission.VIEW_ORDER_REQUESTS },
+  { path: 'pagos-de-clientes', text: 'Pagos de clientes', icon: FiFileText, Permission: Permission.VIEW_RECEIPTS },
+  { path: 'pagos-a-proveedores', text: 'Pagos a proveedores', icon: FiFileText, Permission: Permission.VIEW_RECEIPTS },
+  { path: 'facturas', text: 'Facturas', icon: FiFileText, Permission: Permission.VIEW_PURCHASES },
+  { path: 'repartos', text: 'Repartos', icon: FiSend, Permission: Permission.VIEW_DISTRIBUTIONS },
   {
     path: 'movimientos-de-stock',
     text: 'Mov. de stock',
@@ -115,8 +119,8 @@ const sidebarItems = [
     Permission: Permission.VIEW_STOCK_MOVEMENTS,
   },
   {
-    path: 'depositos-y-estanterias',
-    text: 'Depós. y estanterias',
+    path: 'depositos',
+    text: 'Depósitos',
     icon: FaWarehouse,
     Permission: Permission.VIEW_WAREHOUSES,
   },
@@ -141,8 +145,10 @@ export const SideBar = ({ currentPage }: SideBarProps) => {
   const visibleItems = sidebarItems.filter((item) => hasPermission(item.Permission));
 
   const handleNavigate = (path: string) => {
-    setLoadingPage(path);
-    router.push(`/${path}`);
+    if (currentPage !== path) {
+      setLoadingPage(path);
+      router.push(`/${path}`);
+    }
   };
 
   const renderSidebarContent = () => (

@@ -81,7 +81,8 @@ export const ZoneFilters = ({
   const activeFiltersCount = [filterPedidoDay, filterEntregaDay].filter((f) => f !== '').length;
 
   return (
-    <Flex gap="1rem" flexDir="row" w="100%" alignItems="center" flexWrap="wrap">
+    <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" w="100%" align="stretch">
+      {/* Search box */}
       <InputGroup flex="1">
         <Input
           placeholder="Buscar por nombre..."
@@ -108,72 +109,75 @@ export const ZoneFilters = ({
         </InputRightElement>
       </InputGroup>
 
-      <Popover placement="bottom-end">
-        <PopoverTrigger>
-          <Button
-            leftIcon={<FaFilter />}
+      {/* Advanced filters and reset button */}
+      <Flex gap="1rem" alignItems="center" minW={{ base: 'auto', md: '200px' }}>
+        <Popover placement="bottom-start">
+          <PopoverTrigger>
+            <Button
+              leftIcon={<FaFilter />}
+              bg={bgInput}
+              _hover={{ bg: hoverResetBg }}
+              variant="outline"
+              borderColor={borderInput}
+              color={textColor}
+              disabled={isLoading}
+              flex="1"
+            >
+              Filtros avanzados{activeFiltersCount > 0 && ` (${activeFiltersCount})`}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent bg={popoverBg} minW="300px">
+            <PopoverBody>
+              <VStack spacing="0.75rem" align="stretch">
+                <Select
+                  placeholder="Día de pedido"
+                  value={filterPedidoDay || ''}
+                  onChange={(e) => setFilterPedidoDay(e.target.value as Day | '')}
+                  disabled={isLoading}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  color={textColor}
+                  size="sm"
+                >
+                  {DayOptions.map((option) => (
+                    <option key={`pedido-${option.value}`} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  placeholder="Día de entrega"
+                  value={filterEntregaDay || ''}
+                  onChange={(e) => setFilterEntregaDay(e.target.value as Day | '')}
+                  disabled={isLoading}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  color={textColor}
+                  size="sm"
+                >
+                  {DayOptions.map((option) => (
+                    <option key={`entrega-${option.value}`} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </VStack>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+
+        {hasActiveFilters && (
+          <IconButton
+            aria-label="Reiniciar filtros"
+            icon={<VscDebugRestart />}
             bg={bgInput}
             _hover={{ bg: hoverResetBg }}
-            variant="outline"
-            borderColor={borderInput}
-            color={textColor}
+            onClick={handleResetFilters}
             disabled={isLoading}
-            minW="auto"
-          >
-            Filtros avanzados{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent bg={popoverBg} minW="300px">
-          <PopoverBody>
-            <VStack spacing="0.75rem" align="stretch">
-              <Select
-                placeholder="Día de pedido"
-                value={filterPedidoDay || ''}
-                onChange={(e) => setFilterPedidoDay(e.target.value as Day | '')}
-                disabled={isLoading}
-                bg={bgInput}
-                borderColor={borderInput}
-                color={textColor}
-                size="sm"
-              >
-                {DayOptions.map((option) => (
-                  <option key={`pedido-${option.value}`} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                placeholder="Día de entrega"
-                value={filterEntregaDay || ''}
-                onChange={(e) => setFilterEntregaDay(e.target.value as Day | '')}
-                disabled={isLoading}
-                bg={bgInput}
-                borderColor={borderInput}
-                color={textColor}
-                size="sm"
-              >
-                {DayOptions.map((option) => (
-                  <option key={`entrega-${option.value}`} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
-            </VStack>
-          </PopoverBody>
-        </PopoverContent>
-      </Popover>
-
-      {hasActiveFilters && (
-        <IconButton
-          aria-label="Reiniciar filtros"
-          icon={<VscDebugRestart />}
-          bg={bgInput}
-          _hover={{ bg: hoverResetBg }}
-          onClick={handleResetFilters}
-          disabled={isLoading}
-        />
-      )}
+          />
+        )}
+      </Flex>
     </Flex>
   );
 };

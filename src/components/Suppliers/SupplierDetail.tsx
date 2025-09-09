@@ -18,8 +18,9 @@ import {
   SimpleGrid,
   Divider,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
-import { FiEye, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign } from 'react-icons/fi';
+import { FiInfo, FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Supplier } from '@/entities/supplier';
 import { SupplierEdit } from './SupplierEdit';
@@ -27,7 +28,11 @@ import { useDeleteSupplier } from '@/hooks/supplier';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { GenericDelete } from '../shared/GenericDelete';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import MapPreview from '../MapPreview';
+import { MapViewModal } from '../MapViewModal';
+import { useRouter } from 'next/navigation';
+import { FaCreditCard } from 'react-icons/fa';
 
 type SupplierDetailProps = {
   supplier: Supplier;
@@ -39,9 +44,12 @@ type SupplierDetailProps = {
 export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose }: SupplierDetailProps) => {
   const canEditSuppliers = useUserStore((s) => s.hasPermission(Permission.EDIT_SUPPLIERS));
   const canDeleteSuppliers = useUserStore((s) => s.hasPermission(Permission.DELETE_SUPPLIERS));
+  const router = useRouter();
+  const [isNavigatingToStatements, setIsNavigatingToStatements] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
+  const { isOpen: isMapOpen, onOpen: openMap, onClose: closeMap } = useDisclosure();
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -53,6 +61,17 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
     onClose();
     onModalClose?.();
   }, [onClose, onModalClose]);
+
+  const handleNavigateToStatements = useCallback(async () => {
+    setIsNavigatingToStatements(true);
+    try {
+      await router.push(`/estados-de-cuenta?supplierId=${supplier.id}`);
+    } catch (error) {
+      console.error('Error navigating to statements:', error);
+    } finally {
+      setIsNavigatingToStatements(false);
+    }
+  }, [router, supplier.id]);
 
   useEffect(() => {
     if (forceOpen) {
@@ -82,7 +101,7 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
         wordBreak="break-word"
         transition="all 0.2s"
       >
-        {value ?? '—'}
+        {value && value !== '' ? value : '—'}
       </Box>
     </Box>
   );
@@ -91,14 +110,14 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
         onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -121,15 +140,52 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
 
               {detailField('Razón Social', supplier.razonSocial, FiFileText)}
 
-              {detailField('Dirección', supplier.address, FiHome)}
-              {detailField('Dirección Maps', supplier.mapsAddress, FiMapPin)}
+              {detailField('Dirección', supplier.address, FiMapPin)}
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
-                {detailField('Teléfono', supplier.phone, FiPhone)}
                 {detailField('Persona de contacto', supplier.contactName, FiUser)}
+                {detailField('Teléfono', supplier.phone, FiPhone)}
               </SimpleGrid>
 
-              {detailField('Email', supplier.email, FiMail)}
+              {detailField('Correo electrónico', supplier.email, FiMail)}
+
+              {/* Ubicación con preview del mapa */}
+              <Box w="100%">
+                <HStack mb="0.5rem" spacing="0.5rem">
+                  <Icon as={FiMap} boxSize="1rem" color={iconColor} />
+                  <Text color={labelColor} fontWeight="semibold">
+                    Ubicación
+                  </Text>
+                </HStack>
+                <VStack spacing="0.5rem" align="stretch">
+                  {supplier.location ? (
+                    <Box bg={inputBg} border="1px solid" borderColor={inputBorder} borderRadius="md" p="0.5rem">
+                      <MapPreview
+                        lat={supplier.location.latitude}
+                        lng={supplier.location.longitude}
+                        height="15rem"
+                        onClick={openMap}
+                      />
+                    </Box>
+                  ) : (
+                    <Box
+                      px="1rem"
+                      py="0.5rem"
+                      bg={inputBg}
+                      border="1px solid"
+                      borderColor={inputBorder}
+                      borderRadius="md"
+                      minH="2.75rem"
+                      display="flex"
+                      alignItems="center"
+                    >
+                      <Text color="gray.500" fontSize="sm">
+                        No se ha configurado ubicación
+                      </Text>
+                    </Box>
+                  )}
+                </VStack>
+              </Box>
 
               <Divider />
 
@@ -176,9 +232,26 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
+              </Button>
+              <Button
+                leftIcon={<FaCreditCard />}
+                onClick={handleNavigateToStatements}
+                colorScheme="purple"
+                variant="outline"
+                size="sm"
+                isLoading={isNavigatingToStatements}
+                loadingText="Redirigiendo..."
+              >
+                Estado de cuenta
               </Button>
               {canDeleteSuppliers && (
                 <GenericDelete
@@ -204,12 +277,22 @@ export const SupplierDetail = ({ supplier, setSuppliers, forceOpen, onModalClose
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
       <SupplierEdit isOpen={isEditOpen} onClose={closeEdit} supplier={supplier} setSuppliers={setSuppliers} />
+
+      {supplier?.location && (
+        <MapViewModal
+          isOpen={isMapOpen}
+          onClose={closeMap}
+          lat={supplier.location.latitude}
+          lng={supplier.location.longitude}
+          title={`Ubicación de ${supplier.name}`}
+        />
+      )}
     </>
   );
 };

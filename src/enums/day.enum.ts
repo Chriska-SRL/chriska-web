@@ -5,6 +5,7 @@ export enum Day {
   THURSDAY = 'Thursday',
   FRIDAY = 'Friday',
   SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
 }
 
 export const DayLabels: Record<Day, string> = {
@@ -14,6 +15,7 @@ export const DayLabels: Record<Day, string> = {
   [Day.THURSDAY]: 'Jueves',
   [Day.FRIDAY]: 'Viernes',
   [Day.SATURDAY]: 'Sábado',
+  [Day.SUNDAY]: 'Domingo',
 };
 
 export const getDayLabel = (day: Day | string): string => {

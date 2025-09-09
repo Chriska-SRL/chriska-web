@@ -32,6 +32,7 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
     setHasCopied(true);
     toast({
       title: 'Contraseña copiada',
+      description: 'La contraseña se ha copiado al portapapeles.',
       status: 'success',
       duration: 2000,
       isClosable: true,
@@ -43,7 +44,9 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
   };
 
   useEffect(() => {
-    if (isOpen) setHasCopied(false);
+    if (isOpen) {
+      setHasCopied(false);
+    }
   }, [isOpen]);
 
   return (
@@ -54,9 +57,10 @@ export const TemporaryPasswordModal = ({ isOpen, onClose, password }: TemporaryP
       isCentered
       closeOnOverlayClick={hasCopied}
       closeOnEsc={hasCopied}
+      blockScrollOnMount={false}
     >
-      <ModalOverlay />
-      <ModalContent>
+      <ModalOverlay bg="blackAlpha.600" />
+      <ModalContent zIndex={10000} boxShadow="2xl">
         <ModalHeader textAlign="center" fontSize="1.75rem">
           Contraseña temporal
         </ModalHeader>

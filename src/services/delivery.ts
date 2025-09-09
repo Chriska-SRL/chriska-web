@@ -33,11 +33,11 @@ export const getDeliveries = (
   }
 
   if (filters?.fromDate) {
-    params.append('filters[FromDate]', filters.fromDate);
+    params.append('filters[DateFrom]', filters.fromDate);
   }
 
   if (filters?.toDate) {
-    params.append('filters[ToDate]', filters.toDate);
+    params.append('filters[DateTo]', filters.toDate);
   }
 
   return get<Delivery[]>(`${API_URL}/Delivery?${params.toString()}`);
@@ -51,8 +51,20 @@ export const updateDelivery = (delivery: Partial<Delivery>): Promise<Delivery> =
   return put<Delivery>(`${API_URL}/Delivery/${delivery.id}`, delivery);
 };
 
-export const changeDeliveryStatus = (id: number, status: string): Promise<Delivery> => {
-  return put<Delivery>(`${API_URL}/Delivery/changestatus/${id}`, { status });
+export const changeDeliveryStatus = (
+  id: number,
+  status: string,
+  additionalData?: {
+    amount?: number;
+    paymentMethod?: string | null;
+    crates?: number;
+  },
+): Promise<Delivery> => {
+  const payload = {
+    status,
+    ...additionalData,
+  };
+  return put<Delivery>(`${API_URL}/Delivery/changestatus/${id}`, payload);
 };
 
 export const getConfirmedDeliveriesByClient = (clientId: number): Promise<Delivery[]> => {

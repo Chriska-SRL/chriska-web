@@ -1,6 +1,6 @@
 import { Client } from './client';
 import { Delivery } from './delivery';
-import { ProductItem } from './orderRequest';
+import { ProductItem } from './productItem';
 import { User } from './user';
 
 export type ReturnRequest = {

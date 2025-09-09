@@ -21,49 +21,62 @@ import {
   Box,
   Flex,
   Spinner,
+  Checkbox,
+  Image,
+  Input,
+  IconButton,
 } from '@chakra-ui/react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { FiFileText } from 'react-icons/fi';
 import { FaCheck } from 'react-icons/fa';
-import {
-  Image,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-} from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { ReturnRequest } from '@/entities/returnRequest';
-import { useUpdateReturnRequest } from '@/hooks/returnRequest';
 import { useGetDeliveryById } from '@/hooks/delivery';
+import { useUpdateReturnRequest } from '@/hooks/returnRequest';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 
 type ReturnRequestEditProps = {
   returnRequest: ReturnRequest;
   isOpen: boolean;
   onClose: () => void;
   setReturnRequests: React.Dispatch<React.SetStateAction<ReturnRequest[]>>;
+  onReturnRequestUpdated?: (returnRequest: ReturnRequest) => void;
+  skipConfirmModal?: boolean;
 };
 
 const validationSchema = Yup.object({
   observations: Yup.string().max(500, 'Las observaciones no pueden exceder 500 caracteres'),
 });
 
-export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnRequests }: ReturnRequestEditProps) => {
+export const ReturnRequestEdit = ({
+  returnRequest,
+  isOpen,
+  onClose,
+  setReturnRequests,
+  onReturnRequestUpdated,
+  skipConfirmModal = false,
+}: ReturnRequestEditProps) => {
   const toast = useToast();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const labelColor = useColorModeValue('gray.700', 'gray.200');
+  const checkboxBorder = useColorModeValue('gray.400', 'gray.500');
 
-  const [returnRequestProps, setReturnRequestProps] = useState<Partial<ReturnRequest>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [productQuantities, setProductQuantities] = useState<{ [productId: number]: number }>({});
+  const [productWeights, setProductWeights] = useState<{ [productId: number]: number }>({});
+  const [quantityInputs, setQuantityInputs] = useState<{ [productId: number]: string }>({});
+  const [weightInputs, setWeightInputs] = useState<{ [productId: number]: string }>({});
+  const [selectedProducts, setSelectedProducts] = useState<{ [productId: number]: boolean }>({});
+  const [selectAll, setSelectAll] = useState(false);
 
-  const { data, isLoading, fieldError } = useUpdateReturnRequest(returnRequestProps);
+  const { data, isLoading, fieldError, mutate } = useUpdateReturnRequest();
+
   const { data: deliveryData, isLoading: isLoadingDelivery } = useGetDeliveryById(returnRequest.delivery?.id);
 
   // Function to get original delivered quantity for a product
@@ -73,35 +86,88 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
     return deliveredItem?.quantity || 0;
   };
 
-  // Initialize product quantities with current return request quantities or 0
+  // Function to get original delivered weight for a product
+  const getOriginalDeliveredWeight = (productId: number) => {
+    if (!deliveryData?.productItems) return 0;
+    const deliveredItem = deliveryData.productItems.find((item) => item.product.id === productId);
+    return deliveredItem?.weight || 0;
+  };
+
+  // Handle individual product selection
+  const handleProductSelect = (productId: number, checked: boolean) => {
+    setSelectedProducts((prev) => {
+      const newSelection = { ...prev, [productId]: checked };
+
+      // Update selectAll based on new selection state
+      if (returnRequest.productItems) {
+        const allSelected = returnRequest.productItems.every((item) => newSelection[item.product.id]);
+        setSelectAll(allSelected);
+      }
+
+      return newSelection;
+    });
+  };
+
+  // Handle select all
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked);
+    if (returnRequest.productItems) {
+      const newSelection: { [productId: number]: boolean } = {};
+      returnRequest.productItems.forEach((item) => {
+        newSelection[item.product.id] = checked;
+      });
+      setSelectedProducts(newSelection);
+    }
+  };
+
+  // Initialize product quantities, weights and selection state
   useEffect(() => {
-    if (returnRequest.productItems && isOpen) {
+    if (returnRequest.productItems && isOpen && deliveryData) {
       const quantities: { [productId: number]: number } = {};
+      const weights: { [productId: number]: number } = {};
+      const quantityInputsInit: { [productId: number]: string } = {};
+      const weightInputsInit: { [productId: number]: string } = {};
+      const selection: { [productId: number]: boolean } = {};
       returnRequest.productItems.forEach((item) => {
         quantities[item.product.id] = item.quantity;
+        // Set initial weight to delivered weight for KILO products
+        const deliveredWeight = getOriginalDeliveredWeight(item.product.id);
+        weights[item.product.id] = item.product?.unitType === UnitType.KILO ? deliveredWeight || item.weight || 0 : 0;
+        quantityInputsInit[item.product.id] = item.quantity.toString();
+        weightInputsInit[item.product.id] = weights[item.product.id].toString();
+        selection[item.product.id] = false; // All products start unselected
       });
       setProductQuantities(quantities);
+      setProductWeights(weights);
+      setQuantityInputs(quantityInputsInit);
+      setWeightInputs(weightInputsInit);
+      setSelectedProducts(selection);
+      setSelectAll(false);
     }
-  }, [returnRequest.productItems, isOpen]);
+  }, [returnRequest.productItems, isOpen, deliveryData]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
+    // Only include selected products in the submission
+    const selectedProductItems = Object.entries(productQuantities)
+      .filter(([productId]) => selectedProducts[parseInt(productId)])
+      .map(([productId, quantity]) => ({
+        productId: parseInt(productId),
+        quantity,
+        weight: productWeights[parseInt(productId)] || 0,
+      }));
+
     const formData: any = {
       id: returnRequest.id,
       observations: values.observations,
-      productItems: Object.entries(productQuantities).map(([productId, quantity]) => ({
-        productId: parseInt(productId),
-        quantity,
-      })),
+      productItems: selectedProductItems,
     };
-
-    setReturnRequestProps(formData);
+    await mutate(formData);
   };
 
   // Handle successful update
   useEffect(() => {
-    if (data && returnRequestProps) {
+    if (data) {
       setReturnRequests((prev) => prev.map((r) => (r.id === data.id ? data : r)));
-      setReturnRequestProps(undefined);
       onClose();
       toast({
         title: 'Devolución actualizada',
@@ -110,12 +176,17 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
         duration: 3000,
         isClosable: true,
       });
+
+      // Notificar al padre que la devolución fue actualizada
+      if (onReturnRequestUpdated && !skipConfirmModal) {
+        onReturnRequestUpdated(data);
+      }
     }
-  }, [data, returnRequestProps, setReturnRequests, onClose, toast]);
+  }, [data, setReturnRequests, onClose, toast, onReturnRequestUpdated, skipConfirmModal]);
 
   // Handle errors
   useEffect(() => {
-    if (fieldError && returnRequestProps) {
+    if (fieldError) {
       const errorMessage = fieldError.error || 'Ha ocurrido un error inesperado';
       toast({
         title: 'Error al actualizar devolución',
@@ -124,9 +195,8 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
         duration: 5000,
         isClosable: true,
       });
-      setReturnRequestProps(undefined);
     }
-  }, [fieldError, returnRequestProps, toast]);
+  }, [fieldError, toast]);
 
   const handleClose = () => {
     onClose();
@@ -142,7 +212,7 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleClose}
@@ -168,17 +238,10 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {(formik) => {
-                const handleModalClose = () => {
-                  if (formik.dirty) {
-                    setShowConfirmDialog(true);
-                  } else {
-                    onClose();
-                  }
-                };
-
-                // Update the modal close handler to use formik.dirty
+              {({ errors, touched, submitCount }) => {
                 return (
                   <Form id="return-request-edit-form">
                     <VStack spacing="1rem" align="stretch">
@@ -190,170 +253,633 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
                             <Text>Productos de la entrega</Text>
                           </HStack>
                         </FormLabel>
-                        <Text fontSize="sm" color={textColor} mb="1rem">
-                          Selecciona la cantidad a devolver de cada producto
-                        </Text>
 
                         {returnRequest.productItems && returnRequest.productItems.length > 0 ? (
-                          <VStack spacing="0.5rem" align="stretch">
-                            {returnRequest.productItems.map((item) => {
-                              const currentReturnQuantity = productQuantities[item.product.id] || 0;
-                              const originalDeliveredQuantity = getOriginalDeliveredQuantity(item.product.id);
-                              const maxQuantity = originalDeliveredQuantity || item.quantity;
+                          <>
+                            <HStack mb="0.57rem" justify="flex-start" align="center">
+                              <Text fontSize="sm" fontWeight="medium">
+                                Seleccionar todos
+                              </Text>
+                              <Checkbox
+                                isChecked={selectAll}
+                                onChange={(e) => handleSelectAll(e.target.checked)}
+                                size="md"
+                                colorScheme="blue"
+                                borderColor={checkboxBorder}
+                                sx={{
+                                  '& .chakra-checkbox__control': {
+                                    borderWidth: '2px',
+                                    borderColor: checkboxBorder,
+                                  },
+                                }}
+                              />
+                            </HStack>
+                            <VStack spacing="0.5rem" align="stretch">
+                              {returnRequest.productItems.map((item) => {
+                                const currentReturnQuantity = productQuantities[item.product.id] || 0;
+                                const currentReturnWeight = productWeights[item.product.id] || 0;
+                                const originalDeliveredQuantity = getOriginalDeliveredQuantity(item.product.id);
+                                const originalDeliveredWeight = getOriginalDeliveredWeight(item.product.id);
+                                const maxQuantity = originalDeliveredQuantity || item.quantity;
+                                const maxWeight = originalDeliveredWeight || item.weight || 0;
+                                const isSelected = selectedProducts[item.product.id] || false;
 
-                              return (
-                                <Box
-                                  key={item.product.id}
-                                  p={{ base: '1rem', md: '0.75rem' }}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  borderRadius="md"
-                                  bg={inputBg}
-                                >
-                                  {/* Desktop Layout */}
-                                  <Flex display={{ base: 'none', md: 'flex' }} align="center" gap="1rem">
-                                    <Image
-                                      src={
-                                        item.product?.imageUrl ||
-                                        'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                      }
-                                      alt={item.product?.name || 'Producto'}
-                                      boxSize="50px"
-                                      objectFit="cover"
-                                      borderRadius="md"
-                                      flexShrink={0}
-                                    />
-                                    <Box flex="1">
-                                      <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
-                                        {item.product?.name || '-'}
-                                      </Text>
-                                      <Text fontSize="xs" color={textColor}>
-                                        Código: {item.product?.internalCode || '-'}
-                                      </Text>
-                                    </Box>
-
-                                    <VStack spacing="0.25rem" align="center" minW="100px">
-                                      <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                        Cant. entregada
-                                      </Text>
-                                      {isLoadingDelivery ? (
-                                        <Spinner size="sm" />
-                                      ) : (
-                                        <Text fontSize="sm" fontWeight="semibold">
-                                          {originalDeliveredQuantity || '-'}
-                                        </Text>
-                                      )}
-                                    </VStack>
-
-                                    <VStack spacing="0.25rem" align="center" minW="120px">
-                                      <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                        Cant. a devolver
-                                      </Text>
-                                      <NumberInput
-                                        size="sm"
-                                        value={currentReturnQuantity}
-                                        onChange={(_, valueAsNumber) => {
-                                          const quantity = isNaN(valueAsNumber)
-                                            ? 0
-                                            : Math.max(0, Math.min(maxQuantity, valueAsNumber));
-                                          setProductQuantities((prev) => ({
-                                            ...prev,
-                                            [item.product.id]: quantity,
-                                          }));
-                                        }}
-                                        min={0}
-                                        max={maxQuantity}
-                                        step={0.1}
-                                        precision={1}
-                                        w="80px"
-                                      >
-                                        <NumberInputField />
-                                        <NumberInputStepper>
-                                          <NumberIncrementStepper />
-                                          <NumberDecrementStepper />
-                                        </NumberInputStepper>
-                                      </NumberInput>
-                                    </VStack>
-                                  </Flex>
-
-                                  {/* Mobile Layout */}
-                                  <Box display={{ base: 'block', md: 'none' }}>
-                                    <Flex align="center" gap="0.75rem" mb="0.75rem">
-                                      <Image
-                                        src={
-                                          item.product?.imageUrl ||
-                                          'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
-                                        }
-                                        alt={item.product?.name || 'Producto'}
-                                        boxSize="50px"
-                                        objectFit="cover"
-                                        borderRadius="md"
-                                        flexShrink={0}
-                                      />
-                                      <Box flex="1">
-                                        <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
-                                          {item.product?.name || '-'}
-                                        </Text>
-                                        <Text fontSize="xs" color={textColor}>
-                                          Código: {item.product?.internalCode || '-'}
-                                        </Text>
-                                      </Box>
-                                    </Flex>
-
-                                    <Flex justify="space-between" align="center">
-                                      <VStack spacing="0.25rem" align="start">
-                                        {isLoadingDelivery ? (
-                                          <HStack spacing="0.5rem">
-                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                              Cant. entregada:
-                                            </Text>
-                                            <Spinner size="xs" />
+                                return (
+                                  <Box
+                                    key={item.product.id}
+                                    p={{ base: '1rem', md: '0.75rem' }}
+                                    border="1px solid"
+                                    borderColor={inputBorder}
+                                    borderRadius="md"
+                                    bg={inputBg}
+                                    opacity={isSelected ? 1 : 0.6}
+                                    transition="opacity 0.2s"
+                                  >
+                                    {/* Desktop Layout */}
+                                    <VStack display={{ base: 'none', md: 'flex' }} spacing="0.75rem" align="stretch">
+                                      {/* First row - image, name, price, checkbox */}
+                                      <Flex align="center" gap="1rem">
+                                        <Image
+                                          src={
+                                            item.product?.imageUrl ||
+                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                          }
+                                          alt={item.product?.name || 'Producto'}
+                                          boxSize="50px"
+                                          objectFit="cover"
+                                          borderRadius="md"
+                                          flexShrink={0}
+                                        />
+                                        <Box flex="1">
+                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
+                                            {item.product?.name || '-'}
+                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            {(item.discount || 0) > 0 ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                  $
+                                                  {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                                </Text>
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  $
+                                                  {(
+                                                    (item.unitPrice || item.product?.price || 0) *
+                                                    (1 - (item.discount || 0) / 100)
+                                                  ).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -{item.discount}%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                              </Text>
+                                            )}
                                           </HStack>
-                                        ) : (
+                                        </Box>
+                                        <Checkbox
+                                          isChecked={isSelected}
+                                          onChange={(e) => handleProductSelect(item.product.id, e.target.checked)}
+                                          size="md"
+                                          colorScheme="blue"
+                                          alignSelf="flex-start"
+                                          borderColor={checkboxBorder}
+                                          sx={{
+                                            opacity: '1 !important',
+                                            '& .chakra-checkbox__control': {
+                                              borderWidth: '2px',
+                                              borderColor: checkboxBorder,
+                                            },
+                                          }}
+                                        />
+                                      </Flex>
+
+                                      {/* Second row - quantities and weights and subtotal */}
+                                      <HStack spacing="0.5rem" justify="space-around">
+                                        <VStack spacing="0.25rem" align="center" minW="100px">
                                           <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                            Cant. entregada:{' '}
-                                            <Text as="span" fontWeight="semibold">
+                                            Cant. entregada
+                                          </Text>
+                                          {isLoadingDelivery ? (
+                                            <Spinner size="sm" />
+                                          ) : (
+                                            <Text fontSize="sm" fontWeight="semibold">
                                               {originalDeliveredQuantity || '-'}
                                             </Text>
-                                          </Text>
-                                        )}
-                                      </VStack>
+                                          )}
+                                        </VStack>
 
-                                      <VStack spacing="0.25rem" align="end">
-                                        <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                          Cant. a devolver
-                                        </Text>
-                                        <NumberInput
-                                          size="sm"
-                                          value={currentReturnQuantity}
-                                          onChange={(_, valueAsNumber) => {
-                                            const quantity = isNaN(valueAsNumber)
-                                              ? 0
-                                              : Math.max(0, Math.min(maxQuantity, valueAsNumber));
-                                            setProductQuantities((prev) => ({
-                                              ...prev,
-                                              [item.product.id]: quantity,
-                                            }));
+                                        <VStack spacing="0.25rem" align="center" minW="120px">
+                                          <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                            Cant. a devolver
+                                          </Text>
+                                          <HStack spacing={0}>
+                                            <IconButton
+                                              aria-label="Disminuir cantidad"
+                                              icon={<Text fontSize="sm">−</Text>}
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => {
+                                                const decrement = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                const newValue = Math.max(minimum, currentReturnQuantity - decrement);
+                                                const rounded = parseFloat(newValue.toFixed(2));
+                                                setProductQuantities((prev) => ({
+                                                  ...prev,
+                                                  [item.product.id]: rounded,
+                                                }));
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [item.product.id]: rounded.toString(),
+                                                }));
+                                              }}
+                                              borderRightRadius={0}
+                                              isDisabled={!isSelected}
+                                            />
+                                            <Input
+                                              size="sm"
+                                              value={quantityInputs[item.product.id] ?? currentReturnQuantity}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const regex =
+                                                  item.product?.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
+                                                if (regex.test(value) || value === '') {
+                                                  setQuantityInputs((prev) => ({ ...prev, [item.product.id]: value }));
+                                                  const numValue =
+                                                    item.product?.unitType === UnitType.KILO
+                                                      ? parseFloat(value)
+                                                      : parseInt(value, 10);
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                  if (
+                                                    !isNaN(numValue) &&
+                                                    numValue >= minimum &&
+                                                    numValue <= maxQuantity
+                                                  ) {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: numValue,
+                                                    }));
+                                                  } else if (value === '' || value === '.') {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: minimum,
+                                                    }));
+                                                  }
+                                                }
+                                              }}
+                                              onBlur={(e) => {
+                                                const value =
+                                                  item.product?.unitType === UnitType.KILO
+                                                    ? parseFloat(e.target.value)
+                                                    : parseInt(e.target.value, 10);
+                                                const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                if (isNaN(value) || value < minimum) {
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: minimum,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: minimum.toString(),
+                                                  }));
+                                                } else if (value > maxQuantity) {
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: maxQuantity,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: maxQuantity.toString(),
+                                                  }));
+                                                } else {
+                                                  const finalValue =
+                                                    item.product?.unitType === UnitType.KILO
+                                                      ? roundToQuarter(value)
+                                                      : value;
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: finalValue,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: finalValue.toString(),
+                                                  }));
+                                                }
+                                              }}
+                                              w="3.5rem"
+                                              p="0"
+                                              textAlign="center"
+                                              borderRadius={0}
+                                              borderLeft="none"
+                                              borderRight="none"
+                                              isDisabled={!isSelected}
+                                            />
+                                            <IconButton
+                                              aria-label="Aumentar cantidad"
+                                              icon={<Text fontSize="sm">+</Text>}
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => {
+                                                const increment = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                const newValue = Math.min(
+                                                  maxQuantity,
+                                                  currentReturnQuantity + increment,
+                                                );
+                                                const rounded = parseFloat(newValue.toFixed(2));
+                                                setProductQuantities((prev) => ({
+                                                  ...prev,
+                                                  [item.product.id]: rounded,
+                                                }));
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [item.product.id]: rounded.toString(),
+                                                }));
+                                              }}
+                                              borderLeftRadius={0}
+                                              isDisabled={!isSelected}
+                                            />
+                                          </HStack>
+                                        </VStack>
+
+                                        <VStack spacing="0.25rem" align="center" minW="100px">
+                                          <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                            Peso entregado (g)
+                                          </Text>
+                                          {isLoadingDelivery ? (
+                                            <Spinner size="sm" />
+                                          ) : (
+                                            <Text fontSize="sm" fontWeight="semibold">
+                                              {item.product?.unitType === UnitType.KILO
+                                                ? originalDeliveredWeight || '-'
+                                                : 'N/A'}
+                                            </Text>
+                                          )}
+                                        </VStack>
+
+                                        <VStack spacing="0.25rem" align="center" minW="120px">
+                                          <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                            Peso a devolver (g)
+                                          </Text>
+                                          <Input
+                                            size="sm"
+                                            value={
+                                              item.product?.unitType === UnitType.KILO
+                                                ? (weightInputs[item.product.id] ?? currentReturnWeight)
+                                                : 'N/A'
+                                            }
+                                            onChange={(e) => {
+                                              if (item.product?.unitType === UnitType.KILO) {
+                                                const value = e.target.value;
+                                                const regex = /^\d*\.?\d*$/;
+                                                if (regex.test(value) || value === '') {
+                                                  setWeightInputs((prev) => ({ ...prev, [item.product.id]: value }));
+                                                  const numValue = parseFloat(value);
+                                                  if (!isNaN(numValue) && numValue > 0 && numValue <= maxWeight) {
+                                                    setProductWeights((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: numValue,
+                                                    }));
+                                                  } else if (value === '' || value === '.') {
+                                                    const defaultWeight =
+                                                      getOriginalDeliveredWeight(item.product.id) || 1;
+                                                    setProductWeights((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: defaultWeight,
+                                                    }));
+                                                  }
+                                                }
+                                              }
+                                            }}
+                                            w="80px"
+                                            isDisabled={!isSelected || item.product?.unitType !== UnitType.KILO}
+                                            textAlign="center"
+                                            borderRadius="md"
+                                          />
+                                        </VStack>
+                                      </HStack>
+                                    </VStack>
+
+                                    {/* Mobile Layout */}
+                                    <VStack display={{ base: 'flex', md: 'none' }} spacing="0.75rem" align="stretch">
+                                      {/* First row - image, name, price, checkbox */}
+                                      <Flex align="center" gap="0.75rem">
+                                        <Image
+                                          src={
+                                            item.product?.imageUrl ||
+                                            'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'
+                                          }
+                                          alt={item.product?.name || 'Producto'}
+                                          boxSize="50px"
+                                          objectFit="cover"
+                                          borderRadius="md"
+                                          flexShrink={0}
+                                        />
+                                        <Box flex="1">
+                                          <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
+                                            {item.product?.name || '-'}
+                                          </Text>
+                                          <HStack spacing="0.5rem" align="center">
+                                            {(item.discount || 0) > 0 ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                  $
+                                                  {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                                </Text>
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  $
+                                                  {(
+                                                    (item.unitPrice || item.product?.price || 0) *
+                                                    (1 - (item.discount || 0) / 100)
+                                                  ).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -{item.discount}%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                              </Text>
+                                            )}
+                                          </HStack>
+                                        </Box>
+                                        <Checkbox
+                                          isChecked={isSelected}
+                                          onChange={(e) => handleProductSelect(item.product.id, e.target.checked)}
+                                          size="md"
+                                          colorScheme="blue"
+                                          alignSelf="flex-start"
+                                          borderColor={checkboxBorder}
+                                          sx={{
+                                            opacity: '1 !important',
+                                            '& .chakra-checkbox__control': {
+                                              borderWidth: '2px',
+                                              borderColor: checkboxBorder,
+                                            },
                                           }}
-                                          min={0}
-                                          max={maxQuantity}
-                                          step={0.1}
-                                          precision={1}
-                                          w="80px"
-                                        >
-                                          <NumberInputField />
-                                          <NumberInputStepper>
-                                            <NumberIncrementStepper />
-                                            <NumberDecrementStepper />
-                                          </NumberInputStepper>
-                                        </NumberInput>
+                                        />
+                                      </Flex>
+
+                                      {/* Second row - quantities and weights */}
+                                      <VStack spacing="0.5rem" align="stretch">
+                                        {/* Delivered info */}
+                                        <Flex justify="space-between" align="center">
+                                          <VStack spacing="0.25rem" align="center" ml="0.625rem">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Cant. entregada
+                                            </Text>
+                                            {isLoadingDelivery ? (
+                                              <Spinner size="xs" />
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                {originalDeliveredQuantity || '-'}
+                                              </Text>
+                                            )}
+                                          </VStack>
+
+                                          <VStack spacing="0.25rem" align="center">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Peso entregado (g)
+                                            </Text>
+                                            {isLoadingDelivery ? (
+                                              <Spinner size="xs" />
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                {item.product?.unitType === UnitType.KILO
+                                                  ? originalDeliveredWeight || '-'
+                                                  : 'N/A'}
+                                              </Text>
+                                            )}
+                                          </VStack>
+                                        </Flex>
+
+                                        {/* Return inputs */}
+                                        <Flex justify="space-between" align="end">
+                                          <VStack spacing="0.25rem" align="center">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Cant. a devolver
+                                            </Text>
+                                            <HStack spacing={0}>
+                                              <IconButton
+                                                aria-label="Disminuir cantidad"
+                                                icon={<Text fontSize="sm">−</Text>}
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  const decrement = item.product?.unitType === UnitType.KILO ? 0.5 : 1;
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                  const newValue = Math.max(minimum, currentReturnQuantity - decrement);
+                                                  const rounded = parseFloat(newValue.toFixed(2));
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: rounded,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: rounded.toString(),
+                                                  }));
+                                                }}
+                                                borderRightRadius={0}
+                                                isDisabled={!isSelected}
+                                              />
+                                              <Input
+                                                size="sm"
+                                                value={quantityInputs[item.product.id] ?? currentReturnQuantity}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const regex =
+                                                    item.product?.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
+                                                  if (regex.test(value) || value === '') {
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: value,
+                                                    }));
+                                                    const numValue =
+                                                      item.product?.unitType === UnitType.KILO
+                                                        ? parseFloat(value)
+                                                        : parseInt(value, 10);
+                                                    const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                    if (
+                                                      !isNaN(numValue) &&
+                                                      numValue >= minimum &&
+                                                      numValue <= maxQuantity
+                                                    ) {
+                                                      setProductQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.product.id]: numValue,
+                                                      }));
+                                                    } else if (value === '' || value === '.') {
+                                                      setProductQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.product.id]: minimum,
+                                                      }));
+                                                    }
+                                                  }
+                                                }}
+                                                onBlur={(e) => {
+                                                  const value =
+                                                    item.product?.unitType === UnitType.KILO
+                                                      ? parseFloat(e.target.value)
+                                                      : parseInt(e.target.value, 10);
+                                                  const minimum = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                  if (isNaN(value) || value < minimum) {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: minimum,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: minimum.toString(),
+                                                    }));
+                                                  } else if (value > maxQuantity) {
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: maxQuantity,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: maxQuantity.toString(),
+                                                    }));
+                                                  } else {
+                                                    const finalValue =
+                                                      item.product?.unitType === UnitType.KILO
+                                                        ? roundToQuarter(value)
+                                                        : value;
+                                                    setProductQuantities((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: finalValue,
+                                                    }));
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [item.product.id]: finalValue.toString(),
+                                                    }));
+                                                  }
+                                                }}
+                                                w="3rem"
+                                                p="0"
+                                                textAlign="center"
+                                                borderRadius={0}
+                                                borderLeft="none"
+                                                borderRight="none"
+                                                isDisabled={!isSelected}
+                                              />
+                                              <IconButton
+                                                aria-label="Aumentar cantidad"
+                                                icon={<Text fontSize="sm">+</Text>}
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  const increment = item.product?.unitType === UnitType.KILO ? 0.25 : 1;
+                                                  const newValue = Math.min(
+                                                    maxQuantity,
+                                                    currentReturnQuantity + increment,
+                                                  );
+                                                  const rounded = parseFloat(newValue.toFixed(2));
+                                                  setProductQuantities((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: rounded,
+                                                  }));
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [item.product.id]: rounded.toString(),
+                                                  }));
+                                                }}
+                                                borderLeftRadius={0}
+                                                isDisabled={!isSelected}
+                                              />
+                                            </HStack>
+                                          </VStack>
+
+                                          <VStack spacing="0.25rem" align="center">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Peso a devolver (g)
+                                            </Text>
+                                            <Input
+                                              size="sm"
+                                              value={
+                                                item.product?.unitType === UnitType.KILO
+                                                  ? (weightInputs[item.product.id] ?? currentReturnWeight)
+                                                  : 'N/A'
+                                              }
+                                              onChange={(e) => {
+                                                if (item.product?.unitType === UnitType.KILO) {
+                                                  const value = e.target.value;
+                                                  const regex = /^\d*\.?\d*$/;
+                                                  if (regex.test(value) || value === '') {
+                                                    setWeightInputs((prev) => ({ ...prev, [item.product.id]: value }));
+                                                    const numValue = parseFloat(value);
+                                                    if (!isNaN(numValue) && numValue > 0 && numValue <= maxWeight) {
+                                                      setProductWeights((prev) => ({
+                                                        ...prev,
+                                                        [item.product.id]: numValue,
+                                                      }));
+                                                    } else if (value === '' || value === '.') {
+                                                      const defaultWeight =
+                                                        getOriginalDeliveredWeight(item.product.id) || 1;
+                                                      setProductWeights((prev) => ({
+                                                        ...prev,
+                                                        [item.product.id]: defaultWeight,
+                                                      }));
+                                                    }
+                                                  }
+                                                }
+                                              }}
+                                              w="80px"
+                                              isDisabled={!isSelected || item.product?.unitType !== UnitType.KILO}
+                                              textAlign="center"
+                                              borderRadius="md"
+                                            />
+                                          </VStack>
+                                        </Flex>
+
+                                        {/* Subtotal row */}
+                                        <Flex justify="center" align="center" pt="0.5rem">
+                                          <VStack spacing="0.25rem" align="center">
+                                            <Text fontSize="xs" color={labelColor} fontWeight="medium">
+                                              Subtotal de devolución
+                                            </Text>
+                                            <Text fontSize="lg" fontWeight="bold" color="blue.500">
+                                              $
+                                              {(() => {
+                                                const effectivePrice =
+                                                  (item.unitPrice || item.product?.price || 0) *
+                                                  (1 - (item.discount || 0) / 100);
+                                                const returnSubtotal =
+                                                  item.product?.unitType === UnitType.KILO
+                                                    ? currentReturnQuantity *
+                                                      ((currentReturnWeight || 0) / 1000) *
+                                                      effectivePrice
+                                                    : currentReturnQuantity * effectivePrice;
+                                                return returnSubtotal.toFixed(2);
+                                              })()}
+                                            </Text>
+                                          </VStack>
+                                        </Flex>
                                       </VStack>
-                                    </Flex>
+                                    </VStack>
                                   </Box>
-                                </Box>
-                              );
-                            })}
-                          </VStack>
+                                );
+                              })}
+                            </VStack>
+                          </>
                         ) : (
                           <Text fontSize="sm" color="gray.500" textAlign="center" p="2rem">
                             No hay productos en esta entrega
@@ -361,10 +887,48 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
                         )}
                       </FormControl>
 
+                      {/* Total de la devolución */}
+                      {returnRequest.productItems && returnRequest.productItems.length > 0 && (
+                        <Box
+                          p="1rem"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          borderRadius="md"
+                          textAlign="center"
+                        >
+                          <HStack justify="space-between" align="center">
+                            <Text fontSize="lg" fontWeight="semibold">
+                              Total de devolución:
+                            </Text>
+                            <Text fontSize="xl" fontWeight="bold" color="blue.500">
+                              $
+                              {(() => {
+                                let total = 0;
+                                returnRequest.productItems.forEach((item) => {
+                                  const currentReturnQuantity = productQuantities[item.product.id] || 0;
+                                  const currentReturnWeight = productWeights[item.product.id] || 0;
+                                  if (selectedProducts[item.product.id] && currentReturnQuantity > 0) {
+                                    const effectivePrice =
+                                      (item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100);
+                                    const itemSubtotal =
+                                      item.product?.unitType === UnitType.KILO
+                                        ? currentReturnQuantity * ((currentReturnWeight || 0) / 1000) * effectivePrice
+                                        : currentReturnQuantity * effectivePrice;
+                                    total += itemSubtotal;
+                                  }
+                                });
+                                return total.toFixed(2);
+                              })()}
+                            </Text>
+                          </HStack>
+                        </Box>
+                      )}
+
                       {/* Observaciones */}
                       <Field name="observations">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={!!(meta.error && meta.touched)}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                             <FormLabel>
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} />
@@ -379,7 +943,7 @@ export const ReturnRequestEdit = ({ returnRequest, isOpen, onClose, setReturnReq
                               borderColor={inputBorder}
                               _hover={{ borderColor: inputBorder }}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.observations}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

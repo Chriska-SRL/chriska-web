@@ -76,22 +76,7 @@ const DiscountEditForm = ({
 }) => {
   const toast = useToast();
 
-  const [updateProps, setUpdateProps] = useState<{
-    id: string;
-    discount: {
-      description: string;
-      expirationDate: string;
-      productQuantity: number;
-      percentage: number;
-      status: string;
-      discountProductId: number[];
-      discountClientId: number[];
-      brandId?: string;
-      subCategoryId?: string;
-      zoneId?: string;
-    };
-  }>();
-  const { data, isLoading, error, fieldError } = useUpdateDiscount(updateProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateDiscount();
 
   // Load data using hooks - they handle caching internally
   const { data: brands = [] } = useGetBrands();
@@ -100,7 +85,7 @@ const DiscountEditForm = ({
   const { data: zones = [] } = useGetZones();
 
   // Estados para productos
-  const [productType, setProductType] = useState<'all' | 'brand' | 'subcategory' | 'list'>('list');
+  const [productType, setProductType] = useState<'brand' | 'subcategory' | 'list'>('list');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>('');
@@ -114,7 +99,7 @@ const DiscountEditForm = ({
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados para clientes
-  const [clientType, setClientType] = useState<'all' | 'zone' | 'list'>('list');
+  const [clientType, setClientType] = useState<'zone' | 'list'>('list');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
 
   // Estados para la búsqueda de clientes (solo cuando clientType === 'list')
@@ -235,7 +220,7 @@ const DiscountEditForm = ({
     } else if (discount && discount.products && discount.products.length > 0) {
       setProductType('list');
     } else {
-      setProductType('all');
+      setProductType('brand');
     }
 
     if (discount && discount.zone) {
@@ -244,7 +229,7 @@ const DiscountEditForm = ({
     } else if (discount && discount.clients && discount.clients.length > 0) {
       setClientType('list');
     } else {
-      setClientType('all');
+      setClientType('zone');
     }
   }, [discount, selectedProducts.length, selectedClients.length]);
 
@@ -341,7 +326,6 @@ const DiscountEditForm = ({
     setClientSearch('');
     setShowProductDropdown(false);
     setShowClientDropdown(false);
-    setUpdateProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -368,7 +352,6 @@ const DiscountEditForm = ({
         isClosable: true,
       });
 
-      setUpdateProps(undefined);
       setDiscounts((prev) => prev.map((d) => (d.id === data.id ? data : d)));
       handleClose();
     }
@@ -410,7 +393,7 @@ const DiscountEditForm = ({
   }, []);
 
   const handleSubmit = useCallback(
-    (values: {
+    async (values: {
       description: string;
       expirationDate: string;
       productQuantity: number;
@@ -418,7 +401,7 @@ const DiscountEditForm = ({
       status: string;
     }) => {
       // Prevent double submission
-      if (isLoading || updateProps) return;
+      if (isLoading) return;
 
       // Create the update object with only necessary fields
       const discountUpdate: any = {
@@ -429,7 +412,7 @@ const DiscountEditForm = ({
         status: values.status,
       };
 
-      // Add product-related fields only when necessary
+      // Add product-related fields
       if (productType === 'brand' && selectedBrandId) {
         discountUpdate.brandId = selectedBrandId;
       } else if (productType === 'subcategory' && selectedSubCategoryId) {
@@ -437,26 +420,24 @@ const DiscountEditForm = ({
       } else if (productType === 'list') {
         discountUpdate.discountProductId = selectedProducts.map((p) => p.id);
       }
-      // If productType === 'all', don't send any product-related fields
 
-      // Add client-related fields only when necessary
+      // Add client-related fields
       if (clientType === 'zone' && selectedZoneId) {
         discountUpdate.zoneId = selectedZoneId;
       } else if (clientType === 'list') {
         discountUpdate.discountClientId = selectedClients.map((c) => c.id);
       }
-      // If clientType === 'all', don't send any client-related fields
 
       const updateData = {
         id: discount.id,
         discount: discountUpdate,
       };
 
-      setUpdateProps(updateData);
+      await mutate(updateData);
     },
     [
       isLoading,
-      updateProps,
+      mutate,
       productType,
       selectedProducts,
       clientType,
@@ -483,7 +464,7 @@ const DiscountEditForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -512,8 +493,10 @@ const DiscountEditForm = ({
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -523,32 +506,13 @@ const DiscountEditForm = ({
                   <form id="discount-edit-form" onSubmit={handleSubmit}>
                     <Box>
                       <VStack spacing="1rem" align="stretch">
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese la descripción del descuento"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="percentage" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.percentage && !!errors.percentage}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPercent} boxSize="1rem" />
@@ -583,14 +547,17 @@ const DiscountEditForm = ({
                                     }
                                   }}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.percentage}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="productQuantity" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.productQuantity && !!errors.productQuantity}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPackage} boxSize="1rem" />
@@ -614,7 +581,7 @@ const DiscountEditForm = ({
                                     <NumberDecrementStepper />
                                   </NumberInputStepper>
                                 </NumberInput>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.productQuantity}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -622,8 +589,11 @@ const DiscountEditForm = ({
 
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="expirationDate" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.expirationDate && !!errors.expirationDate}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCalendar} boxSize="1rem" />
@@ -638,14 +608,14 @@ const DiscountEditForm = ({
                                   borderColor={inputBorder}
                                   disabled={isLoading}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.expirationDate}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="status" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.status && !!errors.status} flex="1">
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCheckCircle} boxSize="1rem" />
@@ -665,7 +635,7 @@ const DiscountEditForm = ({
                                     </option>
                                   ))}
                                 </Select>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.status}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -676,13 +646,12 @@ const DiscountEditForm = ({
                           <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
                           <Select
                             value={productType}
-                            onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
+                            onChange={(e) => setProductType(e.target.value as 'brand' | 'subcategory' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los productos</option>
                             <option value="brand">Por marca</option>
                             <option value="subcategory">Por subcategoría</option>
                             <option value="list">Lista personalizada</option>
@@ -1021,13 +990,12 @@ const DiscountEditForm = ({
                           <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
                           <Select
                             value={clientType}
-                            onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
+                            onChange={(e) => setClientType(e.target.value as 'zone' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los clientes</option>
                             <option value="zone">Por zona</option>
                             <option value="list">Lista personalizada</option>
                           </Select>
@@ -1287,6 +1255,29 @@ const DiscountEditForm = ({
                             )}
                           </FormControl>
                         )}
+
+                        {/* Descripción */}
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </VStack>
                     </Box>
                   </form>

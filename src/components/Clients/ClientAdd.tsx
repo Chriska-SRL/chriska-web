@@ -22,7 +22,7 @@ import {
   Text,
   HStack,
   Icon,
-  Stack,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
@@ -34,8 +34,6 @@ import {
   FiPhone,
   FiMail,
   FiFileText,
-  FiStar,
-  FiBox,
   FiCreditCard,
   FiUsers,
   FiMap,
@@ -48,10 +46,10 @@ import { useGetZones } from '@/hooks/zone';
 import { validate } from '@/utils/validations/validate';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
-import { QualificationSelector } from '@/components/QualificationSelector';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { BankOptions } from '@/enums/bank.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { LocationPickerModal } from '@/components/LocationPickerModal';
 
 type ClientAddProps = {
   isLoading: boolean;
@@ -71,18 +69,21 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [clientProps, setClientProps] = useState<Partial<Client>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddClient(clientProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddClient();
 
   const { data: zones, isLoading: isLoadingZones } = useGetZones();
 
   // Estado para las bank accounts
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
+  // Modal para selección de ubicación
+  const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
+  const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
+  const [currentCoords, setCurrentCoords] = useState({ lat: -34.9011, lng: -56.1645 });
+
   const handleClose = () => {
-    setClientProps(undefined);
     setBankAccounts([]);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
@@ -108,7 +109,6 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
         duration: 2000,
         isClosable: true,
       });
-      setClientProps(undefined);
       setBankAccounts([]);
       setClients((prev) => [...prev, data]);
       onClose();
@@ -135,13 +135,54 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
+  const validateForm = () => {
+    const errors: any = {};
+
+    // Validar cuentas bancarias
+    if (bankAccounts && bankAccounts.length > 0) {
+      const bankAccountsErrors: any = [];
+      bankAccounts.forEach((account: any, index: number) => {
+        const accountErrors: any = {};
+
+        if (!account.accountName || account.accountName.trim() === '') {
+          accountErrors.accountName = 'Campo obligatorio';
+        }
+
+        if (!account.bank || account.bank.trim() === '') {
+          accountErrors.bank = 'Campo obligatorio';
+        }
+
+        if (!account.accountNumber || account.accountNumber.trim() === '') {
+          accountErrors.accountNumber = 'Campo obligatorio';
+        }
+
+        if (Object.keys(accountErrors).length > 0) {
+          bankAccountsErrors[index] = accountErrors;
+        }
+      });
+
+      if (bankAccountsErrors.length > 0) {
+        (errors as any).bankAccounts = bankAccountsErrors;
+      }
+    }
+
+    return errors;
+  };
+
+  const handleSubmit = async (values: any) => {
     const newClient = {
       ...values,
+      location: {
+        latitude: Number(values.latitude) || 0,
+        longitude: Number(values.longitude) || 0,
+      },
       zoneId: Number(values.zoneId),
       bankAccounts: bankAccounts,
     };
-    setClientProps(newClient);
+    // Remove individual latitude/longitude from the object
+    delete newClient.latitude;
+    delete newClient.longitude;
+    await mutate(newClient);
   };
 
   return (
@@ -149,7 +190,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -174,36 +215,68 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                 rut: '',
                 razonSocial: '',
                 address: '',
-                mapsAddress: '',
+                latitude: 0,
+                longitude: 0,
                 schedule: '',
                 phone: '',
                 contactName: '',
                 email: '',
                 observations: '',
-                qualification: '',
-                loanedCrates: 0,
                 zoneId: '',
               }}
               onSubmit={handleSubmit}
+              validate={validateForm}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, setFieldValue, dirty, resetForm }) => {
+              {({
+                handleSubmit,
+                values,
+                setFieldValue,
+                dirty,
+                resetForm,
+                errors,
+                touched,
+                submitCount,
+                setFieldError,
+              }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
                 }, [dirty, resetForm]);
 
+                const handleLocationConfirm = (lat: number, lng: number) => {
+                  setFieldValue('latitude', lat);
+                  setFieldValue('longitude', lng);
+                  setCurrentCoords({ lat, lng });
+                };
+
+                // Actualizar handler para el modal
+                useEffect(() => {
+                  setLocationHandler(() => handleLocationConfirm);
+                }, [setFieldValue]);
+
+                // Actualizar coordenadas actuales cuando cambian los valores del formulario
+                useEffect(() => {
+                  if (values.latitude && values.longitude) {
+                    setCurrentCoords({ lat: Number(values.latitude), lng: Number(values.longitude) });
+                  }
+                }, [values.latitude, values.longitude]);
+
                 return (
                   <form id="client-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                      {/* Fila 1: Nombre - RUT */}
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
                         <Field name="name" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Nombre</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -214,18 +287,18 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
-                        <Field name="rut" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                        <Field name="rut">
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
-                                  <Text>RUT</Text>
+                                  <Text>RUT </Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -236,16 +309,17 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.rut}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
-                      </Stack>
+                      </SimpleGrid>
 
-                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
-                        <Field name="razonSocial" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                      {/* Fila 2: Razón Social - Zona */}
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                        <Field name="razonSocial">
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUsers} boxSize="1rem" />
@@ -260,89 +334,75 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
-                        <Field name="address" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                        <Field name="zoneId" validate={validate}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.zoneId && !!errors.zoneId}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiMapPin} boxSize="1rem" />
-                                  <Text>Dirección</Text>
+                                  <Text>Zona</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
-                              <Input
+                              <Select
                                 {...field}
-                                placeholder="Ingrese la dirección"
+                                placeholder="Seleccionar zona"
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                disabled={isLoadingZones || isLoading}
+                              >
+                                {zones?.map((zone) => (
+                                  <option key={zone.id} value={zone.id}>
+                                    {zone.name}
+                                  </option>
+                                ))}
+                              </Select>
+                              <FormErrorMessage>{errors.zoneId}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
-                      </Stack>
+                      </SimpleGrid>
 
-                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
-                        <Field name="phone" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiPhone} boxSize="1rem" />
-                                  <Text>Teléfono</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el teléfono"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
+                      {/* Fila 3: Dirección (completo) */}
+                      <Field name="address" validate={validate}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiMapPin} boxSize="1rem" />
+                                <Text>Dirección</Text>
+                                <Text color="red.500">*</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Input
+                              {...field}
+                              placeholder="Ingrese la dirección"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            />
+                            <FormErrorMessage>{errors.address}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
 
-                        <Field name="email" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiMail} boxSize="1rem" />
-                                  <Text>Correo electrónico</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                type="email"
-                                placeholder="Ingrese el correo electrónico"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-                      </Stack>
-
-                      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+                      {/* Fila 4: Persona de contacto - Teléfono */}
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
                         <Field name="contactName" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Persona de contacto</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -353,56 +413,44 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.contactName}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
-                        <FormControl>
-                          <FormLabel fontWeight="semibold" mb="0.75rem">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiStar} boxSize="1rem" />
-                              <Text>Calificación</Text>
-                            </HStack>
-                          </FormLabel>
-                          <QualificationSelector
-                            value={values.qualification}
-                            onChange={(value) => setFieldValue('qualification', value)}
-                            size="2rem"
-                            spacing="1rem"
-                          />
-                        </FormControl>
-                      </Stack>
+                        <Field name="phone" validate={validate}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiPhone} boxSize="1rem" />
+                                  <Text>Teléfono</Text>
+                                  <Text color="red.500">*</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el teléfono"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+                      </SimpleGrid>
 
-                      <Field name="mapsAddress" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiMap} boxSize="1rem" />
-                                <Text>Dirección en Maps</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder="Ingrese la dirección en Maps"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <Field name="schedule" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                      {/* Fila 5: Horario (completo) */}
+                      <Field name="schedule" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.schedule && !!errors.schedule}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiClock} boxSize="1rem" />
                                 <Text>Horario</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -413,68 +461,83 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.schedule}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
-                      <Field name="zoneId" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                      {/* Fila 6: Email (completo) */}
+                      <Field name="email" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiMapPin} boxSize="1rem" />
-                                <Text>Zona</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Select
-                              {...field}
-                              placeholder="Seleccionar zona"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoadingZones || isLoading}
-                            >
-                              {zones?.map((zone) => (
-                                <option key={zone.id} value={zone.id}>
-                                  {zone.name}
-                                </option>
-                              ))}
-                            </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <Field name="loanedCrates" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiBox} boxSize="1rem" />
-                                <Text>Cajones prestados</Text>
+                                <Icon as={FiMail} boxSize="1rem" />
+                                <Text>Correo electrónico</Text>
                               </HStack>
                             </FormLabel>
                             <Input
                               {...field}
-                              type="number"
-                              min="0"
-                              placeholder="Ingrese la cantidad de cajones prestados"
+                              type="email"
+                              placeholder="Ingrese el correo electrónico"
                               bg={inputBg}
                               border="1px solid"
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.email}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
+
+                      {/* Fila 7: Ubicación */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMap} boxSize="1rem" />
+                            <Text>Ubicación</Text>
+                          </HStack>
+                        </FormLabel>
+                        <VStack spacing="0.5rem" align="stretch">
+                          <HStack
+                            p="0.75rem"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            justify="space-between"
+                          >
+                            <VStack spacing="0.25rem" align="start">
+                              <Text fontSize="sm" fontWeight="medium">
+                                {values.latitude && values.longitude
+                                  ? `Lat: ${Number(values.latitude).toFixed(6)}, Lng: ${Number(values.longitude).toFixed(6)}`
+                                  : 'No se ha seleccionado ubicación'}
+                              </Text>
+                              {values.latitude && values.longitude && (
+                                <Text fontSize="xs" color="gray.500">
+                                  Haz clic en "Seleccionar en mapa" para cambiar
+                                </Text>
+                              )}
+                            </VStack>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiMapPin />}
+                              onClick={openLocationModal}
+                              disabled={isLoading}
+                              colorScheme="blue"
+                              variant="outline"
+                            >
+                              Seleccionar en mapa
+                            </Button>
+                          </HStack>
+                        </VStack>
+                      </FormControl>
 
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiCreditCard} boxSize="1rem" />
-                            <Text>Cuentas bancarias</Text>
+                            <Text>Cuentas bancarias </Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">
@@ -491,22 +554,54 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                   position="relative"
                                 >
                                   <VStack spacing="0.5rem">
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.accountName
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
                                       <Input
                                         value={account.accountName}
                                         onChange={(e) => {
-                                          const updatedAccounts = [...bankAccounts];
-                                          updatedAccounts[index].accountName = e.target.value;
-                                          setBankAccounts(updatedAccounts);
+                                          const value = e.target.value;
+                                          // Solo permitir letras, espacios y algunos caracteres especiales
+                                          const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+                                          if (regex.test(value)) {
+                                            const updatedAccounts = [...bankAccounts];
+                                            updatedAccounts[index].accountName = value;
+                                            setBankAccounts(updatedAccounts);
+                                            // Limpiar error si existe
+                                            if ((errors as any).bankAccounts?.[index]?.accountName) {
+                                              setFieldError(`bankAccounts[${index}].accountName`, undefined);
+                                            }
+                                          }
                                         }}
                                         bg={inputBg}
                                         borderColor={inputBorder}
                                         size="sm"
                                         disabled={isLoading}
                                       />
+                                      {submitCount > 0 &&
+                                        (errors as any).bankAccounts?.[index] &&
+                                        ((errors as any).bankAccounts[index] as any)?.accountName && (
+                                          <FormErrorMessage>
+                                            {((errors as any).bankAccounts[index] as any).accountName}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.bank
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Banco</FormLabel>
                                       <Select
                                         value={account.bank}
@@ -514,6 +609,10 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                           const updatedAccounts = [...bankAccounts];
                                           updatedAccounts[index].bank = e.target.value;
                                           setBankAccounts(updatedAccounts);
+                                          // Limpiar error si existe
+                                          if ((errors as any).bankAccounts?.[index]?.bank) {
+                                            setFieldError(`bankAccounts[${index}].bank`, undefined);
+                                          }
                                         }}
                                         bg={inputBg}
                                         borderColor={inputBorder}
@@ -527,21 +626,52 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                                           </option>
                                         ))}
                                       </Select>
+                                      {submitCount > 0 &&
+                                        (errors as any).bankAccounts?.[index] &&
+                                        ((errors as any).bankAccounts[index] as any)?.bank && (
+                                          <FormErrorMessage>
+                                            {((errors as any).bankAccounts[index] as any).bank}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          (errors as any).bankAccounts?.[index] &&
+                                          ((errors as any).bankAccounts[index] as any)?.accountNumber
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Número de cuenta</FormLabel>
                                       <Input
                                         value={account.accountNumber}
                                         onChange={(e) => {
-                                          const updatedAccounts = [...bankAccounts];
-                                          updatedAccounts[index].accountNumber = e.target.value;
-                                          setBankAccounts(updatedAccounts);
+                                          const value = e.target.value;
+                                          // Solo permitir números, guiones y puntos
+                                          const regex = /^[0-9.-]*$/;
+                                          if (regex.test(value)) {
+                                            const updatedAccounts = [...bankAccounts];
+                                            updatedAccounts[index].accountNumber = value;
+                                            setBankAccounts(updatedAccounts);
+                                            // Limpiar error si existe
+                                            if ((errors as any).bankAccounts?.[index]?.accountNumber) {
+                                              setFieldError(`bankAccounts[${index}].accountNumber`, undefined);
+                                            }
+                                          }
                                         }}
                                         bg={inputBg}
                                         borderColor={inputBorder}
                                         size="sm"
                                         disabled={isLoading}
                                       />
+                                      {submitCount > 0 &&
+                                        (errors as any).bankAccounts?.[index] &&
+                                        ((errors as any).bankAccounts[index] as any)?.accountNumber && (
+                                          <FormErrorMessage>
+                                            {((errors as any).bankAccounts[index] as any).accountNumber}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
                                   </VStack>
                                   <Button
@@ -578,9 +708,9 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                         </FieldArray>
                       </FormControl>
 
-                      <Field name="observations" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                      <Field name="observations">
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -597,7 +727,7 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
                               rows={4}
                               resize="vertical"
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.observations}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -629,6 +759,14 @@ const ClientAddModal = ({ isOpen, onClose, setClients }: ClientAddModalProps) =>
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        onConfirm={locationHandler || (() => {})}
+        initialLat={currentCoords.lat}
+        initialLng={currentCoords.lng}
+      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

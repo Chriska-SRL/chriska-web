@@ -30,47 +30,49 @@ const getHeaders = (withAuth: boolean, isFormData: boolean = false): HeadersInit
   return headers;
 };
 
-const addLocationToBody = (body: any, method: Method): any => {
+const addLocationToBody = async (body: any, method: Method): Promise<any> => {
   if (method !== 'POST' && method !== 'PUT') {
     return body;
+  }
+
+  // Import getUserLocation dynamically to avoid SSR issues
+  const { getUserLocation } = await import('./geolocation');
+  const location = await getUserLocation();
+
+  // Check if location was denied (0,0 coordinates)
+  if (location.latitude === 0 && location.longitude === 0) {
+    throw new Error('Debe permitir el acceso a su ubicación para continuar');
   }
 
   // For FormData, add location as separate entries
   if (body instanceof FormData) {
     if (!body.has('latitude') && !body.has('longitude')) {
-      if (typeof window !== 'undefined' && navigator.geolocation) {
-        // For FormData, we'll handle location separately in the calling code
-        // since it requires async operation
-      } else {
-        body.append('latitude', '0');
-        body.append('longitude', '0');
-      }
+      body.append('latitude', location.latitude.toString());
+      body.append('longitude', location.longitude.toString());
     }
     return body;
   }
 
   // For JSON bodies
-  if (body && body.location) {
+  if (body && body.auditLocation) {
     return body;
   }
 
-  const defaultCoords = { latitude: 0, longitude: 0 };
-
   if (!body) {
     return {
-      location: defaultCoords,
+      auditLocation: location,
     };
   }
 
   return {
     ...body,
-    location: defaultCoords,
+    auditLocation: location,
   };
 };
 
 const request = async <T>(method: Method, url: string, body?: any, withAuth: boolean = true): Promise<T> => {
   const isFormData = body instanceof FormData;
-  const processedBody = addLocationToBody(body, method);
+  const processedBody = await addLocationToBody(body, method);
 
   const res = await fetch(url, {
     method,

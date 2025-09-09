@@ -21,6 +21,8 @@ import { StockMovement } from '@/entities/stockMovement';
 import { StockMovementDetail } from './StockMovementDetail';
 import { Pagination } from '../Pagination';
 import { getStockMovementTypeLabel } from '@/enums/stockMovementType.enum';
+import { getStockMovementReasonTypeLabel, getStockMovementReasonTypeColor } from '@/enums/stockMovementReasonType.enum';
+import { Badge } from '@chakra-ui/react';
 
 type StockMovementListProps = {
   stockMovements: StockMovement[];
@@ -121,9 +123,22 @@ export const StockMovementList = ({
                     <HStack justify="space-between">
                       <Text color={textColor}>Razón</Text>
                       <Text fontWeight="semibold" noOfLines={1} maxW="10rem">
-                        {mov.reason}
+                        {mov.reason || '—'}
                       </Text>
                     </HStack>
+
+                    {mov.reasonType && (
+                      <HStack justify="space-between">
+                        <Text color={textColor}>Tipo de razón</Text>
+                        <Badge
+                          colorScheme={getStockMovementReasonTypeColor(mov.reasonType)}
+                          variant="subtle"
+                          fontSize="xs"
+                        >
+                          {getStockMovementReasonTypeLabel(mov.reasonType)}
+                        </Badge>
+                      </HStack>
+                    )}
 
                     <HStack justify="space-between">
                       <Text color={textColor}>Usuario</Text>
@@ -176,6 +191,7 @@ export const StockMovementList = ({
                   <Th textAlign="center">Cantidad</Th>
                   <Th textAlign="center">Tipo</Th>
                   <Th textAlign="center">Razón</Th>
+                  <Th textAlign="center">Tipo de razón</Th>
                   <Th w="4rem" pr="2rem"></Th>
                 </Tr>
               </Thead>
@@ -186,7 +202,16 @@ export const StockMovementList = ({
                     <Td textAlign="center">{stockMovement.product.name}</Td>
                     <Td textAlign="center">{stockMovement.quantity}</Td>
                     <Td textAlign="center">{getStockMovementTypeLabel(stockMovement.type)}</Td>
-                    <Td textAlign="center">{stockMovement.reason}</Td>
+                    <Td textAlign="center">{stockMovement.reason || '—'}</Td>
+                    <Td textAlign="center">
+                      {stockMovement.reasonType ? (
+                        <Badge colorScheme={getStockMovementReasonTypeColor(stockMovement.reasonType)} variant="subtle">
+                          {getStockMovementReasonTypeLabel(stockMovement.reasonType)}
+                        </Badge>
+                      ) : (
+                        '—'
+                      )}
+                    </Td>
                     <Td textAlign="center" pr="2rem">
                       <StockMovementDetail movement={stockMovement} setMovements={setStockMovements} />
                     </Td>

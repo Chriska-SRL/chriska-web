@@ -31,9 +31,11 @@ import { useGetProducts } from '@/hooks/product';
 import { useDebounce } from '@/hooks/useDebounce';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StockMovementTypeOptions } from '@/enums/stockMovementType.enum';
+import { StockMovementReasonTypeOptions } from '@/enums/stockMovementReasonType.enum';
 
 type StockMovementFilters = {
   Type?: string;
+  ReasonType?: string;
   DateFrom?: string;
   DateTo?: string;
   ProductId?: number;
@@ -152,7 +154,13 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
     });
   };
 
-  const activeFilterCount = [filters.Type, filters.DateFrom, filters.DateTo, filters.CreatedBy].filter(Boolean).length;
+  const activeFilterCount = [
+    filters.Type,
+    filters.ReasonType,
+    filters.DateFrom,
+    filters.DateTo,
+    filters.CreatedBy,
+  ].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0 || filters.ProductId;
 
   return (
@@ -425,6 +433,31 @@ export const StockMovementFilters = ({ filters, onFiltersChange, isLoading }: St
                   }}
                 >
                   {StockMovementTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  placeholder="Filtrar por tipo de razón"
+                  value={filters.ReasonType || ''}
+                  onChange={(e) => {
+                    const reasonType = e.target.value || undefined;
+                    onFiltersChange({ ...filters, ReasonType: reasonType });
+                  }}
+                  bg={bgInput}
+                  borderColor={borderInput}
+                  color={textColor}
+                  disabled={isLoading}
+                  transition="all 0.2s ease"
+                  borderRadius="md"
+                  _focus={{
+                    borderColor: focusBorderColor,
+                    boxShadow: focusBoxShadow,
+                  }}
+                >
+                  {StockMovementReasonTypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>

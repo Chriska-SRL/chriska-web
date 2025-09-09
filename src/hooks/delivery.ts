@@ -1,7 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delivery } from '@/entities/delivery';
-import { getDeliveries, getDeliveryById, updateDelivery, changeDeliveryStatus, getConfirmedDeliveriesByClient } from '@/services/delivery';
-import { useFetch } from '@/utils/useFetch';
+import {
+  getDeliveries,
+  getDeliveryById,
+  updateDelivery,
+  changeDeliveryStatus,
+  getConfirmedDeliveriesByClient,
+} from '@/services/delivery';
+import { useMutation } from '@/utils/useFetch';
 
 type DeliveryFilters = {
   status?: string;
@@ -71,10 +77,18 @@ export const useGetDeliveryById = (id?: number) => {
   return { data, isLoading, error, refetch: fetchDelivery };
 };
 
-export const useUpdateDelivery = (props?: Partial<Delivery>) =>
-  useFetch<Partial<Delivery>, Delivery>(updateDelivery, props, { parseFieldError: true });
+export const useUpdateDelivery = () =>
+  useMutation<Partial<Delivery>, Delivery>(updateDelivery, { parseFieldError: true });
 
-export const useChangeDeliveryStatus = (props?: { id: number; status: string }) => {
+export const useChangeDeliveryStatus = (props?: {
+  id: number;
+  status: string;
+  additionalData?: {
+    amount?: number;
+    paymentMethod?: string | null;
+    crates?: number;
+  };
+}) => {
   const [data, setData] = useState<Delivery>();
   const [isLoading, setIsLoading] = useState(false);
   const [fieldError, setFieldError] = useState<any>();
@@ -89,7 +103,7 @@ export const useChangeDeliveryStatus = (props?: { id: number; status: string }) 
       setFieldError(undefined);
 
       try {
-        const result = await changeDeliveryStatus(props.id, props.status);
+        const result = await changeDeliveryStatus(props.id, props.status, props.additionalData);
         setData(result);
       } catch (err: any) {
         try {
@@ -104,7 +118,7 @@ export const useChangeDeliveryStatus = (props?: { id: number; status: string }) 
     };
 
     executeRequest();
-  }, [props?.id, props?.status, hasExecuted]);
+  }, [props?.id, props?.status, props?.additionalData, hasExecuted]);
 
   // Reset cuando props cambie a undefined
   useEffect(() => {

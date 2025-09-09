@@ -1,6 +1,6 @@
 import { Client } from './client';
 import { Order } from './order';
-import { ProductItem } from './orderRequest';
+import { ProductItem } from './productItem';
 import { User } from './user';
 
 export type Delivery = {
@@ -13,5 +13,6 @@ export type Delivery = {
   user: User;
   productItems: ProductItem[];
   crates: number;
+  payment: number;
   order: Order;
 };

@@ -6,8 +6,12 @@ import { DeliveryFilters } from './DeliveryFilters';
 import { DeliveryList } from './DeliveryList';
 import { useGetDeliveries } from '@/hooks/delivery';
 import { Delivery } from '@/entities/delivery';
+import { useSearchParams } from 'next/navigation';
+import { getDistributionById } from '@/services/distribution';
 
 export const Deliveries = () => {
+  const searchParams = useSearchParams();
+  const distributionId = searchParams.get('distribution');
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -17,6 +21,7 @@ export const Deliveries = () => {
   const [filterFromDate, setFilterFromDate] = useState<string>('');
   const [filterToDate, setFilterToDate] = useState<string>('');
   const [isFilterLoading, setIsFilterLoading] = useState(false);
+  const [isDistributionLoading, setIsDistributionLoading] = useState(false);
 
   const filters = useMemo(() => {
     const result: { status?: string; clientId?: number; userId?: number; fromDate?: string; toDate?: string } = {};
@@ -28,15 +33,32 @@ export const Deliveries = () => {
     return Object.keys(result).length > 0 ? result : undefined;
   }, [filterStatus, filterClientId, filterUserId, filterFromDate, filterToDate]);
 
-  const { data, isLoading, error } = useGetDeliveries(currentPage, pageSize, filters);
+  const { data, isLoading, error } = useGetDeliveries(
+    distributionId ? undefined : currentPage,
+    distributionId ? undefined : pageSize,
+    distributionId ? undefined : filters,
+  );
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
 
   useEffect(() => {
-    if (data) {
+    if (distributionId) {
+      setIsDistributionLoading(true);
+      getDistributionById(Number(distributionId))
+        .then((distribution) => {
+          setDeliveries(distribution.deliveries || []);
+        })
+        .catch((err) => {
+          console.error('Error loading distribution deliveries:', err);
+          setDeliveries([]);
+        })
+        .finally(() => {
+          setIsDistributionLoading(false);
+        });
+    } else if (data) {
       setDeliveries(data);
       setIsFilterLoading(false);
     }
-  }, [data]);
+  }, [data, distributionId]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -72,27 +94,30 @@ export const Deliveries = () => {
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
-          Entregas
+          {distributionId ? `Entregas del Reparto #${distributionId}` : 'Entregas'}
         </Text>
       </Flex>
 
       {isMobile && <Divider />}
 
-      <Flex direction={{ base: 'column', md: 'row' }} justifyContent="flex-start" gap="1rem" w="100%">
-        <DeliveryFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
-      </Flex>
+      {!distributionId && (
+        <Flex direction={{ base: 'column', md: 'row' }} justifyContent="flex-start" gap="1rem" w="100%">
+          <DeliveryFilters onFilterChange={handleFilterChange} disabled={isLoading || isFilterLoading} />
+        </Flex>
+      )}
 
       {isMobile && <Divider />}
 
       <DeliveryList
         deliveries={deliveries}
-        isLoading={isLoading || isFilterLoading}
+        isLoading={isLoading || isFilterLoading || isDistributionLoading}
         error={error}
         setDeliveries={setDeliveries}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
+        currentPage={distributionId ? 1 : currentPage}
+        pageSize={distributionId ? deliveries.length || 10 : pageSize}
+        onPageChange={distributionId ? () => {} : handlePageChange}
+        onPageSizeChange={distributionId ? () => {} : handlePageSizeChange}
+        showPagination={!distributionId}
       />
     </>
   );

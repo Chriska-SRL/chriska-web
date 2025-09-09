@@ -29,7 +29,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { Order } from '@/entities/order';
-import { FiEye, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
+import { FiInfo, FiCheckCircle, FiUsers, FiUser, FiCalendar, FiFileText, FiPackage, FiX } from 'react-icons/fi';
 import { OrderPrepare } from './OrderPrepare';
 import { useChangeOrderStatus } from '@/hooks/order';
 import { format } from 'date-fns';
@@ -234,14 +234,14 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }} isCentered scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader
@@ -323,7 +323,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
                         );
                         const requestedQuantity = requestedItem?.quantity || 0;
                         const actualQuantity = item.quantity;
-                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity * 1000 : null;
+                        const weight = item.product?.unitType === UnitType.KILO ? item.weight || 0 : null;
 
                         return (
                           <Box
@@ -469,7 +469,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             {order.status === Status.PENDING ? (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
@@ -629,7 +629,7 @@ export const OrderDetail = ({ order, setOrders }: OrderDetailProps) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="1.25rem" borderBottom="1px solid" borderColor={inputBorder} pb="0.75rem">
-            <Text>¡Orden preparada exitosamente!</Text>
+            <Text>Orden preparada exitosamente</Text>
           </ModalHeader>
 
           <ModalBody py="1.5rem">

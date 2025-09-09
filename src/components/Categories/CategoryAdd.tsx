@@ -51,13 +51,11 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddCategory(categoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddCategory();
 
   const handleClose = () => {
-    setCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -82,7 +80,6 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
         duration: 2000,
         isClosable: true,
       });
-      setCategoryProps(undefined);
       setCategories((prev) => [...prev, data]);
       onClose();
     }
@@ -108,8 +105,8 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Category>) => {
-    setCategoryProps(values);
+  const handleSubmit = async (values: Partial<Category>) => {
+    await mutate(values);
   };
 
   return (
@@ -117,7 +114,7 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -143,8 +140,10 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
                 }, [dirty, resetForm]);
@@ -153,12 +152,13 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
                   <form id="category-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Nombre</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -169,18 +169,19 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -192,7 +193,7 @@ const CategoryAddModal = ({ isOpen, onClose, setCategories }: CategoryAddModalPr
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

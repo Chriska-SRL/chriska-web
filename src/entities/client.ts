@@ -7,7 +7,10 @@ export type Client = {
   rut: string;
   razonSocial: string;
   address: string;
-  mapsAddress: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
   phone: string;
   email: string;
   contactName: string;

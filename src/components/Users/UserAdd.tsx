@@ -25,7 +25,8 @@ import { Formik, Field } from 'formik';
 import { FaPlus, FaCheck } from 'react-icons/fa';
 import { FiUser, FiMail, FiShield, FiActivity } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { useAddUser, useTemporaryPassword } from '@/hooks/user';
+import { useAddUser } from '@/hooks/user';
+import { temporaryPassword } from '@/services/user';
 import { User } from '@/entities/user';
 import { useGetRoles } from '@/hooks/role';
 import { validate } from '@/utils/validations/validate';
@@ -52,13 +53,9 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [userProps, setUserProps] = useState<Partial<User>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddUser(userProps);
-
-  const [newUserId, setNewUserId] = useState<number>();
-  const { data: temporalPassword, error: resetError } = useTemporaryPassword(newUserId);
+  const { data, isLoading, error, fieldError, mutate } = useAddUser();
 
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -66,7 +63,8 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
   const { data: roles, isLoading: isLoadingRoles } = useGetRoles();
 
   const handleClose = () => {
-    setUserProps(undefined);
+    setTempPassword(null);
+    setIsPasswordModalOpen(false);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -91,10 +89,24 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
         duration: 2000,
         isClosable: true,
       });
-      setUserProps(undefined);
       setUsers((prev) => [...prev, data]);
-      setNewUserId(data.id);
-      onClose();
+
+      // Llamar directamente al servicio de contraseña temporal
+      temporaryPassword(data.id)
+        .then((response) => {
+          setTempPassword(response.password);
+          setIsPasswordModalOpen(true);
+        })
+        .catch((error) => {
+          toast({
+            title: 'Error al generar contraseña temporal',
+            description: error.message || 'Error desconocido',
+            status: 'error',
+            duration: 4000,
+            isClosable: true,
+          });
+          onClose(); // Cerrar el modal principal aunque haya error
+        });
     }
   }, [data, setUsers, toast, onClose]);
 
@@ -118,26 +130,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
     }
   }, [error, fieldError, toast]);
 
-  useEffect(() => {
-    if (temporalPassword) {
-      setTempPassword(temporalPassword.password);
-      setIsPasswordModalOpen(true);
-    }
-  }, [temporalPassword]);
-
-  useEffect(() => {
-    if (resetError) {
-      toast({
-        title: 'Error al generar contraseña temporal',
-        description: resetError,
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
-    }
-  }, [resetError, toast]);
-
-  const handleSubmit = (values: { username: string; name: string; roleId: string; estado: string }) => {
+  const handleSubmit = async (values: { username: string; name: string; roleId: string; estado: string }) => {
     const user = {
       username: values.username,
       name: values.name,
@@ -145,15 +138,15 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
       isEnabled: values.estado === 'Activo',
       roleId: Number(values.roleId),
     };
-    setUserProps(user);
+    await mutate(user);
   };
 
   return (
     <>
       <Modal
-        isOpen={isOpen}
+        isOpen={isOpen && !isPasswordModalOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -181,8 +174,10 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -200,12 +195,13 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                           return undefined;
                         }}
                       >
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
                                 <Text>Nombre de usuario</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -216,18 +212,19 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.username}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiUser} boxSize="1rem" />
                                 <Text>Nombre completo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -238,18 +235,19 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="roleId" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.roleId && !!errors.roleId}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiShield} boxSize="1rem" />
                                 <Text>Rol</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -266,18 +264,19 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.roleId}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="estado" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.estado && !!errors.estado}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiActivity} boxSize="1rem" />
                                 <Text>Estado</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -291,7 +290,7 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
                               <option value="Activo">Activo</option>
                               <option value="Inactivo">Inactivo</option>
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.estado}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -326,7 +325,10 @@ const UserAddModal = ({ isOpen, onClose, setUsers }: UserAddModalProps) => {
 
       <TemporaryPasswordModal
         isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          onClose(); // Cerrar el modal principal cuando se cierre el modal de contraseña
+        }}
         password={tempPassword}
       />
 

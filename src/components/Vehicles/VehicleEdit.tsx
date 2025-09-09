@@ -38,10 +38,9 @@ type VehicleEditProps = {
 
 export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEditProps) => {
   const toast = useToast();
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateVehicle(vehicleProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateVehicle();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -56,7 +55,6 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
         isClosable: true,
       });
       setVehicles((prev) => prev.map((v) => (v.id === data.id ? { ...v, ...data } : v)));
-      setVehicleProps(undefined);
       onClose();
     }
   }, [data]);
@@ -81,12 +79,11 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Vehicle) => {
-    setVehicleProps(values);
+  const handleSubmit = async (values: Vehicle) => {
+    await mutate(values);
   };
 
   const handleClose = () => {
-    setVehicleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -107,7 +104,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -153,6 +150,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiHash} boxSize="1rem" />
                             <Text>Matrícula</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -174,6 +172,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiTag} boxSize="1rem" />
                             <Text>Marca</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -195,6 +194,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiTruck} boxSize="1rem" />
                             <Text>Modelo</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -216,6 +216,7 @@ export const VehicleEdit = ({ isOpen, onClose, vehicle, setVehicles }: VehicleEd
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Capacidad de cajones</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field

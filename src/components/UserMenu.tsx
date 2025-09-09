@@ -13,15 +13,38 @@ export const UserMenu = () => {
   const logout = useUserStore((state) => state.logout);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setIsLoading(true);
+    setIsLoggingOut(true);
 
-    setTimeout(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        // Limpiar solo la cookie para que el middleware redirija, pero mantener el estado de Zustand
+        // para que la UI se vea bien hasta la redirección
+        document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=Lax';
+
+        // Limpiar sessionStorage
+        sessionStorage.clear();
+
+        // Hacer la redirección
+        window.location.replace('/iniciar-sesion');
+      } else {
+        // Fallback para SSR
+        logout();
+        router.push('/iniciar-sesion');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // En caso de error, hacer limpieza completa y forzar redirección
       logout();
-      router.refresh();
-      router.push('/iniciar-sesion');
-    }, 2500);
+      if (typeof window !== 'undefined') {
+        window.location.replace('/iniciar-sesion');
+      } else {
+        router.push('/iniciar-sesion');
+      }
+    }
   };
 
   const bgButton = useColorModeValue('#f2f2f2', 'gray.700');
@@ -30,10 +53,10 @@ export const UserMenu = () => {
 
   return (
     <Flex flexDir="column" gap="1rem">
-      <Flex alignItems="center" gap="0.75rem">
+      <Flex alignItems="center" gap="0.75rem" opacity={isLoggingOut ? 0.7 : 1}>
         <Avatar w="2rem" h="2rem" size="sm" bg="black" color="white" name={user?.name} />
         <Text fontWeight="bold" color={textColor}>
-          {user?.name}
+          {isLoggingOut ? 'Cerrando sesión...' : user?.name}
         </Text>
       </Flex>
       <Button
@@ -48,7 +71,7 @@ export const UserMenu = () => {
         leftIcon={<MdLogout />}
         _hover={{ bg: bgHover }}
         isLoading={isLoading}
-        loadingText="Cerrando sesión..."
+        loadingText="Redirigiendo..."
         disabled={isLoading}
       >
         Cerrar sesión

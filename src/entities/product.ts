@@ -14,6 +14,7 @@ export type Product = {
   availableStock: number;
   unitType: string;
   description: string;
+  estimatedWeight: number;
   temperatureCondition: string;
   observations: string;
   subCategory: SubCategory;

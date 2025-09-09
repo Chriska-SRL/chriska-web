@@ -40,7 +40,7 @@ import {
 } from '@chakra-ui/react';
 import { FaPlus, FaTimes, FaCheck } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { FiPercent, FiCalendar, FiPackage, FiMapPin, FiTag, FiFileText, FiCheckCircle, FiGrid } from 'react-icons/fi';
+import { FiPercent, FiCalendar, FiPackage, FiMapPin, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
 import { Field, Formik } from 'formik';
 import { useEffect, useState, useMemo, useRef, Fragment, useCallback } from 'react';
 import { Discount } from '@/entities/discount';
@@ -54,7 +54,6 @@ import { useGetBrands } from '@/hooks/brand';
 import { useGetCategories } from '@/hooks/category';
 import { useGetSubCategories } from '@/hooks/subcategory';
 import { useGetZones } from '@/hooks/zone';
-import { DiscountStatusOptions } from '@/enums/discountStatus.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type DiscountAddProps = {
@@ -80,22 +79,10 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
-  const [discountProps, setDiscountProps] = useState<{
-    description: string;
-    expirationDate: string;
-    productQuantity: number;
-    percentage: number;
-    status: string;
-    discountProductId: number[];
-    discountClientId: number[];
-    brandId?: string;
-    subCategoryId?: string;
-    zoneId?: string;
-  }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError } = useAddDiscount(discountProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddDiscount();
 
   // Load data using hooks - they handle caching internally
   const { data: brands = [] } = useGetBrands();
@@ -104,7 +91,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const { data: zones = [] } = useGetZones();
 
   // Estados para productos
-  const [productType, setProductType] = useState<'all' | 'brand' | 'subcategory' | 'list'>('all');
+  const [productType, setProductType] = useState<'brand' | 'subcategory' | 'list'>('brand');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>('');
@@ -118,7 +105,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados para clientes
-  const [clientType, setClientType] = useState<'all' | 'zone' | 'list'>('all');
+  const [clientType, setClientType] = useState<'zone' | 'list'>('zone');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
 
   // Estados para la búsqueda de clientes (solo cuando clientType === 'list')
@@ -287,19 +274,18 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   };
 
   const handleClose = () => {
-    setProductType('all');
+    setProductType('brand');
     setSelectedBrandId('');
     setSelectedCategoryId('');
     setSelectedSubCategoryId('');
     setSelectedZoneId('');
-    setClientType('all');
+    setClientType('zone');
     setSelectedProducts([]);
     setSelectedClients([]);
     setProductSearch('');
     setClientSearch('');
     setShowProductDropdown(false);
     setShowClientDropdown(false);
-    setDiscountProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -326,7 +312,6 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
         isClosable: true,
       });
 
-      setDiscountProps(undefined);
       setDiscounts((prev) => [...prev, data]);
       onClose();
     }
@@ -368,15 +353,9 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   }, []);
 
   const handleSubmit = useCallback(
-    (values: {
-      description: string;
-      expirationDate: string;
-      productQuantity: number;
-      percentage: number;
-      status: string;
-    }) => {
+    async (values: { description: string; expirationDate: string; productQuantity: number; percentage: number }) => {
       // Prevent double submission
-      if (isLoading || discountProps) return;
+      if (isLoading) return;
 
       // Create the discount object with only necessary fields
       const discount: any = {
@@ -384,10 +363,10 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
         expirationDate: values.expirationDate,
         productQuantity: values.productQuantity,
         percentage: values.percentage,
-        status: values.status,
+        status: 'Available',
       };
 
-      // Add product-related fields only when necessary
+      // Add product-related fields
       if (productType === 'brand' && selectedBrandId) {
         discount.brandId = selectedBrandId;
       } else if (productType === 'subcategory' && selectedSubCategoryId) {
@@ -395,21 +374,18 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
       } else if (productType === 'list') {
         discount.discountProductId = selectedProducts.map((p) => p.id);
       }
-      // If productType === 'all', don't send any product-related fields
 
-      // Add client-related fields only when necessary
+      // Add client-related fields
       if (clientType === 'zone' && selectedZoneId) {
         discount.zoneId = selectedZoneId;
       } else if (clientType === 'list') {
         discount.discountClientId = selectedClients.map((c) => c.id);
       }
-      // If clientType === 'all', don't send any client-related fields
 
-      setDiscountProps(discount);
+      await mutate(discount);
     },
     [
       isLoading,
-      discountProps,
       productType,
       selectedProducts,
       clientType,
@@ -417,17 +393,16 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
       selectedBrandId,
       selectedSubCategoryId,
       selectedZoneId,
+      mutate,
     ],
   );
-
-  const statusOptions = DiscountStatusOptions;
 
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -452,14 +427,15 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                 expirationDate: '',
                 productQuantity: 1,
                 percentage: 0,
-                status: 'Available',
                 brandId: '',
                 subCategoryId: '',
                 zoneId: '',
               }}
               onSubmit={handleSubmit}
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -471,12 +447,16 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                       <VStack spacing="1rem" align="stretch">
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="percentage" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.percentage && !!errors.percentage}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPercent} boxSize="1rem" />
                                     <Text>Porcentaje (%)</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -507,18 +487,22 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                     }
                                   }}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.percentage}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="productQuantity" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.productQuantity && !!errors.productQuantity}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiPackage} boxSize="1rem" />
                                     <Text>Cantidad mínima</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <NumberInput
@@ -538,7 +522,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                     <NumberDecrementStepper />
                                   </NumberInputStepper>
                                 </NumberInput>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.productQuantity}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
@@ -546,12 +530,16 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
 
                         <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
                           <Field name="expirationDate" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
+                            {({ field }: any) => (
+                              <FormControl
+                                isInvalid={submitCount > 0 && touched.expirationDate && !!errors.expirationDate}
+                                flex="1"
+                              >
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiCalendar} boxSize="1rem" />
                                     <Text>Fecha de vencimiento</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -562,73 +550,23 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                                   borderColor={inputBorder}
                                   disabled={isLoading}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
-                              </FormControl>
-                            )}
-                          </Field>
-
-                          <Field name="status" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched} flex="1">
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiCheckCircle} boxSize="1rem" />
-                                    <Text>Estado</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Select
-                                  {...field}
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  disabled={isLoading}
-                                >
-                                  {statusOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                      {option.label}
-                                    </option>
-                                  ))}
-                                </Select>
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.expirationDate}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
                         </Stack>
-
-                        <Field name="description" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiFileText} boxSize="1rem" />
-                                  <Text>Descripción</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Textarea
-                                {...field}
-                                placeholder="Ingrese la descripción del descuento"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
 
                         {/* Selector de tipo de productos */}
                         <FormControl>
                           <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
                           <Select
                             value={productType}
-                            onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
+                            onChange={(e) => setProductType(e.target.value as 'brand' | 'subcategory' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los productos</option>
                             <option value="brand">Por marca</option>
                             <option value="subcategory">Por subcategoría</option>
                             <option value="list">Lista personalizada</option>
@@ -967,13 +905,12 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                           <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
                           <Select
                             value={clientType}
-                            onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
+                            onChange={(e) => setClientType(e.target.value as 'zone' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los clientes</option>
                             <option value="zone">Por zona</option>
                             <option value="list">Lista personalizada</option>
                           </Select>
@@ -1228,6 +1165,30 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                             )}
                           </FormControl>
                         )}
+
+                        {/* Descripción */}
+                        <Field name="description" validate={validateEmpty}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiFileText} boxSize="1rem" />
+                                  <Text>Descripción</Text>
+                                  <Text color="red.500">*</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Textarea
+                                {...field}
+                                placeholder="Ingrese la descripción del descuento"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </VStack>
                     </Box>
                   </form>

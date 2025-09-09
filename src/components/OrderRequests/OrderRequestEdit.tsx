@@ -39,14 +39,15 @@ import {
 import { Formik } from 'formik';
 import { FaCheck, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
 import { AiOutlineSearch } from 'react-icons/ai';
-import { FiFileText, FiUsers } from 'react-icons/fi';
+import { FiFileText } from 'react-icons/fi';
 import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
 import { OrderRequest } from '@/entities/orderRequest';
 import { useUpdateOrderRequest } from '@/hooks/orderRequest';
-import { useGetClients } from '@/hooks/client';
 import { useGetProducts } from '@/hooks/product';
 import { getBestDiscount } from '@/services/discount';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 
 type OrderRequestEditProps = {
   orderRequest: OrderRequest;
@@ -68,18 +69,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [orderRequestProps, setOrderRequestProps] = useState<Partial<OrderRequest>>();
-
-  // Estados para la búsqueda de clientes
-  const [clientSearch, setClientSearch] = useState('');
-  const [clientSearchType, setClientSearchType] = useState<'name' | 'rut' | 'razonSocial' | 'contactName'>('name');
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
-  const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
-  const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
-  const clientSearchRef = useRef<HTMLDivElement>(null);
-
-  const { data, isLoading, fieldError } = useUpdateOrderRequest(orderRequestProps);
+  const { data, isLoading, fieldError, mutate } = useUpdateOrderRequest();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -91,6 +81,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       name: string;
       price: number;
       imageUrl?: string;
+      unitType?: string;
+      estimatedWeight?: number;
       quantity: number;
       discount?: number;
       discountId?: string;
@@ -106,13 +98,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  // Inicializar cliente seleccionado con el cliente actual del pedido
-  useEffect(() => {
-    if (orderRequest.client) {
-      setSelectedClient({ id: orderRequest.client.id, name: orderRequest.client.name });
-    }
-  }, [orderRequest.client]);
-
   // Limpiar productos cuando el componente se cierra
   useEffect(() => {
     if (!isOpen) {
@@ -123,13 +108,15 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
   // Inicializar productos seleccionados con los productos del pedido
   useEffect(() => {
     const initializeProducts = async () => {
-      if (orderRequest.productItems && selectedClient) {
+      if (orderRequest.productItems && orderRequest.client) {
         // Primero agregar productos con estado de carga
         const initialProducts = orderRequest.productItems.map((item) => ({
           id: item.product.id,
           name: item.product.name,
           price: item.unitPrice,
           imageUrl: item.product.imageUrl,
+          unitType: item.product.unitType,
+          estimatedWeight: item.product.estimatedWeight,
           quantity: item.quantity,
           discount: 0,
           minQuantityForDiscount: undefined,
@@ -142,7 +129,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
         // Luego obtener descuentos reales para cada producto
         for (const item of orderRequest.productItems) {
           try {
-            const bestDiscount = await getBestDiscount(item.product.id, selectedClient.id);
+            const bestDiscount = await getBestDiscount(item.product.id, orderRequest.client.id);
             setSelectedProducts((prev) =>
               prev.map((p) =>
                 p.id === item.product.id
@@ -174,19 +161,10 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       }
     };
 
-    if (orderRequest.productItems && selectedClient && selectedProducts.length === 0) {
+    if (orderRequest.productItems && orderRequest.client && selectedProducts.length === 0) {
       initializeProducts();
     }
-  }, [orderRequest.productItems, selectedClient, selectedProducts.length]);
-
-  // Debounce para búsqueda de clientes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedClientSearch(clientSearch);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [clientSearch]);
+  }, [orderRequest.productItems, orderRequest.client, selectedProducts.length]);
 
   // Debounce para búsqueda de productos
   useEffect(() => {
@@ -196,31 +174,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
     return () => clearTimeout(timer);
   }, [productSearch]);
-
-  // Filtros de búsqueda de clientes
-  const clientFilters = useMemo(() => {
-    if (!debouncedClientSearch || debouncedClientSearch.length < 2) return undefined;
-    const filters: any = {};
-    switch (clientSearchType) {
-      case 'name':
-        filters.name = debouncedClientSearch;
-        break;
-      case 'rut':
-        filters.rut = debouncedClientSearch;
-        break;
-      case 'razonSocial':
-        filters.razonSocial = debouncedClientSearch;
-        break;
-      case 'contactName':
-        filters.contactName = debouncedClientSearch;
-        break;
-    }
-    return filters;
-  }, [debouncedClientSearch, clientSearchType]);
-
-  const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
-
-  const { isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
 
   // Filtros de búsqueda de productos
   const productFilters = useMemo(() => {
@@ -245,13 +198,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const { data: productsSearch = [], isLoading: isLoadingProductsSearch } = useGetProducts(1, 10, actualProductFilters);
 
-  // Actualizar el término de búsqueda cuando se completa la búsqueda
-  useEffect(() => {
-    if (!isLoadingClientsSearch && debouncedClientSearch && debouncedClientSearch.length >= 2) {
-      setLastClientSearchTerm(debouncedClientSearch);
-    }
-  }, [isLoadingClientsSearch, debouncedClientSearch]);
-
   useEffect(() => {
     if (!isLoadingProductsSearch && debouncedProductSearch && debouncedProductSearch.length >= 2) {
       setLastProductSearchTerm(debouncedProductSearch);
@@ -270,7 +216,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
   const handleProductSelect = async (product: any) => {
     const isAlreadySelected = selectedProducts.some((p) => p.id === product.id);
-    if (!isAlreadySelected && selectedClient) {
+    if (!isAlreadySelected && orderRequest.client) {
       // Agregar inmediatamente el producto con estado de carga
       setSelectedProducts((prev) => [
         ...prev,
@@ -279,6 +225,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
           name: product.name,
           price: product.price || 0,
           imageUrl: product.imageUrl,
+          unitType: product.unitType,
+          estimatedWeight: product.estimatedWeight,
           quantity: 1.0,
           discount: 0,
           isLoadingDiscount: true,
@@ -292,7 +240,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
 
       try {
         // Obtener el mejor descuento para este producto y cliente
-        const bestDiscount = await getBestDiscount(product.id, selectedClient.id);
+        const bestDiscount = await getBestDiscount(product.id, orderRequest.client.id);
 
         // Actualizar el producto con el descuento obtenido
         setSelectedProducts((prev) =>
@@ -350,12 +298,9 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     }, 2000);
   };
 
-  // Click outside handler
+  // Click outside handler (only for product dropdown in edit mode)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
-        setShowClientDropdown(false);
-      }
       if (productSearchRef.current && !productSearchRef.current.contains(event.target as Node)) {
         setShowProductDropdown(false);
       }
@@ -375,7 +320,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
         duration: 3000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
       onClose();
     }
   }, [data, setOrderRequests, toast, onClose, orderRequest.id]);
@@ -401,14 +345,14 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
     const orderRequestData = {
       id: orderRequest.id,
       observations: values.observations,
-      clientId: selectedClient?.id,
+      clientId: orderRequest.client?.id,
       productItems: selectedProducts.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
       })),
     } as any;
 
-    setOrderRequestProps(orderRequestData);
+    await mutate(orderRequestData);
   };
 
   const handleClose = () => {
@@ -429,7 +373,7 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '2xl' }}
+        size={{ base: 'full', md: '2xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleClose}
@@ -455,10 +399,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
               validate={() => {
                 const errors: any = {};
 
-                if (!selectedClient?.id) {
-                  errors.client = 'El cliente es requerido';
-                }
-
                 if (!selectedProducts || selectedProducts.length === 0) {
                   errors.productItems = 'Debe agregar al menos un producto';
                 }
@@ -474,49 +414,16 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                   setFormikInstance({ dirty: formik.dirty, resetForm: formik.resetForm });
                 }, [formik.dirty, formik.resetForm]);
 
-                // Revalidar cuando cambian los productos seleccionados o el cliente
+                // Revalidar cuando cambian los productos seleccionados
                 useEffect(() => {
                   if (formik.submitCount > 0) {
                     formik.validateForm();
                   }
-                }, [selectedProducts.length, selectedClient?.id, formik.submitCount]);
+                }, [selectedProducts.length, formik.submitCount]);
 
                 return (
                   <form id="order-request-edit-form" onSubmit={formik.handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <FormControl isInvalid={!selectedClient?.id && formik.submitCount > 0}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiUsers} boxSize="1rem" />
-                            <Text>Cliente</Text>
-                          </HStack>
-                        </FormLabel>
-
-                        {/* Cliente seleccionado (no editable) */}
-                        <Box position="relative" ref={clientSearchRef} minW={{ base: '100%', md: '18.75rem' }}>
-                          {selectedClient ? (
-                            <Flex
-                              h="40px"
-                              px="0.75rem"
-                              bg={inputBg}
-                              borderRadius="md"
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              align="center"
-                              justify="space-between"
-                            >
-                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                {selectedClient.name}
-                              </Text>
-                            </Flex>
-                          ) : null}
-                        </Box>
-
-                        {!selectedClient?.id && formik.submitCount > 0 && (
-                          <FormErrorMessage>El cliente es requerido</FormErrorMessage>
-                        )}
-                      </FormControl>
-
                       <FormControl
                         isInvalid={
                           !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
@@ -714,7 +621,10 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                     ? product.discount || 0
                                     : 0;
                                 const effectivePrice = product.price * (1 - discountToApply / 100);
-                                const subtotal = product.quantity * effectivePrice;
+                                const subtotal =
+                                  product.unitType === UnitType.KILO
+                                    ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                    : product.quantity * effectivePrice;
                                 return (
                                   <Box
                                     key={product.id}
@@ -786,6 +696,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                             </Text>
                                           )}
                                         </HStack>
+                                        {product.unitType === UnitType.KILO && (
+                                          <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                            Peso estimado: {product.estimatedWeight || 0}g
+                                          </Text>
+                                        )}
                                       </Box>
 
                                       {/* Controles de cantidad */}
@@ -816,7 +731,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 border="none"
                                                 fontSize="sm"
                                                 w="fit-content"
-                                                maxW="250px"
                                                 p={0}
                                               >
                                                 <PopoverArrow bg="red.500" />
@@ -826,7 +740,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   fontWeight="semibold"
                                                   whiteSpace="nowrap"
                                                 >
-                                                  Stock insuficiente
+                                                  Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                  {product.availableStock || 0}
                                                 </PopoverBody>
                                               </PopoverContent>
                                             </Popover>
@@ -859,7 +774,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                     border="none"
                                                     fontSize="sm"
                                                     w="fit-content"
-                                                    maxW="250px"
                                                     p={0}
                                                   >
                                                     <PopoverArrow bg="green.500" />
@@ -924,13 +838,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                  const rounded = roundToQuarter(newValue);
+                                                  handleProductQuantityChange(product.id, rounded);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: rounded.toString(),
+                                                  }));
+                                                } else {
+                                                  const newValue = Math.max(1, product.quantity - 1);
+                                                  handleProductQuantityChange(product.id, newValue);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: newValue.toString(),
+                                                  }));
+                                                }
                                               }}
                                               borderRightRadius={0}
                                             />
@@ -951,15 +874,30 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 }
                                               }}
                                               onBlur={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                if (isNaN(value) || value <= 0) {
-                                                  handleProductQuantityChange(product.id, 1);
-                                                  setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const value = parseFloat(e.target.value);
+                                                  if (isNaN(value) || value <= 0) {
+                                                    handleProductQuantityChange(product.id, 0.25);
+                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '0.25' }));
+                                                  } else {
+                                                    const rounded = roundToQuarter(value);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  }
                                                 } else {
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: value.toString(),
-                                                  }));
+                                                  const value = parseInt(e.target.value, 10);
+                                                  if (isNaN(value) || value <= 0) {
+                                                    handleProductQuantityChange(product.id, 1);
+                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                  } else {
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: value.toString(),
+                                                    }));
+                                                  }
                                                 }
                                               }}
                                               w="3.5rem"
@@ -974,13 +912,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               size="sm"
                                               variant="outline"
                                               onClick={() => {
-                                                const newValue = product.quantity + 0.1;
-                                                const rounded = parseFloat(newValue.toFixed(1));
-                                                handleProductQuantityChange(product.id, rounded);
-                                                setQuantityInputs((prev) => ({
-                                                  ...prev,
-                                                  [product.id]: rounded.toString(),
-                                                }));
+                                                if (product.unitType === UnitType.KILO) {
+                                                  const newValue = product.quantity + 0.25;
+                                                  const rounded = roundToQuarter(newValue);
+                                                  handleProductQuantityChange(product.id, rounded);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: rounded.toString(),
+                                                  }));
+                                                } else {
+                                                  const newValue = product.quantity + 1;
+                                                  handleProductQuantityChange(product.id, newValue);
+                                                  setQuantityInputs((prev) => ({
+                                                    ...prev,
+                                                    [product.id]: newValue.toString(),
+                                                  }));
+                                                }
                                               }}
                                               borderLeftRadius={0}
                                             />
@@ -1080,6 +1027,11 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                               </Text>
                                             )}
                                           </HStack>
+                                          {product.unitType === UnitType.KILO && (
+                                            <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                              Peso estimado: {product.estimatedWeight || 0}g
+                                            </Text>
+                                          )}
                                         </Box>
                                       </Flex>
 
@@ -1094,13 +1046,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                    const rounded = roundToQuarter(newValue);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  } else {
+                                                    const newValue = Math.max(1, product.quantity - 1);
+                                                    handleProductQuantityChange(product.id, newValue);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: newValue.toString(),
+                                                    }));
+                                                  }
                                                 }}
                                                 borderRightRadius={0}
                                               />
@@ -1121,15 +1082,30 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   }
                                                 }}
                                                 onBlur={(e) => {
-                                                  const value = parseFloat(e.target.value);
-                                                  if (isNaN(value) || value <= 0) {
-                                                    handleProductQuantityChange(product.id, 1);
-                                                    setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const value = parseFloat(e.target.value);
+                                                    if (isNaN(value) || value <= 0) {
+                                                      handleProductQuantityChange(product.id, 0.25);
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '0.25' }));
+                                                    } else {
+                                                      const rounded = roundToQuarter(value);
+                                                      handleProductQuantityChange(product.id, rounded);
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: rounded.toString(),
+                                                      }));
+                                                    }
                                                   } else {
-                                                    setQuantityInputs((prev) => ({
-                                                      ...prev,
-                                                      [product.id]: value.toString(),
-                                                    }));
+                                                    const value = parseInt(e.target.value, 10);
+                                                    if (isNaN(value) || value <= 0) {
+                                                      handleProductQuantityChange(product.id, 1);
+                                                      setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                    } else {
+                                                      setQuantityInputs((prev) => ({
+                                                        ...prev,
+                                                        [product.id]: value.toString(),
+                                                      }));
+                                                    }
                                                   }
                                                 }}
                                                 w="3.5rem"
@@ -1144,13 +1120,22 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
-                                                  const newValue = product.quantity + 0.1;
-                                                  const rounded = parseFloat(newValue.toFixed(1));
-                                                  handleProductQuantityChange(product.id, rounded);
-                                                  setQuantityInputs((prev) => ({
-                                                    ...prev,
-                                                    [product.id]: rounded.toString(),
-                                                  }));
+                                                  if (product.unitType === UnitType.KILO) {
+                                                    const newValue = product.quantity + 0.25;
+                                                    const rounded = roundToQuarter(newValue);
+                                                    handleProductQuantityChange(product.id, rounded);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: rounded.toString(),
+                                                    }));
+                                                  } else {
+                                                    const newValue = product.quantity + 1;
+                                                    handleProductQuantityChange(product.id, newValue);
+                                                    setQuantityInputs((prev) => ({
+                                                      ...prev,
+                                                      [product.id]: newValue.toString(),
+                                                    }));
+                                                  }
                                                 }}
                                                 borderLeftRadius={0}
                                               />
@@ -1180,7 +1165,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                   border="none"
                                                   fontSize="sm"
                                                   w="fit-content"
-                                                  maxW="250px"
                                                   p={0}
                                                 >
                                                   <PopoverArrow bg="red.500" />
@@ -1190,7 +1174,8 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                     fontWeight="semibold"
                                                     whiteSpace="nowrap"
                                                   >
-                                                    Stock insuficiente
+                                                    Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                    {product.availableStock || 0}
                                                   </PopoverBody>
                                                 </PopoverContent>
                                               </Popover>
@@ -1223,7 +1208,6 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                                       border="none"
                                                       fontSize="sm"
                                                       w="fit-content"
-                                                      maxW="250px"
                                                       p={0}
                                                     >
                                                       <PopoverArrow bg="green.500" />
@@ -1312,7 +1296,12 @@ export const OrderRequestEdit = ({ orderRequest, isOpen, onClose, setOrderReques
                                           ? product.discount || 0
                                           : 0;
                                       const effectivePrice = product.price * (1 - discountToApply / 100);
-                                      return total + product.quantity * effectivePrice;
+                                      // Calculate based on unitType
+                                      const productTotal =
+                                        product.unitType === UnitType.KILO
+                                          ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                          : product.quantity * effectivePrice;
+                                      return total + productTotal;
                                     }, 0)
                                     .toFixed(2)}
                                 </Text>

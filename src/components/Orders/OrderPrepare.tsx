@@ -49,6 +49,7 @@ import { useUpdateOrder } from '@/hooks/order';
 import { useGetProducts } from '@/hooks/product';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 import type { OrderRequest } from '@/entities/orderRequest';
 
 type OrderPrepareProps = {
@@ -74,7 +75,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [orderProps, setOrderProps] = useState<Partial<Order>>();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -104,7 +104,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   const [isInitializingProducts, setIsInitializingProducts] = useState(true);
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, fieldError } = useUpdateOrder(orderProps);
+  const { data, isLoading, fieldError, mutate } = useUpdateOrder();
 
   const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
     <Box w="100%">
@@ -202,7 +202,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   // Inicializar productos seleccionados con los productos de la orden
   useEffect(() => {
-    if (order.productItems && selectedProducts.length === 0 && orderRequestData) {
+    if (order.productItems && selectedProducts.length === 0 && orderRequestData && isInitializingProducts) {
       // Usar los descuentos que ya vienen en los items de la orden
       const initialProducts = order.productItems.map((item) => {
         // Buscar la cantidad solicitada en el orderRequest original
@@ -219,7 +219,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: item.product.unitType,
           requestedQuantity: requestedQuantity,
           actualQuantity: item.quantity,
-          weight: item.product.unitType === UnitType.KILO ? 0 : undefined,
+          weight: item.product.unitType === UnitType.KILO ? item.weight || 0 : undefined,
           stock: item.product.stock,
           availableStock: item.product.availableStock,
           isOriginalFromOrder: wasInOriginalOrder,
@@ -232,7 +232,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   }, [order.productItems, selectedProducts.length, orderRequestData]);
 
   const handleClose = () => {
-    setOrderProps(undefined);
     setShowConfirmDialog(false);
     setIsInitializingProducts(true);
     setSelectedProducts([]);
@@ -277,7 +276,8 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
             unitType: product.unitType,
             requestedQuantity: originalItem.quantity,
             actualQuantity: originalItem.quantity,
-            weight: product.unitType === UnitType.KILO ? 0 : undefined,
+            weight:
+              product.unitType === UnitType.KILO ? originalItem.weight || product.estimatedWeight || 0 : undefined,
             stock: product.stock,
             availableStock: product.availableStock,
             isOriginalFromOrder: true,
@@ -293,7 +293,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
           unitType: product.unitType,
           requestedQuantity: 0,
           actualQuantity: 1,
-          weight: product.unitType === UnitType.KILO ? 0 : undefined,
+          weight: product.unitType === UnitType.KILO ? product.estimatedWeight || 0 : undefined,
           stock: product.stock,
           availableStock: product.availableStock,
           isOriginalFromOrder: false,
@@ -325,7 +325,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
 
   // Función para validar si la cantidad excede el stock disponible
   const isQuantityExceedsStock = (product: any): boolean => {
-    return product.actualQuantity > (product.availableStock || 0);
+    return product.actualQuantity > (product.availableStock || 0) + (product.requestedQuantity || 0);
   };
 
   // Click outside handler
@@ -349,7 +349,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
         duration: 3000,
         isClosable: true,
       });
-      setOrderProps(undefined);
       setOrders((prev) => prev.map((o) => (o.id === data.id ? data : o)));
       onClose();
       // Notificar al padre que la orden fue preparada
@@ -372,12 +371,12 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
   }, [fieldError, toast]);
 
   const initialValues = {
-    crates: order.crates || 0,
+    crates: order.crates || 1,
     observations: order.observations || '',
   };
 
   const validateForm = (values: typeof initialValues) => {
-    const errors: { crates?: string; products?: string; stock?: string } = {};
+    const errors: { crates?: string; products?: string; weights?: string } = {};
 
     if (!values.crates || values.crates <= 0) {
       errors.crates = 'Los cajones deben ser mayor a 0';
@@ -387,11 +386,16 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       errors.products = 'Debe tener al menos un producto en la lista';
     }
 
-    // Validar stock disponible
-    const hasStockErrors = selectedProducts.some((product) => isQuantityExceedsStock(product));
-    if (hasStockErrors) {
-      errors.stock = 'Algunos productos exceden el stock disponible';
+    // Validate weights for KILO type products
+    const kiloProductsWithoutWeight = selectedProducts.filter(
+      (product) => product.unitType === UnitType.KILO && (!product.weight || product.weight <= 0),
+    );
+
+    if (kiloProductsWithoutWeight.length > 0) {
+      errors.weights = 'Los productos vendidos por kilo deben tener un peso mayor a 0';
     }
+
+    // Removed stock validation - now shows warning only, doesn't prevent submission
 
     return errors;
   };
@@ -408,7 +412,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
     const productItems = selectedProducts.map((product) => ({
       productId: product.id,
       quantity: product.actualQuantity,
-      weight: product.unitType === UnitType.KILO ? (product.weight ?? 0) / 1000 : undefined,
+      weight: product.unitType === UnitType.KILO ? (product.weight ?? 0) : undefined,
     }));
 
     const orderData: any = {
@@ -419,7 +423,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       // Aquí podrías cambiar el status a "PROCESSING" o similar
     };
 
-    setOrderProps(orderData);
+    await mutate(orderData);
   };
 
   return (
@@ -427,7 +431,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -641,18 +645,33 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                       <Divider />
 
                       {/* Lista de productos */}
-                      <FormControl isInvalid={!!(formik.errors as any).products || !!(formik.errors as any).stock}>
+                      <FormControl isInvalid={!!(formik.errors as any).products && formik.submitCount > 0}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Productos a preparar ({selectedProducts.length})</Text>
                           </HStack>
                         </FormLabel>
-                        {(formik.errors as any).products && (
+                        {(formik.errors as any).products && formik.submitCount > 0 && (
                           <FormErrorMessage mb="0.5rem">{(formik.errors as any).products}</FormErrorMessage>
                         )}
-                        {(formik.errors as any).stock && (
-                          <FormErrorMessage mb="0.5rem">{(formik.errors as any).stock}</FormErrorMessage>
+                        {/* Show stock warning but don't prevent submission */}
+                        {selectedProducts.some((product) => isQuantityExceedsStock(product)) && (
+                          <Box
+                            mb="0.5rem"
+                            p="0.5rem"
+                            bg={useColorModeValue('yellow.50', 'yellow.900')}
+                            borderColor={useColorModeValue('yellow.200', 'yellow.700')}
+                            borderWidth="1px"
+                            borderRadius="md"
+                          >
+                            <HStack spacing="0.5rem">
+                              <Icon as={FaExclamationTriangle} color={useColorModeValue('yellow.500', 'yellow.300')} />
+                              <Text fontSize="sm" color={useColorModeValue('yellow.700', 'yellow.200')}>
+                                Advertencia: Algunos productos exceden el stock disponible
+                              </Text>
+                            </HStack>
+                          </Box>
                         )}
 
                         {isInitializingProducts ? (
@@ -700,14 +719,6 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                                               {product.name}
                                             </Text>
-                                            {!product.isOriginalFromOrder && (
-                                              <Badge size="sm" colorScheme="blue" variant="subtle">
-                                                <HStack spacing="0.25rem" align="center">
-                                                  <Icon as={FaPlus} boxSize="0.625rem" />
-                                                  <Text fontSize="xs">Nuevo</Text>
-                                                </HStack>
-                                              </Badge>
-                                            )}
                                           </HStack>
                                           <HStack spacing="0.5rem" align="center">
                                             <Text fontSize="xs" color={textColor} fontWeight="medium">
@@ -748,8 +759,11 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? Math.max(0.25, product.actualQuantity - 0.25)
+                                                  : Math.max(1, product.actualQuantity - 1);
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -760,13 +774,18 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           />
                                           <Input
                                             size="sm"
+                                            p="0"
                                             value={quantityInputs[product.id] ?? product.actualQuantity}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const regex = /^\d*\.?\d*$/;
+                                              const regex =
+                                                product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                               if (regex.test(value) || value === '') {
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                const numValue = parseFloat(value);
+                                                const numValue =
+                                                  product.unitType === UnitType.KILO
+                                                    ? parseFloat(value)
+                                                    : parseInt(value, 10);
                                                 if (!isNaN(numValue) && numValue >= 0) {
                                                   handleQuantityChange(product.id, numValue);
                                                 } else if (value === '' || value === '.') {
@@ -775,14 +794,24 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               }
                                             }}
                                             onBlur={(e) => {
-                                              const value = parseFloat(e.target.value);
+                                              const value =
+                                                product.unitType === UnitType.KILO
+                                                  ? parseFloat(e.target.value)
+                                                  : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
-                                                handleQuantityChange(product.id, 1);
-                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                              } else {
+                                                const defaultValue = product.unitType === UnitType.KILO ? 0.25 : 1;
+                                                handleQuantityChange(product.id, defaultValue);
                                                 setQuantityInputs((prev) => ({
                                                   ...prev,
-                                                  [product.id]: value.toString(),
+                                                  [product.id]: defaultValue.toString(),
+                                                }));
+                                              } else {
+                                                const finalValue =
+                                                  product.unitType === UnitType.KILO ? roundToQuarter(value) : value;
+                                                handleQuantityChange(product.id, finalValue);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: finalValue.toString(),
                                                 }));
                                               }
                                             }}
@@ -798,8 +827,11 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.1;
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? product.actualQuantity + 0.25
+                                                  : product.actualQuantity + 1;
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -821,6 +853,20 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             product.unitType === UnitType.KILO
                                               ? (weightInputs[product.id] ?? product.weight ?? '')
                                               : 'N/A'
+                                          }
+                                          borderColor={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? 'red.300'
+                                              : undefined
+                                          }
+                                          _focus={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? { borderColor: 'red.400', boxShadow: '0 0 0 1px red.400' }
+                                              : undefined
                                           }
                                           onChange={(e) => {
                                             if (product.unitType === UnitType.KILO) {
@@ -853,6 +899,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           }}
                                           isDisabled={product.unitType !== UnitType.KILO}
                                           w="4rem"
+                                          px="0"
                                           textAlign="center"
                                           borderRadius="md"
                                           bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}
@@ -949,8 +996,11 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = Math.max(0.1, product.actualQuantity - 0.1);
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? Math.max(0.25, product.actualQuantity - 0.25)
+                                                  : Math.max(1, product.actualQuantity - 1);
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -964,10 +1014,14 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             value={quantityInputs[product.id] ?? product.actualQuantity}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const regex = /^\d*\.?\d*$/;
+                                              const regex =
+                                                product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                               if (regex.test(value) || value === '') {
                                                 setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                const numValue = parseFloat(value);
+                                                const numValue =
+                                                  product.unitType === UnitType.KILO
+                                                    ? parseFloat(value)
+                                                    : parseInt(value, 10);
                                                 if (!isNaN(numValue) && numValue >= 0) {
                                                   handleQuantityChange(product.id, numValue);
                                                 } else if (value === '' || value === '.') {
@@ -976,14 +1030,24 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                               }
                                             }}
                                             onBlur={(e) => {
-                                              const value = parseFloat(e.target.value);
+                                              const value =
+                                                product.unitType === UnitType.KILO
+                                                  ? parseFloat(e.target.value)
+                                                  : parseInt(e.target.value, 10);
                                               if (isNaN(value) || value <= 0) {
-                                                handleQuantityChange(product.id, 1);
-                                                setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
-                                              } else {
+                                                const defaultValue = product.unitType === UnitType.KILO ? 0.25 : 1;
+                                                handleQuantityChange(product.id, defaultValue);
                                                 setQuantityInputs((prev) => ({
                                                   ...prev,
-                                                  [product.id]: value.toString(),
+                                                  [product.id]: defaultValue.toString(),
+                                                }));
+                                              } else {
+                                                const finalValue =
+                                                  product.unitType === UnitType.KILO ? roundToQuarter(value) : value;
+                                                handleQuantityChange(product.id, finalValue);
+                                                setQuantityInputs((prev) => ({
+                                                  ...prev,
+                                                  [product.id]: finalValue.toString(),
                                                 }));
                                               }
                                             }}
@@ -999,8 +1063,11 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                              const newValue = product.actualQuantity + 0.1;
-                                              const rounded = parseFloat(newValue.toFixed(1));
+                                              const newValue =
+                                                product.unitType === UnitType.KILO
+                                                  ? product.actualQuantity + 0.25
+                                                  : product.actualQuantity + 1;
+                                              const rounded = parseFloat(newValue.toFixed(2));
                                               handleQuantityChange(product.id, rounded);
                                               setQuantityInputs((prev) => ({
                                                 ...prev,
@@ -1021,6 +1088,20 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                             product.unitType === UnitType.KILO
                                               ? (weightInputs[product.id] ?? product.weight ?? '')
                                               : 'N/A'
+                                          }
+                                          borderColor={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? 'red.300'
+                                              : undefined
+                                          }
+                                          _focus={
+                                            formik.submitCount > 0 &&
+                                            product.unitType === UnitType.KILO &&
+                                            (!product.weight || product.weight <= 0)
+                                              ? { borderColor: 'red.400', boxShadow: '0 0 0 1px red.400' }
+                                              : undefined
                                           }
                                           onChange={(e) => {
                                             if (product.unitType === UnitType.KILO) {
@@ -1053,6 +1134,7 @@ export const OrderPrepare = ({ order, isOpen, onClose, setOrders, onOrderPrepare
                                           }}
                                           isDisabled={product.unitType !== UnitType.KILO}
                                           w="5rem"
+                                          px="0"
                                           textAlign="center"
                                           borderRadius="md"
                                           bg={product.unitType === UnitType.KILO ? 'transparent' : inputBg}

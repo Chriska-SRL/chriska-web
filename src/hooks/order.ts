@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Order } from '@/entities/order';
 import { getOrders, getOrderById, updateOrder, changeOrderStatus } from '@/services/order';
-import { useFetch } from '@/utils/useFetch';
+import { useMutation } from '@/utils/useFetch';
 
 type OrderFilters = {
   status?: string;
@@ -71,8 +71,7 @@ export const useGetOrderById = (id?: number) => {
   return { data, isLoading, error, refetch: fetchOrder };
 };
 
-export const useUpdateOrder = (props?: Partial<Order>) =>
-  useFetch<Partial<Order>, Order>(updateOrder, props, { parseFieldError: true });
+export const useUpdateOrder = () => useMutation<Partial<Order>, Order>(updateOrder, { parseFieldError: true });
 
 export const useChangeOrderStatus = (props?: { id: number; status: string }) => {
   const [data, setData] = useState<Order>();

@@ -116,8 +116,17 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   logout: () => {
+    // Limpiar cookie de autenticación
     deleteCookie('auth-token');
 
+    // Limpiar sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('temp-password');
+      // Limpiar cualquier otro dato de sesión si existe
+      sessionStorage.clear();
+    }
+
+    // Limpiar estado de Zustand
     set({
       user: null,
       permissions: [],

@@ -21,7 +21,6 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-  Divider,
   useToast,
   useMediaQuery,
   useColorModeValue,
@@ -51,14 +50,16 @@ type RoleEditProps = {
 export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const toast = useToast();
-  const [roleProps, setRoleProps] = useState<Partial<Role>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateRole(roleProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateRole();
+
+  // Generate unique ID suffix for this modal instance
+  const modalId = `edit-${role?.id || 'new'}-${Date.now()}`;
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const selectedCountColor = useColorModeValue('gray.600', 'gray.400');
+  const textColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (data) {
@@ -70,7 +71,6 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
         isClosable: true,
       });
       setRoles((prev) => prev.map((r) => (r.id === data.id ? data : r)));
-      setRoleProps(undefined);
       handleClose();
     }
   }, [data]);
@@ -105,7 +105,6 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
   );
 
   const handleClose = () => {
-    setRoleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -121,14 +120,14 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
     }
   };
 
-  const handleSubmit = (values: { id: number; name: string; description: string; permissions: number[] }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string; permissions: number[] }) => {
     const role = {
       id: values.id,
       name: values.name,
       description: values.description,
       permissions: values.permissions,
     };
-    setRoleProps(role);
+    await mutate(role);
   };
 
   return (
@@ -136,7 +135,7 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '3xl' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -175,145 +174,147 @@ export const RoleEdit = ({ isOpen, onClose, role, setRoles }: RoleEditProps) => 
 
                   return (
                     <form id="role-edit-form" onSubmit={handleSubmit}>
-                      <Flex
-                        gap="2rem"
-                        align="start"
-                        direction={{ base: 'column', md: 'row' }}
-                        maxH={{ base: 'none', md: '70dvh' }}
-                      >
-                        <Box flex="1">
-                          <FormControl>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiShield} boxSize="1rem" />
-                                <Text>Permisos</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Box maxH={{ base: '32dvh', md: '52dvh' }} overflowY="auto">
-                              <Accordion allowMultiple>
-                                {Object.entries(groupedPermissions).map(([group, perms]) => (
-                                  <AccordionItem key={group}>
-                                    <h2>
-                                      <AccordionButton>
-                                        <Box flex="1" textAlign="left" fontWeight="semibold">
-                                          {group}
-                                        </Box>
-                                        <Text fontSize="sm" color={selectedCountColor} mx="1rem">
+                      <VStack spacing="1.5rem" align="stretch">
+                        <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiShield} boxSize="1rem" />
+                              <Text>Nombre</Text>
+                              <Text color="red.500">*</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Input}
+                            name="name"
+                            type="text"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            h="2.75rem"
+                            validate={validate}
+                            disabled={isLoading}
+                          />
+                          <FormErrorMessage>{errors.name}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiFileText} boxSize="1rem" />
+                              <Text>Descripción</Text>
+                              <Text color="red.500">*</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Textarea}
+                            name="description"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            resize="vertical"
+                            minH="8rem"
+                            validate={validateEmpty}
+                            rows={4}
+                            disabled={isLoading}
+                          />
+                          <FormErrorMessage>{errors.description}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiShield} boxSize="1rem" />
+                              <Text>Permisos</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Box overflowY="auto" pr="0.5rem">
+                            <Accordion allowMultiple>
+                              {Object.entries(groupedPermissions).map(([group, perms]) => (
+                                <AccordionItem key={group}>
+                                  <h2>
+                                    <AccordionButton>
+                                      <Box flex="1" textAlign="left" fontWeight="semibold">
+                                        {group}
+                                      </Box>
+                                      <HStack spacing="0.75rem" onClick={(e) => e.stopPropagation()} pr="0.5rem">
+                                        <Checkbox
+                                          isChecked={perms.every((perm) => values.permissions.includes(perm.id))}
+                                          isIndeterminate={
+                                            perms.some((perm) => values.permissions.includes(perm.id)) &&
+                                            !perms.every((perm) => values.permissions.includes(perm.id))
+                                          }
+                                          onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            const groupPermIds = perms.map((perm) => perm.id);
+                                            const updated = checked
+                                              ? [...new Set([...values.permissions, ...groupPermIds])]
+                                              : values.permissions.filter((p) => !groupPermIds.includes(p));
+                                            setFieldValue('permissions', updated);
+                                          }}
+                                          disabled={isLoading}
+                                          size="md"
+                                        />
+                                        <Text fontSize="sm" color={textColor}>
                                           {perms.filter((perm) => values.permissions.includes(perm.id)).length}{' '}
                                           {isMobile ? 'selec.' : 'seleccionados'}
                                         </Text>
-                                        <AccordionIcon />
-                                      </AccordionButton>
-                                    </h2>
-                                    <AccordionPanel pb={4}>
-                                      <Flex wrap="wrap" gap="0.75rem">
-                                        {perms.map((perm) => (
-                                          <Checkbox
-                                            key={perm.id}
-                                            isChecked={values.permissions.includes(perm.id)}
-                                            onChange={(e) => {
-                                              const checked = e.target.checked;
-                                              const updated = checked
-                                                ? [...values.permissions, perm.id]
-                                                : values.permissions.filter((p) => p !== perm.id);
-                                              setFieldValue('permissions', updated);
-                                            }}
-                                          >
-                                            {perm.label}
-                                          </Checkbox>
-                                        ))}
-                                      </Flex>
-                                    </AccordionPanel>
-                                  </AccordionItem>
-                                ))}
-                              </Accordion>
-                            </Box>
-                          </FormControl>
-                        </Box>
-
-                        <Divider orientation="vertical" h="27rem" display={{ base: 'none', md: 'block' }} />
-
-                        <Flex flex="1" w="100%" flexDir="column" justifyContent="space-between" minW={0}>
-                          <Box>
-                            <VStack spacing="1rem" align="stretch">
-                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiShield} boxSize="1rem" />
-                                    <Text>Nombre</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Field
-                                  as={Input}
-                                  name="name"
-                                  type="text"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  fontSize="0.875rem"
-                                  h="2.75rem"
-                                  validate={validate}
-                                />
-                                <FormErrorMessage>{errors.name}</FormErrorMessage>
-                              </FormControl>
-
-                              <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
-                                <FormLabel fontWeight="semibold">
-                                  <HStack spacing="0.5rem">
-                                    <Icon as={FiFileText} boxSize="1rem" />
-                                    <Text>Descripción</Text>
-                                  </HStack>
-                                </FormLabel>
-                                <Field
-                                  as={Textarea}
-                                  name="description"
-                                  bg={inputBg}
-                                  border="1px solid"
-                                  borderColor={inputBorder}
-                                  fontSize="0.875rem"
-                                  resize="vertical"
-                                  minH="8rem"
-                                  validate={validateEmpty}
-                                  rows={4}
-                                />
-                                <FormErrorMessage>{errors.description}</FormErrorMessage>
-                              </FormControl>
-                            </VStack>
+                                      </HStack>
+                                      <AccordionIcon />
+                                    </AccordionButton>
+                                  </h2>
+                                  <AccordionPanel pb={4}>
+                                    <Flex wrap="wrap" gap="0.75rem">
+                                      {perms.map((perm) => (
+                                        <Checkbox
+                                          key={perm.id}
+                                          id={`perm-${modalId}-${perm.id}`}
+                                          isChecked={values.permissions.includes(perm.id)}
+                                          onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            const updated = checked
+                                              ? [...values.permissions, perm.id]
+                                              : values.permissions.filter((p) => p !== perm.id);
+                                            setFieldValue('permissions', updated);
+                                          }}
+                                          disabled={isLoading}
+                                        >
+                                          {perm.label}
+                                        </Checkbox>
+                                      ))}
+                                    </Flex>
+                                  </AccordionPanel>
+                                </AccordionItem>
+                              ))}
+                            </Accordion>
                           </Box>
-                          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem" px={0}>
-                            <HStack spacing="0.5rem" w="100%">
-                              <Button
-                                variant="ghost"
-                                onClick={handleClose}
-                                disabled={isLoading}
-                                size="sm"
-                                leftIcon={<FaTimes />}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                form="role-edit-form"
-                                type="submit"
-                                colorScheme="blue"
-                                variant="outline"
-                                isLoading={isLoading}
-                                loadingText="Guardando..."
-                                leftIcon={<FaCheck />}
-                                size="sm"
-                                flex="1"
-                              >
-                                Guardar cambios
-                              </Button>
-                            </HStack>
-                          </ModalFooter>
-                        </Flex>
-                      </Flex>
+                        </FormControl>
+                      </VStack>
                     </form>
                   );
                 }}
               </Formik>
             )}
           </ModalBody>
+
+          <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
+            <HStack spacing="0.5rem">
+              <Button variant="ghost" onClick={handleClose} disabled={isLoading} size="sm" leftIcon={<FaTimes />}>
+                Cancelar
+              </Button>
+              <Button
+                form="role-edit-form"
+                type="submit"
+                colorScheme="blue"
+                variant="outline"
+                isLoading={isLoading}
+                loadingText="Guardando..."
+                leftIcon={<FaCheck />}
+                size="sm"
+              >
+                Guardar cambios
+              </Button>
+            </HStack>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

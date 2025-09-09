@@ -3,23 +3,24 @@
 import {
   Button,
   useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
   Text,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-type GenericDeleteProps = {
-  item: { id: number; name: string };
+type GenericDeleteProps<T = number> = {
+  item: { id: T; name: string };
   isUpdating?: boolean;
   onDeleted?: () => void;
   setItems: React.Dispatch<React.SetStateAction<any[]>>;
-  useDeleteHook: (id?: number) => {
+  useDeleteHook: (id?: T) => {
     success?: boolean;
     data?: any;
     isLoading: boolean;
@@ -29,7 +30,7 @@ type GenericDeleteProps = {
   variant?: 'solid' | 'outline';
 };
 
-export const GenericDelete = ({
+export const GenericDelete = <T extends number | string = number>({
   item,
   isUpdating,
   onDeleted,
@@ -37,11 +38,14 @@ export const GenericDelete = ({
   useDeleteHook,
   size = 'sm',
   variant = 'outline',
-}: GenericDeleteProps) => {
+}: GenericDeleteProps<T>) => {
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number>();
+  const [deleteId, setDeleteId] = useState<T | undefined>();
   const { success, data, isLoading, error } = useDeleteHook(deleteId);
+  const cancelRef = useRef(null);
+
+  const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   useEffect(() => {
     if (success || data) {
@@ -88,27 +92,61 @@ export const GenericDelete = ({
         Eliminar
       </Button>
 
-      <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Confirmar eliminación</ModalHeader>
+      <AlertDialog
+        isOpen={confirmOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={() => setConfirmOpen(false)}
+        isCentered
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent mx="1rem">
+          <AlertDialogHeader
+            fontSize="1.125rem"
+            fontWeight="semibold"
+            pb="0.75rem"
+            borderBottom="1px solid"
+            borderColor={inputBorder}
+          >
+            Confirmar eliminación
+          </AlertDialogHeader>
 
-          <ModalBody>
-            <Text>¿Estás seguro de que deseas eliminar "{item.name}"?</Text>
+          <AlertDialogBody fontSize="0.875rem" pt="1rem" pb="1.5rem">
+            ¿Estás seguro de que deseas eliminar "{item.name}"?
+            <br />
             <Text mt="0.5rem" fontSize="sm" color="gray.500">
               Esta acción no se puede deshacer.
             </Text>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={() => setConfirmOpen(false)} disabled={isLoading}>
+          </AlertDialogBody>
+
+          <AlertDialogFooter
+            pt="1rem"
+            justifyContent="flex-end"
+            gap="0.5rem"
+            borderTop="1px solid"
+            borderColor={inputBorder}
+          >
+            <Button
+              ref={cancelRef}
+              onClick={() => setConfirmOpen(false)}
+              variant="ghost"
+              size="sm"
+              disabled={isLoading}
+            >
               Cancelar
             </Button>
-            <Button colorScheme="red" onClick={handleConfirm} isLoading={isLoading} loadingText="Eliminando...">
-              Eliminar
+            <Button
+              colorScheme="red"
+              onClick={handleConfirm}
+              isLoading={isLoading}
+              loadingText="Eliminando..."
+              variant="outline"
+              size="sm"
+            >
+              Sí, eliminar
             </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

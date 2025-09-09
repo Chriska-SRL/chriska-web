@@ -29,11 +29,11 @@ export const getOrders = (page: number = 1, pageSize: number = 10, filters?: Ord
   }
 
   if (filters?.fromDate) {
-    params.append('filters[FromDate]', filters.fromDate);
+    params.append('filters[DateFrom]', filters.fromDate);
   }
 
   if (filters?.toDate) {
-    params.append('filters[ToDate]', filters.toDate);
+    params.append('filters[DateTo]', filters.toDate);
   }
 
   return get<Order[]>(`${API_URL}/Order?${params.toString()}`);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SubCategory } from '@/entities/subcategory';
 import { getSubCategories, addSubCategory, updateSubCategory, deleteSubCategory } from '@/services/subcategory';
-import { useFetch, useFetchNoParams } from '../utils/useFetch';
+import { useFetch, useFetchNoParams, useMutation } from '../utils/useFetch';
 
 type SubCategoryFilters = {
   name?: string;
@@ -36,10 +36,10 @@ export const useGetSubCategories = (page: number = 1, pageSize: number = 10, fil
 
 export const useGetSubCategoriesSimple = () => useFetchNoParams<SubCategory[]>(() => getSubCategories(1, 1000), []);
 
-export const useAddSubCategory = (props?: Partial<SubCategory>) =>
-  useFetch<Partial<SubCategory>, SubCategory>(addSubCategory, props, { parseFieldError: true });
+export const useAddSubCategory = () =>
+  useMutation<Partial<SubCategory>, SubCategory>(addSubCategory, { parseFieldError: true });
 
-export const useUpdateSubCategory = (props?: Partial<SubCategory>) =>
-  useFetch<Partial<SubCategory>, SubCategory>(updateSubCategory, props, { parseFieldError: true });
+export const useUpdateSubCategory = () =>
+  useMutation<Partial<SubCategory>, SubCategory>(updateSubCategory, { parseFieldError: true });
 
 export const useDeleteSubCategory = (id?: number) => useFetch<number, SubCategory>(deleteSubCategory, id);

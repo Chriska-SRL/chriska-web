@@ -16,8 +16,9 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
 import { CategoryEdit } from './CategoryEdit';
@@ -91,14 +92,14 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -120,7 +121,13 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
               </Button>
@@ -148,7 +155,7 @@ export const CategoryDetail = ({ category, setCategories, forceOpen, onModalClos
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

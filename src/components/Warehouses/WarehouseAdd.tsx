@@ -51,13 +51,11 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddWarehouse(warehouseProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddWarehouse();
 
   const handleClose = () => {
-    setWarehouseProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -82,7 +80,6 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
         duration: 2000,
         isClosable: true,
       });
-      setWarehouseProps(undefined);
       setWarehouses((prev) => [...prev, data]);
       onClose();
     }
@@ -108,8 +105,8 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Warehouse>) => {
-    setWarehouseProps(values);
+  const handleSubmit = async (values: Partial<Warehouse>) => {
+    await mutate(values);
   };
 
   return (
@@ -117,7 +114,7 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -143,8 +140,10 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -154,12 +153,13 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
                   <form id="warehouse-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiPackage} boxSize="1rem" />
                                 <Text>Nombre</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -170,18 +170,19 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -193,7 +194,7 @@ const WarehouseAddModal = ({ isOpen, onClose, setWarehouses }: WarehouseAddModal
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

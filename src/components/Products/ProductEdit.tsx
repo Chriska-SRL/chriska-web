@@ -19,14 +19,22 @@ import {
   useColorModeValue,
   FormErrorMessage,
   HStack,
-  Checkbox,
   Text,
   Icon,
   SimpleGrid,
+  Flex,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  List,
+  ListItem,
+  Spinner,
+  Divider,
 } from '@chakra-ui/react';
-import { Field, Formik, FieldArray } from 'formik';
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { FaCheck, FaTimes } from 'react-icons/fa';
+import { Field, Formik } from 'formik';
+import { useEffect, useState, useCallback, useMemo, useRef, Fragment } from 'react';
+import { FaCheck, FaTimes, FaTrash } from 'react-icons/fa';
+import { AiOutlineSearch } from 'react-icons/ai';
 import {
   FiPackage,
   FiHash,
@@ -37,7 +45,6 @@ import {
   FiGrid,
   FiBox,
   FiTruck,
-  FiImage,
 } from 'react-icons/fi';
 import { Product } from '@/entities/product';
 import { useUpdateProduct } from '@/hooks/product';
@@ -46,10 +53,10 @@ import { useGetCategories } from '@/hooks/category';
 import { useGetBrands } from '@/hooks/brand';
 import { useGetSuppliers } from '@/hooks/supplier';
 import { ProductImageUpload } from './ProductImageUpload';
-import { Supplier } from '@/entities/supplier';
 import { useGetWarehousesSimple } from '@/hooks/warehouse';
 import { useGetShelves } from '@/hooks/shelve';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { UnitType } from '@/enums/unitType.enum';
 
 type ProductEditProps = {
   isOpen: boolean;
@@ -65,6 +72,7 @@ interface ProductEditFormValues {
   name: string;
   price: number;
   unitType: string;
+  estimatedWeight: number;
   description: string;
   temperatureCondition: string;
   observations: string;
@@ -79,18 +87,47 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
-  const selectedHoverBg = useColorModeValue('blue.100', 'blue.800');
-  const unselectedHoverBg = useColorModeValue('gray.200', 'whiteAlpha.200');
-  const supplierSubtextColor = useColorModeValue('gray.600', 'gray.400');
+  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const dropdownBg = useColorModeValue('white', 'gray.800');
+  const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
+  const hoverBg = useColorModeValue('gray.100', 'gray.700');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
 
-  const [productProps, setProductProps] = useState<Partial<Product> | undefined>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(product?.imageUrl || null);
   const { data: categories, isLoading: isLoadingCats } = useGetCategories();
   const { data: brands } = useGetBrands();
-  const { data: suppliers } = useGetSuppliers(1, 100);
+
+  // Estados para la búsqueda de proveedores
+  const [supplierSearch, setSupplierSearch] = useState('');
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<
+    Array<{ id: number; name: string; contactName: string; phone: string }>
+  >([]);
+  const [debouncedSupplierSearch, setDebouncedSupplierSearch] = useState(supplierSearch);
+  const [lastSupplierSearchTerm, setLastSupplierSearchTerm] = useState('');
+  const supplierSearchRef = useRef<HTMLDivElement>(null);
   const { data: warehouses = [], isLoading: isLoadingWarehouses } = useGetWarehousesSimple();
-  const { data, isLoading, error, fieldError } = useUpdateProduct(productProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateProduct();
+
+  // Debounce para búsqueda de proveedores
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSupplierSearch(supplierSearch);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [supplierSearch]);
+
+  // Filtro de búsqueda de proveedores
+  const supplierFilterName = useMemo(() => {
+    return debouncedSupplierSearch && debouncedSupplierSearch.length >= 2 ? debouncedSupplierSearch : undefined;
+  }, [debouncedSupplierSearch]);
+
+  const { data: suppliersSearch = [], isLoading: isLoadingSuppliersSearch } = useGetSuppliers(
+    1,
+    10,
+    supplierFilterName,
+  );
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     product?.subCategory?.category?.id ?? null,
   );
@@ -107,6 +144,20 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
   const filteredSubCategories = selectedCategory?.subCategories ?? [];
 
+  // Inicializar proveedores seleccionados con los proveedores del producto
+  useEffect(() => {
+    if (product?.suppliers && selectedSuppliers.length === 0) {
+      setSelectedSuppliers(
+        product.suppliers.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+          contactName: supplier.contactName || '',
+          phone: supplier.phone || '',
+        })),
+      );
+    }
+  }, [product?.suppliers, selectedSuppliers.length]);
+
   useEffect(() => {
     if (product?.subCategory?.category?.id) {
       setSelectedCategoryId(product.subCategory.category.id);
@@ -115,6 +166,56 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       setSelectedWarehouseId(product.shelve.warehouse.id);
     }
   }, [product]);
+
+  // Actualizar el término de búsqueda cuando se completa la búsqueda
+  useEffect(() => {
+    if (!isLoadingSuppliersSearch && debouncedSupplierSearch && debouncedSupplierSearch.length >= 2) {
+      setLastSupplierSearchTerm(debouncedSupplierSearch);
+    }
+  }, [isLoadingSuppliersSearch, debouncedSupplierSearch]);
+
+  // Funciones para manejar búsqueda de proveedores
+  const handleSupplierSearch = (value: string) => {
+    setSupplierSearch(value);
+    if (value.length >= 2) {
+      setShowSupplierDropdown(true);
+    } else {
+      setShowSupplierDropdown(false);
+    }
+  };
+
+  const handleSupplierSelect = (supplier: any) => {
+    const isAlreadySelected = selectedSuppliers.some((s) => s.id === supplier.id);
+    if (!isAlreadySelected) {
+      setSelectedSuppliers((prev) => [
+        ...prev,
+        {
+          id: supplier.id,
+          name: supplier.name,
+          contactName: supplier.contactName,
+          phone: supplier.phone,
+        },
+      ]);
+    }
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
+  };
+
+  const handleRemoveSupplier = (supplierId: number) => {
+    setSelectedSuppliers((prev) => prev.filter((s) => s.id !== supplierId));
+  };
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (supplierSearchRef.current && !supplierSearchRef.current.contains(event.target as Node)) {
+        setShowSupplierDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (data) {
@@ -128,7 +229,6 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       setProducts((prevProducts) =>
         prevProducts.map((p) => (p.id === data.id ? { ...p, ...data, imageUrl: currentImageUrl || '' } : p)),
       );
-      setProductProps(undefined);
       handleClose();
     }
   }, [data, currentImageUrl, setProducts, onClose, toast]);
@@ -170,11 +270,20 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
   );
 
   const handleClose = () => {
-    setProductProps(undefined);
     setCurrentImageUrl(product?.imageUrl || null);
     setSelectedCategoryId(product?.subCategory?.category?.id ?? null);
     setSelectedWarehouseId(product?.shelve?.warehouse?.id ?? null);
     setShowConfirmDialog(false);
+    setSelectedSuppliers(
+      product?.suppliers?.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.name,
+        contactName: supplier.contactName || '',
+        phone: supplier.phone || '',
+      })) || [],
+    );
+    setSupplierSearch('');
+    setShowSupplierDropdown(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
     }
@@ -189,13 +298,14 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     }
   };
 
-  const handleSubmit = (values: {
+  const handleSubmit = async (values: {
     id: number;
     internalCode: string;
     barcode: string;
     name: string;
     price: number;
     unitType: string;
+    estimatedWeight: number;
     description: string;
     temperatureCondition: string;
     observations: string;
@@ -204,10 +314,11 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
     supplierIds: number[];
     shelveId: number;
   }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { supplierIds, ...productData } = values;
-    setProductProps({
+    await mutate({
       ...productData,
-      supplierIds: supplierIds,
+      supplierIds: selectedSuppliers.map((s) => s.id),
     } as any);
   };
 
@@ -220,7 +331,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -247,6 +358,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                 name: product?.name ?? '',
                 price: product?.price ?? 0,
                 unitType: product?.unitType ?? '',
+                estimatedWeight: product?.estimatedWeight ?? 0,
                 description: product?.description ?? '',
                 temperatureCondition: product?.temperatureCondition ?? '',
                 observations: product?.observations ?? '',
@@ -258,8 +370,18 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
               onSubmit={handleSubmit}
               validateOnChange={true}
               validateOnBlur={false}
+              validate={(values) => {
+                const errors: any = {};
+
+                // Validar peso estimado solo si unitType es Kilo
+                if (values.unitType === 'Kilo' && (!values.estimatedWeight || values.estimatedWeight <= 0)) {
+                  errors.estimatedWeight = 'El peso estimado es obligatorio para productos por kilo';
+                }
+
+                return errors;
+              }}
             >
-              {({ handleSubmit, errors, submitCount, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, errors, touched, submitCount, setFieldValue, dirty, resetForm, values }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -268,27 +390,25 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                 return (
                   <form id="product-edit-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <Box>
-                          <HStack mb="0.5rem" spacing="0.5rem">
-                            <Icon as={FiImage} boxSize="1rem" />
-                            <Text fontWeight="semibold">Imagen del producto</Text>
-                          </HStack>
-                          <ProductImageUpload
-                            product={{
-                              ...product,
-                              imageUrl: finalImageUrl,
-                            }}
-                            onImageChange={handleImageChange}
-                            editable
-                          />
+                      <Flex direction={{ base: 'column', md: 'row' }} gap="1rem" align="start">
+                        <Box flexShrink={0} w={{ base: '100%', md: '10.5rem' }}>
+                          <Box w="100%" aspectRatio="1" borderRadius="md">
+                            <ProductImageUpload
+                              product={{
+                                ...product,
+                                imageUrl: finalImageUrl,
+                              }}
+                              onImageChange={handleImageChange}
+                              editable
+                            />
+                          </Box>
                         </Box>
 
-                        <VStack spacing="2.25rem" align="stretch">
-                          <FormControl isInvalid={submitCount > 0 && !!errors.internalCode}>
+                        <VStack spacing="1.5rem" align="stretch" flex="1" justify="start">
+                          <FormControl isInvalid={submitCount > 0 && touched.internalCode && !!errors.internalCode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiPackage} boxSize="1rem" />
+                                <Icon as={FiPackage} boxSize="1rem" color={iconColor} />
                                 <Text>Código interno</Text>
                               </HStack>
                             </FormLabel>
@@ -303,10 +423,10 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             <FormErrorMessage>{errors.internalCode}</FormErrorMessage>
                           </FormControl>
 
-                          <FormControl isInvalid={submitCount > 0 && !!errors.barcode}>
+                          <FormControl isInvalid={submitCount > 0 && touched.barcode && !!errors.barcode}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
-                                <Icon as={FiHash} boxSize="1rem" />
+                                <Icon as={FiHash} boxSize="1rem" color={iconColor} />
                                 <Text>Código de barras</Text>
                               </HStack>
                             </FormLabel>
@@ -318,6 +438,7 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                               borderColor={inputBorder}
                               disabled={isLoading}
                               validate={(value: any) => {
+                                // Campo opcional - solo validar si se proporciona
                                 if (!value) return undefined;
                                 const barcodeRegex = /^\d{13}$/;
                                 return barcodeRegex.test(value)
@@ -327,77 +448,36 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                             />
                             <FormErrorMessage>{errors.barcode}</FormErrorMessage>
                           </FormControl>
-
-                          <FormControl isInvalid={submitCount > 0 && !!errors.name}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiTag} boxSize="1rem" />
-                                <Text>Nombre</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Field
-                              as={Input}
-                              name="name"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                              validate={validate}
-                            />
-                            <FormErrorMessage>{errors.name}</FormErrorMessage>
-                          </FormControl>
                         </VStack>
-                      </SimpleGrid>
+                      </Flex>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.description}>
+                      <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Descripción</Text>
+                            <Icon as={FiTag} boxSize="1rem" color={iconColor} />
+                            <Text>Nombre</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
-                          as={Textarea}
-                          name="description"
+                          as={Input}
+                          name="name"
                           bg={inputBg}
                           border="1px solid"
                           borderColor={inputBorder}
                           disabled={isLoading}
                           validate={validate}
-                          rows={2}
                         />
-                        <FormErrorMessage>{errors.description}</FormErrorMessage>
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
 
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <FormControl isInvalid={submitCount > 0 && !!errors.unitType}>
+                      <SimpleGrid columns={{ base: 1, md: 3 }} spacing="0.75rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.price && !!errors.price}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiPackage} boxSize="1rem" />
-                              <Text>Unidad</Text>
-                            </HStack>
-                          </FormLabel>
-                          <Field
-                            as={Select}
-                            name="unitType"
-                            bg={inputBg}
-                            border="1px solid"
-                            borderColor={inputBorder}
-                            placeholder="Seleccione una opción"
-                            disabled={isLoading}
-                            validate={validate}
-                          >
-                            <option value="Kilo">Kilos</option>
-                            <option value="Unit">Unidades</option>
-                          </Field>
-                          <FormErrorMessage>{errors.unitType}</FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl isInvalid={submitCount > 0 && !!errors.price}>
-                          <FormLabel fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiDollarSign} boxSize="1rem" />
+                              <Icon as={FiDollarSign} boxSize="1rem" color={iconColor} />
                               <Text>Precio</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -418,14 +498,143 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           />
                           <FormErrorMessage>{errors.price}</FormErrorMessage>
                         </FormControl>
+
+                        <FormControl isInvalid={submitCount > 0 && touched.unitType && !!errors.unitType}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
+                              <Text>Unidad</Text>
+                              <Text color="red.500">*</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="unitType"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una opción"
+                            disabled={true}
+                            validate={validate}
+                          >
+                            <option value="Kilo">Kilos</option>
+                            <option value="Unit">Unidades</option>
+                          </Field>
+                          <FormErrorMessage>{errors.unitType}</FormErrorMessage>
+                        </FormControl>
+
+                        <Field name="estimatedWeight">
+                          {({ field }: any) => (
+                            <FormControl
+                              isInvalid={submitCount > 0 && touched.estimatedWeight && !!errors.estimatedWeight}
+                            >
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiBox} boxSize="1rem" color={iconColor} />
+                                  <Text>Peso est.</Text>
+                                  {values.unitType === UnitType.KILO && <Text color="red.500">*</Text>}
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="number"
+                                step="1"
+                                placeholder="Ingrese el peso estimado en gramos"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.estimatedWeight}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
                       </SimpleGrid>
 
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.brandId && !!errors.brandId}>
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiTag} boxSize="1rem" color={iconColor} />
+                              <Text>Marca</Text>
+                              <Text color="red.500">*</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="brandId"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una marca"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            {brands?.map((brand) => (
+                              <option key={brand.id} value={brand.id}>
+                                {brand.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <FormErrorMessage>{errors.brandId}</FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                          isInvalid={submitCount > 0 && touched.temperatureCondition && !!errors.temperatureCondition}
+                        >
+                          <FormLabel fontWeight="semibold">
+                            <HStack spacing="0.5rem">
+                              <Icon as={FiThermometer} boxSize="1rem" color={iconColor} />
+                              <Text>Cond. de temperatura</Text>
+                              <Text color="red.500">*</Text>
+                            </HStack>
+                          </FormLabel>
+                          <Field
+                            as={Select}
+                            name="temperatureCondition"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            placeholder="Seleccione una opción"
+                            disabled={isLoading}
+                            validate={validate}
+                          >
+                            <option value="Cold">Frío</option>
+                            <option value="Frozen">Congelado</option>
+                            <option value="Ambient">Natural</option>
+                          </Field>
+                          <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
+                        </FormControl>
+                      </SimpleGrid>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
+                            <Text>Descripción</Text>
+                            <Text color="red.500">*</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="description"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                          validate={validate}
+                          rows={2}
+                        />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
+                      </FormControl>
+
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
                         <FormControl>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                               <Text>Categoría</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Select
@@ -445,11 +654,12 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                           </Select>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && !!errors.subCategoryId}>
+                        <FormControl isInvalid={submitCount > 0 && touched.subCategoryId && !!errors.subCategoryId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiGrid} boxSize="1rem" />
+                              <Icon as={FiGrid} boxSize="1rem" color={iconColor} />
                               <Text>Subcategoría</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -472,81 +682,13 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                         </FormControl>
                       </SimpleGrid>
 
-                      <FormControl isInvalid={submitCount > 0 && !!errors.brandId}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiTag} boxSize="1rem" />
-                            <Text>Marca</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="brandId"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          placeholder="Seleccione una marca"
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          {brands?.map((brand) => (
-                            <option key={brand.id} value={brand.id}>
-                              {brand.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <FormErrorMessage>{errors.brandId}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.temperatureCondition}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiThermometer} boxSize="1rem" />
-                            <Text>Condición de temperatura</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Select}
-                          name="temperatureCondition"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          placeholder="Seleccione una opción"
-                          disabled={isLoading}
-                          validate={validate}
-                        >
-                          <option value="Cold">Frío</option>
-                          <option value="Frozen">Congelado</option>
-                          <option value="Ambient">Natural</option>
-                        </Field>
-                        <FormErrorMessage>{errors.temperatureCondition}</FormErrorMessage>
-                      </FormControl>
-
-                      <FormControl isInvalid={submitCount > 0 && !!errors.observations}>
-                        <FormLabel fontWeight="semibold">
-                          <HStack spacing="0.5rem">
-                            <Icon as={FiFileText} boxSize="1rem" />
-                            <Text>Observaciones</Text>
-                          </HStack>
-                        </FormLabel>
-                        <Field
-                          as={Textarea}
-                          name="observations"
-                          bg={inputBg}
-                          border="1px solid"
-                          borderColor={inputBorder}
-                          disabled={isLoading}
-                          rows={2}
-                        />
-                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
-                      </FormControl>
-
-                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem">
-                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing="0.75rem">
+                        <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" />
+                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                               <Text>Depósito</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Select
@@ -568,14 +710,15 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                               </option>
                             ))}
                           </Select>
-                          <FormErrorMessage>{errors.shelveId && 'Depósito es requerido'}</FormErrorMessage>
+                          <FormErrorMessage>{errors.shelveId}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={submitCount > 0 && !!errors.shelveId}>
+                        <FormControl isInvalid={submitCount > 0 && touched.shelveId && !!errors.shelveId}>
                           <FormLabel fontWeight="semibold">
                             <HStack spacing="0.5rem">
-                              <Icon as={FiBox} boxSize="1rem" />
+                              <Icon as={FiBox} boxSize="1rem" color={iconColor} />
                               <Text>Estantería</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
                           <Field
@@ -601,66 +744,211 @@ export const ProductEdit = ({ isOpen, onClose, product, setProducts }: ProductEd
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
-                            <Icon as={FiTruck} boxSize="1rem" />
+                            <Icon as={FiTruck} boxSize="1rem" color={iconColor} />
                             <Text>Proveedores</Text>
                           </HStack>
                         </FormLabel>
-                        <FieldArray name="supplierIds">
-                          {({ push, remove, form }) => (
-                            <Box>
-                              {suppliers && suppliers.length > 0 && (
-                                <Box
-                                  maxH="15rem"
-                                  overflowY="auto"
+
+                        {/* Búsqueda de proveedores */}
+                        <Box position="relative" ref={supplierSearchRef}>
+                          <Flex
+                            bg={inputBg}
+                            borderRadius="md"
+                            overflow="hidden"
+                            borderWidth="1px"
+                            borderColor={inputBorder}
+                          >
+                            <InputGroup flex="1">
+                              <Input
+                                placeholder="Buscar proveedor..."
+                                value={supplierSearch}
+                                onChange={(e) => handleSupplierSearch(e.target.value)}
+                                bg="transparent"
+                                border="none"
+                                borderRadius="none"
+                                _placeholder={{ color: textColor }}
+                                color={textColor}
+                                _focus={{ boxShadow: 'none' }}
+                                onFocus={() => supplierSearch && setShowSupplierDropdown(true)}
+                              />
+                              <InputRightElement>
+                                <IconButton
+                                  aria-label="Buscar"
+                                  icon={<AiOutlineSearch size="1.25rem" />}
+                                  size="sm"
+                                  variant="ghost"
+                                  color={textColor}
+                                  _hover={{}}
+                                />
+                              </InputRightElement>
+                            </InputGroup>
+                          </Flex>
+
+                          {/* Dropdown de resultados de proveedores */}
+                          {showSupplierDropdown && (
+                            <Box
+                              position="absolute"
+                              top="100%"
+                              left={0}
+                              right={0}
+                              mt={1}
+                              bg={dropdownBg}
+                              border="1px solid"
+                              borderColor={dropdownBorder}
+                              borderRadius="md"
+                              boxShadow="lg"
+                              maxH="400px"
+                              overflowY="auto"
+                              zIndex={20}
+                            >
+                              {(() => {
+                                const isTyping =
+                                  supplierSearch !== debouncedSupplierSearch && supplierSearch.length >= 2;
+                                const isSearching =
+                                  !isTyping && isLoadingSuppliersSearch && debouncedSupplierSearch.length >= 2;
+                                const searchCompleted =
+                                  !isTyping &&
+                                  !isSearching &&
+                                  debouncedSupplierSearch.length >= 2 &&
+                                  lastSupplierSearchTerm === debouncedSupplierSearch;
+
+                                if (isTyping || isSearching) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando proveedores...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
+
+                                if (searchCompleted && suppliersSearch?.length > 0) {
+                                  return (
+                                    <List spacing={0}>
+                                      {suppliersSearch.map((supplier: any, index: number) => {
+                                        const isSelected = selectedSuppliers.some((s) => s.id === supplier.id);
+                                        return (
+                                          <Fragment key={supplier.id}>
+                                            <ListItem
+                                              p="0.75rem"
+                                              cursor="pointer"
+                                              _hover={{ bg: hoverBg }}
+                                              transition="background-color 0.2s ease"
+                                              opacity={isSelected ? 0.5 : 1}
+                                              onClick={() => !isSelected && handleSupplierSelect(supplier)}
+                                            >
+                                              <Box>
+                                                <Text fontSize="sm" fontWeight="medium">
+                                                  {supplier.name}
+                                                </Text>
+                                                <Text fontSize="xs" color={textColor}>
+                                                  {supplier.contactName && `Contacto: ${supplier.contactName}`}
+                                                  {supplier.phone && ` - Tel: ${supplier.phone}`}
+                                                </Text>
+                                                {isSelected && (
+                                                  <Text fontSize="xs" color="green.500">
+                                                    Seleccionado
+                                                  </Text>
+                                                )}
+                                              </Box>
+                                            </ListItem>
+                                            {index < suppliersSearch.length - 1 && <Divider />}
+                                          </Fragment>
+                                        );
+                                      })}
+                                    </List>
+                                  );
+                                }
+
+                                if (searchCompleted && suppliersSearch?.length === 0) {
+                                  return (
+                                    <Text p={3} fontSize="sm" color="gray.500">
+                                      No se encontraron proveedores
+                                    </Text>
+                                  );
+                                }
+
+                                if (
+                                  debouncedSupplierSearch.length >= 2 &&
+                                  (!searchCompleted || isLoadingSuppliersSearch)
+                                ) {
+                                  return (
+                                    <Flex p={3} justify="center" align="center" gap={2}>
+                                      <Spinner size="sm" />
+                                      <Text fontSize="sm" color="gray.500">
+                                        Buscando proveedores...
+                                      </Text>
+                                    </Flex>
+                                  );
+                                }
+
+                                return null;
+                              })()}
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Lista de proveedores seleccionados */}
+                        {selectedSuppliers.length > 0 && (
+                          <Box mt="1rem">
+                            <Text fontSize="sm" fontWeight="medium" mb="0.5rem">
+                              Proveedores seleccionados ({selectedSuppliers.length}):
+                            </Text>
+                            <VStack spacing="0.5rem" align="stretch">
+                              {selectedSuppliers.map((supplier) => (
+                                <Flex
+                                  key={supplier.id}
+                                  p="0.5rem 0.75rem"
                                   border="1px solid"
                                   borderColor={inputBorder}
                                   borderRadius="md"
-                                  p="0.5rem"
+                                  bg={inputBg}
+                                  align="center"
+                                  justify="space-between"
                                 >
-                                  <VStack spacing="0.5rem" align="stretch">
-                                    {suppliers.map((supplier: Supplier) => {
-                                      const isSelected = form.values.supplierIds.includes(supplier.id);
-                                      return (
-                                        <HStack
-                                          key={supplier.id}
-                                          p="0.5rem 1rem"
-                                          bg={isSelected ? selectedBg : inputBg}
-                                          borderRadius="md"
-                                          border="1px solid"
-                                          borderColor={isSelected ? 'blue.400' : 'transparent'}
-                                          spacing="1rem"
-                                          cursor="pointer"
-                                          onClick={() => {
-                                            if (isSelected) {
-                                              const index = form.values.supplierIds.indexOf(supplier.id);
-                                              remove(index);
-                                            } else {
-                                              push(supplier.id);
-                                            }
-                                          }}
-                                          _hover={{
-                                            bg: isSelected ? selectedHoverBg : unselectedHoverBg,
-                                          }}
-                                          transition="all 0.2s"
-                                        >
-                                          <Checkbox isChecked={isSelected} onChange={() => {}} pointerEvents="none" />
-                                          <VStack align="start" flex="1" spacing="0">
-                                            <Text fontWeight="semibold" fontSize="sm">
-                                              {supplier.name}
-                                            </Text>
-                                            <Text fontSize="xs" color={supplierSubtextColor}>
-                                              {supplier.contactName} - {supplier.phone}
-                                            </Text>
-                                          </VStack>
-                                        </HStack>
-                                      );
-                                    })}
-                                  </VStack>
-                                </Box>
-                              )}
-                            </Box>
-                          )}
-                        </FieldArray>
+                                  <Box flex="1">
+                                    <Text fontSize="sm" fontWeight="medium">
+                                      {supplier.name}
+                                    </Text>
+                                    <Text fontSize="xs" color={textColor}>
+                                      {supplier.contactName && `Contacto: ${supplier.contactName}`}
+                                      {supplier.phone && ` - Tel: ${supplier.phone}`}
+                                    </Text>
+                                  </Box>
+                                  <IconButton
+                                    aria-label="Eliminar proveedor"
+                                    icon={<FaTrash />}
+                                    size="sm"
+                                    colorScheme="red"
+                                    variant="ghost"
+                                    onClick={() => handleRemoveSupplier(supplier.id)}
+                                    flexShrink={0}
+                                  />
+                                </Flex>
+                              ))}
+                            </VStack>
+                          </Box>
+                        )}
+                      </FormControl>
+
+                      <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiFileText} boxSize="1rem" color={iconColor} />
+                            <Text>Observaciones</Text>
+                          </HStack>
+                        </FormLabel>
+                        <Field
+                          as={Textarea}
+                          name="observations"
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={inputBorder}
+                          disabled={isLoading}
+                          rows={2}
+                        />
+                        <FormErrorMessage>{errors.observations}</FormErrorMessage>
                       </FormControl>
                     </VStack>
                   </form>

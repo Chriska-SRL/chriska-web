@@ -39,10 +39,9 @@ type WarehouseEditProps = {
 
 export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: WarehouseEditProps) => {
   const toast = useToast();
-  const [warehouseProps, setWarehouseProps] = useState<Partial<Warehouse>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateWarehouse(warehouseProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateWarehouse();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -57,7 +56,6 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
         isClosable: true,
       });
       setWarehouses((prev) => prev.map((w) => (w.id === data.id ? data : w)));
-      setWarehouseProps(undefined);
       onClose();
     }
   }, [data]);
@@ -82,17 +80,16 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: { id: number; name: string; description: string }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string }) => {
     const updatedWarehouse = {
       id: values.id,
       name: values.name,
       description: values.description,
     };
-    setWarehouseProps(updatedWarehouse);
+    await mutate(updatedWarehouse);
   };
 
   const handleClose = () => {
-    setWarehouseProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -113,7 +110,7 @@ export const WarehouseEdit = ({ isOpen, onClose, warehouse, setWarehouses }: War
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

@@ -6,7 +6,10 @@ export type Supplier = {
   rut: string;
   razonSocial: string;
   address: string;
-  mapsAddress: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
   phone: string;
   contactName: string;
   email: string;

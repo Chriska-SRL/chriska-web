@@ -55,13 +55,11 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [costProps, setCostProps] = useState<Partial<VehicleCost>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error } = useAddVehicleCost(costProps);
+  const { data, isLoading, error, mutate } = useAddVehicleCost();
 
   const handleClose = () => {
-    setCostProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -86,7 +84,6 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
         duration: 2000,
         isClosable: true,
       });
-      setCostProps(undefined);
       setCosts((prev) => [...prev, data]);
       onClose();
     }
@@ -104,7 +101,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
     }
   }, [error, toast]);
 
-  const handleSubmit = (values: { date: string; type: string; amount: string; description: string }) => {
+  const handleSubmit = async (values: { date: string; type: string; amount: string; description: string }) => {
     const newCost: Partial<VehicleCost> = {
       date: new Date(values.date).toISOString(),
       vehicleId,
@@ -113,7 +110,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
       description: values.description,
     };
 
-    setCostProps(newCost);
+    await mutate(newCost);
   };
 
   return (
@@ -121,7 +118,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -149,8 +146,10 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -160,12 +159,13 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                   <form id="vehiclecost-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="date" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiCalendar} boxSize="1rem" />
                                 <Text>Fecha</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -176,18 +176,19 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.date}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="type" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Tipo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -204,18 +205,19 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.type}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="amount" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.amount && !!errors.amount}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiDollarSign} boxSize="1rem" />
                                 <Text>Monto</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -228,18 +230,19 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.amount}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -251,7 +254,7 @@ const VehicleCostAddModal = ({ isOpen, onClose, vehicleId, setCosts }: VehicleCo
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

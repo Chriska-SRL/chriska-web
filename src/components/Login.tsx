@@ -13,12 +13,13 @@ import {
   Flex,
   useToast,
   useColorModeValue,
-  HStack,
+  InputGroup,
+  InputRightElement,
   IconButton,
 } from '@chakra-ui/react';
-import { FiCode } from 'react-icons/fi';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { Formik, Field } from 'formik';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLogin } from '@/hooks/login';
 import { useUserStore } from '@/stores/useUserStore';
 import { Login as LoginValues } from '@/entities/login';
@@ -27,8 +28,10 @@ import { useRouter } from 'next/navigation';
 export const Login = () => {
   const router = useRouter();
   const toast = useToast();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { performLogin, performDevLogin, isLoading, error, fieldError } = useLogin();
+  const { performLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
@@ -36,8 +39,6 @@ export const Login = () => {
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
-  const devBtnBg = useColorModeValue('orange.500', 'orange.500');
-  const devBtnHover = useColorModeValue('orange.600', 'orange.600');
 
   useEffect(() => {
     if (error || fieldError) {
@@ -53,23 +54,44 @@ export const Login = () => {
   }, [error, fieldError, toast]);
 
   const handleLoginSuccess = () => {
+    const user = useUserStore.getState().user;
+    setIsRedirecting(true);
+
+    // Mostrar toast de éxito pero no bloquear la redirección
     toast({
       title: 'Inicio de sesión exitoso',
       description: 'Redirigiendo...',
       status: 'success',
-      duration: 1500,
+      duration: 2000,
       isClosable: true,
     });
 
-    setTimeout(() => {
-      const user = useUserStore.getState().user;
-
+    // Redirección inmediata y robusta
+    try {
+      if (typeof window !== 'undefined') {
+        const redirectUrl = user?.needsPasswordChange ? '/cambiar-contrasena' : '/';
+        window.location.replace(redirectUrl);
+      } else {
+        // Fallback para SSR
+        if (user?.needsPasswordChange) {
+          router.push('/cambiar-contrasena');
+        } else {
+          router.push('/');
+        }
+      }
+    } catch (error) {
+      console.error('Error during login redirect:', error);
+      // Fallback en caso de error
       if (user?.needsPasswordChange) {
         router.push('/cambiar-contrasena');
       } else {
         router.push('/');
       }
-    }, 100);
+    } finally {
+      // Este finally puede no ejecutarse debido a window.location.replace
+      // pero está aquí como precaución
+      setIsRedirecting(false);
+    }
   };
 
   const handleSubmit = async (values: LoginValues) => {
@@ -77,15 +99,6 @@ export const Login = () => {
 
     if (success) {
       setTempPassword(values.password);
-      handleLoginSuccess();
-    }
-  };
-
-  const handleDevLogin = async () => {
-    const success = await performDevLogin();
-
-    if (success) {
-      setTempPassword('');
       handleLoginSuccess();
     }
   };
@@ -117,7 +130,7 @@ export const Login = () => {
             validateOnChange
             validateOnBlur={false}
           >
-            {({ handleSubmit, errors, touched, submitCount }) => (
+            {({ handleSubmit, errors, touched, submitCount, values }) => (
               <form onSubmit={handleSubmit}>
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.username && !!errors.username}>
                   <FormLabel htmlFor="username">Nombre de usuario</FormLabel>
@@ -127,7 +140,7 @@ export const Login = () => {
                     name="username"
                     type="text"
                     variant="filled"
-                    disabled={isLoading}
+                    disabled={isLoading || isRedirecting}
                     autoCapitalize="none"
                   />
                   <FormErrorMessage>{errors.username}</FormErrorMessage>
@@ -135,48 +148,53 @@ export const Login = () => {
 
                 <FormControl mb="1rem" isInvalid={submitCount > 0 && touched.password && !!errors.password}>
                   <FormLabel htmlFor="password">Contraseña</FormLabel>
-                  <Field
-                    as={Input}
-                    id="password"
-                    name="password"
-                    type="password"
-                    variant="filled"
-                    disabled={isLoading}
-                  />
+                  <InputGroup>
+                    <Field
+                      as={Input}
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      variant="filled"
+                      disabled={isLoading || isRedirecting}
+                      pr={values.password ? '3rem' : '0.75rem'}
+                    />
+                    {values.password && (
+                      <InputRightElement>
+                        <IconButton
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                          onClick={() => setShowPassword(!showPassword)}
+                          variant="ghost"
+                          size="sm"
+                          disabled={isLoading || isRedirecting}
+                          _hover={{ bg: 'transparent' }}
+                          _active={{ bg: 'transparent' }}
+                        />
+                      </InputRightElement>
+                    )}
+                  </InputGroup>
                   <FormErrorMessage>{errors.password}</FormErrorMessage>
                 </FormControl>
 
                 <Box mt="1.5rem">
                   <Progress
-                    h={isLoading ? '4px' : '1px'}
+                    h={isLoading || isRedirecting ? '4px' : '1px'}
                     mb="1.5rem"
                     size="xs"
-                    isIndeterminate={isLoading}
-                    colorScheme="blue"
+                    isIndeterminate={isLoading || isRedirecting}
+                    colorScheme={isRedirecting ? 'green' : 'blue'}
                   />
-                  <HStack spacing="0.5rem">
-                    <Button
-                      type="submit"
-                      isDisabled={isLoading}
-                      bg={btnBg}
-                      color="white"
-                      _hover={{ backgroundColor: btnHover }}
-                      flex="1"
-                    >
-                      {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                    </Button>
-
-                    <IconButton
-                      onClick={handleDevLogin}
-                      isDisabled={isLoading}
-                      bg={devBtnBg}
-                      color="white"
-                      _hover={{ backgroundColor: devBtnHover }}
-                      icon={<FiCode />}
-                      aria-label="Login de desarrollo"
-                      size="md"
-                    />
-                  </HStack>
+                  <Button
+                    type="submit"
+                    isDisabled={isLoading || isRedirecting}
+                    bg={btnBg}
+                    color="white"
+                    _hover={{ backgroundColor: btnHover }}
+                    width="100%"
+                    opacity={isRedirecting ? 0.8 : 1}
+                  >
+                    {isRedirecting ? 'Redirigiendo...' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                  </Button>
                 </Box>
               </form>
             )}

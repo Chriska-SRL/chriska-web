@@ -26,6 +26,7 @@ import { Pagination } from '../Pagination';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getStatusLabel, getStatusColor } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type DeliveryListProps = {
   deliveries: Delivery[];
@@ -36,6 +37,7 @@ type DeliveryListProps = {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  showPagination?: boolean;
 };
 
 export const DeliveryList = ({
@@ -47,6 +49,7 @@ export const DeliveryList = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
+  showPagination = true,
 }: DeliveryListProps) => {
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
 
@@ -79,8 +82,12 @@ export const DeliveryList = ({
   const calculateTotal = (delivery: Delivery) => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        const itemTotal = item.quantity * item.unitPrice * (1 - item.discount / 100);
-        return total + itemTotal;
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + ((weight || 0) / 1000) * item.unitPrice;
+        } else {
+          return total + item.quantity * item.unitPrice;
+        }
       }, 0) || 0
     );
   };
@@ -211,18 +218,20 @@ export const DeliveryList = ({
               ))}
             </VStack>
           </Box>
-          <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
-            <Text fontSize="sm" fontWeight="medium">
-              Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
-            </Text>
-            <Pagination
-              currentPage={currentPage}
-              pageSize={pageSize}
-              hasNextPage={hasNextPage}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
-            />
-          </Flex>
+          {showPagination && (
+            <Flex h="3.5rem" alignItems="center" justifyContent="space-between">
+              <Text fontSize="sm" fontWeight="medium">
+                Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
+              </Text>
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+              />
+            </Flex>
+          )}
         </>
       ) : (
         <>
@@ -294,19 +303,21 @@ export const DeliveryList = ({
               </Tbody>
             </Table>
           </TableContainer>
-          <Flex justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm" fontWeight="medium">
-              Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
-            </Text>
-            <Pagination
-              currentPage={currentPage}
-              pageSize={pageSize}
-              hasNextPage={hasNextPage}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
-              isLoading={false}
-            />
-          </Flex>
+          {showPagination && (
+            <Flex justifyContent="space-between" alignItems="center">
+              <Text fontSize="sm" fontWeight="medium">
+                Mostrando {deliveries.length} entrega{deliveries.length !== 1 ? 's' : ''}
+              </Text>
+              <Pagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                hasNextPage={hasNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                isLoading={false}
+              />
+            </Flex>
+          )}
         </>
       )}
     </>

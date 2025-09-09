@@ -83,5 +83,25 @@ export * from './Discounts/Discounts';
 export * from './Discounts/DiscountAdd';
 export * from './Discounts/DiscountEdit';
 export * from './Discounts/DiscountList';
-// export * from './Discounts/DiscountFilters'; // Temporarily disabled to debug requests
 export * from './Discounts/DiscountDetail';
+
+export * from './ClientReceipts/ClientReceipts';
+export * from './ClientReceipts/ClientReceiptAdd';
+export * from './ClientReceipts/ClientReceiptEdit';
+export * from './ClientReceipts/ClientReceiptList';
+export * from './ClientReceipts/ClientReceiptFilters';
+export * from './ClientReceipts/ClientReceiptDetail';
+
+export * from './SupplierReceipts/SupplierReceipts';
+export * from './SupplierReceipts/SupplierReceiptAdd';
+export * from './SupplierReceipts/SupplierReceiptEdit';
+export * from './SupplierReceipts/SupplierReceiptList';
+export * from './SupplierReceipts/SupplierReceiptFilters';
+export * from './SupplierReceipts/SupplierReceiptDetail';
+
+export * from './Purchases/Purchases';
+export * from './Purchases/PurchaseAdd';
+export * from './Purchases/PurchaseEdit';
+export * from './Purchases/PurchaseList';
+export * from './Purchases/PurchaseFilters';
+export * from './Purchases/PurchaseDetail';

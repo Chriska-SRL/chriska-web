@@ -7,6 +7,7 @@ export type StockMovement = {
   quantity: number;
   type: string;
   reason: string;
+  reasonType: string;
   user: User;
   product: Product;
 };

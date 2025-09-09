@@ -26,11 +26,10 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Spinner,
 } from '@chakra-ui/react';
 import { OrderRequest } from '@/entities/orderRequest';
 import {
-  FiEye,
+  FiInfo,
   FiEdit,
   FiCheckCircle,
   FiUsers,
@@ -43,8 +42,7 @@ import {
 } from 'react-icons/fi';
 import { OrderRequestEdit } from './OrderRequestEdit';
 import { useChangeOrderRequestStatus } from '@/hooks/orderRequest';
-import { getBestDiscount } from '@/services/discount';
-import type { Discount } from '@/entities/discount';
+// Removed getBestDiscount and Discount imports - no longer needed
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -52,6 +50,7 @@ import { useToast } from '@chakra-ui/react';
 import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { getStatusLabel, Status } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
 
 type OrderRequestDetailProps = {
   orderRequest: OrderRequest;
@@ -66,10 +65,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   const { isOpen: isCancelDialogOpen, onOpen: openCancelDialog, onClose: closeCancelDialog } = useDisclosure();
   const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
-  const [productDiscounts, setProductDiscounts] = useState<{
-    [productId: number]: { discount: Discount | null; loading: boolean };
-  }>({});
-  const [isLoadingDiscounts, setIsLoadingDiscounts] = useState(false);
+  // Removed productDiscounts and isLoadingDiscounts - no longer needed
   const {
     data: statusData,
     isLoading: statusLoading,
@@ -97,12 +93,15 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   const calculateSubtotal = () => {
     return (
       orderRequest.productItems?.reduce((total, item) => {
-        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-          // Para pending: usar precios actuales
-          return total + item.quantity * item.unitPrice;
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const estimatedWeight = item.product?.estimatedWeight || 0;
+          return total + quantity * (estimatedWeight / 1000) * basePrice;
         } else {
-          // Para confirmados: item.unitPrice es el precio original
-          return total + item.quantity * item.unitPrice;
+          return total + quantity * basePrice;
         }
       }, 0) || 0
     );
@@ -111,25 +110,24 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
   const calculateDiscount = () => {
     return (
       orderRequest.productItems?.reduce((total, item) => {
-        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-          // Para pending: usar descuentos actuales del endpoint con lógica de cantidad mínima
-          const productDiscount = productDiscounts[item.product.id];
-          if (productDiscount?.discount) {
-            const minQuantity = productDiscount.discount.productQuantity;
-            if (item.quantity >= minQuantity) {
-              // Solo aplicar descuento si se cumple la cantidad mínima
-              return total + (item.quantity * item.unitPrice * productDiscount.discount.percentage) / 100;
-            }
+        const basePrice = item.unitPrice;
+        const quantity = item.quantity;
+
+        // Calculate base amount considering unitType
+        const baseAmount = (() => {
+          if (item.product?.unitType === UnitType.KILO) {
+            const estimatedWeight = item.product?.estimatedWeight || 0;
+            return quantity * (estimatedWeight / 1000) * basePrice;
+          } else {
+            return quantity * basePrice;
           }
-          return total; // Sin descuento si no se cumple la cantidad mínima
-        } else {
-          // Para confirmados: item.unitPrice es el precio original, item.discount es el porcentaje
-          if (item.discount > 0) {
-            const discountAmount = item.unitPrice * (item.discount / 100);
-            return total + item.quantity * discountAmount;
-          }
-          return total; // Sin descuento aplicado
+        })();
+
+        // Always use the discount that was stored when the item was added to the order
+        if (item.discount > 0) {
+          return total + (baseAmount * item.discount) / 100;
         }
+        return total; // No discount applied
       }, 0) || 0
     );
   };
@@ -214,68 +212,20 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
     }
   }, [statusError, toast]);
 
-  // Obtener descuentos reales cuando se abre el modal (solo si está pending)
-  useEffect(() => {
-    const fetchDiscounts = async () => {
-      // Solo obtener descuentos si el pedido está pending
-      if (
-        isOpen &&
-        orderRequest.productItems &&
-        orderRequest.client &&
-        orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()
-      ) {
-        setIsLoadingDiscounts(true);
-
-        // Marcar todos los productos como cargando
-        const loadingState: { [productId: number]: { discount: Discount | null; loading: boolean } } = {};
-        orderRequest.productItems.forEach((item) => {
-          loadingState[item.product.id] = { discount: null, loading: true };
-        });
-        setProductDiscounts(loadingState);
-
-        // Obtener descuentos para cada producto
-        const discountPromises = orderRequest.productItems.map(async (item) => {
-          try {
-            const bestDiscount = await getBestDiscount(item.product.id, orderRequest.client.id);
-            setProductDiscounts((prev) => ({
-              ...prev,
-              [item.product.id]: {
-                discount: bestDiscount,
-                loading: false,
-              },
-            }));
-          } catch (error) {
-            console.error('Error getting best discount for product', item.product.id, error);
-            setProductDiscounts((prev) => ({
-              ...prev,
-              [item.product.id]: {
-                discount: null,
-                loading: false,
-              },
-            }));
-          }
-        });
-
-        await Promise.all(discountPromises);
-        setIsLoadingDiscounts(false);
-      }
-    };
-
-    fetchDiscounts();
-  }, [isOpen, orderRequest.productItems, orderRequest.client, orderRequest.status]);
+  // No longer need to fetch discounts - always use stored discount values
 
   return (
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -337,11 +287,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                     display="flex"
                     alignItems="center"
                   >
-                    {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() && isLoadingDiscounts ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <Text>{`$${calculateTotal().toFixed(2)}`}</Text>
-                    )}
+                    <Text>{`$${calculateTotal().toFixed(2)}`}</Text>
                   </Box>
                 </Box>
               </Stack>
@@ -360,55 +306,34 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                 {orderRequest.productItems && orderRequest.productItems.length > 0 ? (
                   <VStack spacing="0.5rem" align="stretch" maxH="300px" overflowY="auto">
                     {orderRequest.productItems.map((item, index) => {
-                      const productDiscount = productDiscounts[item.product.id];
-                      const isLoadingDiscount = productDiscount?.loading || false;
-
-                      // Calcular subtotal basado en el estado del pedido
+                      // Calcular subtotal basado en unitType
                       const subtotal = (() => {
-                        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                          // Para pending: usar precio actual
-                          return item.quantity * item.unitPrice;
+                        const basePrice = item.unitPrice;
+                        const quantity = item.quantity;
+
+                        if (item.product?.unitType === UnitType.KILO) {
+                          const estimatedWeight = item.product?.estimatedWeight || 0;
+                          return quantity * (estimatedWeight / 1000) * basePrice;
                         } else {
-                          // Para confirmados: item.unitPrice es el precio original
-                          return item.quantity * item.unitPrice;
+                          return quantity * basePrice;
                         }
                       })();
 
-                      // Calcular descuento aplicado según cantidad mínima
+                      // Always use the stored discount percentage
                       const discount = (() => {
-                        if (
-                          orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() &&
-                          productDiscount?.discount
-                        ) {
-                          const minQuantity = productDiscount.discount.productQuantity;
-                          if (item.quantity >= minQuantity) {
-                            return subtotal * (productDiscount.discount.percentage / 100);
-                          }
-                          return 0; // Sin descuento si no se cumple cantidad mínima
-                        }
-                        // Para estados no pending: item.unitPrice es el precio original, item.discount es el porcentaje
                         if (item.discount > 0) {
-                          const discountAmount = item.unitPrice * (item.discount / 100);
-                          return item.quantity * discountAmount;
+                          return subtotal * (item.discount / 100);
                         }
                         return 0;
                       })();
 
-                      // El total final debe ser el precio que realmente se paga
-                      const total = (() => {
-                        if (orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase()) {
-                          return subtotal - discount;
-                        } else {
-                          // Para confirmados: calcular precio final con descuento aplicado
-                          const finalPrice = item.unitPrice * (1 - item.discount / 100);
-                          return item.quantity * finalPrice;
-                        }
-                      })();
+                      // Calculate final total with stored discount
+                      const total = subtotal - discount;
 
                       return (
                         <Box
                           key={index}
-                          p={{ base: '0.75rem', md: '0.75rem 1.5rem' }}
+                          p={{ base: '0.75rem', md: '0.75rem 1rem' }}
                           border="1px solid"
                           borderColor={inputBorder}
                           borderRadius="md"
@@ -433,50 +358,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                   {item.product?.name || '-'}
                                 </Text>
                                 <HStack spacing="0.5rem" align="center" mt="0.25rem">
-                                  {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
-                                    // Para pending: usar descuentos actuales del endpoint
-                                    isLoadingDiscount ? (
-                                      <>
-                                        <Text fontSize="xs" color={textColor}>
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Spinner size="xs" />
-                                        <Text fontSize="xs" color="gray.500">
-                                          Cargando...
-                                        </Text>
-                                      </>
-                                    ) : productDiscount?.discount &&
-                                      item.quantity >= productDiscount.discount.productQuantity ? (
-                                      <>
-                                        {/* Solo mostrar descuento si se cumple cantidad mínima */}
-                                        <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${item.unitPrice.toFixed(2)}
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          $
-                                          {(item.unitPrice * (1 - productDiscount.discount.percentage / 100)).toFixed(
-                                            2,
-                                          )}
-                                        </Text>
-                                        <Box
-                                          bg="green.500"
-                                          color="white"
-                                          px="0.4rem"
-                                          py="0.1rem"
-                                          borderRadius="md"
-                                          fontSize="xs"
-                                          fontWeight="bold"
-                                        >
-                                          -{productDiscount.discount.percentage}%
-                                        </Box>
-                                      </>
-                                    ) : (
-                                      <Text fontSize="xs" color={textColor}>
-                                        ${item.unitPrice.toFixed(2)}
-                                      </Text>
-                                    )
-                                  ) : // Para confirmados/cancelados: item.unitPrice es precio original, item.discount es porcentaje
-                                  item.discount > 0 ? (
+                                  {item.discount > 0 ? (
                                     <>
                                       <Text fontSize="xs" color={textColor} textDecoration="line-through">
                                         ${item.unitPrice.toFixed(2)}
@@ -502,6 +384,11 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                     </Text>
                                   )}
                                 </HStack>
+                                {item.product?.unitType === UnitType.KILO && (
+                                  <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                    Peso estimado: {item.product?.estimatedWeight || 0}g
+                                  </Text>
+                                )}
                               </Box>
                             </Flex>
 
@@ -519,14 +406,9 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                 <Text fontSize="xs" color={textColor}>
                                   Subtotal
                                 </Text>
-                                {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() &&
-                                isLoadingDiscounts ? (
-                                  <Spinner size="xs" />
-                                ) : (
-                                  <Text fontSize="sm" fontWeight="bold">
-                                    ${total.toFixed(2)}
-                                  </Text>
-                                )}
+                                <Text fontSize="sm" fontWeight="bold">
+                                  ${total.toFixed(2)}
+                                </Text>
                               </VStack>
                             </Flex>
 
@@ -545,14 +427,9 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
                                 <Text fontSize="xs" color={textColor}>
                                   Subt.:
                                 </Text>
-                                {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() &&
-                                isLoadingDiscounts ? (
-                                  <Spinner size="xs" />
-                                ) : (
-                                  <Text fontSize="sm" fontWeight="bold">
-                                    ${total.toFixed(2)}
-                                  </Text>
-                                )}
+                                <Text fontSize="sm" fontWeight="bold">
+                                  ${total.toFixed(2)}
+                                </Text>
                               </HStack>
                             </Flex>
                           </Flex>
@@ -581,7 +458,7 @@ export const OrderRequestDetail = ({ orderRequest, setOrderRequests }: OrderRequ
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             {orderRequest.status?.toLowerCase() === Status.PENDING.toLowerCase() ? (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"

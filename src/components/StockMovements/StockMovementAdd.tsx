@@ -45,6 +45,7 @@ import { validate } from '@/utils/validations/validate';
 import { validateEmpty } from '@/utils/validations/validateEmpty';
 import { Permission } from '@/enums/permission.enum';
 import { StockMovementTypeOptions } from '@/enums/stockMovementType.enum';
+import { StockMovementReasonTypeOptions } from '@/enums/stockMovementReasonType.enum';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 
 type StockMovementAddProps = {
@@ -77,14 +78,17 @@ const StockMovementAddModal = ({
   const dropdownBorder = useColorModeValue('gray.200', 'gray.600');
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.200', 'whiteAlpha.300');
+  const iconColor = useColorModeValue('gray.500', 'gray.400');
+
+  // Verificar permiso para mostrar el campo de fecha
+  const canSetCustomDate = useUserStore((s) => s.hasPermission(Permission.CREATE_PRODUCT_WITHDATE));
 
   // Hook para obtener el producto preseleccionado
   const { data: preselectedProduct } = useGetProductById(preselectedProductId);
 
-  const [movementProps, setMovementProps] = useState<Partial<StockMovement>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddStockMovement(movementProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddStockMovement();
 
   // Estados para la búsqueda de productos
   const [productSearch, setProductSearch] = useState('');
@@ -166,7 +170,6 @@ const StockMovementAddModal = ({
   };
 
   const handleClose = () => {
-    setMovementProps(undefined);
     setProductSearch('');
     setSelectedProduct(null);
     setShowProductDropdown(false);
@@ -195,7 +198,6 @@ const StockMovementAddModal = ({
         duration: 2000,
         isClosable: true,
       });
-      setMovementProps(undefined);
       setStockMovements((prev) => [...prev, data]);
       setProductSearch('');
       setSelectedProduct(null);
@@ -225,20 +227,28 @@ const StockMovementAddModal = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: {
+  const handleSubmit = async (values: {
     date: string;
     quantity: number;
     type: string;
     reason: string;
+    reasonType: string;
     productId: string;
   }) => {
-    setMovementProps({
-      date: values.date,
+    const movementData: any = {
       quantity: values.quantity,
       type: values.type,
       reason: values.reason,
+      reasonType: values.reasonType || undefined,
       productId: Number(values.productId),
-    } as any);
+    };
+
+    // Solo incluir la fecha si el usuario tiene permiso para establecerla
+    if (canSetCustomDate) {
+      movementData.date = values.date;
+    }
+
+    await mutate(movementData);
   };
 
   return (
@@ -246,7 +256,7 @@ const StockMovementAddModal = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'lg' }}
+        size={{ base: 'full', md: 'lg' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -267,16 +277,19 @@ const StockMovementAddModal = ({
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <Formik
               initialValues={{
-                date: '',
+                date: new Date().toISOString().split('T')[0],
                 quantity: 0,
                 type: '',
                 reason: '',
+                reasonType: '',
                 productId: preselectedProductId ? preselectedProductId.toString() : '',
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, setFieldValue, dirty, resetForm }) => {
+              {({ handleSubmit, setFieldValue, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -285,38 +298,42 @@ const StockMovementAddModal = ({
                 return (
                   <form id="stockmovement-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
-                      <Field name="date" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiCalendar} boxSize="1rem" />
-                                <Text>Fecha</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              type="date"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
+                      {canSetCustomDate && (
+                        <Field name="date" validate={canSetCustomDate ? validateEmpty : undefined}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.date && !!errors.date}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiCalendar} boxSize="1rem" />
+                                  <Text>Fecha</Text>
+                                  <Text color="red.500">*</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                type="date"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.date}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+                      )}
 
                       <Field
                         name="quantity"
                         validate={(v: any) => (!v || v <= 0 ? 'Debe ser mayor a cero' : undefined)}
                       >
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.quantity && !!errors.quantity}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
                                 <Text>Cantidad</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -328,18 +345,19 @@ const StockMovementAddModal = ({
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.quantity}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="type" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.type && !!errors.type}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Tipo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Select
@@ -356,16 +374,17 @@ const StockMovementAddModal = ({
                                 </option>
                               ))}
                             </Select>
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.type}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
-                      <FormControl>
+                      <FormControl isInvalid={submitCount > 0 && !!errors.productId}>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiPackage} boxSize="1rem" />
                             <Text>Producto</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Box position="relative" ref={searchRef}>
@@ -554,15 +573,46 @@ const StockMovementAddModal = ({
                           )}
                         </Box>
                         <Field name="productId" validate={validate} style={{ display: 'none' }} />
+                        <FormErrorMessage>{errors.productId}</FormErrorMessage>
                       </FormControl>
 
+                      <Field name="reasonType" validate={validateEmpty}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.reasonType && !!errors.reasonType}>
+                            <FormLabel fontWeight="semibold">
+                              <HStack spacing="0.5rem">
+                                <Icon as={FiTag} boxSize="1rem" color={iconColor} />
+                                <Text>Tipo de razón</Text>
+                                <Text color="red.500">*</Text>
+                              </HStack>
+                            </FormLabel>
+                            <Select
+                              {...field}
+                              placeholder="Seleccione un tipo"
+                              bg={inputBg}
+                              border="1px solid"
+                              borderColor={inputBorder}
+                              disabled={isLoading}
+                            >
+                              {StockMovementReasonTypeOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </Select>
+                            <FormErrorMessage>{errors.reasonType}</FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+
                       <Field name="reason" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.reason && !!errors.reason}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Razón</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -574,7 +624,7 @@ const StockMovementAddModal = ({
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.reason}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

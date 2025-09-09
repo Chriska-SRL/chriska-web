@@ -16,8 +16,9 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
-import { FiEye, FiHash, FiTag, FiTruck, FiBox } from 'react-icons/fi';
+import { FiInfo, FiHash, FiTag, FiTruck, FiBox } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Vehicle } from '@/entities/vehicle';
 import { VehicleEdit } from './VehicleEdit';
@@ -75,14 +76,14 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -106,7 +107,13 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={onClose}>
                 Cerrar
               </Button>
@@ -134,7 +141,7 @@ export const VehicleDetail = ({ vehicle, setVehicles }: VehicleDetailProps) => {
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -54,13 +54,11 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddShelve(shelveProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddShelve();
 
   const handleClose = () => {
-    setShelveProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -85,7 +83,6 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
         duration: 2000,
         isClosable: true,
       });
-      setShelveProps(undefined);
       setWarehouses((prev) =>
         prev.map((w) => {
           if (w.id === warehouse.id) {
@@ -118,12 +115,12 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<Shelve>) => {
+  const handleSubmit = async (values: Partial<Shelve>) => {
     const shelve = {
       ...values,
       warehouseId: warehouse.id,
     };
-    setShelveProps(shelve);
+    await mutate(shelve);
   };
 
   return (
@@ -131,7 +128,7 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -157,8 +154,10 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -184,12 +183,13 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
                       </FormControl>
 
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Nombre</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -200,18 +200,19 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -223,7 +224,7 @@ const ShelveAddModal = ({ isOpen, onClose, warehouse, setWarehouses }: ShelveAdd
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

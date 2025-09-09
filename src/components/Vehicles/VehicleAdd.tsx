@@ -50,13 +50,11 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [vehicleProps, setVehicleProps] = useState<Partial<Vehicle>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddVehicle(vehicleProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddVehicle();
 
   const handleClose = () => {
-    setVehicleProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -81,7 +79,6 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
         duration: 2000,
         isClosable: true,
       });
-      setVehicleProps(undefined);
       setVehicles((prev) => [...prev, data]);
       onClose();
     }
@@ -107,12 +104,12 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
+  const handleSubmit = async (values: { plate: string; brand: string; model: string; crateCapacity: number }) => {
     const vehicle = {
       ...values,
       crateCapacity: Number(values.crateCapacity),
     };
-    setVehicleProps(vehicle);
+    await mutate(vehicle);
   };
 
   return (
@@ -120,7 +117,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -148,8 +145,10 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -159,12 +158,13 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                   <form id="vehicle-add-form" onSubmit={handleSubmit}>
                     <VStack spacing="1rem" align="stretch">
                       <Field name="plate" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.plate && !!errors.plate}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHash} boxSize="1rem" />
                                 <Text>Matrícula</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -175,18 +175,19 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.plate}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="brand" validate={validateVehicle}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.brand && !!errors.brand}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Marca</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -197,18 +198,19 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.brand}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="model" validate={validateVehicle}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.model && !!errors.model}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTruck} boxSize="1rem" />
                                 <Text>Modelo</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -219,7 +221,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.model}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -231,12 +233,13 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                           return undefined;
                         }}
                       >
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.crateCapacity && !!errors.crateCapacity}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiBox} boxSize="1rem" />
                                 <Text>Capacidad de cajones</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -248,7 +251,7 @@ const VehicleAddModal = ({ isOpen, onClose, setVehicles }: VehicleAddModalProps)
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.crateCapacity}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

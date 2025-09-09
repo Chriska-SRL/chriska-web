@@ -51,16 +51,14 @@ const CategoryEditForm = ({
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }) => {
   const toast = useToast();
-  const [categoryProps, setCategoryProps] = useState<Partial<Category>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateCategory(categoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateCategory();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const handleClose = () => {
-    setCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -86,10 +84,9 @@ const CategoryEditForm = ({
         isClosable: true,
       });
       setCategories((prev) => prev.map((c) => (c.id === data.id ? data : c)));
-      setCategoryProps(undefined);
       handleClose();
     }
-  }, [data, setCategories, toast, onClose]);
+  }, [data, setCategories, toast]);
 
   useEffect(() => {
     if (fieldError) {
@@ -111,13 +108,13 @@ const CategoryEditForm = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { id: number; name: string; description: string }) => {
+  const handleSubmit = async (values: { id: number; name: string; description: string }) => {
     const updatedCategory = {
       id: values.id,
       name: values.name,
       description: values.description,
     };
-    setCategoryProps(updatedCategory);
+    await mutate(updatedCategory);
   };
 
   return (
@@ -125,7 +122,7 @@ const CategoryEditForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -152,8 +149,10 @@ const CategoryEditForm = ({
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -164,12 +163,13 @@ const CategoryEditForm = ({
                     <Box>
                       <VStack spacing="1rem" align="stretch">
                         <Field name="name" validate={validate}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiGrid} boxSize="1rem" />
                                   <Text>Nombre</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -180,18 +180,19 @@ const CategoryEditForm = ({
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="description" validate={validateEmpty}>
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiFileText} boxSize="1rem" />
                                   <Text>Descripción</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Textarea
@@ -203,7 +204,7 @@ const CategoryEditForm = ({
                                 disabled={isLoading}
                                 rows={4}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.description}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>

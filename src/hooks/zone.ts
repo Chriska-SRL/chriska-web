@@ -8,7 +8,7 @@ import {
   uploadZoneImage,
   deleteZoneImage,
 } from '@/services/zone';
-import { useFetch } from '../utils/useFetch';
+import { useFetch, useMutation } from '../utils/useFetch';
 import { useState, useEffect } from 'react';
 import { Day } from '@/enums/day.enum';
 
@@ -52,11 +52,9 @@ export const useGetZones = (
 
 export const useGetZoneById = (id?: number) => useFetch<number, Zone>(getZoneById, id);
 
-export const useAddZone = (props?: Partial<Zone>) =>
-  useFetch<Partial<Zone>, Zone>(addZone, props, { parseFieldError: true });
+export const useAddZone = () => useMutation<Partial<Zone>, Zone>(addZone, { parseFieldError: true });
 
-export const useUpdateZone = (props?: Partial<Zone>) =>
-  useFetch<Partial<Zone>, Zone>(updateZone, props, { parseFieldError: true });
+export const useUpdateZone = () => useMutation<Partial<Zone>, Zone>(updateZone, { parseFieldError: true });
 
 export const useDeleteZone = (id?: number) => useFetch<number, Zone>(deleteZone, id);
 

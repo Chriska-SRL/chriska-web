@@ -51,19 +51,32 @@ import { Permission } from '@/enums/permission.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
 import { Status } from '@/enums/status.enum';
+import { UnitType } from '@/enums/unitType.enum';
+import { roundToQuarter } from '@/utils/roundToQuarter';
 
 type OrderRequestAddProps = {
   isLoading: boolean;
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+  preselectedClientId?: number;
+  forceOpen?: boolean;
+  onModalClose?: () => void;
 };
 
 type OrderRequestAddModalProps = {
   isOpen: boolean;
   onClose: () => void;
   setOrderRequests: React.Dispatch<React.SetStateAction<OrderRequest[]>>;
+  preselectedClientId?: number;
+  onModalClose?: () => void;
 };
 
-const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderRequestAddModalProps) => {
+const OrderRequestAddModal = ({
+  isOpen,
+  onClose,
+  setOrderRequests,
+  preselectedClientId,
+  onModalClose,
+}: OrderRequestAddModalProps) => {
   const toast = useToast();
   const user = useUserStore((state) => state.user);
 
@@ -75,17 +88,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const dividerColor = useColorModeValue('gray.300', 'gray.600');
 
-  const [orderRequestProps, setOrderRequestProps] = useState<{
-    observations?: string;
-    date?: string;
-    status?: string;
-    clientId?: number;
-    userId?: number;
-    productItems?: {
-      productId: number;
-      quantity: number;
-    }[];
-  }>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
@@ -96,6 +98,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const [selectedClient, setSelectedClient] = useState<{ id: number; name: string } | null>(null);
   const [debouncedClientSearch, setDebouncedClientSearch] = useState(clientSearch);
   const [lastClientSearchTerm, setLastClientSearchTerm] = useState('');
+  const [isLoadingPreselectedClient, setIsLoadingPreselectedClient] = useState(false);
   const clientSearchRef = useRef<HTMLDivElement>(null);
 
   // Estados para la búsqueda de productos
@@ -108,6 +111,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       name: string;
       price: number;
       imageUrl?: string;
+      unitType?: string;
+      estimatedWeight?: number;
       quantity: number;
       discount?: number;
       discountId?: string;
@@ -123,7 +128,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const [lastProductSearchTerm, setLastProductSearchTerm] = useState('');
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, fieldError } = useAddOrderRequest(orderRequestProps);
+  const { data, isLoading, fieldError, mutate } = useAddOrderRequest();
 
   // Debounce para búsqueda de clientes
   useEffect(() => {
@@ -167,6 +172,34 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   const actualClientFilters = debouncedClientSearch && debouncedClientSearch.length >= 2 ? clientFilters : undefined;
 
   const { data: clientsSearch = [], isLoading: isLoadingClientsSearch } = useGetClients(1, 10, actualClientFilters);
+
+  // Efecto para preseleccionar cliente cuando se pasa como prop
+  useEffect(() => {
+    if (preselectedClientId && !selectedClient && isOpen) {
+      setIsLoadingPreselectedClient(true);
+      // Iniciar búsqueda para encontrar el cliente por ID
+      setClientSearch('*'); // Búsqueda que traerá todos los clientes
+    }
+  }, [preselectedClientId, selectedClient, isOpen]);
+
+  // Efecto para seleccionar cliente cuando aparece en los resultados de búsqueda
+  useEffect(() => {
+    if (
+      preselectedClientId &&
+      !selectedClient &&
+      clientsSearch &&
+      clientsSearch.length > 0 &&
+      isLoadingPreselectedClient
+    ) {
+      const foundClient = clientsSearch.find((c) => c.id === preselectedClientId);
+      if (foundClient) {
+        setSelectedClient({ id: foundClient.id, name: foundClient.name });
+        setShowClientDropdown(false);
+        setClientSearch('');
+        setIsLoadingPreselectedClient(false);
+      }
+    }
+  }, [preselectedClientId, selectedClient, clientsSearch, isLoadingPreselectedClient]);
 
   // Filtros de búsqueda de productos
   const productFilters = useMemo(() => {
@@ -250,6 +283,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
           name: product.name,
           price: product.price || 0,
           imageUrl: product.imageUrl,
+          unitType: product.unitType,
+          estimatedWeight: product.estimatedWeight,
           quantity: 1.0,
           discount: 0,
           isLoadingDiscount: true,
@@ -322,7 +357,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   };
 
   const handleClose = () => {
-    setOrderRequestProps(undefined);
     setShowConfirmDialog(false);
     setSelectedClient(null);
     setClientSearch('');
@@ -332,6 +366,10 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
     setShowProductDropdown(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
+    }
+    // Llamar a la función para limpiar la URL si está disponible
+    if (onModalClose) {
+      onModalClose();
     }
     onClose();
   };
@@ -353,11 +391,14 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
         duration: 3000,
         isClosable: true,
       });
-      setOrderRequestProps(undefined);
       setOrderRequests((prev) => [...prev, data]);
+      // Limpiar URL si está disponible
+      if (onModalClose) {
+        onModalClose();
+      }
       onClose();
     }
-  }, [data, setOrderRequests, toast, onClose]);
+  }, [data, setOrderRequests, toast, onClose, onModalClose]);
 
   useEffect(() => {
     if (fieldError) {
@@ -395,6 +436,14 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   }, []);
 
   const handleSubmit = async (values: Partial<OrderRequest>) => {
+    if (!selectedClient?.id) {
+      return;
+    }
+
+    if (!selectedProducts || selectedProducts.length === 0) {
+      return;
+    }
+
     const orderRequestData = {
       observations: values.observations,
       date: values.date,
@@ -407,7 +456,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       })),
     } as any;
 
-    setOrderRequestProps(orderRequestData);
+    await mutate(orderRequestData);
   };
 
   return (
@@ -415,7 +464,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: '2xl' }}
+        size={{ base: 'full', md: '2xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -452,7 +501,7 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                 return errors;
               }}
               validateOnChange={true}
-              validateOnBlur={true}
+              validateOnBlur={false}
             >
               {(formik) => {
                 // Actualizar la instancia de formik solo cuando cambie
@@ -476,12 +525,30 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                             <HStack spacing="0.5rem">
                               <Icon as={FiUsers} boxSize="1rem" />
                               <Text>Cliente</Text>
+                              <Text color="red.500">*</Text>
                             </HStack>
                           </FormLabel>
 
                           {/* Búsqueda de clientes */}
                           <Box position="relative" ref={clientSearchRef}>
-                            {selectedClient ? (
+                            {isLoadingPreselectedClient ? (
+                              <Flex
+                                h="40px"
+                                px="0.75rem"
+                                bg={inputBg}
+                                borderRadius="md"
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                align="center"
+                                justify="center"
+                                gap="0.5rem"
+                              >
+                                <Spinner size="sm" />
+                                <Text fontSize="sm" color={textColor}>
+                                  Cargando cliente...
+                                </Text>
+                              </Flex>
+                            ) : selectedClient ? (
                               <Flex
                                 h="40px"
                                 px="0.75rem"
@@ -674,7 +741,12 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                             !!(formik.errors.productItems && formik.submitCount > 0 && selectedProducts.length === 0)
                           }
                         >
-                          <FormLabel fontWeight="semibold">Productos</FormLabel>
+                          <FormLabel fontWeight="semibold">
+                            Productos{' '}
+                            <Text color="red.500" as="span">
+                              *
+                            </Text>
+                          </FormLabel>
 
                           {/* Mostrar mensaje si no hay cliente seleccionado */}
                           {!selectedClient ? (
@@ -868,7 +940,9 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                 )}
                               </Box>
 
-                              <FormErrorMessage>{formik.errors.productItems}</FormErrorMessage>
+                              {formik.errors.productItems && formik.submitCount > 0 && (
+                                <FormErrorMessage>Debe agregar al menos un producto</FormErrorMessage>
+                              )}
 
                               {/* Lista de productos seleccionados */}
                               {selectedProducts.length > 0 && (
@@ -885,7 +959,11 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                           ? product.discount || 0
                                           : 0;
                                       const effectivePrice = product.price * (1 - discountToApply / 100);
-                                      const subtotal = product.quantity * effectivePrice;
+                                      // Calculate subtotal based on unitType
+                                      const subtotal =
+                                        product.unitType === UnitType.KILO
+                                          ? product.quantity * ((product.estimatedWeight || 0) / 1000) * effectivePrice
+                                          : product.quantity * effectivePrice;
                                       return (
                                         <Box
                                           key={product.id}
@@ -958,10 +1036,16 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                   </Text>
                                                 )}
                                               </HStack>
+                                              {/* Mostrar peso estimado para productos por kilo */}
+                                              {product.unitType === UnitType.KILO && (
+                                                <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                                  Peso estimado: {product.estimatedWeight || 0}g
+                                                </Text>
+                                              )}
                                             </Box>
 
                                             {/* Controles de cantidad */}
-                                            <VStack spacing="0.25rem" align="stretch" px="1rem">
+                                            <VStack spacing="0.25rem" align="stretch">
                                               <HStack spacing="0.5rem">
                                                 {isQuantityExceedsStock(product) ? (
                                                   <Popover
@@ -988,7 +1072,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                       border="none"
                                                       fontSize="sm"
                                                       w="fit-content"
-                                                      maxW="250px"
                                                       p={0}
                                                     >
                                                       <PopoverArrow bg="red.500" />
@@ -998,7 +1081,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                         fontWeight="semibold"
                                                         whiteSpace="nowrap"
                                                       >
-                                                        Stock insuficiente
+                                                        Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                        {product.availableStock || 0}
                                                       </PopoverBody>
                                                     </PopoverContent>
                                                   </Popover>
@@ -1031,7 +1115,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                           border="none"
                                                           fontSize="sm"
                                                           w="fit-content"
-                                                          maxW="250px"
                                                           p={0}
                                                         >
                                                           <PopoverArrow bg="green.500" />
@@ -1097,13 +1180,22 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => {
-                                                      const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
+                                                      if (product.unitType === UnitType.KILO) {
+                                                        const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                        const rounded = roundToQuarter(newValue);
+                                                        handleProductQuantityChange(product.id, rounded);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: rounded.toString(),
+                                                        }));
+                                                      } else {
+                                                        const newValue = Math.max(1, product.quantity - 1);
+                                                        handleProductQuantityChange(product.id, newValue);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: newValue.toString(),
+                                                        }));
+                                                      }
                                                     }}
                                                     borderRightRadius={0}
                                                   />
@@ -1112,10 +1204,14 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                     value={quantityInputs[product.id] ?? product.quantity}
                                                     onChange={(e) => {
                                                       const value = e.target.value;
-                                                      const regex = /^\d*\.?\d*$/;
+                                                      const regex =
+                                                        product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                                       if (regex.test(value) || value === '') {
                                                         setQuantityInputs((prev) => ({ ...prev, [product.id]: value }));
-                                                        const numValue = parseFloat(value);
+                                                        const numValue =
+                                                          product.unitType === UnitType.KILO
+                                                            ? parseFloat(value)
+                                                            : parseInt(value, 10);
                                                         if (!isNaN(numValue) && numValue >= 0) {
                                                           handleProductQuantityChange(product.id, numValue);
                                                         } else if (value === '' || value === '.') {
@@ -1124,15 +1220,33 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                       }
                                                     }}
                                                     onBlur={(e) => {
-                                                      const value = parseFloat(e.target.value);
-                                                      if (isNaN(value) || value <= 0) {
-                                                        handleProductQuantityChange(product.id, 1);
-                                                        setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                      if (product.unitType === UnitType.KILO) {
+                                                        const value = parseFloat(e.target.value);
+                                                        if (isNaN(value) || value <= 0) {
+                                                          handleProductQuantityChange(product.id, 0.25);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: '0.25',
+                                                          }));
+                                                        } else {
+                                                          const rounded = roundToQuarter(value);
+                                                          handleProductQuantityChange(product.id, rounded);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: rounded.toString(),
+                                                          }));
+                                                        }
                                                       } else {
-                                                        setQuantityInputs((prev) => ({
-                                                          ...prev,
-                                                          [product.id]: value.toString(),
-                                                        }));
+                                                        const value = parseInt(e.target.value, 10);
+                                                        if (isNaN(value) || value <= 0) {
+                                                          handleProductQuantityChange(product.id, 1);
+                                                          setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                        } else {
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: value.toString(),
+                                                          }));
+                                                        }
                                                       }
                                                     }}
                                                     w="3.5rem"
@@ -1147,13 +1261,22 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => {
-                                                      const newValue = product.quantity + 0.1;
-                                                      const rounded = parseFloat(newValue.toFixed(1));
-                                                      handleProductQuantityChange(product.id, rounded);
-                                                      setQuantityInputs((prev) => ({
-                                                        ...prev,
-                                                        [product.id]: rounded.toString(),
-                                                      }));
+                                                      if (product.unitType === UnitType.KILO) {
+                                                        const newValue = product.quantity + 0.25;
+                                                        const rounded = roundToQuarter(newValue);
+                                                        handleProductQuantityChange(product.id, rounded);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: rounded.toString(),
+                                                        }));
+                                                      } else {
+                                                        const newValue = product.quantity + 1;
+                                                        handleProductQuantityChange(product.id, newValue);
+                                                        setQuantityInputs((prev) => ({
+                                                          ...prev,
+                                                          [product.id]: newValue.toString(),
+                                                        }));
+                                                      }
                                                     }}
                                                     borderLeftRadius={0}
                                                   />
@@ -1256,6 +1379,12 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                     </Text>
                                                   )}
                                                 </HStack>
+                                                {/* Mostrar peso estimado para productos por kilo */}
+                                                {product.unitType === UnitType.KILO && (
+                                                  <Text fontSize="xs" color={textColor} mt="0.25rem">
+                                                    Peso estimado: {product.estimatedWeight || 0}g
+                                                  </Text>
+                                                )}
                                               </Box>
                                             </Flex>
 
@@ -1270,13 +1399,22 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                       size="sm"
                                                       variant="outline"
                                                       onClick={() => {
-                                                        const newValue = Math.max(0.1, product.quantity - 0.1);
-                                                        const rounded = parseFloat(newValue.toFixed(1));
-                                                        handleProductQuantityChange(product.id, rounded);
-                                                        setQuantityInputs((prev) => ({
-                                                          ...prev,
-                                                          [product.id]: rounded.toString(),
-                                                        }));
+                                                        if (product.unitType === UnitType.KILO) {
+                                                          const newValue = Math.max(0.25, product.quantity - 0.25);
+                                                          const rounded = roundToQuarter(newValue);
+                                                          handleProductQuantityChange(product.id, rounded);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: rounded.toString(),
+                                                          }));
+                                                        } else {
+                                                          const newValue = Math.max(1, product.quantity - 1);
+                                                          handleProductQuantityChange(product.id, newValue);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: newValue.toString(),
+                                                          }));
+                                                        }
                                                       }}
                                                       borderRightRadius={0}
                                                     />
@@ -1285,13 +1423,17 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                       value={quantityInputs[product.id] ?? product.quantity}
                                                       onChange={(e) => {
                                                         const value = e.target.value;
-                                                        const regex = /^\d*\.?\d*$/;
+                                                        const regex =
+                                                          product.unitType === UnitType.KILO ? /^\d*\.?\d*$/ : /^\d*$/;
                                                         if (regex.test(value) || value === '') {
                                                           setQuantityInputs((prev) => ({
                                                             ...prev,
                                                             [product.id]: value,
                                                           }));
-                                                          const numValue = parseFloat(value);
+                                                          const numValue =
+                                                            product.unitType === UnitType.KILO
+                                                              ? parseFloat(value)
+                                                              : parseInt(value, 10);
                                                           if (!isNaN(numValue) && numValue >= 0) {
                                                             handleProductQuantityChange(product.id, numValue);
                                                           } else if (value === '' || value === '.') {
@@ -1300,15 +1442,36 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                         }
                                                       }}
                                                       onBlur={(e) => {
-                                                        const value = parseFloat(e.target.value);
-                                                        if (isNaN(value) || value <= 0) {
-                                                          handleProductQuantityChange(product.id, 1);
-                                                          setQuantityInputs((prev) => ({ ...prev, [product.id]: '1' }));
+                                                        if (product.unitType === UnitType.KILO) {
+                                                          const value = parseFloat(e.target.value);
+                                                          if (isNaN(value) || value <= 0) {
+                                                            handleProductQuantityChange(product.id, 0.25);
+                                                            setQuantityInputs((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: '0.25',
+                                                            }));
+                                                          } else {
+                                                            const rounded = roundToQuarter(value);
+                                                            handleProductQuantityChange(product.id, rounded);
+                                                            setQuantityInputs((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: rounded.toString(),
+                                                            }));
+                                                          }
                                                         } else {
-                                                          setQuantityInputs((prev) => ({
-                                                            ...prev,
-                                                            [product.id]: value.toString(),
-                                                          }));
+                                                          const value = parseInt(e.target.value, 10);
+                                                          if (isNaN(value) || value <= 0) {
+                                                            handleProductQuantityChange(product.id, 1);
+                                                            setQuantityInputs((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: '1',
+                                                            }));
+                                                          } else {
+                                                            setQuantityInputs((prev) => ({
+                                                              ...prev,
+                                                              [product.id]: value.toString(),
+                                                            }));
+                                                          }
                                                         }
                                                       }}
                                                       w="3.5rem"
@@ -1323,13 +1486,22 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                       size="sm"
                                                       variant="outline"
                                                       onClick={() => {
-                                                        const newValue = product.quantity + 0.1;
-                                                        const rounded = parseFloat(newValue.toFixed(1));
-                                                        handleProductQuantityChange(product.id, rounded);
-                                                        setQuantityInputs((prev) => ({
-                                                          ...prev,
-                                                          [product.id]: rounded.toString(),
-                                                        }));
+                                                        if (product.unitType === UnitType.KILO) {
+                                                          const newValue = product.quantity + 0.25;
+                                                          const rounded = roundToQuarter(newValue);
+                                                          handleProductQuantityChange(product.id, rounded);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: rounded.toString(),
+                                                          }));
+                                                        } else {
+                                                          const newValue = product.quantity + 1;
+                                                          handleProductQuantityChange(product.id, newValue);
+                                                          setQuantityInputs((prev) => ({
+                                                            ...prev,
+                                                            [product.id]: newValue.toString(),
+                                                          }));
+                                                        }
                                                       }}
                                                       borderLeftRadius={0}
                                                     />
@@ -1359,7 +1531,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                         border="none"
                                                         fontSize="sm"
                                                         w="fit-content"
-                                                        maxW="250px"
                                                         p={0}
                                                       >
                                                         <PopoverArrow bg="red.500" />
@@ -1369,7 +1540,8 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                           fontWeight="semibold"
                                                           whiteSpace="nowrap"
                                                         >
-                                                          Stock insuficiente
+                                                          Stock total: {product.stock || 0} | Stock disponible:{' '}
+                                                          {product.availableStock || 0}
                                                         </PopoverBody>
                                                       </PopoverContent>
                                                     </Popover>
@@ -1405,7 +1577,6 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                             border="none"
                                                             fontSize="sm"
                                                             w="fit-content"
-                                                            maxW="250px"
                                                             p={0}
                                                           >
                                                             <PopoverArrow bg="green.500" />
@@ -1497,7 +1668,14 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
                                                 ? product.discount || 0
                                                 : 0;
                                             const effectivePrice = product.price * (1 - discountToApply / 100);
-                                            return total + product.quantity * effectivePrice;
+                                            // Calculate based on unitType
+                                            const productTotal =
+                                              product.unitType === UnitType.KILO
+                                                ? product.quantity *
+                                                  ((product.estimatedWeight || 0) / 1000) *
+                                                  effectivePrice
+                                                : product.quantity * effectivePrice;
+                                            return total + productTotal;
                                           }, 0)
                                           .toFixed(2)}
                                       </Text>
@@ -1563,9 +1741,22 @@ const OrderRequestAddModal = ({ isOpen, onClose, setOrderRequests }: OrderReques
   );
 };
 
-export const OrderRequestAdd = ({ isLoading, setOrderRequests }: OrderRequestAddProps) => {
+export const OrderRequestAdd = ({
+  isLoading,
+  setOrderRequests,
+  preselectedClientId,
+  forceOpen,
+  onModalClose,
+}: OrderRequestAddProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const hasPermission = useUserStore((state) => state.hasPermission);
+
+  // Abrir automáticamente si forceOpen es true
+  useEffect(() => {
+    if (forceOpen) {
+      onOpen();
+    }
+  }, [forceOpen, onOpen]);
 
   const buttonBg = useColorModeValue('#f2f2f2', 'gray.700');
   const buttonHover = useColorModeValue('#e0dede', 'gray.500');
@@ -1587,7 +1778,15 @@ export const OrderRequestAdd = ({ isLoading, setOrderRequests }: OrderRequestAdd
         Nuevo
       </Button>
 
-      {isOpen && <OrderRequestAddModal isOpen={isOpen} onClose={onClose} setOrderRequests={setOrderRequests} />}
+      {isOpen && (
+        <OrderRequestAddModal
+          isOpen={isOpen}
+          onClose={onClose}
+          setOrderRequests={setOrderRequests}
+          preselectedClientId={preselectedClientId}
+          onModalClose={onModalClose}
+        />
+      )}
     </>
   );
 };

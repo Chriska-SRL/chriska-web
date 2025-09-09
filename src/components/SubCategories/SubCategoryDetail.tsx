@@ -16,8 +16,9 @@ import {
   useDisclosure,
   Icon,
   HStack,
+  Stack,
 } from '@chakra-ui/react';
-import { FiEye, FiTag, FiFileText, FiGrid } from 'react-icons/fi';
+import { FiInfo, FiTag, FiFileText } from 'react-icons/fi';
 import { FaEdit } from 'react-icons/fa';
 import { Category } from '@/entities/category';
 import { useDeleteSubCategory } from '@/hooks/subcategory';
@@ -115,14 +116,14 @@ export const SubCategoryDetail = ({
     <>
       <IconButton
         aria-label="Ver detalles"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
         onClick={onOpen}
       />
 
-      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'xs', md: 'md' }} isCentered>
+      <Modal isOpen={isOpen} onClose={handleClose} size={{ base: 'full', md: 'md' }} isCentered>
         <ModalOverlay />
         <ModalContent maxH="90dvh" display="flex" flexDirection="column">
           <ModalHeader
@@ -138,14 +139,19 @@ export const SubCategoryDetail = ({
 
           <ModalBody pt="1rem" pb="1.5rem" flex="1" overflowY="auto">
             <VStack spacing="1rem" align="stretch">
-              {detailField('Categoría', subcategory.category?.name, FiGrid)}
               {detailField('Nombre', subcategory.name, FiTag)}
               {detailField('Descripción', subcategory.description, FiFileText)}
             </VStack>
           </ModalBody>
 
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
-            <HStack spacing="0.5rem">
+            <Stack
+              direction={{ base: 'column-reverse', md: 'row' }}
+              spacing="0.5rem"
+              w="100%"
+              align="stretch"
+              justify={{ base: 'stretch', md: 'flex-end' }}
+            >
               <Button variant="ghost" size="sm" onClick={handleClose}>
                 Cerrar
               </Button>
@@ -173,7 +179,7 @@ export const SubCategoryDetail = ({
                   Editar
                 </Button>
               )}
-            </HStack>
+            </Stack>
           </ModalFooter>
         </ModalContent>
       </Modal>

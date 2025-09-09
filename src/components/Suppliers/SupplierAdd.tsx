@@ -26,7 +26,7 @@ import {
 } from '@chakra-ui/react';
 import { Formik, Field, FieldArray } from 'formik';
 import { FaPlus, FaCheck, FaTrash } from 'react-icons/fa';
-import { FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign } from 'react-icons/fi';
+import { FiUser, FiHash, FiMapPin, FiPhone, FiMail, FiHome, FiFileText, FiDollarSign, FiMap } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
 import { Supplier } from '@/entities/supplier';
 import { BankAccount } from '@/entities/bankAccount';
@@ -36,6 +36,7 @@ import { Permission } from '@/enums/permission.enum';
 import { BankOptions } from '@/enums/bank.enum';
 import { useUserStore } from '@/stores/useUserStore';
 import { UnsavedChangesModal } from '@/components/shared/UnsavedChangesModal';
+import { LocationPickerModal } from '@/components/LocationPickerModal';
 
 type SupplierAddProps = {
   isLoading: boolean;
@@ -55,13 +56,17 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [supplierProps, setSupplierProps] = useState<Partial<Supplier>>();
+  const { data, isLoading, error, fieldError, mutate } = useAddSupplier();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddSupplier(supplierProps);
+  const [locationHandler, setLocationHandler] = useState<((lat: number, lng: number) => void) | null>(null);
+  const [currentCoords, setCurrentCoords] = useState({
+    lat: undefined as number | undefined,
+    lng: undefined as number | undefined,
+  });
+  const { isOpen: isLocationModalOpen, onOpen: openLocationModal, onClose: closeLocationModal } = useDisclosure();
 
   const handleClose = () => {
-    setSupplierProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -86,7 +91,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
         duration: 2000,
         isClosable: true,
       });
-      setSupplierProps(undefined);
       setSuppliers((prev) => [...prev, data]);
       onClose();
     }
@@ -112,14 +116,28 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: any) => {
-    setSupplierProps({
+  const handleSubmit = async (values: any) => {
+    const submitData: any = {
       ...values,
       bankAccounts: values.bankAccounts || [],
-    });
+    };
+
+    // Solo incluir location si se proporcionaron coordenadas
+    if (values.latitude && values.longitude) {
+      submitData.location = {
+        latitude: values.latitude,
+        longitude: values.longitude,
+      };
+    }
+
+    // Eliminar latitude y longitude del objeto principal
+    delete submitData.latitude;
+    delete submitData.longitude;
+
+    await mutate(submitData);
   };
 
-  const validate = (values: any) => {
+  const validateForm = (values: any) => {
     const errors: any = {};
 
     const nameError = validateEmpty(values.name);
@@ -130,9 +148,6 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
 
     const addressError = validateEmpty(values.address);
     if (addressError) errors.address = addressError;
-
-    const mapsAddressError = validateEmpty(values.mapsAddress);
-    if (mapsAddressError) errors.mapsAddress = mapsAddressError;
 
     const contactNameError = validateEmpty(values.contactName);
     if (contactNameError) errors.contactName = contactNameError;
@@ -151,10 +166,37 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
       errors.phone = 'El teléfono debe contener solo números';
     }
 
-    if (!values.email || values.email.trim() === '') {
-      errors.email = 'Campo obligatorio';
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
-      errors.email = 'Email inválido';
+    // Validar email solo si se proporciona un valor
+    if (values.email && values.email.trim() !== '' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+      errors.email = 'Correo electrónico inválido';
+    }
+
+    // Validar cuentas bancarias
+    if (values.bankAccounts && values.bankAccounts.length > 0) {
+      const bankAccountsErrors: any = [];
+      values.bankAccounts.forEach((account: any, index: number) => {
+        const accountErrors: any = {};
+
+        if (!account.accountName || account.accountName.trim() === '') {
+          accountErrors.accountName = 'Campo obligatorio';
+        }
+
+        if (!account.bank || account.bank.trim() === '') {
+          accountErrors.bank = 'Campo obligatorio';
+        }
+
+        if (!account.accountNumber || account.accountNumber.trim() === '') {
+          accountErrors.accountNumber = 'Campo obligatorio';
+        }
+
+        if (Object.keys(accountErrors).length > 0) {
+          bankAccountsErrors[index] = accountErrors;
+        }
+      });
+
+      if (bankAccountsErrors.length > 0) {
+        errors.bankAccounts = bankAccountsErrors;
+      }
     }
 
     return errors;
@@ -165,7 +207,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'xl' }}
+        size={{ base: 'full', md: 'xl' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -190,18 +232,31 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                 rut: '',
                 razonSocial: '',
                 address: '',
-                mapsAddress: '',
                 phone: '',
                 contactName: '',
                 email: '',
+                latitude: null,
+                longitude: null,
                 bankAccounts: [],
                 observations: '',
               }}
               onSubmit={handleSubmit}
-              validate={validate}
+              validate={validateForm}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, values, dirty, resetForm }) => {
+              {({
+                handleSubmit,
+                values,
+                dirty,
+                resetForm,
+                errors,
+                touched,
+                submitCount,
+                setFieldValue,
+                setFieldError,
+              }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -212,12 +267,13 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                     <VStack spacing="1rem" align="stretch">
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
                         <Field name="name">
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Nombre</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -228,18 +284,19 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.name}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
 
                         <Field name="rut">
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.rut && !!errors.rut}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiHash} boxSize="1rem" />
                                   <Text>RUT</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -250,19 +307,20 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.rut}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
                       </Stack>
 
                       <Field name="razonSocial">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.razonSocial && !!errors.razonSocial}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Razón Social</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -273,18 +331,19 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.razonSocial}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="address">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.address && !!errors.address}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiHome} boxSize="1rem" />
                                 <Text>Dirección</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -295,63 +354,20 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <Field name="mapsAddress">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
-                            <FormLabel fontWeight="semibold">
-                              <HStack spacing="0.5rem">
-                                <Icon as={FiMapPin} boxSize="1rem" />
-                                <Text>Dirección Maps</Text>
-                              </HStack>
-                            </FormLabel>
-                            <Input
-                              {...field}
-                              placeholder="Ingrese la dirección para Maps"
-                              bg={inputBg}
-                              border="1px solid"
-                              borderColor={inputBorder}
-                              disabled={isLoading}
-                            />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.address}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
-                        <Field name="phone">
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
-                              <FormLabel fontWeight="semibold">
-                                <HStack spacing="0.5rem">
-                                  <Icon as={FiPhone} boxSize="1rem" />
-                                  <Text>Teléfono</Text>
-                                </HStack>
-                              </FormLabel>
-                              <Input
-                                {...field}
-                                placeholder="Ingrese el teléfono"
-                                bg={inputBg}
-                                border="1px solid"
-                                borderColor={inputBorder}
-                                disabled={isLoading}
-                              />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
-                            </FormControl>
-                          )}
-                        </Field>
-
                         <Field name="contactName">
-                          {({ field, meta }: any) => (
-                            <FormControl isInvalid={meta.error && meta.touched}>
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.contactName && !!errors.contactName}>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiUser} boxSize="1rem" />
                                   <Text>Persona de contacto</Text>
+                                  <Text color="red.500">*</Text>
                                 </HStack>
                               </FormLabel>
                               <Input
@@ -362,19 +378,42 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                 borderColor={inputBorder}
                                 disabled={isLoading}
                               />
-                              <FormErrorMessage>{meta.error}</FormErrorMessage>
+                              <FormErrorMessage>{errors.contactName}</FormErrorMessage>
+                            </FormControl>
+                          )}
+                        </Field>
+
+                        <Field name="phone">
+                          {({ field }: any) => (
+                            <FormControl isInvalid={submitCount > 0 && touched.phone && !!errors.phone}>
+                              <FormLabel fontWeight="semibold">
+                                <HStack spacing="0.5rem">
+                                  <Icon as={FiPhone} boxSize="1rem" />
+                                  <Text>Teléfono</Text>
+                                  <Text color="red.500">*</Text>
+                                </HStack>
+                              </FormLabel>
+                              <Input
+                                {...field}
+                                placeholder="Ingrese el teléfono"
+                                bg={inputBg}
+                                border="1px solid"
+                                borderColor={inputBorder}
+                                disabled={isLoading}
+                              />
+                              <FormErrorMessage>{errors.phone}</FormErrorMessage>
                             </FormControl>
                           )}
                         </Field>
                       </Stack>
 
                       <Field name="email">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.email && !!errors.email}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiMail} boxSize="1rem" />
-                                <Text>Email</Text>
+                                <Text>Correo electrónico</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -385,16 +424,71 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.email}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
+
+                      {/* Ubicación */}
+                      <FormControl>
+                        <FormLabel fontWeight="semibold">
+                          <HStack spacing="0.5rem">
+                            <Icon as={FiMap} boxSize="1rem" />
+                            <Text>Ubicación</Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
+                          </HStack>
+                        </FormLabel>
+                        <VStack spacing="0.5rem" align="stretch">
+                          <HStack
+                            p="0.75rem"
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={inputBorder}
+                            borderRadius="md"
+                            justify="space-between"
+                          >
+                            <VStack spacing="0.25rem" align="start">
+                              <Text fontSize="sm" fontWeight="medium">
+                                {values.latitude && values.longitude
+                                  ? `Lat: ${Number(values.latitude).toFixed(6)}, Lng: ${Number(values.longitude).toFixed(6)}`
+                                  : 'No se ha seleccionado ubicación'}
+                              </Text>
+                              {values.latitude && values.longitude && (
+                                <Text fontSize="xs" color="gray.500">
+                                  Haz clic en "Seleccionar en mapa" para cambiar
+                                </Text>
+                              )}
+                            </VStack>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiMapPin />}
+                              onClick={() => {
+                                setLocationHandler(() => (lat: number, lng: number) => {
+                                  setFieldValue('latitude', lat);
+                                  setFieldValue('longitude', lng);
+                                });
+                                setCurrentCoords({
+                                  lat: values.latitude || undefined,
+                                  lng: values.longitude || undefined,
+                                });
+                                openLocationModal();
+                              }}
+                              disabled={isLoading}
+                              colorScheme="blue"
+                              variant="outline"
+                            >
+                              Seleccionar en mapa
+                            </Button>
+                          </HStack>
+                        </VStack>
+                      </FormControl>
 
                       <FormControl>
                         <FormLabel fontWeight="semibold">
                           <HStack spacing="0.5rem">
                             <Icon as={FiDollarSign} boxSize="1rem" />
                             <Text>Cuentas bancarias</Text>
+                            <Text fontSize="sm" color="gray.500"></Text>
                           </HStack>
                         </FormLabel>
                         <FieldArray name="bankAccounts">
@@ -411,48 +505,134 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                                   position="relative"
                                 >
                                   <VStack spacing="0.5rem">
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.accountName
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Nombre de cuenta</FormLabel>
-                                      <Field
-                                        as={Input}
-                                        name={`bankAccounts.${index}.accountName`}
-                                        bg={inputBg}
-                                        borderColor={inputBorder}
-                                        size="sm"
-                                        borderRadius="md"
-                                        disabled={isLoading}
-                                      />
-                                    </FormControl>
-                                    <FormControl>
-                                      <FormLabel fontSize="sm">Banco</FormLabel>
-                                      <Field
-                                        as={Select}
-                                        name={`bankAccounts.${index}.bank`}
-                                        bg={inputBg}
-                                        borderColor={inputBorder}
-                                        size="sm"
-                                        borderRadius="md"
-                                        disabled={isLoading}
-                                      >
-                                        <option value="">Seleccionar banco</option>
-                                        {BankOptions.map((bank) => (
-                                          <option key={bank} value={bank}>
-                                            {bank}
-                                          </option>
-                                        ))}
+                                      <Field name={`bankAccounts.${index}.accountName`}>
+                                        {({ field, form }: any) => (
+                                          <Input
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              // Solo permitir letras, espacios y algunos caracteres especiales
+                                              const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+                                              if (regex.test(value)) {
+                                                form.setFieldValue(field.name, value);
+                                                // Clear error if exists
+                                                if ((errors.bankAccounts?.[index] as any)?.accountName) {
+                                                  setFieldError(`bankAccounts[${index}].accountName`, undefined);
+                                                }
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            borderColor={inputBorder}
+                                            size="sm"
+                                            borderRadius="md"
+                                            disabled={isLoading}
+                                          />
+                                        )}
                                       </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.accountName && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).accountName}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
-                                    <FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.bank
+                                        )
+                                      }
+                                    >
+                                      <FormLabel fontSize="sm">Banco</FormLabel>
+                                      <Field name={`bankAccounts.${index}.bank`}>
+                                        {({ field }: any) => (
+                                          <Select
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setFieldValue(`bankAccounts[${index}].bank`, value);
+                                              // Clear error if exists
+                                              if ((errors.bankAccounts?.[index] as any)?.bank) {
+                                                setFieldError(`bankAccounts[${index}].bank`, undefined);
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            borderColor={inputBorder}
+                                            size="sm"
+                                            borderRadius="md"
+                                            disabled={isLoading}
+                                          >
+                                            <option value="">Seleccionar banco</option>
+                                            {BankOptions.map((bank) => (
+                                              <option key={bank} value={bank}>
+                                                {bank}
+                                              </option>
+                                            ))}
+                                          </Select>
+                                        )}
+                                      </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.bank && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).bank}
+                                          </FormErrorMessage>
+                                        )}
+                                    </FormControl>
+                                    <FormControl
+                                      isInvalid={
+                                        !!(
+                                          submitCount > 0 &&
+                                          errors.bankAccounts?.[index] &&
+                                          (errors.bankAccounts[index] as any)?.accountNumber
+                                        )
+                                      }
+                                    >
                                       <FormLabel fontSize="sm">Número de cuenta</FormLabel>
-                                      <Field
-                                        as={Input}
-                                        name={`bankAccounts.${index}.accountNumber`}
-                                        bg={inputBg}
-                                        borderColor={inputBorder}
-                                        size="sm"
-                                        borderRadius="md"
-                                        disabled={isLoading}
-                                      />
+                                      <Field name={`bankAccounts.${index}.accountNumber`}>
+                                        {({ field, form }: any) => (
+                                          <Input
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              // Solo permitir números, guiones y puntos
+                                              const regex = /^[0-9.-]*$/;
+                                              if (regex.test(value)) {
+                                                form.setFieldValue(field.name, value);
+                                                // Clear error if exists
+                                                if ((errors.bankAccounts?.[index] as any)?.accountNumber) {
+                                                  setFieldError(`bankAccounts[${index}].accountNumber`, undefined);
+                                                }
+                                              }
+                                            }}
+                                            bg={inputBg}
+                                            borderColor={inputBorder}
+                                            size="sm"
+                                            borderRadius="md"
+                                            disabled={isLoading}
+                                          />
+                                        )}
+                                      </Field>
+                                      {submitCount > 0 &&
+                                        errors.bankAccounts?.[index] &&
+                                        (errors.bankAccounts[index] as any)?.accountNumber && (
+                                          <FormErrorMessage>
+                                            {(errors.bankAccounts[index] as any).accountNumber}
+                                          </FormErrorMessage>
+                                        )}
                                     </FormControl>
                                   </VStack>
                                   <Button
@@ -485,8 +665,8 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                       </FormControl>
 
                       <Field name="observations">
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.observations && !!errors.observations}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
@@ -502,7 +682,7 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.observations}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
@@ -534,6 +714,14 @@ const SupplierAddModal = ({ isOpen, onClose, setSuppliers }: SupplierAddModalPro
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={closeLocationModal}
+        onConfirm={locationHandler || (() => {})}
+        initialLat={currentCoords.lat}
+        initialLng={currentCoords.lng}
+      />
 
       <UnsavedChangesModal
         isOpen={showConfirmDialog}

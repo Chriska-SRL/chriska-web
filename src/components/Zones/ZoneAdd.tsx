@@ -45,7 +45,7 @@ type ZoneFormValues = {
   deliveryDays: Day[];
 };
 
-const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY];
 
 type ZoneAddProps = {
   isLoading: boolean;
@@ -69,17 +69,15 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
 
   const [step, setStep] = useState<'form' | 'image'>('form');
   const [createdZone, setCreatedZone] = useState<Zone | null>(null);
-  const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
   const [hasImage, setHasImage] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
 
-  const { data, isLoading, error, fieldError } = useAddZone(zoneProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddZone();
 
   const handleClose = () => {
     setStep('form');
     setCreatedZone(null);
-    setZoneProps(undefined);
     setHasImage(false);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
@@ -108,7 +106,6 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
       });
 
       setCreatedZone(data);
-      setZoneProps(undefined);
       setZones((prev) => [...prev, data]);
       setStep('image');
     }
@@ -140,8 +137,8 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
     }
   }, [createdZone?.imageUrl]);
 
-  const handleSubmit = (values: ZoneFormValues) => {
-    setZoneProps(values);
+  const handleSubmit = async (values: ZoneFormValues) => {
+    await mutate(values);
   };
 
   const handleImageChange = (newImageUrl: string | null) => {
@@ -178,7 +175,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'lg' }}
+        size={{ base: 'full', md: 'lg' }}
         isCentered
         closeOnOverlayClick={step === 'image'}
         onOverlayClick={handleOverlayClick}
@@ -208,8 +205,10 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                   }}
                   onSubmit={handleSubmit}
                   enableReinitialize
+                  validateOnChange={true}
+                  validateOnBlur={false}
                 >
-                  {({ handleSubmit, values, dirty, resetForm }) => {
+                  {({ handleSubmit, values, dirty, resetForm, errors, touched, submitCount }) => {
                     // Actualizar la instancia de formik solo cuando cambie
                     useEffect(() => {
                       setFormikInstance({ dirty, resetForm });
@@ -219,12 +218,13 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                       <form id="zone-add-form" onSubmit={handleSubmit}>
                         <VStack spacing="1rem" align="stretch">
                           <Field name="name" validate={validate}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiMapPin} boxSize="1rem" />
                                     <Text>Nombre</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Input
@@ -235,18 +235,19 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                                   borderColor={inputBorder}
                                   disabled={isLoading}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.name}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
                           <Field name="description" validate={validateEmpty}>
-                            {({ field, meta }: any) => (
-                              <FormControl isInvalid={meta.error && meta.touched}>
+                            {({ field }: any) => (
+                              <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                                 <FormLabel fontWeight="semibold">
                                   <HStack spacing="0.5rem">
                                     <Icon as={FiFileText} boxSize="1rem" />
                                     <Text>Descripción</Text>
+                                    <Text color="red.500">*</Text>
                                   </HStack>
                                 </FormLabel>
                                 <Textarea
@@ -258,12 +259,12 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                                   disabled={isLoading}
                                   rows={4}
                                 />
-                                <FormErrorMessage>{meta.error}</FormErrorMessage>
+                                <FormErrorMessage>{errors.description}</FormErrorMessage>
                               </FormControl>
                             )}
                           </Field>
 
-                          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem" w="100%">
+                          <SimpleGrid columns={2} spacing="1rem" w="100%">
                             <Box>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">

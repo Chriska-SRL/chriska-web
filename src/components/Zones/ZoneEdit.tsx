@@ -41,7 +41,7 @@ type ZoneEditProps = {
   setZones: React.Dispatch<React.SetStateAction<Zone[]>>;
 };
 
-const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY];
+const allDays = [Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY];
 
 // Mapeo para convertir días en español a inglés
 const spanishToEnglishDayMap: Record<string, Day> = {
@@ -51,6 +51,7 @@ const spanishToEnglishDayMap: Record<string, Day> = {
   Jueves: Day.THURSDAY,
   Viernes: Day.FRIDAY,
   Sábado: Day.SATURDAY,
+  Domingo: Day.SUNDAY,
 };
 
 const convertDaysToEnglish = (days: string[]): Day[] => {
@@ -69,11 +70,10 @@ const convertDaysToEnglish = (days: string[]): Day[] => {
 export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => {
   const toast = useToast();
 
-  const [zoneProps, setZoneProps] = useState<Partial<Zone>>();
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateZone(zoneProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateZone();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -96,7 +96,6 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
       setZones((prevZones) =>
         prevZones.map((z) => (z.id === data.id ? { ...z, ...data, imageUrl: currentImageUrl || null } : z)),
       );
-      setZoneProps(undefined);
       onClose();
     }
   }, [data, currentImageUrl]);
@@ -121,12 +120,11 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
     }
   }, [error, fieldError]);
 
-  const handleSubmit = (values: Zone) => {
-    setZoneProps(values);
+  const handleSubmit = async (values: Zone) => {
+    await mutate(values);
   };
 
   const handleClose = () => {
-    setZoneProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -155,7 +153,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -212,6 +210,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiMapPin} boxSize="1rem" />
                             <Text>Nombre</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -231,6 +230,7 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                           <HStack spacing="0.5rem">
                             <Icon as={FiFileText} boxSize="1rem" />
                             <Text>Descripción</Text>
+                            <Text color="red.500">*</Text>
                           </HStack>
                         </FormLabel>
                         <Field
@@ -247,12 +247,10 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
 
                       <SimpleGrid columns={2} spacingX="2rem" alignItems="flex-start" w="100%">
                         <Box>
-                          <Text mb="0.5rem" fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiCalendar} boxSize="1rem" />
-                              <Text>Días de pedidos</Text>
-                            </HStack>
-                          </Text>
+                          <HStack mb="0.5rem" spacing="0.5rem">
+                            <Icon as={FiCalendar} boxSize="1rem" />
+                            <Text fontWeight="semibold">Días de pedidos</Text>
+                          </HStack>
                           <FieldArray name="requestDays">
                             {({ push, remove }) =>
                               allDays.map((day) => {
@@ -276,12 +274,10 @@ export const ZoneEdit = ({ isOpen, onClose, zone, setZones }: ZoneEditProps) => 
                         </Box>
 
                         <Box>
-                          <Text mb="0.5rem" fontWeight="semibold">
-                            <HStack spacing="0.5rem">
-                              <Icon as={FiClock} boxSize="1rem" />
-                              <Text>Días de entrega</Text>
-                            </HStack>
-                          </Text>
+                          <HStack mb="0.5rem" spacing="0.5rem">
+                            <Icon as={FiClock} boxSize="1rem" />
+                            <Text fontWeight="semibold">Días de entrega</Text>
+                          </HStack>
                           <FieldArray name="deliveryDays">
                             {({ push, remove }) =>
                               allDays.map((day) => {

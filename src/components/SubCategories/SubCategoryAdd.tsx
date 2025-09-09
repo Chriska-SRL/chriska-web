@@ -54,13 +54,11 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
-  const [subCategoryProps, setSubCategoryProps] = useState<Partial<SubCategory>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useAddSubCategory(subCategoryProps);
+  const { data, isLoading, error, fieldError, mutate } = useAddSubCategory();
 
   const handleClose = () => {
-    setSubCategoryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -85,7 +83,6 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
         duration: 2000,
         isClosable: true,
       });
-      setSubCategoryProps(undefined);
       setCategories((prev) =>
         prev.map((cat) => (cat.id === category.id ? { ...cat, subCategories: [...cat.subCategories, data] } : cat)),
       );
@@ -113,12 +110,12 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: Partial<SubCategory>) => {
+  const handleSubmit = async (values: Partial<SubCategory>) => {
     const subcategory = {
       ...values,
       categoryId: category.id,
     };
-    setSubCategoryProps(subcategory);
+    await mutate(subcategory);
   };
 
   return (
@@ -126,7 +123,7 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -152,8 +149,10 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
               }}
               onSubmit={handleSubmit}
               enableReinitialize
+              validateOnChange={true}
+              validateOnBlur={false}
             >
-              {({ handleSubmit, dirty, resetForm }) => {
+              {({ handleSubmit, dirty, resetForm, errors, touched, submitCount }) => {
                 // Actualizar la instancia de formik solo cuando cambie
                 useEffect(() => {
                   setFormikInstance({ dirty, resetForm });
@@ -179,12 +178,13 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
                       </FormControl>
 
                       <Field name="name" validate={validate}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.name && !!errors.name}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiTag} boxSize="1rem" />
                                 <Text>Nombre</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Input
@@ -195,18 +195,19 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
                               borderColor={inputBorder}
                               disabled={isLoading}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.name}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>
 
                       <Field name="description" validate={validateEmpty}>
-                        {({ field, meta }: any) => (
-                          <FormControl isInvalid={meta.error && meta.touched}>
+                        {({ field }: any) => (
+                          <FormControl isInvalid={submitCount > 0 && touched.description && !!errors.description}>
                             <FormLabel fontWeight="semibold">
                               <HStack spacing="0.5rem">
                                 <Icon as={FiFileText} boxSize="1rem" />
                                 <Text>Descripción</Text>
+                                <Text color="red.500">*</Text>
                               </HStack>
                             </FormLabel>
                             <Textarea
@@ -218,7 +219,7 @@ const SubCategoryAddModal = ({ isOpen, onClose, category, setCategories }: SubCa
                               disabled={isLoading}
                               rows={4}
                             />
-                            <FormErrorMessage>{meta.error}</FormErrorMessage>
+                            <FormErrorMessage>{errors.description}</FormErrorMessage>
                           </FormControl>
                         )}
                       </Field>

@@ -40,10 +40,9 @@ type ShelveEditProps = {
 
 export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEditProps) => {
   const toast = useToast();
-  const [shelveProps, setShelveProps] = useState<Partial<Shelve>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateShelve(shelveProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateShelve();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -69,8 +68,7 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
           return w;
         }),
       );
-      setShelveProps(undefined);
-      handleClose();
+      onClose();
     }
   }, [data]);
 
@@ -95,7 +93,6 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
   }, [error, fieldError]);
 
   const handleClose = () => {
-    setShelveProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -111,14 +108,13 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
     }
   };
 
-  const handleSubmit = (values: { id: number; name: string; description: string }) => {
-    const newShelve = {
+  const handleSubmit = async (values: { id: number; name: string; description: string }) => {
+    const updatedShelve = {
       id: values.id,
       name: values.name,
       description: values.description,
-      warehouseId: shelve.warehouse.id,
     };
-    setShelveProps(newShelve);
+    await mutate(updatedShelve);
   };
 
   return (
@@ -126,7 +122,7 @@ export const ShelveEdit = ({ isOpen, onClose, shelve, setWarehouses }: ShelveEdi
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Shelve } from '@/entities/shelve';
 import { getShelves, addShelve, updateShelve, deleteShelve } from '@/services/shelve';
-import { useFetch, useFetchNoParams } from '../utils/useFetch';
+import { useFetch, useFetchNoParams, useMutation } from '../utils/useFetch';
 
 type ShelveFilters = {
   name?: string;
@@ -36,10 +36,8 @@ export const useGetShelves = (page: number = 1, pageSize: number = 10, filters?:
 
 export const useGetShelvesSimple = () => useFetchNoParams<Shelve[]>(() => getShelves(1, 1000), []);
 
-export const useAddShelve = (props?: Partial<Shelve>) =>
-  useFetch<Partial<Shelve>, Shelve>(addShelve, props, { parseFieldError: true });
+export const useAddShelve = () => useMutation<Partial<Shelve>, Shelve>(addShelve, { parseFieldError: true });
 
-export const useUpdateShelve = (props?: Partial<Shelve>) =>
-  useFetch<Partial<Shelve>, Shelve>(updateShelve, props, { parseFieldError: true });
+export const useUpdateShelve = () => useMutation<Partial<Shelve>, Shelve>(updateShelve, { parseFieldError: true });
 
 export const useDeleteShelve = (id?: number) => useFetch<number, Shelve>(deleteShelve, id);

@@ -7,11 +7,17 @@ import { OrderRequestAdd } from './OrderRequestAdd';
 import { OrderRequestList } from './OrderRequestList';
 import { useGetOrderRequests } from '@/hooks/orderRequest';
 import { OrderRequest } from '@/entities/orderRequest';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export const OrderRequests = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const clientIdParam = searchParams.get('client');
+  const shouldAddParam = searchParams.get('add');
+
   const [isMobile] = useMediaQuery('(max-width: 48rem)');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string | undefined>();
   const [filterClientId, setFilterClientId] = useState<number | undefined>();
   const [filterUserId, setFilterUserId] = useState<number | undefined>();
@@ -69,13 +75,29 @@ export const OrderRequests = () => {
     setFilterToDate(newFilters.toDate || '');
   };
 
+  // Función para limpiar los parámetros de URL cuando se cierre el modal
+  const clearUrlParams = () => {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('client');
+    currentUrl.searchParams.delete('add');
+    router.replace(currentUrl.pathname + currentUrl.search);
+  };
+
   return (
     <>
       <Flex gap="2rem" justifyContent="space-between" alignItems="center">
         <Text fontSize="1.5rem" fontWeight="bold">
           Pedidos
         </Text>
-        {isMobile && <OrderRequestAdd isLoading={isLoading} setOrderRequests={setOrderRequests} />}
+        {isMobile && (
+          <OrderRequestAdd
+            isLoading={isLoading}
+            setOrderRequests={setOrderRequests}
+            preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+            forceOpen={shouldAddParam === 'true'}
+            onModalClose={clearUrlParams}
+          />
+        )}
       </Flex>
 
       {isMobile && <Divider />}
@@ -86,7 +108,13 @@ export const OrderRequests = () => {
         {!isMobile && (
           <>
             <Divider orientation="vertical" />
-            <OrderRequestAdd isLoading={isLoading} setOrderRequests={setOrderRequests} />
+            <OrderRequestAdd
+              isLoading={isLoading}
+              setOrderRequests={setOrderRequests}
+              preselectedClientId={clientIdParam ? Number(clientIdParam) : undefined}
+              forceOpen={shouldAddParam === 'true'}
+              onModalClose={clearUrlParams}
+            />
           </>
         )}
       </Flex>

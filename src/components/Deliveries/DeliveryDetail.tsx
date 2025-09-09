@@ -26,10 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Spinner,
 } from '@chakra-ui/react';
 import { Delivery } from '@/entities/delivery';
 import {
-  FiEye,
+  FiInfo,
   FiCheckCircle,
   FiUsers,
   FiUser,
@@ -47,8 +48,10 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
 import { getStatusLabel, Status } from '@/enums/status.enum';
 import { UnitType } from '@/enums/unitType.enum';
+import { FiRotateCcw } from 'react-icons/fi';
 
 type DeliveryDetailProps = {
   delivery: Delivery;
@@ -60,11 +63,27 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const { isOpen: isStatusDialogOpen, onOpen: openStatusDialog, onClose: closeStatusDialog } = useDisclosure();
   const { isOpen: isConfirmDialogOpen, onOpen: openConfirmDialog, onClose: closeConfirmDialog } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: openEdit, onClose: closeEdit } = useDisclosure();
-  const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
+  const [statusProps, setStatusProps] = useState<{
+    id: number;
+    status: string;
+    additionalData?: {
+      amount?: number;
+      paymentMethod?: string;
+      crates?: number;
+    };
+  }>();
   const [actionType, setActionType] = useState<'confirm' | 'cancel' | null>(null);
+  const [redirectingToClient, setRedirectingToClient] = useState(false);
+  const [redirectingToReturns, setRedirectingToReturns] = useState(false);
   const { data: statusData, isLoading: statusLoading, fieldError: statusError } = useChangeDeliveryStatus(statusProps);
   const toast = useToast();
   const cancelRef = useRef(null);
+  const router = useRouter();
+
+  const handleNavigateToReturns = async () => {
+    setRedirectingToReturns(true);
+    await router.push(`/devoluciones?deliveryId=${delivery.id}&add=true`);
+  };
 
   const labelColor = useColorModeValue('black', 'white');
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -92,9 +111,16 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateSubtotal = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        // Para todos los estados: calcular precio original sin descuento
-        const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        return total + item.quantity * originalPrice;
+        // item.unitPrice es el precio base sin descuento
+        const basePrice = item.unitPrice;
+
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + (weight / 1000) * basePrice;
+        } else {
+          return total + item.quantity * basePrice;
+        }
       }, 0) || 0
     );
   };
@@ -102,10 +128,16 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   const calculateDiscount = () => {
     return (
       delivery.productItems?.reduce((total, item) => {
-        // Para todos los estados: usar descuentos almacenados
-        const originalPrice = item.unitPrice / (1 - item.discount / 100);
-        const discountAmount = originalPrice - item.unitPrice;
-        return total + item.quantity * discountAmount;
+        // item.unitPrice es el precio base, calcular el monto del descuento
+        const discountAmount = item.unitPrice * (item.discount / 100);
+
+        // Calculate based on unitType
+        if (item.product?.unitType === UnitType.KILO) {
+          const weight = item.weight || item.product?.estimatedWeight || 0;
+          return total + (weight / 1000) * discountAmount;
+        } else {
+          return total + item.quantity * discountAmount;
+        }
       }, 0) || 0
     );
   };
@@ -188,7 +220,13 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
   // Ya no necesitamos obtener descuentos del endpoint /best
   // Ahora PENDING también usa el descuento almacenado
 
-  const detailField = (label: string, value: string | number | null | undefined, icon?: any, textColor?: string) => (
+  const detailField = (
+    label: string,
+    value: string | number | null | undefined,
+    icon?: any,
+    onClick?: () => void,
+    isLoading?: boolean,
+  ) => (
     <Box w="100%">
       <HStack mb="0.5rem" spacing="0.5rem">
         {icon && <Icon as={icon} boxSize="1rem" color={iconColor} />}
@@ -210,8 +248,18 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
         wordBreak="break-word"
         transition="all 0.2s"
         color={textColor}
+        cursor={onClick ? 'pointer' : 'default'}
+        _hover={onClick ? { bg: hoverBgIcon } : {}}
+        onClick={onClick && !isLoading ? onClick : undefined}
+        position="relative"
       >
-        {value ?? '—'}
+        {value && value !== '' ? value : '—'}
+        {onClick &&
+          (isLoading ? (
+            <Spinner position="absolute" right="1rem" top="50%" transform="translateY(-50%)" size="sm" />
+          ) : (
+            <Icon as={FiInfo} position="absolute" right="1rem" top="50%" transform="translateY(-50%)" boxSize="1rem" />
+          ))}
       </Box>
     </Box>
   );
@@ -220,14 +268,22 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
     <>
       <IconButton
         aria-label="Ver detalle"
-        icon={<FiEye />}
+        icon={<FiInfo />}
         onClick={onOpen}
         variant="ghost"
         size="md"
         _hover={{ bg: hoverBgIcon }}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'xs', md: 'xl' }} isCentered scrollBehavior="inside">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size={{ base: 'full', md: 'xl' }}
+        isCentered
+        scrollBehavior="inside"
+        closeOnOverlayClick={!redirectingToClient && !redirectingToReturns}
+        closeOnEsc={!redirectingToClient && !redirectingToReturns}
+      >
         <ModalOverlay />
         <ModalContent maxH="90vh" display="flex" flexDirection="column">
           <ModalHeader
@@ -249,7 +305,19 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Cliente', delivery.client?.name, FiUsers)}
+                {detailField(
+                  'Cliente',
+                  delivery.client?.name,
+                  FiUsers,
+                  async () => {
+                    if (delivery.client?.id) {
+                      setRedirectingToClient(true);
+                      onClose();
+                      router.push(`/clientes?open=${delivery.client.id}`);
+                    }
+                  },
+                  redirectingToClient,
+                )}
                 {detailField('Usuario', delivery.user?.name, FiUser)}
               </Stack>
 
@@ -277,27 +345,46 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 {detailField('Total', `$${(calculateSubtotal() - calculateDiscount()).toFixed(2)}`, FiDollarSign)}
               </Stack>
 
-              {/* Fila 4: Cajones utilizados - Cajones devueltos */}
-              <Stack
-                direction={{ base: 'column', md: 'row' }}
-                spacing="1rem"
-                align={{ base: 'stretch', md: 'flex-start' }}
-              >
-                {detailField(
-                  'Cajones utilizados',
-                  delivery.order?.crates && delivery.order.crates > 0
-                    ? delivery.order.crates.toString()
-                    : 'No definido',
-                  FiPackage,
-                )}
-                {detailField(
-                  'Cajones devueltos',
-                  delivery.status?.toLowerCase() === Status.PENDING.toLowerCase()
-                    ? '-'
-                    : delivery.crates?.toString() || '0',
-                  FiPackage,
-                )}
-              </Stack>
+              {/* Cajones - Layout condicional según estado */}
+              {delivery.status?.toLowerCase() === Status.CONFIRMED.toLowerCase() ? (
+                <>
+                  {/* Para confirmadas: Cajones utilizados y devueltos en la misma fila */}
+                  <Stack
+                    direction={{ base: 'column', md: 'row' }}
+                    spacing="1rem"
+                    align={{ base: 'stretch', md: 'flex-start' }}
+                  >
+                    {detailField(
+                      'Cajones utilizados',
+                      delivery.order?.crates && delivery.order.crates > 0
+                        ? delivery.order.crates.toString()
+                        : 'No definido',
+                      FiPackage,
+                    )}
+                    {detailField('Cajones devueltos', delivery.crates?.toString() || '0', FiPackage)}
+                  </Stack>
+
+                  {/* Monto pagado - fila completa */}
+                  <Stack direction="row" spacing="1rem" align="flex-start">
+                    {detailField(
+                      'Monto pagado por el cliente',
+                      `$${delivery.payment?.toFixed(2) || '0.00'}`,
+                      FiDollarSign,
+                    )}
+                  </Stack>
+                </>
+              ) : (
+                /* Para pending/cancelled: Solo cajones utilizados en fila completa */
+                <Stack direction="row" spacing="1rem" align="flex-start">
+                  {detailField(
+                    'Cajones utilizados',
+                    delivery.order?.crates && delivery.order.crates > 0
+                      ? delivery.order.crates.toString()
+                      : 'No definido',
+                    FiPackage,
+                  )}
+                </Stack>
+              )}
 
               {/* Fila 5: Observaciones */}
               <Stack
@@ -305,7 +392,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                 spacing="1rem"
                 align={{ base: 'stretch', md: 'flex-start' }}
               >
-                {detailField('Observaciones', delivery.observations || 'Sin observaciones', FiFileText)}
+                {detailField('Observaciones', delivery.observations, FiFileText)}
               </Stack>
 
               <Divider />
@@ -321,13 +408,16 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                   <>
                     <VStack spacing="0.5rem" align="stretch" maxH="400px" overflowY="auto">
                       {delivery.productItems.map((item, index) => {
-                        // Por ahora, cantidad real = cantidad solicitada
-                        const requestedQuantity = item.quantity;
                         const actualQuantity = item.quantity;
-                        const weight = item.product?.unitType === UnitType.KILO ? actualQuantity : null;
+                        const weight = item.product?.unitType === UnitType.KILO ? item.weight || 0 : null;
 
-                        // Para todos los estados: el unitPrice ya tiene el descuento aplicado
-                        const total = actualQuantity * item.unitPrice;
+                        // item.unitPrice es el precio base, aplicar descuento si existe
+                        const finalPrice = item.unitPrice * (1 - item.discount / 100);
+                        // Calculate total based on unitType
+                        const total =
+                          item.product?.unitType === UnitType.KILO
+                            ? ((weight || 0) / 1000) * finalPrice
+                            : actualQuantity * finalPrice;
 
                         return (
                           <Box
@@ -338,10 +428,11 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                             borderRadius="md"
                             bg={inputBg}
                           >
-                            {/* Desktop Layout */}
-                            <Box display={{ base: 'none', md: 'block' }}>
-                              {/* Primera fila desktop: Imagen + Nombre + Precio */}
-                              <Flex gap="0.75rem" mb="0.75rem">
+                            {/* Desktop Layout - Single Row */}
+                            <Flex display={{ base: 'none', md: 'flex' }} align="center" w="100%">
+                              {/* Left section: Image + Name + Price */}
+                              <Flex flex="1" gap="1rem" align="center" minW="0">
+                                {/* Imagen */}
                                 <Image
                                   src={
                                     item.product?.imageUrl ||
@@ -353,7 +444,9 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                   borderRadius="md"
                                   flexShrink={0}
                                 />
-                                <Box flex="1" alignSelf="center">
+
+                                {/* Nombre y Precio */}
+                                <Box flex="1" minW="0">
                                   <Text fontSize="sm" fontWeight="medium" mb="0.25rem" noOfLines={1}>
                                     {item.product?.name || '-'}
                                   </Text>
@@ -361,10 +454,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                          ${item.unitPrice.toFixed(2)}
                                         </Text>
                                         <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
+                                          ${(item.unitPrice * (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
                                         <Box
                                           bg="green.500"
@@ -387,36 +480,30 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                 </Box>
                               </Flex>
 
-                              {/* Segunda fila desktop: Cantidad solicitada + Cantidad real + Peso + Subtotal */}
-                              <Flex justify="space-around" align="center">
-                                <VStack spacing="0.25rem" align="center">
+                              {/* Right section: Fixed width columns */}
+                              <Flex gap="1rem" align="center">
+                                {/* Cantidad */}
+                                <VStack spacing="0.25rem" align="center" w="60px">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Cant. solicitada
-                                  </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
-                                    {requestedQuantity}
-                                  </Text>
-                                </VStack>
-
-                                <VStack spacing="0.25rem" align="center">
-                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Cant. real
+                                    Cantidad
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
                                     {actualQuantity}
                                   </Text>
                                 </VStack>
 
-                                <VStack spacing="0.25rem" align="center">
+                                {/* Peso */}
+                                <VStack spacing="0.25rem" align="center" w="70px">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Peso (kg)
+                                    Peso (g)
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
-                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(0) || '-' : 'N/A'}
                                   </Text>
                                 </VStack>
 
-                                <VStack spacing="0.25rem" align="center">
+                                {/* Subtotal */}
+                                <VStack spacing="0.25rem" align="center" w="80px">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
                                     Subtotal
                                   </Text>
@@ -425,7 +512,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                   </Text>
                                 </VStack>
                               </Flex>
-                            </Box>
+                            </Flex>
 
                             {/* Mobile Layout */}
                             <Box display={{ base: 'block', md: 'none' }}>
@@ -450,10 +537,10 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                     {item.discount > 0 ? (
                                       <>
                                         <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                          ${(item.unitPrice / (1 - item.discount / 100)).toFixed(2)}
+                                          ${item.unitPrice.toFixed(2)}
                                         </Text>
                                         <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                          ${item.unitPrice.toFixed(2)}
+                                          ${(item.unitPrice * (1 - item.discount / 100)).toFixed(2)}
                                         </Text>
                                         <Box
                                           bg="green.500"
@@ -476,34 +563,22 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
                                 </Box>
                               </Flex>
 
-                              {/* Fila media: Cantidad solicitada vs Cantidad real */}
-                              <Flex justify="space-between" align="center" mb="0.75rem">
+                              {/* Fila inferior: Cantidad + Peso + Subtotal */}
+                              <Flex justify="space-around" align="center">
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Cant. solicitada
-                                  </Text>
-                                  <Text fontSize="sm" fontWeight="semibold">
-                                    {requestedQuantity}
-                                  </Text>
-                                </VStack>
-                                <VStack spacing="0.25rem" align="center">
-                                  <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Cant. real
+                                    Cantidad
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
                                     {actualQuantity}
                                   </Text>
                                 </VStack>
-                              </Flex>
-
-                              {/* Fila inferior: Peso + Subtotal */}
-                              <Flex justify="space-between" align="center">
                                 <VStack spacing="0.25rem" align="center">
                                   <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                    Peso (kg)
+                                    Peso (g)
                                   </Text>
                                   <Text fontSize="sm" fontWeight="semibold">
-                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(2) || '-' : 'N/A'}
+                                    {item.product?.unitType === UnitType.KILO ? weight?.toFixed(0) || '-' : 'N/A'}
                                   </Text>
                                 </VStack>
                                 <VStack spacing="0.25rem" align="center">
@@ -555,7 +630,7 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
           <ModalFooter flexShrink={0} borderTop="1px solid" borderColor={inputBorder} pt="1rem">
             {delivery.status === Status.PENDING ? (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
@@ -619,16 +694,38 @@ export const DeliveryDetail = ({ delivery, setDeliveries }: DeliveryDetailProps)
               </Stack>
             ) : (
               <Stack
-                direction={{ base: 'column', md: 'row' }}
+                direction={{ base: 'column-reverse', md: 'row' }}
                 spacing="0.5rem"
                 w="100%"
                 align="stretch"
                 justify={{ base: 'stretch', md: 'flex-end' }}
               >
                 {/* Botón Cerrar para entregas confirmadas/canceladas */}
-                <Button variant="ghost" size="sm" onClick={onClose} w={{ base: '100%', md: 'auto' }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  w={{ base: '100%', md: 'auto' }}
+                  disabled={redirectingToClient || redirectingToReturns}
+                >
                   Cerrar
                 </Button>
+
+                {/* Botón Crear devolución para entregas confirmadas */}
+                {delivery.status?.toLowerCase() === Status.CONFIRMED.toLowerCase() && (
+                  <Button
+                    leftIcon={redirectingToReturns ? <Spinner size="xs" /> : <FiRotateCcw />}
+                    colorScheme="orange"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNavigateToReturns}
+                    w={{ base: '100%', md: 'auto' }}
+                    isLoading={redirectingToReturns}
+                    loadingText="Redirigiendo..."
+                  >
+                    Crear devolución
+                  </Button>
+                )}
 
                 {/* Botón Editar para entregas confirmadas/canceladas - solo mostrar si no está confirmado */}
                 {delivery.status?.toLowerCase() !== Status.CONFIRMED.toLowerCase() && (

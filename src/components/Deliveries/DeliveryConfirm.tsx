@@ -62,7 +62,15 @@ const DeliveryConfirmForm = ({
   const toast = useToast();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const [statusProps, setStatusProps] = useState<{ id: number; status: string }>();
+  const [statusProps, setStatusProps] = useState<{
+    id: number;
+    status: string;
+    additionalData?: {
+      amount?: number;
+      paymentMethod?: string | null;
+      crates?: number;
+    };
+  }>();
   const { data: statusData, isLoading, fieldError: statusError } = useChangeDeliveryStatus(statusProps);
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
@@ -118,11 +126,13 @@ const DeliveryConfirmForm = ({
   const validateForm = (values: FormValues) => {
     const errors: Record<string, string> = {};
 
-    if (!values.amount || values.amount <= 0) {
-      errors.amount = 'El monto debe ser mayor a 0';
+    // Amount is optional, but if provided should be >= 0
+    if (values.amount < 0) {
+      errors.amount = 'El monto no puede ser negativo';
     }
 
-    if (!values.paymentMethod) {
+    // Payment method is required only if amount > 0
+    if (values.amount > 0 && !values.paymentMethod) {
       errors.paymentMethod = 'Debe seleccionar un método de pago';
     }
 
@@ -134,13 +144,27 @@ const DeliveryConfirmForm = ({
   };
 
   const handleSubmit = (values: FormValues) => {
-    // Aquí se enviarían los datos adicionales cuando esté listo el endpoint
-    console.log('Datos del formulario:', values);
+    // Prepare additional data
+    const additionalData: { amount?: number; paymentMethod?: string | null; crates?: number } = {};
 
-    // Confirmar la entrega
+    // Always include amount (can be 0)
+    additionalData.amount = values.amount;
+
+    // Include payment method - null if amount is 0, otherwise map the value
+    if (values.amount === 0) {
+      additionalData.paymentMethod = null;
+    } else {
+      additionalData.paymentMethod = values.paymentMethod === 'efectivo' ? 'Cash' : 'Check';
+    }
+
+    // Always include crates
+    additionalData.crates = values.returnedCrates;
+
+    // Confirmar la entrega con datos adicionales
     setStatusProps({
       id: delivery.id,
       status: Status.CONFIRMED,
+      additionalData,
     });
   };
 
@@ -149,7 +173,7 @@ const DeliveryConfirmForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
@@ -184,6 +208,13 @@ const DeliveryConfirmForm = ({
                   setFormikInstance({ dirty, resetForm });
                 }, [dirty, resetForm]);
 
+                // Handle payment method reset when amount changes to 0
+                useEffect(() => {
+                  if (values.amount === 0) {
+                    setFieldValue('paymentMethod', '');
+                  }
+                }, [values.amount, setFieldValue]);
+
                 return (
                   <form id="delivery-confirm-form" onSubmit={handleSubmit}>
                     <Box>
@@ -195,7 +226,7 @@ const DeliveryConfirmForm = ({
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">
                                   <Icon as={FiDollarSign} boxSize="1rem" />
-                                  <Text>Monto recibido</Text>
+                                  <Text>Monto recibido </Text>
                                 </HStack>
                               </FormLabel>
                               <NumberInput
@@ -209,7 +240,7 @@ const DeliveryConfirmForm = ({
                                 step={0.01}
                               >
                                 <NumberInputField
-                                  placeholder="Ingrese el monto recibido"
+                                  placeholder="Ingrese el monto recibido (0 por defecto)"
                                   bg={inputBg}
                                   border="1px solid"
                                   borderColor={inputBorder}
@@ -237,11 +268,11 @@ const DeliveryConfirmForm = ({
                               </FormLabel>
                               <Select
                                 {...field}
-                                placeholder="Seleccione el método de pago"
+                                placeholder={values.amount === 0 ? 'No requerido' : 'Seleccione el método de pago'}
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
-                                disabled={isLoading}
+                                disabled={isLoading || values.amount === 0}
                               >
                                 <option value="efectivo">Efectivo</option>
                                 <option value="cheque">Cheque</option>

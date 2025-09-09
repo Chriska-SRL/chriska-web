@@ -8,7 +8,7 @@ import {
   deleteReturnRequest,
   changeReturnRequestStatus,
 } from '@/services/returnRequest';
-import { useFetch } from '@/utils/useFetch';
+import { useFetch, useMutation } from '@/utils/useFetch';
 
 type CreateReturnRequestData = {
   deliveryId: number;
@@ -57,11 +57,11 @@ export const useGetReturnRequests = (page: number = 1, pageSize: number = 10, fi
 
 export const useGetReturnRequestById = (id?: number) => useFetch<number, ReturnRequest>(getReturnRequestById, id);
 
-export const useAddReturnRequest = (props?: CreateReturnRequestData) =>
-  useFetch<CreateReturnRequestData, ReturnRequest>(createReturnRequest, props, { parseFieldError: true });
+export const useAddReturnRequest = () =>
+  useMutation<CreateReturnRequestData, ReturnRequest>(createReturnRequest, { parseFieldError: true });
 
-export const useUpdateReturnRequest = (props?: Partial<ReturnRequest>) =>
-  useFetch<Partial<ReturnRequest>, ReturnRequest>(updateReturnRequest, props, { parseFieldError: true });
+export const useUpdateReturnRequest = () =>
+  useMutation<Partial<ReturnRequest>, ReturnRequest>(updateReturnRequest, { parseFieldError: true });
 
 export const useDeleteReturnRequest = (id?: number) => useFetch<number, void>(deleteReturnRequest, id);
 

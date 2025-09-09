@@ -49,16 +49,14 @@ const DeliveryEditForm = ({
   setDeliveries: React.Dispatch<React.SetStateAction<Delivery[]>>;
 }) => {
   const toast = useToast();
-  const [deliveryProps, setDeliveryProps] = useState<Partial<Delivery>>();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formikInstance, setFormikInstance] = useState<any>(null);
-  const { data, isLoading, error, fieldError } = useUpdateDelivery(deliveryProps);
+  const { data, isLoading, error, fieldError, mutate } = useUpdateDelivery();
 
   const inputBg = useColorModeValue('gray.100', 'whiteAlpha.100');
   const inputBorder = useColorModeValue('gray.200', 'whiteAlpha.300');
 
   const handleClose = () => {
-    setDeliveryProps(undefined);
     setShowConfirmDialog(false);
     if (formikInstance && formikInstance.resetForm) {
       formikInstance.resetForm();
@@ -84,10 +82,9 @@ const DeliveryEditForm = ({
         isClosable: true,
       });
       setDeliveries((prev) => prev.map((d) => (d.id === data.id ? data : d)));
-      setDeliveryProps(undefined);
       handleClose();
     }
-  }, [data, setDeliveries, toast, onClose]);
+  }, [data, setDeliveries, toast]);
 
   useEffect(() => {
     if (fieldError) {
@@ -109,12 +106,12 @@ const DeliveryEditForm = ({
     }
   }, [error, fieldError, toast]);
 
-  const handleSubmit = (values: { id: number; observations: string }) => {
+  const handleSubmit = async (values: { id: number; observations: string }) => {
     const updatedDelivery = {
       id: values.id,
       observations: values.observations,
     };
-    setDeliveryProps(updatedDelivery);
+    await mutate(updatedDelivery);
   };
 
   return (
@@ -122,7 +119,7 @@ const DeliveryEditForm = ({
       <Modal
         isOpen={isOpen}
         onClose={handleClose}
-        size={{ base: 'xs', md: 'md' }}
+        size={{ base: 'full', md: 'md' }}
         isCentered
         closeOnOverlayClick={false}
         onOverlayClick={handleOverlayClick}
