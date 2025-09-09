@@ -67,7 +67,7 @@ const DeliveryConfirmForm = ({
     status: string;
     additionalData?: {
       amount?: number;
-      paymentMethod?: string;
+      paymentMethod?: string | null;
       crates?: number;
     };
   }>();
@@ -145,14 +145,14 @@ const DeliveryConfirmForm = ({
 
   const handleSubmit = (values: FormValues) => {
     // Prepare additional data
-    const additionalData: { amount?: number; paymentMethod?: string; crates?: number } = {};
+    const additionalData: { amount?: number; paymentMethod?: string | null; crates?: number } = {};
 
     // Always include amount (can be 0)
     additionalData.amount = values.amount;
 
-    // Include payment method - default to "Cash" if amount is 0
+    // Include payment method - null if amount is 0, otherwise map the value
     if (values.amount === 0) {
-      additionalData.paymentMethod = 'Cash';
+      additionalData.paymentMethod = null;
     } else {
       additionalData.paymentMethod = values.paymentMethod === 'efectivo' ? 'Cash' : 'Check';
     }
@@ -208,11 +208,9 @@ const DeliveryConfirmForm = ({
                   setFormikInstance({ dirty, resetForm });
                 }, [dirty, resetForm]);
 
-                // Handle payment method auto-selection when amount changes
+                // Handle payment method reset when amount changes to 0
                 useEffect(() => {
                   if (values.amount === 0) {
-                    setFieldValue('paymentMethod', 'efectivo');
-                  } else if (!values.paymentMethod) {
                     setFieldValue('paymentMethod', '');
                   }
                 }, [values.amount, setFieldValue]);
@@ -270,14 +268,11 @@ const DeliveryConfirmForm = ({
                               </FormLabel>
                               <Select
                                 {...field}
-                                placeholder={
-                                  values.amount === 0 ? 'Efectivo (automático)' : 'Seleccione el método de pago'
-                                }
+                                placeholder={values.amount === 0 ? 'No requerido' : 'Seleccione el método de pago'}
                                 bg={inputBg}
                                 border="1px solid"
                                 borderColor={inputBorder}
                                 disabled={isLoading || values.amount === 0}
-                                value={values.amount === 0 ? 'efectivo' : field.value}
                               >
                                 <option value="efectivo">Efectivo</option>
                                 <option value="cheque">Cheque</option>

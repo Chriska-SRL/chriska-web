@@ -85,7 +85,7 @@ export const useChangeDeliveryStatus = (props?: {
   status: string;
   additionalData?: {
     amount?: number;
-    paymentMethod?: string;
+    paymentMethod?: string | null;
     crates?: number;
   };
 }) => {

@@ -56,7 +56,7 @@ export const changeDeliveryStatus = (
   status: string,
   additionalData?: {
     amount?: number;
-    paymentMethod?: string;
+    paymentMethod?: string | null;
     crates?: number;
   },
 ): Promise<Delivery> => {
