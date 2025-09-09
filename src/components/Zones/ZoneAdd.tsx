@@ -264,7 +264,7 @@ const ZoneAddModal = ({ isOpen, onClose, setZones }: ZoneAddModalProps) => {
                             )}
                           </Field>
 
-                          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1rem" w="100%">
+                          <SimpleGrid columns={2} spacing="1rem" w="100%">
                             <Box>
                               <FormLabel fontWeight="semibold">
                                 <HStack spacing="0.5rem">

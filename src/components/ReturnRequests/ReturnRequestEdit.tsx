@@ -25,6 +25,11 @@ import {
   Image,
   Input,
   IconButton,
+  Badge,
+  Divider,
+  Alert,
+  AlertIcon,
+  Stack,
 } from '@chakra-ui/react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -315,29 +320,31 @@ export const ReturnRequestEdit = ({
                                             {item.product?.name || '-'}
                                           </Text>
                                           <HStack spacing="0.5rem" align="center">
-                                            <VStack spacing="0.1rem" align="flex-start">
-                                              <Text fontSize="xs" color={textColor}>
-                                                Precio: $
-                                                {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
-                                              </Text>
-                                              {(item.discount || 0) > 0 && (
-                                                <Text fontSize="xs" color="green.500" fontWeight="medium">
-                                                  -{item.discount}% desc.
+                                            {(item.discount || 0) > 0 ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                  ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                                 </Text>
-                                              )}
-                                            </VStack>
-                                            <VStack spacing="0.1rem" align="flex-start">
-                                              <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                                P. efectivo:
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  ${((item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100)).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -{item.discount}%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                               </Text>
-                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                $
-                                                {(
-                                                  (item.unitPrice || item.product?.price || 0) *
-                                                  (1 - (item.discount || 0) / 100)
-                                                ).toFixed(2)}
-                                              </Text>
-                                            </VStack>
+                                            )}
                                           </HStack>
                                         </Box>
                                         <Checkbox
@@ -560,26 +567,6 @@ export const ReturnRequestEdit = ({
                                           />
                                         </VStack>
 
-                                        <VStack spacing="0.25rem" align="center" minW="80px">
-                                          <Text fontSize="xs" color={labelColor} fontWeight="medium">
-                                            Subtotal
-                                          </Text>
-                                          <Text fontSize="md" fontWeight="bold" color="blue.500">
-                                            $
-                                            {(() => {
-                                              const effectivePrice =
-                                                (item.unitPrice || item.product?.price || 0) *
-                                                (1 - (item.discount || 0) / 100);
-                                              const returnSubtotal =
-                                                item.product?.unitType === UnitType.KILO
-                                                  ? currentReturnQuantity *
-                                                    ((currentReturnWeight || 0) / 1000) *
-                                                    effectivePrice
-                                                  : currentReturnQuantity * effectivePrice;
-                                              return returnSubtotal.toFixed(2);
-                                            })()}
-                                          </Text>
-                                        </VStack>
                                       </HStack>
                                     </VStack>
 
@@ -603,29 +590,31 @@ export const ReturnRequestEdit = ({
                                             {item.product?.name || '-'}
                                           </Text>
                                           <HStack spacing="0.5rem" align="center">
-                                            <VStack spacing="0.1rem" align="flex-start">
-                                              <Text fontSize="xs" color={textColor}>
-                                                Precio: $
-                                                {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
-                                              </Text>
-                                              {(item.discount || 0) > 0 && (
-                                                <Text fontSize="xs" color="green.500" fontWeight="medium">
-                                                  -{item.discount}% desc.
+                                            {(item.discount || 0) > 0 ? (
+                                              <>
+                                                <Text fontSize="xs" color={textColor} textDecoration="line-through">
+                                                  ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                                 </Text>
-                                              )}
-                                            </VStack>
-                                            <VStack spacing="0.1rem" align="flex-start">
-                                              <Text fontSize="xs" color={textColor} fontWeight="medium">
-                                                P. efectivo:
+                                                <Text fontSize="sm" fontWeight="semibold" color="green.500">
+                                                  ${((item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100)).toFixed(2)}
+                                                </Text>
+                                                <Box
+                                                  bg="green.500"
+                                                  color="white"
+                                                  px="0.4rem"
+                                                  py="0.1rem"
+                                                  borderRadius="md"
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                >
+                                                  -{item.discount}%
+                                                </Box>
+                                              </>
+                                            ) : (
+                                              <Text fontSize="sm" fontWeight="semibold">
+                                                ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                               </Text>
-                                              <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                $
-                                                {(
-                                                  (item.unitPrice || item.product?.price || 0) *
-                                                  (1 - (item.discount || 0) / 100)
-                                                ).toFixed(2)}
-                                              </Text>
-                                            </VStack>
+                                            )}
                                           </HStack>
                                         </Box>
                                         <Checkbox
