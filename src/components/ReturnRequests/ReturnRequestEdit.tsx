@@ -25,11 +25,6 @@ import {
   Image,
   Input,
   IconButton,
-  Badge,
-  Divider,
-  Alert,
-  AlertIcon,
-  Stack,
 } from '@chakra-ui/react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -323,10 +318,15 @@ export const ReturnRequestEdit = ({
                                             {(item.discount || 0) > 0 ? (
                                               <>
                                                 <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                                  ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                                  $
+                                                  {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                                 </Text>
                                                 <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                  ${((item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100)).toFixed(2)}
+                                                  $
+                                                  {(
+                                                    (item.unitPrice || item.product?.price || 0) *
+                                                    (1 - (item.discount || 0) / 100)
+                                                  ).toFixed(2)}
                                                 </Text>
                                                 <Box
                                                   bg="green.500"
@@ -566,7 +566,6 @@ export const ReturnRequestEdit = ({
                                             borderRadius="md"
                                           />
                                         </VStack>
-
                                       </HStack>
                                     </VStack>
 
@@ -593,10 +592,15 @@ export const ReturnRequestEdit = ({
                                             {(item.discount || 0) > 0 ? (
                                               <>
                                                 <Text fontSize="xs" color={textColor} textDecoration="line-through">
-                                                  ${item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
+                                                  $
+                                                  {item.unitPrice?.toFixed(2) || item.product?.price?.toFixed(2) || '-'}
                                                 </Text>
                                                 <Text fontSize="sm" fontWeight="semibold" color="green.500">
-                                                  ${((item.unitPrice || item.product?.price || 0) * (1 - (item.discount || 0) / 100)).toFixed(2)}
+                                                  $
+                                                  {(
+                                                    (item.unitPrice || item.product?.price || 0) *
+                                                    (1 - (item.discount || 0) / 100)
+                                                  ).toFixed(2)}
                                                 </Text>
                                                 <Box
                                                   bg="green.500"

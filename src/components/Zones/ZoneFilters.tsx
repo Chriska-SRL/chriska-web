@@ -110,7 +110,7 @@ export const ZoneFilters = ({
       </InputGroup>
 
       {/* Advanced filters and reset button */}
-      <Flex gap="1rem" alignItems="center" minW={{ base: "auto", md: "200px" }}>
+      <Flex gap="1rem" alignItems="center" minW={{ base: 'auto', md: '200px' }}>
         <Popover placement="bottom-start">
           <PopoverTrigger>
             <Button
