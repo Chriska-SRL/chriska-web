@@ -83,7 +83,6 @@ export * from './Discounts/Discounts';
 export * from './Discounts/DiscountAdd';
 export * from './Discounts/DiscountEdit';
 export * from './Discounts/DiscountList';
-// export * from './Discounts/DiscountFilters'; // Temporarily disabled to debug requests
 export * from './Discounts/DiscountDetail';
 
 export * from './ClientReceipts/ClientReceipts';

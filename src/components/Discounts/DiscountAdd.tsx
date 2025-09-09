@@ -91,7 +91,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const { data: zones = [] } = useGetZones();
 
   // Estados para productos
-  const [productType, setProductType] = useState<'all' | 'brand' | 'subcategory' | 'list'>('all');
+  const [productType, setProductType] = useState<'brand' | 'subcategory' | 'list'>('brand');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>('');
@@ -105,7 +105,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados para clientes
-  const [clientType, setClientType] = useState<'all' | 'zone' | 'list'>('all');
+  const [clientType, setClientType] = useState<'zone' | 'list'>('zone');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
 
   // Estados para la búsqueda de clientes (solo cuando clientType === 'list')
@@ -274,12 +274,12 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
   };
 
   const handleClose = () => {
-    setProductType('all');
+    setProductType('brand');
     setSelectedBrandId('');
     setSelectedCategoryId('');
     setSelectedSubCategoryId('');
     setSelectedZoneId('');
-    setClientType('all');
+    setClientType('zone');
     setSelectedProducts([]);
     setSelectedClients([]);
     setProductSearch('');
@@ -366,7 +366,7 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
         status: 'Available',
       };
 
-      // Add product-related fields only when necessary
+      // Add product-related fields
       if (productType === 'brand' && selectedBrandId) {
         discount.brandId = selectedBrandId;
       } else if (productType === 'subcategory' && selectedSubCategoryId) {
@@ -374,15 +374,13 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
       } else if (productType === 'list') {
         discount.discountProductId = selectedProducts.map((p) => p.id);
       }
-      // If productType === 'all', don't send any product-related fields
 
-      // Add client-related fields only when necessary
+      // Add client-related fields
       if (clientType === 'zone' && selectedZoneId) {
         discount.zoneId = selectedZoneId;
       } else if (clientType === 'list') {
         discount.discountClientId = selectedClients.map((c) => c.id);
       }
-      // If clientType === 'all', don't send any client-related fields
 
       await mutate(discount);
     },
@@ -563,13 +561,12 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                           <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
                           <Select
                             value={productType}
-                            onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
+                            onChange={(e) => setProductType(e.target.value as 'brand' | 'subcategory' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los productos</option>
                             <option value="brand">Por marca</option>
                             <option value="subcategory">Por subcategoría</option>
                             <option value="list">Lista personalizada</option>
@@ -908,13 +905,12 @@ const DiscountAddModal = ({ isOpen, onClose, setDiscounts }: DiscountAddModalPro
                           <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
                           <Select
                             value={clientType}
-                            onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
+                            onChange={(e) => setClientType(e.target.value as 'zone' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los clientes</option>
                             <option value="zone">Por zona</option>
                             <option value="list">Lista personalizada</option>
                           </Select>

@@ -85,7 +85,7 @@ const DiscountEditForm = ({
   const { data: zones = [] } = useGetZones();
 
   // Estados para productos
-  const [productType, setProductType] = useState<'all' | 'brand' | 'subcategory' | 'list'>('list');
+  const [productType, setProductType] = useState<'brand' | 'subcategory' | 'list'>('list');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>('');
@@ -99,7 +99,7 @@ const DiscountEditForm = ({
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Estados para clientes
-  const [clientType, setClientType] = useState<'all' | 'zone' | 'list'>('list');
+  const [clientType, setClientType] = useState<'zone' | 'list'>('list');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
 
   // Estados para la búsqueda de clientes (solo cuando clientType === 'list')
@@ -220,7 +220,7 @@ const DiscountEditForm = ({
     } else if (discount && discount.products && discount.products.length > 0) {
       setProductType('list');
     } else {
-      setProductType('all');
+      setProductType('brand');
     }
 
     if (discount && discount.zone) {
@@ -229,7 +229,7 @@ const DiscountEditForm = ({
     } else if (discount && discount.clients && discount.clients.length > 0) {
       setClientType('list');
     } else {
-      setClientType('all');
+      setClientType('zone');
     }
   }, [discount, selectedProducts.length, selectedClients.length]);
 
@@ -412,7 +412,7 @@ const DiscountEditForm = ({
         status: values.status,
       };
 
-      // Add product-related fields only when necessary
+      // Add product-related fields
       if (productType === 'brand' && selectedBrandId) {
         discountUpdate.brandId = selectedBrandId;
       } else if (productType === 'subcategory' && selectedSubCategoryId) {
@@ -420,15 +420,13 @@ const DiscountEditForm = ({
       } else if (productType === 'list') {
         discountUpdate.discountProductId = selectedProducts.map((p) => p.id);
       }
-      // If productType === 'all', don't send any product-related fields
 
-      // Add client-related fields only when necessary
+      // Add client-related fields
       if (clientType === 'zone' && selectedZoneId) {
         discountUpdate.zoneId = selectedZoneId;
       } else if (clientType === 'list') {
         discountUpdate.discountClientId = selectedClients.map((c) => c.id);
       }
-      // If clientType === 'all', don't send any client-related fields
 
       const updateData = {
         id: discount.id,
@@ -648,13 +646,12 @@ const DiscountEditForm = ({
                           <FormLabel fontWeight="semibold">Productos aplicables</FormLabel>
                           <Select
                             value={productType}
-                            onChange={(e) => setProductType(e.target.value as 'all' | 'brand' | 'subcategory' | 'list')}
+                            onChange={(e) => setProductType(e.target.value as 'brand' | 'subcategory' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los productos</option>
                             <option value="brand">Por marca</option>
                             <option value="subcategory">Por subcategoría</option>
                             <option value="list">Lista personalizada</option>
@@ -993,13 +990,12 @@ const DiscountEditForm = ({
                           <FormLabel fontWeight="semibold">Clientes aplicables</FormLabel>
                           <Select
                             value={clientType}
-                            onChange={(e) => setClientType(e.target.value as 'all' | 'zone' | 'list')}
+                            onChange={(e) => setClientType(e.target.value as 'zone' | 'list')}
                             bg={inputBg}
                             border="1px solid"
                             borderColor={inputBorder}
                             disabled={isLoading}
                           >
-                            <option value="all">Todos los clientes</option>
                             <option value="zone">Por zona</option>
                             <option value="list">Lista personalizada</option>
                           </Select>
