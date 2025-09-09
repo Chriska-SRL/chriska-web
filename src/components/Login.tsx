@@ -13,12 +13,11 @@ import {
   Flex,
   useToast,
   useColorModeValue,
-  HStack,
-  IconButton,
   InputGroup,
   InputRightElement,
+  IconButton,
 } from '@chakra-ui/react';
-import { FiCode, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { Formik, Field } from 'formik';
 import { useEffect, useState } from 'react';
 import { useLogin } from '@/hooks/login';
@@ -32,7 +31,7 @@ export const Login = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { performLogin, performDevLogin, isLoading, error, fieldError } = useLogin();
+  const { performLogin, isLoading, error, fieldError } = useLogin();
   const setTempPassword = useUserStore((state) => state.setTempPassword);
 
   const bg = useColorModeValue('gray.100', 'gray.900');
@@ -40,8 +39,6 @@ export const Login = () => {
   const titleColor = useColorModeValue('black', 'white');
   const btnBg = useColorModeValue('brand.500', 'brand.500');
   const btnHover = useColorModeValue('brand.700', 'brand.700');
-  const devBtnBg = useColorModeValue('orange.500', 'orange.500');
-  const devBtnHover = useColorModeValue('orange.600', 'orange.600');
 
   useEffect(() => {
     if (error || fieldError) {
@@ -102,15 +99,6 @@ export const Login = () => {
 
     if (success) {
       setTempPassword(values.password);
-      handleLoginSuccess();
-    }
-  };
-
-  const handleDevLogin = async () => {
-    const success = await performDevLogin();
-
-    if (success) {
-      setTempPassword('');
       handleLoginSuccess();
     }
   };
@@ -196,31 +184,17 @@ export const Login = () => {
                     isIndeterminate={isLoading || isRedirecting}
                     colorScheme={isRedirecting ? 'green' : 'blue'}
                   />
-                  <HStack spacing="0.5rem">
-                    <Button
-                      type="submit"
-                      isDisabled={isLoading || isRedirecting}
-                      bg={btnBg}
-                      color="white"
-                      _hover={{ backgroundColor: btnHover }}
-                      flex="1"
-                      opacity={isRedirecting ? 0.8 : 1}
-                    >
-                      {isRedirecting ? 'Redirigiendo...' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                    </Button>
-
-                    <IconButton
-                      onClick={handleDevLogin}
-                      isDisabled={isLoading || isRedirecting}
-                      bg={devBtnBg}
-                      color="white"
-                      _hover={{ backgroundColor: devBtnHover }}
-                      icon={<FiCode />}
-                      aria-label="Login de desarrollo"
-                      size="md"
-                      opacity={isRedirecting ? 0.8 : 1}
-                    />
-                  </HStack>
+                  <Button
+                    type="submit"
+                    isDisabled={isLoading || isRedirecting}
+                    bg={btnBg}
+                    color="white"
+                    _hover={{ backgroundColor: btnHover }}
+                    width="100%"
+                    opacity={isRedirecting ? 0.8 : 1}
+                  >
+                    {isRedirecting ? 'Redirigiendo...' : isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                  </Button>
                 </Box>
               </form>
             )}
